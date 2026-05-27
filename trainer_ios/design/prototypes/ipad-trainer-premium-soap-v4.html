@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Premium SOAP V4</title>
+  <style>
+    :root {
+      --ink: #15161a;
+      --muted: #767a86;
+      --quiet: #a4a8b3;
+      --paper: #fbfbfd;
+      --surface: rgba(255,255,255,.84);
+      --line: rgba(21,22,26,.08);
+      --charcoal: #1d2028;
+      --red: #ff2d55;
+      --blue: #2f73f6;
+      --sage: #3bbf86;
+      --amber: #f5a524;
+      --shadow: 0 28px 70px rgba(18,21,30,.14);
+      --soft: 0 18px 44px rgba(18,21,30,.08);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 1024px; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 4%, rgba(47,115,246,.11), transparent 28%),
+        radial-gradient(circle at 84% 10%, rgba(255,45,85,.12), transparent 30%),
+        linear-gradient(135deg, #f8f9fc 0%, #eef1f5 100%);
+    }
+    .app {
+      width: 100%;
+      height: 100%;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 292px 1fr 344px;
+      grid-template-rows: 72px 1fr;
+      gap: 20px;
+    }
+    .top {
+      grid-column: 1 / -1;
+      border-radius: 30px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(24px);
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top h1 {
+      margin: 0 28px 0 0;
+      font-size: 29px;
+      line-height: 1;
+      min-width: 290px;
+      font-weight: 950;
+    }
+    .mode {
+      height: 44px;
+      padding: 0 18px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: rgba(232,235,241,.78);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .mode.active {
+      color: white;
+      background: var(--charcoal);
+      box-shadow: 0 14px 28px rgba(18,21,30,.18);
+    }
+    .top button {
+      margin-left: auto;
+      height: 46px;
+      border: 0;
+      border-radius: 18px;
+      padding: 0 24px;
+      color: white;
+      background: linear-gradient(135deg, var(--red), #ff7189);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+      box-shadow: 0 18px 34px rgba(255,45,85,.26);
+    }
+    .queue, .canvas, .inspector {
+      min-height: 0;
+      border-radius: 38px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+    }
+    .queue {
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .queue h2, .inspector h2 {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 950;
+    }
+    .caption {
+      margin: -8px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .person {
+      border-radius: 28px;
+      padding: 17px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 30px rgba(18,21,30,.06);
+    }
+    .person.active {
+      outline: 2px solid rgba(255,45,85,.24);
+    }
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: var(--red);
+      background: #ffe4ea;
+      font-size: 19px;
+      font-weight: 950;
+      margin-bottom: 14px;
+    }
+    .person b {
+      display: block;
+      font-size: 17px;
+    }
+    .person span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .progress {
+      height: 7px;
+      border-radius: 99px;
+      background: #edf0f5;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .progress i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--red), #ff7790);
+    }
+    .shortcut-title {
+      margin: 16px 0 0;
+      color: var(--quiet);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      font-weight: 950;
+    }
+    .shortcut {
+      height: 58px;
+      border-radius: 22px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border: 1px solid var(--line);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .canvas {
+      padding: 26px;
+      display: grid;
+      grid-template-rows: auto 1fr 74px;
+      gap: 18px;
+    }
+    .canvas-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .canvas-title h2 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 950;
+    }
+    .canvas-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .status {
+      width: 230px;
+      border-radius: 24px;
+      padding: 15px 16px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 26px rgba(18,21,30,.05);
+    }
+    .status b {
+      color: var(--red);
+      font-size: 26px;
+      line-height: 1;
+    }
+    .status span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .paper {
+      min-height: 0;
+      border-radius: 36px;
+      background:
+        linear-gradient(#e9edf3 1px, transparent 1px) 0 72px / 100% 55px,
+        linear-gradient(135deg, #ffffff, #fafbfe);
+      border: 1px solid rgba(21,22,26,.085);
+      box-shadow: inset 0 1px 0 white, 0 24px 54px rgba(18,21,30,.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .paper-label {
+      position: absolute;
+      left: 32px;
+      top: 25px;
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .autosave {
+      position: absolute;
+      right: 32px;
+      top: 30px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .writing {
+      width: 640px;
+      height: 350px;
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      transform: translate(-50%, -50%);
+    }
+    .floating-tools {
+      border-radius: 28px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 22px 46px rgba(18,21,30,.10);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .tool {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 13px;
+    }
+    .save {
+      margin-left: auto;
+      height: 48px;
+      border: 0;
+      border-radius: 18px;
+      padding: 0 26px;
+      color: white;
+      background: var(--red);
+      font: inherit;
+      font-weight: 950;
+      font-size: 14px;
+      box-shadow: 0 16px 34px rgba(255,45,85,.25);
+    }
+    .inspector {
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .block {
+      border-radius: 24px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 13px 28px rgba(18,21,30,.055);
+    }
+    .block-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .block-head b {
+      font-size: 15px;
+      font-weight: 950;
+    }
+    .block-head span {
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 950;
+    }
+    .block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.38;
+      font-weight: 750;
+    }
+    .inspector .save {
+      margin-top: auto;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1>SOAP Studio</h1>
+      <div class="mode active">필기</div>
+      <div class="mode">SOAP</div>
+      <div class="mode">공유</div>
+      <div class="mode">시각화</div>
+      <button>보드로 돌아가기</button>
+    </header>
+
+    <aside class="queue">
+      <h2>Session Queue</h2>
+      <p class="caption">Apple Pencil 우선 워크플로우</p>
+      <div class="person active">
+        <div class="avatar">김</div>
+        <b>김회원</b>
+        <span>14:00 · 좌측 무릎 · 통증 7/10</span>
+        <div class="progress"><i style="width:72%"></i></div>
+      </div>
+      <div class="person">
+        <div class="avatar" style="color:var(--amber);background:#fff1d8">박</div>
+        <b>박회원</b>
+        <span>15:00 · 재평가 · 계획 입력</span>
+        <div class="progress"><i style="width:54%;background:linear-gradient(90deg,var(--amber),#ffc56e)"></i></div>
+      </div>
+      <div class="person">
+        <div class="avatar" style="color:var(--sage);background:#e6f8f0">이</div>
+        <b>이회원</b>
+        <span>필기 저장됨 · 공유 준비</span>
+        <div class="progress"><i style="width:88%;background:linear-gradient(90deg,var(--sage),#7addac)"></i></div>
+      </div>
+      <div class="shortcut-title">Quick Capture</div>
+      <div class="shortcut">ROM 행 추가 <span>＋</span></div>
+      <div class="shortcut">MMT 행 추가 <span>＋</span></div>
+    </aside>
+
+    <main class="canvas">
+      <div class="canvas-head">
+        <div class="canvas-title">
+          <h2>김회원 · Clinical Note</h2>
+          <p>세션 중에는 필기, 세션 후에는 오른쪽에서 구조화합니다.</p>
+        </div>
+        <div class="status">
+          <b>72%</b>
+          <span>완료 · Objective ROM 필요</span>
+          <div class="progress"><i style="width:72%"></i></div>
+        </div>
+      </div>
+      <section class="paper">
+        <div class="paper-label">Clinical Canvas</div>
+        <div class="autosave">자동 저장됨 · 방금 전</div>
+        <svg class="writing" viewBox="0 0 640 350">
+          <path d="M26 42 C90 10 132 72 205 44 S324 36 392 22 S520 42 604 16" stroke="#30333a" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M28 95 C100 68 156 118 232 88 S348 96 421 64 S532 84 608 48" stroke="#2f73f6" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M28 154 C98 132 154 169 226 142 S336 146 412 118 S526 134 608 96" stroke="#30333a" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M28 226 C90 208 156 232 224 212 S332 214 418 184 S526 196 608 166" stroke="#ff2d55" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <rect x="48" y="266" width="134" height="46" rx="18" fill="#ffe4ea"/>
+          <text x="80" y="296" fill="#ff2d55" font-size="20" font-weight="900">ROM 확인</text>
+          <rect x="202" y="266" width="136" height="46" rx="18" fill="#e5efff"/>
+          <text x="236" y="296" fill="#2f73f6" font-size="20" font-weight="900">스쿼트 cue</text>
+        </svg>
+      </section>
+      <section class="floating-tools">
+        <div class="tool"><span class="swatch" style="background:var(--red)"></span>펜</div>
+        <div class="tool"><span class="swatch" style="background:var(--blue)"></span>형광펜</div>
+        <div class="tool"><span class="swatch" style="background:var(--sage)"></span>ROM</div>
+        <div class="tool"><span class="swatch" style="background:var(--amber)"></span>MMT</div>
+        <button class="save">저장</button>
+      </section>
+    </main>
+
+    <aside class="inspector">
+      <h2>SOAP Inspector</h2>
+      <p class="caption">필기 내용을 구조화 데이터로 전환</p>
+      <section class="block">
+        <div class="block-head"><b>S · 주관적 정보</b><span>완료</span></div>
+        <p>좌측 무릎 통증. 스쿼트 하강 시 증가, 휴식 시 완화.</p>
+      </section>
+      <section class="block">
+        <div class="block-head"><b>O · 객관적 평가</b><span>필요</span></div>
+        <p>ROM/MMT 행을 추가해 재평가 기준을 맞춥니다.</p>
+        <div class="progress"><i style="width:42%"></i></div>
+      </section>
+      <section class="block">
+        <div class="block-head"><b>A · 판단</b><span>검토</span></div>
+        <p>위험도 주의. 무릎 정렬 cue와 통증 추적 필요.</p>
+      </section>
+      <section class="block">
+        <div class="block-head"><b>P · 계획</b><span>초안</span></div>
+        <p>홈운동 3개, 다음 세션 스쿼트 패턴 재평가.</p>
+      </section>
+      <section class="block">
+        <div class="block-head"><b>회원 공유 요약</b><span>대기</span></div>
+        <p>전문 용어를 줄인 공유 문장으로 변환합니다.</p>
+      </section>
+      <button class="save">SOAP 저장 후 공유</button>
+    </aside>
+  </div>
+</body>
+</html>

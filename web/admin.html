@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-FET 관리자 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+        }
+
+        .header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e7;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .btn {
+            background: #0071e3;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #0077ed;
+        }
+
+        .btn-secondary {
+            background: #6e6e73;
+        }
+
+        .btn-secondary:hover {
+            background: #86868b;
+        }
+
+        .btn-danger {
+            background: #ff3b30;
+        }
+
+        .btn-danger:hover {
+            background: #ff453a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6e6e73;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #0071e3;
+            border-bottom-color: #0071e3;
+        }
+
+        .tab:hover {
+            color: #0071e3;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6e6e73;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: #6e6e73;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f5f5f7;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #0071e3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6e6e73;
+        }
+
+        .error {
+            background: #ff3b30;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: #34c759;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-admin {
+            background: #0071e3;
+            color: white;
+        }
+
+        .badge-user {
+            background: #f5f5f7;
+            color: #6e6e73;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-card h1 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .login-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #app {
+            display: none;
+        }
+
+        #app.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-card">
+            <h1>D-FET 관리자</h1>
+            <p style="text-align: center; color: #6e6e73; margin-bottom: 2rem;">
+                관리자 권한이 필요합니다
+            </p>
+            <div class="login-buttons">
+                <button id="googleSignInBtn" class="btn">Google로 로그인</button>
+            </div>
+            <div id="loginError" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- 메인 앱 -->
+    <div id="app">
+        <div class="header">
+            <h1>D-FET 관리자 대시보드</h1>
+            <div class="user-info">
+                <img id="userPhoto" src="" alt="User">
+                <span id="userName"></span>
+                <button id="logoutBtn" class="btn btn-secondary">로그아웃</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="messageContainer"></div>
+
+            <!-- 탭 -->
+            <div class="tabs">
+                <button class="tab active" data-tab="overview">개요</button>
+                <button class="tab" data-tab="users">사용자 관리</button>
+                <button class="tab" data-tab="admins">관리자 설정</button>
+            </div>
+
+            <!-- 개요 탭 -->
+            <div id="overviewTab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>총 사용자</h3>
+                        <div class="value" id="totalUsers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>관리자</h3>
+                        <div class="value" id="totalAdmins">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>활성 사용자 (7일)</h3>
+                        <div class="value" id="activeUsers">-</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>최근 가입 사용자</h2>
+                    <div id="recentUsers" class="loading">데이터 로드 중...</div>
+                </div>
+            </div>
+
+            <!-- 사용자 관리 탭 -->
+            <div id="usersTab" class="tab-content">
+                <div class="card">
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="이메일 또는 이름 검색...">
+                        <button class="btn" onclick="loadUsers()">검색</button>
+                    </div>
+
+                    <div id="usersTable" class="loading">데이터 로드 중...</div>
+                </div>
+            </div>
+
+            <!-- 관리자 설정 탭 -->
+            <div id="adminsTab" class="tab-content">
+                <div class="card">
+                    <h2>관리자 권한 부여</h2>
+                    <div class="search-bar">
+                        <input type="email" id="adminEmail" placeholder="관리자로 지정할 이메일">
+                        <button class="btn" onclick="grantAdmin()">권한 부여</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>현재 관리자 목록</h2>
+                    <div id="adminsTable" class="loading">데이터 로드 중...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 상세 모달 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h2>사용자 상세 정보</h2>
+            <div id="userDetails"></div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="deleteUser()">사용자 삭제</button>
+                <button class="btn btn-secondary" onclick="closeUserModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+        // Firebase 설정 (여기에 실제 설정 값을 입력하세요)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "dfetmanage.firebaseapp.com",
+            projectId: "dfetmanage",
+            storageBucket: "dfetmanage.firebasestorage.app",
+            messagingSenderId: "1011088994661",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app);
+
+        let currentUser = null;
+        let selectedUserId = null;
+
+        // DOM 요소
+        const loginContainer = document.getElementById('loginContainer');
+        const appContainer = document.getElementById('app');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // 인증 없이 바로 앱 표시 (개발 모드)
+        window.addEventListener('DOMContentLoaded', () => {
+            // 가짜 사용자 정보 설정
+            currentUser = {
+                displayName: '관리자',
+                email: 'admin@dfet.com',
+                photoURL: 'https://via.placeholder.com/40'
+            };
+            showApp();
+            loadDashboardLocal();
+        });
+
+        // 로그인 표시
+        function showLogin() {
+            loginContainer.style.display = 'flex';
+            appContainer.classList.remove('active');
+        }
+
+        // 앱 표시
+        function showApp() {
+            loginContainer.style.display = 'none';
+            appContainer.classList.add('active');
+            document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
+            document.getElementById('userPhoto').src = currentUser.photoURL || 'https://via.placeholder.com/40';
+        }
+
+        // Google 로그인
+        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                document.getElementById('loginError').innerHTML = `<div class="error">${error.message}</div>`;
+            }
+        });
+
+        // 로그아웃
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        // 탭 전환
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const tabName = tab.dataset.tab;
+                document.getElementById(tabName + 'Tab').classList.add('active');
+
+                if (tabName === 'users') loadUsers();
+                if (tabName === 'admins') loadAdmins();
+            });
+        });
+
+        // 대시보드 로드 (로컬 모드 - Firestore 직접 접근)
+        async function loadDashboardLocal() {
+            try {
+                // Firestore에서 사용자 목록 직접 조회
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const users = [];
+
+                usersSnapshot.forEach(doc => {
+                    users.push({
+                        uid: doc.id,
+                        email: doc.data().email || '-',
+                        displayName: doc.data().displayName || '-',
+                        createdAt: doc.data().createdAt,
+                        lastLoginAt: doc.data().lastLoginAt
+                    });
+                });
+
+                document.getElementById('totalUsers').textContent = users.length;
+                document.getElementById('totalAdmins').textContent = '-';
+                document.getElementById('activeUsers').textContent = '-';
+
+                // 최근 가입 사용자
+                const recentUsers = users
+                    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                    .slice(0, 5);
+
+                if (recentUsers.length > 0) {
+                    const recentUsersHtml = `
+                        <table>
+                            <tr>
+                                <th>이메일</th>
+                                <th>이름</th>
+                                <th>가입일</th>
+                                <th>마지막 로그인</th>
+                            </tr>
+                            ${recentUsers.map(u => `
+                                <tr>
+                                    <td>${u.email}</td>
+                                    <td>${u.displayName}</td>
+                                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ko-KR') : '-'}</td>
+                                    <td>${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('ko-KR') : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    `;
+                    document.getElementById('recentUsers').innerHTML = recentUsersHtml;
+                } else {
+                    document.getElementById('recentUsers').innerHTML = '<p style="text-align: center; color: #6e6e73;">아직 등록된 사용자가 없습니다.</p>';
+                }
+
+            } catch (error) {
+                console.error('대시보드 로드 실패:', error);
+                showMessage('대시보드 로드 실패: ' + error.message, 'error');
+                document.getElementById('recentUsers').innerHTML = '<p style="text-align: center; color: #6e6e73;">Firestore 연결을 확인해주세요.</p>';
+            }
+        }
+
+        // 사용자 목록 로드 (Firestore 직접 접근)
+        window.loadUsers = async function() {
+            const usersTable = document.getElementById('usersTable');
+            usersTable.innerHTML = '<div class="loading">데이터 로드 중...</div>';
+
+            try {
+                // Firestore에서 사용자 목록 직접 조회
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const users = [];
+
+                usersSnapshot.forEach(doc => {
+                    users.push({
+                        uid: doc.id,
+                        email: doc.data().email || '-',
+                        displayName: doc.data().displayName || '-',
+                        createdAt: doc.data().createdAt,
+                        lastLoginAt: doc.data().lastLoginAt
+                    });
+                });
+
+                const search = document.getElementById('userSearch').value.toLowerCase();
+                const filteredUsers = search ?
+                    users.filter(u =>
+                        (u.email && u.email.toLowerCase().includes(search)) ||
+                        (u.displayName && u.displayName.toLowerCase().includes(search))
+                    ) : users;
+
+                if (filteredUsers.length > 0) {
+                    const usersHtml = `
+                        <table>
+                            <tr>
+                                <th>이메일</th>
+                                <th>이름</th>
+                                <th>가입일</th>
+                                <th>마지막 로그인</th>
+                                <th>작업</th>
+                            </tr>
+                            ${filteredUsers.map(u => `
+                                <tr>
+                                    <td>${u.email}</td>
+                                    <td>${u.displayName}</td>
+                                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ko-KR') : '-'}</td>
+                                    <td>${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('ko-KR') : '-'}</td>
+                                    <td>
+                                        <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="viewUser('${u.uid}')">상세</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    `;
+                    usersTable.innerHTML = usersHtml;
+                } else {
+                    usersTable.innerHTML = '<p style="text-align: center; color: #6e6e73; padding: 2rem;">검색 결과가 없습니다.</p>';
+                }
+
+            } catch (error) {
+                console.error('사용자 로드 실패:', error);
+                usersTable.innerHTML = `<div class="error">사용자 로드 실패: ${error.message}</div>`;
+            }
+        };
+
+        // 사용자 상세 보기 (Firestore 직접 접근)
+        window.viewUser = async function(uid) {
+            selectedUserId = uid;
+            const modal = document.getElementById('userModal');
+            const userDetails = document.getElementById('userDetails');
+
+            userDetails.innerHTML = '<div class="loading">데이터 로드 중...</div>';
+            modal.classList.add('active');
+
+            try {
+                // 사용자 프로필 조회
+                const userDoc = await getDocs(query(collection(db, 'users'), limit(1)));
+                let userProfile = null;
+
+                const userDocRef = collection(db, 'users');
+                const userSnapshot = await getDocs(userDocRef);
+
+                userSnapshot.forEach(doc => {
+                    if (doc.id === uid) {
+                        userProfile = doc.data();
+                    }
+                });
+
+                // 최근 식사 기록 조회
+                const mealsSnapshot = await getDocs(
+                    query(
+                        collection(db, 'users', uid, 'meals'),
+                        orderBy('timestamp', 'desc'),
+                        limit(7)
+                    )
+                );
+                const meals = mealsSnapshot.size;
+
+                // 최근 운동 기록 조회
+                const workoutsSnapshot = await getDocs(
+                    query(
+                        collection(db, 'users', uid, 'workouts'),
+                        orderBy('timestamp', 'desc'),
+                        limit(7)
+                    )
+                );
+                const workouts = workoutsSnapshot.size;
+
+                const detailsHtml = `
+                    <h3>계정 정보</h3>
+                    <p><strong>UID:</strong> ${uid}</p>
+                    <p><strong>이메일:</strong> ${userProfile?.email || '-'}</p>
+                    <p><strong>이름:</strong> ${userProfile?.displayName || '-'}</p>
+                    <p><strong>가입일:</strong> ${userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleString('ko-KR') : '-'}</p>
+                    <p><strong>마지막 로그인:</strong> ${userProfile?.lastLoginAt ? new Date(userProfile.lastLoginAt).toLocaleString('ko-KR') : '-'}</p>
+
+                    <h3 style="margin-top: 1.5rem;">최근 활동 (최근 7일)</h3>
+                    <p><strong>식사 기록:</strong> ${meals}건</p>
+                    <p><strong>운동 기록:</strong> ${workouts}건</p>
+                `;
+                userDetails.innerHTML = detailsHtml;
+
+            } catch (error) {
+                console.error('상세 정보 로드 실패:', error);
+                userDetails.innerHTML = `<div class="error">상세 정보 로드 실패: ${error.message}</div>`;
+            }
+        };
+
+        // 사용자 삭제 (개발 모드 - Firebase Functions 필요)
+        window.deleteUser = async function() {
+            showMessage('사용자 삭제는 Firebase Functions 배포 후 사용 가능합니다.', 'error');
+        };
+
+        // 모달 닫기
+        window.closeUserModal = function() {
+            document.getElementById('userModal').classList.remove('active');
+            selectedUserId = null;
+        };
+
+        // 관리자 권한 부여 (개발 모드 - Functions 필요)
+        window.grantAdmin = async function() {
+            showMessage('관리자 권한 부여는 Firebase Functions 배포 후 사용 가능합니다.', 'error');
+        };
+
+        // 관리자 목록 로드
+        async function loadAdmins() {
+            const adminsTable = document.getElementById('adminsTable');
+            adminsTable.innerHTML = '<p style="text-align: center; color: #6e6e73; padding: 2rem;">관리자 목록 조회는 Firebase Functions 배포 후 사용 가능합니다.</p>';
+        }
+
+        // 관리자 권한 제거
+        window.revokeAdmin = async function(email) {
+            showMessage('관리자 권한 제거는 Firebase Functions 배포 후 사용 가능합니다.', 'error');
+        };
+
+        // 메시지 표시
+        function showMessage(message, type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = type;
+            msgDiv.textContent = message;
+            messageContainer.appendChild(msgDiv);
+
+            setTimeout(() => {
+                msgDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

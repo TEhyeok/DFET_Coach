@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Travel Clean SOAP V6</title>
+  <style>
+    :root {
+      --ink: #101114;
+      --muted: #777b84;
+      --soft: #f1f2f4;
+      --line: rgba(16, 17, 20, .08);
+      --white: #ffffff;
+      --red: #ff4b62;
+      --green: #99ff57;
+      --blue: #dce9ff;
+      --shadow: 0 26px 70px rgba(16, 17, 20, .13);
+      --soft-shadow: 0 16px 40px rgba(16, 17, 20, .08);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 1024px; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: #f7f7f5;
+    }
+    .canvas {
+      width: 100%;
+      height: 100%;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 326px 1fr;
+      gap: 28px;
+    }
+    .left {
+      min-height: 0;
+      border-radius: 44px;
+      background: var(--ink);
+      color: white;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .left:after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      left: -80px;
+      bottom: -70px;
+      background: rgba(153,255,87,.24);
+    }
+    .back {
+      width: 52px;
+      height: 52px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.10);
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+      margin-bottom: 34px;
+    }
+    .left small {
+      color: rgba(255,255,255,.56);
+      font-size: 13px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .left h1 {
+      margin: 12px 0 0;
+      font-size: 54px;
+      line-height: .92;
+      letter-spacing: 0;
+    }
+    .left p {
+      margin: 16px 0 0;
+      color: rgba(255,255,255,.62);
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 750;
+    }
+    .member-card {
+      position: relative;
+      z-index: 1;
+      margin-top: 34px;
+      border-radius: 34px;
+      padding: 20px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: var(--red);
+      color: white;
+      font-size: 22px;
+      font-weight: 950;
+      margin-bottom: 18px;
+    }
+    .member-card b {
+      display: block;
+      font-size: 26px;
+      line-height: 1;
+    }
+    .member-card span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255,255,255,.58);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .progress {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .progress i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+    .quick {
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+    }
+    .quick button {
+      height: 58px;
+      border-radius: 23px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.09);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .main {
+      min-width: 0;
+      min-height: 0;
+      border-radius: 44px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      gap: 22px;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .top h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1;
+      min-width: 360px;
+      font-weight: 950;
+    }
+    .tabs {
+      height: 52px;
+      border-radius: 24px;
+      padding: 5px;
+      display: flex;
+      gap: 4px;
+      background: var(--soft);
+      margin-left: auto;
+    }
+    .tabs span {
+      min-width: 100px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .tabs .active {
+      color: white;
+      background: var(--ink);
+      box-shadow: 0 12px 24px rgba(16,17,20,.16);
+    }
+    .save-top {
+      height: 52px;
+      border-radius: 24px;
+      border: 0;
+      padding: 0 22px;
+      color: var(--ink);
+      background: var(--green);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 316px;
+      gap: 22px;
+    }
+    .paper-wrap {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr 78px;
+      gap: 18px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 62px;
+      line-height: .9;
+      letter-spacing: 0;
+    }
+    .title p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 750;
+    }
+    .paper {
+      min-height: 0;
+      border-radius: 40px;
+      background:
+        linear-gradient(#e9ecf1 1px, transparent 1px) 0 82px / 100% 58px,
+        linear-gradient(135deg, #ffffff, #fbfbfc);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--soft-shadow);
+    }
+    .paper b {
+      position: absolute;
+      left: 32px;
+      top: 26px;
+      font-size: 23px;
+      line-height: 1;
+    }
+    .paper em {
+      position: absolute;
+      right: 32px;
+      top: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 850;
+    }
+    .writing {
+      position: absolute;
+      left: 50%;
+      top: 51%;
+      width: 690px;
+      height: 360px;
+      transform: translate(-50%,-50%);
+    }
+    .chip {
+      position: absolute;
+      bottom: 34px;
+      height: 46px;
+      border-radius: 999px;
+      padding: 0 19px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background: var(--green);
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .chip.one { left: 36px; }
+    .chip.two { right: 36px; background: var(--blue); }
+    .tools {
+      border-radius: 32px;
+      background: var(--ink);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 28px;
+    }
+    .tool {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+    }
+    .tools button {
+      margin-left: auto;
+      height: 50px;
+      border-radius: 22px;
+      border: 0;
+      padding: 0 24px;
+      color: var(--ink);
+      background: var(--green);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .inspector {
+      min-height: 0;
+      border-radius: 38px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+    .inspector h3 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .inspector > p {
+      margin: -5px 0 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .block {
+      border-radius: 26px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+    .block-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .block-head b {
+      font-size: 15px;
+      font-weight: 950;
+    }
+    .block-head span {
+      color: var(--red);
+      background: #ffe7eb;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.38;
+      font-weight: 750;
+    }
+    .share {
+      margin-top: auto;
+      border-radius: 32px;
+      padding: 20px;
+      background: var(--green);
+    }
+    .share b {
+      display: block;
+      font-size: 20px;
+      line-height: 1.12;
+    }
+    .share p {
+      margin: 8px 0 18px;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+    .share button {
+      width: 100%;
+      height: 52px;
+      border-radius: 22px;
+      border: 0;
+      color: white;
+      background: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    svg text { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <aside class="left">
+      <div class="back">D</div>
+      <small>Current note</small>
+      <h1>김회원<br/>SOAP</h1>
+      <p>수업 중 빠르게 쓰고, 세션 후 공유 가능한 노트로 정리합니다.</p>
+      <div class="member-card">
+        <div class="avatar">김</div>
+        <b>72%</b>
+        <span>Objective ROM 필요</span>
+        <div class="progress"><i style="width:72%"></i></div>
+      </div>
+      <div class="quick">
+        <button>사진 추가 <span>＋</span></button>
+        <button>영상 추가 <span>＋</span></button>
+        <button>ROM/MMT 추가 <span>＋</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <h2>SOAP Note</h2>
+        <div class="tabs">
+          <span class="active">필기</span>
+          <span>정리</span>
+          <span>공유</span>
+        </div>
+        <button class="save-top">저장</button>
+      </header>
+      <section class="workspace">
+        <div class="paper-wrap">
+          <div class="title">
+            <h1>Clinical<br/>Canvas</h1>
+            <p>Apple Pencil 기록을 중심에 두고 필요한 항목만 보조로 둡니다.</p>
+          </div>
+          <div class="paper">
+            <b>세션 필기</b>
+            <em>자동 저장됨</em>
+            <svg class="writing" viewBox="0 0 690 360">
+              <path d="M36 54 C110 16 160 80 242 48 S370 60 450 28 S560 48 650 20" stroke="#101114" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M38 112 C114 84 170 136 258 102 S386 112 466 78 S566 98 654 62" stroke="#ff4b62" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M38 180 C118 152 178 190 258 160 S382 168 474 132 S570 148 654 112" stroke="#101114" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M38 252 C116 226 178 264 260 236 S386 242 474 206 S570 218 654 190" stroke="#101114" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <circle cx="122" cy="312" r="18" fill="#ff4b62"/>
+              <circle cx="198" cy="312" r="18" fill="#99ff57"/>
+              <text x="238" y="320" fill="#777b84" font-size="18" font-weight="900">ROM 체크 필요</text>
+            </svg>
+            <div class="chip one">ROM 확인</div>
+            <div class="chip two">스쿼트 cue</div>
+          </div>
+          <div class="tools">
+            <div class="tool"><span class="swatch" style="background:#ff4b62"></span>펜</div>
+            <div class="tool"><span class="swatch" style="background:#99ff57"></span>표시</div>
+            <div class="tool"><span class="swatch" style="background:#dce9ff"></span>ROM</div>
+            <button>저장</button>
+          </div>
+        </div>
+
+        <aside class="inspector">
+          <h3>SOAP</h3>
+          <p>필기에서 필요한 항목만 정리</p>
+          <section class="block">
+            <div class="block-head"><b>S</b><span>완료</span></div>
+            <p>좌측 무릎 통증. 하강 시 증가.</p>
+          </section>
+          <section class="block">
+            <div class="block-head"><b>O</b><span>필요</span></div>
+            <p>ROM/MMT 측정값 추가 필요.</p>
+          </section>
+          <section class="block">
+            <div class="block-head"><b>A</b><span>검토</span></div>
+            <p>무릎 정렬 cue와 통증 추적.</p>
+          </section>
+          <section class="block">
+            <div class="block-head"><b>P</b><span>초안</span></div>
+            <p>홈운동 3개, 다음 세션 재평가.</p>
+          </section>
+          <div class="share">
+            <b>회원 공유 요약 준비됨</b>
+            <p>전문 용어를 줄인 실행 계획으로 전송합니다.</p>
+            <button>공유하기</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

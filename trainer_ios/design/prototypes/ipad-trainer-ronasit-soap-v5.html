@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Ronas Inspired SOAP V5</title>
+  <style>
+    :root {
+      --ink: #111217;
+      --panel: #ffffff;
+      --paper: #f4f6f9;
+      --muted: #747987;
+      --quiet: #a3a8b5;
+      --line: rgba(17,18,23,.08);
+      --charcoal: #17191f;
+      --coral: #ff4f6d;
+      --lime: #d7ff5a;
+      --sky: #79a7ff;
+      --mint: #68d9aa;
+      --amber: #ffbd4a;
+      --shadow: 0 32px 80px rgba(17,18,23,.14);
+      --soft: 0 18px 42px rgba(17,18,23,.08);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 1024px; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 8%, rgba(255,79,109,.16), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(215,255,90,.24), transparent 31%),
+        radial-gradient(circle at 76% 96%, rgba(121,167,255,.20), transparent 30%),
+        linear-gradient(135deg, #f9fafc 0%, var(--paper) 100%);
+    }
+    .app {
+      width: 100%;
+      height: 100%;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 286px 1fr 344px;
+      grid-template-rows: 74px 1fr;
+      gap: 18px;
+    }
+    .top {
+      grid-column: 1 / -1;
+      height: 74px;
+      border-radius: 34px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(24px);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .top h1 {
+      margin: 0;
+      min-width: 276px;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 950;
+    }
+    .mode {
+      height: 48px;
+      border-radius: 19px;
+      padding: 0 21px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: #eef1f6;
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .mode.active {
+      color: white;
+      background: var(--charcoal);
+      box-shadow: 0 15px 28px rgba(17,18,23,.16);
+    }
+    .top button {
+      margin-left: auto;
+      height: 48px;
+      border: 0;
+      border-radius: 19px;
+      padding: 0 22px;
+      color: var(--ink);
+      background: var(--lime);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .queue, .canvas, .inspector {
+      min-height: 0;
+      border-radius: 42px;
+      background: rgba(255,255,255,.80);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+    }
+    .queue {
+      padding: 26px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .queue h2, .inspector h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1;
+      font-weight: 950;
+    }
+    .caption {
+      margin: -6px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .member {
+      border-radius: 30px;
+      padding: 17px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 15px 30px rgba(17,18,23,.06);
+    }
+    .member.active {
+      background: var(--charcoal);
+      color: white;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 21px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--coral);
+      font-size: 20px;
+      font-weight: 950;
+      margin-bottom: 14px;
+    }
+    .member b {
+      display: block;
+      font-size: 17px;
+    }
+    .member span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .member.active span { color: rgba(255,255,255,.62); }
+    .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: #edf0f5;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--coral);
+    }
+    .quick {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .quick-title {
+      color: var(--quiet);
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      font-size: 11px;
+      font-weight: 950;
+      margin-top: 8px;
+    }
+    .quick button {
+      height: 60px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 17px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .canvas {
+      display: grid;
+      grid-template-rows: auto 1fr 90px;
+      gap: 18px;
+      padding: 28px;
+      overflow: hidden;
+    }
+    .canvas-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .canvas-head h2 {
+      margin: 0;
+      font-size: 42px;
+      line-height: .98;
+      letter-spacing: 0;
+    }
+    .canvas-head p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 750;
+    }
+    .status {
+      width: 218px;
+      border-radius: 28px;
+      padding: 17px;
+      background: var(--lime);
+      box-shadow: 0 20px 42px rgba(181,220,36,.25);
+    }
+    .status b {
+      font-size: 33px;
+      line-height: 1;
+    }
+    .status span {
+      display: block;
+      margin-top: 5px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .paper {
+      min-height: 0;
+      border-radius: 40px;
+      background:
+        linear-gradient(#e8ecf3 1px, transparent 1px) 0 86px / 100% 58px,
+        linear-gradient(135deg, #ffffff, #fbfcff);
+      border: 1px solid rgba(17,18,23,.085);
+      box-shadow: inset 0 1px 0 white, 0 24px 56px rgba(17,18,23,.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .paper-title {
+      position: absolute;
+      left: 34px;
+      top: 28px;
+      font-size: 24px;
+      font-weight: 950;
+    }
+    .paper-meta {
+      position: absolute;
+      right: 34px;
+      top: 32px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .stroke-note {
+      position: absolute;
+      left: 50%;
+      top: 49%;
+      width: 680px;
+      height: 360px;
+      transform: translate(-50%,-50%);
+    }
+    .media-chip {
+      position: absolute;
+      border-radius: 24px;
+      padding: 14px 16px;
+      color: var(--ink);
+      background: var(--lime);
+      box-shadow: 0 18px 34px rgba(181,220,36,.24);
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .media-chip.one { left: 42px; bottom: 40px; }
+    .media-chip.two { right: 42px; bottom: 40px; background: #e9f1ff; color: #2f73f6; }
+    .tools {
+      border-radius: 32px;
+      background: var(--charcoal);
+      color: white;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      box-shadow: 0 24px 48px rgba(17,18,23,.18);
+    }
+    .tool {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+    }
+    .save {
+      margin-left: auto;
+      height: 52px;
+      border: 0;
+      border-radius: 20px;
+      padding: 0 26px;
+      color: white;
+      background: var(--coral);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+      box-shadow: 0 18px 34px rgba(255,79,109,.28);
+    }
+    .inspector {
+      padding: 26px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .soap-card {
+      border-radius: 28px;
+      padding: 17px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 28px rgba(17,18,23,.055);
+    }
+    .soap-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+    .soap-head b {
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .soap-head span {
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--coral);
+      background: #ffe7ed;
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .soap-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+    .share {
+      margin-top: auto;
+      border-radius: 34px;
+      padding: 22px;
+      background: var(--lime);
+      color: var(--ink);
+    }
+    .share b {
+      display: block;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+    .share p {
+      margin: 8px 0 18px;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+    .share button {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      border-radius: 20px;
+      background: var(--charcoal);
+      color: white;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    svg text { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1>SOAP Note Mechanic</h1>
+      <div class="mode active">필기</div>
+      <div class="mode">구조화</div>
+      <div class="mode">첨부</div>
+      <div class="mode">공유</div>
+      <button>보드로 돌아가기</button>
+    </header>
+
+    <aside class="queue">
+      <h2>Session</h2>
+      <p class="caption">오늘 진행 중인 노트</p>
+      <div class="member active">
+        <div class="avatar">김</div>
+        <b>김회원</b>
+        <span>14:00 · 좌측 무릎 · 통증 7/10</span>
+        <div class="bar"><i style="width:72%"></i></div>
+      </div>
+      <div class="member">
+        <div class="avatar" style="background:var(--amber)">박</div>
+        <b>박회원</b>
+        <span>15:00 · 재평가 · 계획 입력</span>
+        <div class="bar"><i style="width:54%;background:var(--amber)"></i></div>
+      </div>
+      <div class="member">
+        <div class="avatar" style="background:var(--mint)">이</div>
+        <b>이회원</b>
+        <span>필기 저장됨 · 공유 준비</span>
+        <div class="bar"><i style="width:88%;background:var(--mint)"></i></div>
+      </div>
+      <div class="quick-title">Attach blocks</div>
+      <div class="quick">
+        <button>사진 추가 <span>＋</span></button>
+        <button>영상 추가 <span>＋</span></button>
+        <button>ROM/MMT 추가 <span>＋</span></button>
+      </div>
+    </aside>
+
+    <main class="canvas">
+      <div class="canvas-head">
+        <div>
+          <h2>김회원의<br/>수업 노트</h2>
+          <p>Apple Pencil로 빠르게 쓰고, 오른쪽에서 SOAP 항목으로 정리합니다.</p>
+        </div>
+        <div class="status">
+          <b>72%</b>
+          <span>Objective ROM 필요</span>
+          <div class="bar"><i style="width:72%;background:var(--charcoal)"></i></div>
+        </div>
+      </div>
+      <section class="paper">
+        <div class="paper-title">Clinical Canvas</div>
+        <div class="paper-meta">자동 저장됨 · 방금 전</div>
+        <svg class="stroke-note" viewBox="0 0 680 360">
+          <path d="M32 48 C94 14 146 74 230 48 S350 54 430 26 S552 50 636 22" stroke="#30333a" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <path d="M34 102 C118 74 166 126 252 94 S376 106 454 72 S560 92 642 58" stroke="#79a7ff" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <path d="M34 170 C104 144 166 184 244 154 S360 164 452 126 S558 142 644 108" stroke="#30333a" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <path d="M34 246 C110 220 168 258 246 232 S366 238 456 202 S560 210 644 184" stroke="#ff4f6d" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <circle cx="116" cy="300" r="18" fill="#ff4f6d"/>
+          <circle cx="196" cy="300" r="18" fill="#79a7ff"/>
+          <circle cx="276" cy="300" r="18" fill="#68d9aa"/>
+          <text x="318" y="308" fill="#747987" font-size="18" font-weight="900">통증/ROM 체크 필요</text>
+        </svg>
+        <div class="media-chip one">ROM 확인</div>
+        <div class="media-chip two">스쿼트 cue</div>
+      </section>
+      <section class="tools">
+        <div class="tool"><span class="swatch" style="background:var(--coral)"></span>펜</div>
+        <div class="tool"><span class="swatch" style="background:var(--sky)"></span>형광펜</div>
+        <div class="tool"><span class="swatch" style="background:var(--mint)"></span>ROM</div>
+        <div class="tool"><span class="swatch" style="background:var(--amber)"></span>MMT</div>
+        <button class="save">저장</button>
+      </section>
+    </main>
+
+    <aside class="inspector">
+      <h2>SOAP Blocks</h2>
+      <p class="caption">필기를 공유 가능한 데이터로 변환</p>
+      <section class="soap-card">
+        <div class="soap-head"><b>S · Subjective</b><span>완료</span></div>
+        <p>좌측 무릎 통증. 스쿼트 하강 시 증가, 휴식 시 완화.</p>
+      </section>
+      <section class="soap-card">
+        <div class="soap-head"><b>O · Objective</b><span>필요</span></div>
+        <p>ROM/MMT 행을 추가해 재평가 기준을 맞춥니다.</p>
+        <div class="bar"><i style="width:42%"></i></div>
+      </section>
+      <section class="soap-card">
+        <div class="soap-head"><b>A · Assessment</b><span>검토</span></div>
+        <p>무릎 정렬 cue와 통증 추적 필요. 위험도 주의.</p>
+      </section>
+      <section class="soap-card">
+        <div class="soap-head"><b>P · Plan</b><span>초안</span></div>
+        <p>홈운동 3개, 다음 세션 스쿼트 패턴 재평가.</p>
+      </section>
+      <div class="share">
+        <b>회원에게 보낼 요약을 준비했습니다.</b>
+        <p>전문 용어를 줄이고 실행 계획 중심으로 정리합니다.</p>
+        <button>SOAP 저장 후 공유</button>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

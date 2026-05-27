@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1024" viewBox="0 0 1440 1024">
+  <defs>
+    <style>
+      .bg { fill: #f7f7f8; }
+      .panel { fill: #ffffff; stroke: #c9c9ce; stroke-width: 2; }
+      .soft { fill: #f0f0f2; stroke: #d6d6dc; stroke-width: 2; }
+      .line { stroke: #b9b9c0; stroke-width: 2; fill: none; }
+      .dash { stroke: #9b9ba3; stroke-width: 2; fill: none; stroke-dasharray: 8 8; }
+      .accent { fill: #ff2d55; }
+      .accent-stroke { stroke: #ff2d55; stroke-width: 3; fill: none; }
+      .title { font: 800 34px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .h1 { font: 800 26px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .h2 { font: 750 20px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .body { font: 600 16px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #5d5d64; }
+      .small { font: 600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #767680; }
+      .label { font: 700 14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .white { fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1440" height="1024"/>
+  <text class="title" x="48" y="62">D-FET Trainer iPad 와이어프레임</text>
+  <text class="body" x="48" y="94">Apple iPadOS 패턴을 트레이너 세션 운영 흐름으로 변환: 작업 큐 → 회원 보드 → Pencil SOAP → 공유/리포트</text>
+
+  <rect class="panel" x="48" y="126" width="268" height="822" rx="28"/>
+  <text class="h1" x="76" y="176">1. 작업 큐</text>
+  <text class="small" x="76" y="204">Sidebar / 검색 / 오늘 우선순위</text>
+
+  <rect class="soft" x="76" y="232" width="212" height="44" rx="14"/>
+  <line class="line" x1="104" y1="254" x2="250" y2="254"/>
+  <text class="small" x="96" y="310">탭 대신 업무 상태 중심</text>
+  <rect class="soft" x="76" y="332" width="212" height="58" rx="16"/>
+  <circle class="accent" cx="104" cy="361" r="13"/>
+  <text class="label" x="128" y="354">오늘 세션</text>
+  <text class="small" x="128" y="376">6건 · 3건 완료</text>
+  <rect class="soft" x="76" y="408" width="212" height="58" rx="16"/>
+  <circle class="accent" cx="104" cy="437" r="13" opacity="0.65"/>
+  <text class="label" x="128" y="430">SOAP 미작성</text>
+  <text class="small" x="128" y="452">3건 · 공유 전</text>
+  <rect class="soft" x="76" y="484" width="212" height="58" rx="16"/>
+  <circle cx="104" cy="513" r="13" fill="#ff9500"/>
+  <text class="label" x="128" y="506">재평가 필요</text>
+  <text class="small" x="128" y="528">2명 · 이번 주</text>
+
+  <line class="dash" x1="76" y1="584" x2="288" y2="584"/>
+  <text class="h2" x="76" y="626">오늘 회원</text>
+  <rect class="soft" x="76" y="650" width="212" height="56" rx="16"/>
+  <text class="label" x="100" y="674">김회원</text>
+  <text class="small" x="100" y="694">통증 상승 · 7/10</text>
+  <rect class="soft" x="76" y="720" width="212" height="56" rx="16"/>
+  <text class="label" x="100" y="744">박회원</text>
+  <text class="small" x="100" y="764">재평가일 도래 · 5/10</text>
+  <rect class="soft" x="76" y="790" width="212" height="56" rx="16"/>
+  <text class="label" x="100" y="814">이회원</text>
+  <text class="small" x="100" y="834">목표 안정 · 3/10</text>
+
+  <rect class="panel" x="344" y="126" width="640" height="822" rx="28"/>
+  <text class="h1" x="380" y="176">2. 회원 세션 보드</text>
+  <text class="small" x="380" y="204">선택된 회원의 상태와 다음 행동을 한 화면에 고정</text>
+
+  <rect class="soft" x="380" y="232" width="568" height="118" rx="22"/>
+  <circle class="accent" cx="426" cy="291" r="28" opacity="0.16"/>
+  <text class="h2" x="466" y="276">김회원 · 오늘 14:00</text>
+  <text class="body" x="466" y="306">주의: 통증 상승, 지난 SOAP 공유 전</text>
+  <text class="small" x="466" y="330">바로 할 일: SOAP 이어쓰기 / 재평가 체크 / 홈운동 확인</text>
+
+  <rect class="soft" x="380" y="382" width="168" height="116" rx="22"/>
+  <text class="small" x="406" y="418">통증</text>
+  <text class="h1" x="406" y="462">7/10</text>
+  <rect class="soft" x="580" y="382" width="168" height="116" rx="22"/>
+  <text class="small" x="606" y="418">목표 진행</text>
+  <text class="h1" x="606" y="462">62%</text>
+  <rect class="soft" x="780" y="382" width="168" height="116" rx="22"/>
+  <text class="small" x="806" y="418">SOAP 완료</text>
+  <text class="h1" x="806" y="462">75%</text>
+
+  <rect class="soft" x="380" y="530" width="568" height="256" rx="24"/>
+  <text class="h2" x="414" y="572">Pencil 작업면</text>
+  <text class="small" x="414" y="598">세션 중에는 필기 우선, 수업 후 구조화</text>
+  <path class="line" d="M418 660 C520 620, 608 690, 710 642 S854 644, 914 614"/>
+  <path class="line" d="M418 714 C520 700, 612 730, 710 702 S850 718, 914 688"/>
+  <rect class="panel" x="414" y="810" width="500" height="56" rx="18"/>
+  <text class="label" x="444" y="845">펜 · 형광펜 · 지우개 · ROM · MMT · 저장</text>
+
+  <rect class="panel" x="1012" y="126" width="380" height="822" rx="28"/>
+  <text class="h1" x="1044" y="176">3. SOAP 인스펙터</text>
+  <text class="small" x="1044" y="204">입력, 공유, 시각화는 우측에서 빠르게 처리</text>
+
+  <rect class="soft" x="1044" y="234" width="316" height="48" rx="16"/>
+  <rect class="accent" x="1052" y="242" width="72" height="32" rx="12"/>
+  <text class="white" x="1073" y="264" style="font:700 13px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo';">필기</text>
+  <text class="small" x="1142" y="264">SOAP</text>
+  <text class="small" x="1212" y="264">공유</text>
+  <text class="small" x="1282" y="264">차트</text>
+
+  <text class="h2" x="1044" y="328">구조화 입력</text>
+  <rect class="soft" x="1044" y="352" width="316" height="62" rx="16"/>
+  <text class="label" x="1068" y="378">S · 주호소</text>
+  <text class="small" x="1068" y="398">통증 패턴, 악화/완화 요인</text>
+  <rect class="soft" x="1044" y="430" width="316" height="62" rx="16"/>
+  <text class="label" x="1068" y="456">O · ROM / MMT</text>
+  <text class="small" x="1068" y="476">행 추가형 그리드</text>
+  <rect class="soft" x="1044" y="508" width="316" height="62" rx="16"/>
+  <text class="label" x="1068" y="534">A · 위험도 / 목표</text>
+  <text class="small" x="1068" y="554">주의, 재평가, 장단기 목표</text>
+  <rect class="soft" x="1044" y="586" width="316" height="62" rx="16"/>
+  <text class="label" x="1068" y="612">P · 다음 계획</text>
+  <text class="small" x="1068" y="632">홈운동, 다음 세션</text>
+
+  <line class="dash" x1="1044" y1="692" x2="1360" y2="692"/>
+  <text class="h2" x="1044" y="734">공유 전 체크</text>
+  <rect class="soft" x="1044" y="758" width="146" height="86" rx="18"/>
+  <text class="small" x="1068" y="788">완료율</text>
+  <text class="h1" x="1068" y="824">75%</text>
+  <rect class="soft" x="1214" y="758" width="146" height="86" rx="18"/>
+  <text class="small" x="1238" y="788">저장상태</text>
+  <text class="h2" x="1238" y="824">초안</text>
+  <rect class="accent" x="1044" y="872" width="316" height="52" rx="18"/>
+  <text class="white" x="1157" y="905" style="font:800 17px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo';">저장 후 공유</text>
+
+  <path class="accent-stroke" d="M316 536 C336 536, 324 536, 344 536"/>
+  <path class="accent-stroke" d="M984 536 C1004 536, 992 536, 1012 536"/>
+</svg>

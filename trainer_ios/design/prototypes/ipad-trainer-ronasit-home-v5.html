@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Ronas Inspired Home V5</title>
+  <style>
+    :root {
+      --ink: #111217;
+      --panel: #ffffff;
+      --paper: #f3f5f8;
+      --muted: #747987;
+      --quiet: #a3a8b5;
+      --line: rgba(17,18,23,.08);
+      --charcoal: #17191f;
+      --coral: #ff4f6d;
+      --lime: #d7ff5a;
+      --sky: #79a7ff;
+      --mint: #68d9aa;
+      --amber: #ffbd4a;
+      --shadow: 0 32px 80px rgba(17,18,23,.14);
+      --soft: 0 18px 42px rgba(17,18,23,.08);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 1024px; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 5% 14%, rgba(255,79,109,.16), transparent 30%),
+        radial-gradient(circle at 78% 12%, rgba(121,167,255,.20), transparent 34%),
+        radial-gradient(circle at 78% 96%, rgba(215,255,90,.20), transparent 32%),
+        linear-gradient(135deg, #f9fafc 0%, var(--paper) 100%);
+    }
+    .app {
+      width: 100%;
+      height: 100%;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 264px 1fr 330px;
+      grid-template-rows: 74px 1fr;
+      gap: 18px;
+    }
+    .top {
+      grid-column: 1 / -1;
+      border-radius: 34px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(24px);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 244px;
+    }
+    .mark {
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
+      background: var(--charcoal);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 20px;
+      font-weight: 950;
+      box-shadow: 0 18px 34px rgba(17,18,23,.20);
+    }
+    .brand b {
+      display: block;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .brand span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tabs {
+      height: 50px;
+      border-radius: 20px;
+      padding: 5px;
+      background: #eceff5;
+      display: flex;
+      gap: 4px;
+    }
+    .tabs span {
+      min-width: 118px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .tabs .active {
+      color: white;
+      background: var(--charcoal);
+      box-shadow: 0 14px 28px rgba(17,18,23,.16);
+    }
+    .search {
+      margin-left: auto;
+      height: 50px;
+      width: 318px;
+      border-radius: 20px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      color: var(--quiet);
+      background: #f4f6fa;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .new-session {
+      height: 50px;
+      border: 0;
+      border-radius: 20px;
+      padding: 0 22px;
+      color: var(--ink);
+      background: var(--lime);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+      box-shadow: 0 18px 34px rgba(181,220,36,.25);
+    }
+    .left {
+      min-height: 0;
+      border-radius: 40px;
+      background: var(--charcoal);
+      color: white;
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .left:after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,79,109,.22);
+      left: -80px;
+      bottom: -80px;
+      filter: blur(4px);
+    }
+    .date {
+      color: rgba(255,255,255,.58);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .left h1 {
+      margin: 12px 0 0;
+      font-size: 48px;
+      line-height: .96;
+      letter-spacing: 0;
+    }
+    .left p {
+      margin: 14px 0 0;
+      color: rgba(255,255,255,.62);
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+    .today-score {
+      margin-top: 26px;
+      border-radius: 32px;
+      padding: 20px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.12);
+      position: relative;
+      z-index: 1;
+    }
+    .today-score b {
+      display: block;
+      font-size: 56px;
+      line-height: 1;
+    }
+    .today-score span {
+      color: rgba(255,255,255,.58);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .nav {
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+    }
+    .nav-row {
+      height: 48px;
+      border-radius: 18px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,.60);
+      font-size: 14px;
+      font-weight: 850;
+    }
+    .nav-row.active {
+      color: var(--ink);
+      background: var(--lime);
+    }
+    .nav-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .center {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 1fr 220px;
+      gap: 18px;
+    }
+    .hero {
+      min-height: 0;
+      border-radius: 48px;
+      background:
+        radial-gradient(circle at 78% 26%, rgba(215,255,90,.48), transparent 25%),
+        linear-gradient(135deg, #ffffff 0%, #eef2f8 100%);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 396px;
+      gap: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .eyebrow {
+      color: var(--coral);
+      font-size: 13px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .hero h2 {
+      margin: 11px 0 0;
+      font-size: 64px;
+      line-height: .94;
+      letter-spacing: 0;
+    }
+    .hero-desc {
+      margin-top: 14px;
+      max-width: 470px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+    .action-stack {
+      display: flex;
+      gap: 12px;
+    }
+    .primary, .secondary {
+      height: 56px;
+      border: 0;
+      border-radius: 21px;
+      padding: 0 23px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .primary {
+      color: white;
+      background: var(--coral);
+      box-shadow: 0 18px 34px rgba(255,79,109,.25);
+    }
+    .secondary {
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--line);
+    }
+    .visual {
+      position: relative;
+      min-width: 0;
+    }
+    .phone-card {
+      position: absolute;
+      right: 0;
+      top: 14px;
+      width: 340px;
+      height: 516px;
+      border-radius: 44px;
+      background: var(--charcoal);
+      box-shadow: 0 36px 80px rgba(17,18,23,.30);
+      padding: 22px;
+      color: white;
+      overflow: hidden;
+    }
+    .phone-card:before {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      right: -110px;
+      top: -84px;
+      background: var(--lime);
+      opacity: .92;
+    }
+    .phone-top {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255,255,255,.66);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .member-card {
+      position: relative;
+      margin-top: 50px;
+      border-radius: 34px;
+      padding: 22px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.13);
+      backdrop-filter: blur(18px);
+    }
+    .member-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 26px;
+      background: var(--coral);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 950;
+      box-shadow: 0 18px 34px rgba(255,79,109,.35);
+    }
+    .member-card h3 {
+      margin: 18px 0 7px;
+      font-size: 34px;
+      line-height: 1;
+    }
+    .member-card p {
+      margin: 0;
+      color: rgba(255,255,255,.66);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .metric-strip {
+      position: relative;
+      margin-top: 22px;
+      display: grid;
+      gap: 10px;
+    }
+    .metric {
+      height: 64px;
+      border-radius: 24px;
+      padding: 0 17px;
+      background: white;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 950;
+    }
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .curve {
+      position: absolute;
+      left: -42px;
+      bottom: 34px;
+      width: 220px;
+      height: 160px;
+      border-radius: 42px;
+      background: var(--sky);
+      transform: rotate(-8deg);
+      opacity: .95;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 42px;
+      font-weight: 950;
+      box-shadow: 0 24px 54px rgba(121,167,255,.34);
+    }
+    .bottom {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+    }
+    .tile {
+      border-radius: 34px;
+      padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft);
+      overflow: hidden;
+      position: relative;
+    }
+    .tile h3 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 950;
+    }
+    .tile p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .tile svg {
+      margin-top: 18px;
+      width: 100%;
+      height: 92px;
+    }
+    .bubble {
+      margin-top: 22px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .bubble span {
+      border-radius: 999px;
+      padding: 10px 13px;
+      background: #f1f3f7;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .right {
+      min-height: 0;
+      border-radius: 44px;
+      background: rgba(255,255,255,.80);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .right h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .right > p {
+      margin: -7px 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .queue-card {
+      border-radius: 28px;
+      padding: 18px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 13px 26px rgba(17,18,23,.055);
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .queue-card.active {
+      background: var(--ink);
+      color: white;
+    }
+    .q-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      background: var(--coral);
+      color: white;
+      font-size: 18px;
+      font-weight: 950;
+    }
+    .queue-card b {
+      display: block;
+      font-size: 15px;
+    }
+    .queue-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .queue-card.active span {
+      color: rgba(255,255,255,.60);
+    }
+    .chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #f2f4f8;
+      color: var(--coral);
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .summary-card {
+      margin-top: auto;
+      border-radius: 32px;
+      padding: 22px;
+      background: var(--lime);
+      color: var(--ink);
+      box-shadow: 0 24px 50px rgba(181,220,36,.25);
+    }
+    .summary-card b {
+      display: block;
+      font-size: 50px;
+      line-height: 1;
+    }
+    .summary-card span {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    svg text { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="mark">D</div>
+        <div><b>D-FET</b><span>Trainer iPad Studio</span></div>
+      </div>
+      <div class="tabs">
+        <span class="active">대시보드</span>
+        <span>SOAP</span>
+        <span>회원</span>
+        <span>리포트</span>
+      </div>
+      <div class="search">회원, 통증, 재평가, SOAP 검색</div>
+      <button class="new-session">새 세션</button>
+    </header>
+
+    <aside class="left">
+      <div class="date">Tuesday, May 5</div>
+      <h1>Trainer<br/>Control<br/>Room</h1>
+      <p>오늘 수업, 미완료 SOAP, 재평가 회원을 한 화면에서 처리합니다.</p>
+      <div class="today-score">
+        <b>6</b>
+        <span>오늘 예정 세션</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-row active"><i class="nav-dot"></i> 오늘 워크플로우</div>
+        <div class="nav-row"><i class="nav-dot"></i> 회원 관리</div>
+        <div class="nav-row"><i class="nav-dot"></i> SOAP 노트</div>
+        <div class="nav-row"><i class="nav-dot"></i> 센터 리포트</div>
+      </nav>
+    </aside>
+
+    <main class="center">
+      <section class="hero">
+        <div class="hero-copy">
+          <div>
+            <div class="eyebrow">Priority member</div>
+            <h2>김회원의<br/>무릎 상태를<br/>먼저 확인</h2>
+            <div class="hero-desc">통증 7/10, 스쿼트 하강 구간에서 통증 상승. 오늘은 ROM 확인과 정렬 cue를 중심으로 기록합니다.</div>
+          </div>
+          <div class="action-stack">
+            <button class="primary">SOAP 이어쓰기</button>
+            <button class="secondary">회원 히스토리</button>
+          </div>
+        </div>
+        <div class="visual">
+          <div class="phone-card">
+            <div class="phone-top"><span>Live session</span><span>14:00</span></div>
+            <div class="member-card">
+              <div class="member-avatar">김</div>
+              <h3>김회원</h3>
+              <p>좌측 무릎 · 스쿼트 패턴 · 재평가 필요</p>
+            </div>
+            <div class="metric-strip">
+              <div class="metric"><strong>7.0</strong><span>현재 통증</span></div>
+              <div class="metric"><strong>72%</strong><span>SOAP 완료</span></div>
+            </div>
+          </div>
+          <div class="curve">ROM</div>
+        </div>
+      </section>
+
+      <section class="bottom">
+        <div class="tile">
+          <h3>통증 트렌드</h3>
+          <p>최근 6회 SOAP 기준</p>
+          <svg viewBox="0 0 280 92">
+            <path d="M0 74 H280" stroke="#eceff4"/>
+            <path d="M0 45 H280" stroke="#eceff4"/>
+            <path d="M4 72 C42 52 68 62 104 56 C142 50 148 24 190 34 C224 43 236 18 276 14" fill="none" stroke="#ff4f6d" stroke-width="7" stroke-linecap="round"/>
+            <path d="M4 80 C58 78 86 72 124 62 C168 49 202 54 276 31" fill="none" stroke="#79a7ff" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="tile">
+          <h3>빠른 입력</h3>
+          <p>수업 중 바로 추가</p>
+          <div class="bubble">
+            <span>ROM</span>
+            <span>MMT</span>
+            <span>통증</span>
+            <span>사진</span>
+            <span>오디오</span>
+          </div>
+        </div>
+        <div class="tile">
+          <h3>오늘 액션</h3>
+          <p>우선순위 기반 추천</p>
+          <div class="bubble">
+            <span style="background:#ffe7ed;color:var(--coral)">SOAP 3건</span>
+            <span style="background:#eef5ff;color:var(--sky)">재평가 2명</span>
+            <span style="background:#f0ffbc">공유 4건</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="right">
+      <h2>Today queue</h2>
+      <p>진행해야 할 세션 순서</p>
+      <div class="queue-card active">
+        <div class="q-avatar">김</div>
+        <div><b>김회원</b><span>14:00 · 통증 상승</span></div>
+        <div class="chip">주의</div>
+      </div>
+      <div class="queue-card">
+        <div class="q-avatar" style="background:var(--amber)">박</div>
+        <div><b>박회원</b><span>15:00 · 재평가</span></div>
+        <div class="chip">확인</div>
+      </div>
+      <div class="queue-card">
+        <div class="q-avatar" style="background:var(--mint)">이</div>
+        <div><b>이회원</b><span>필기 저장됨</span></div>
+        <div class="chip">완료</div>
+      </div>
+      <div class="summary-card">
+        <b>3</b>
+        <span>공유 전 SOAP가 남아 있습니다.</span>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

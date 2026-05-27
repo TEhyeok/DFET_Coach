@@ -1,0 +1,54 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint"
+    ],
+    "runtime": "nodejs18"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "dfetmanage",
+          "appId": "1:1011088994661:android:8ec1270399fb3bb35df18c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "dfetmanage",
+          "appId": "1:1011088994661:ios:fee8b625c9902bfa5df18c",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "dfetmanage",
+          "configurations": {
+            "android": "1:1011088994661:android:8ec1270399fb3bb35df18c",
+            "ios": "1:1011088994661:ios:fee8b625c9902bfa5df18c"
+          }
+        }
+      }
+    }
+  }
+}

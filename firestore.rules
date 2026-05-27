@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin (checks 'admins' collection)
+    function isAdmin() {
+      return request.auth != null && 
+        (
+          // Check 'admins' collection
+          (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'super_admin'] &&
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.approvalStatus == 'approved')
+          ||
+          // Fallback: Check 'users' collection (for backward compatibility if needed)
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true)
+        );
+    }
+
+    // Helper function to check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is owner
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Helper function to check if user is a trainer (Custom Claim)
+    function isTrainer() {
+      return request.auth != null && request.auth.token.trainer == true;
+    }
+
+    // Helper to check if caller is the assigned trainer for a given member
+    // 'trainers/{uid}.memberIds[]'에 memberId가 포함되어 있어야 함
+    function isAssignedTrainer(memberId) {
+      return isTrainer() &&
+        exists(/databases/$(database)/documents/trainers/$(request.auth.uid)) &&
+        memberId in get(/databases/$(database)/documents/trainers/$(request.auth.uid)).data.memberIds;
+    }
+
+    // --- Admins Collection (New) ---
+    match /admins/{userId} {
+      // Allow creating a request (signup) if you are the owner
+      allow create: if isOwner(userId);
+      // Allow reading your own profile
+      allow read: if isOwner(userId) || isAdmin();
+      // Allow updates only if you are a super admin or it's your own profile (limited fields?)
+      // For simplicity, let's allow admins to update (e.g. approval)
+      allow update: if isAdmin() || isOwner(userId); 
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      // 본인 / 관리자 / 담당 트레이너만 읽기 가능
+      allow read: if isOwner(userId) || isAdmin() || isAssignedTrainer(userId);
+      // 본인 / 관리자만 쓰기 가능 (트레이너는 회원 프로필 직접 수정 불가)
+      allow write: if isOwner(userId) || isAdmin();
+
+      // Subcollections (meals, workouts)
+      // 본인은 read/write, 담당 트레이너는 read만, 관리자는 모두
+      match /{collection}/{document=**} {
+        allow read: if isOwner(userId) || isAdmin() || isAssignedTrainer(userId);
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // --- Trainers Collection ---
+    // setTrainerClaim Function이 문서를 생성/수정. 클라이언트 쓰기는 허용하지 않음.
+    match /trainers/{trainerId} {
+      // 본인 트레이너 또는 관리자만 read
+      allow read: if isOwner(trainerId) || isAdmin();
+      // 클라이언트 쓰기 금지 (Cloud Function에서만 admin SDK로 수정)
+      allow write: if false;
+    }
+
+    // --- SOAP Notes Collection ---
+    // 트레이너가 작성. 회원은 자신에게 공유된 것만 읽기 가능.
+    match /soap_notes/{noteId} {
+      allow read: if isAuth() && (
+        resource.data.trainerId == request.auth.uid ||
+        (resource.data.memberId == request.auth.uid &&
+         resource.data.isSharedWithMember == true) ||
+        isAdmin()
+      );
+      // 생성: 호출자가 트레이너이고, 작성자(trainerId)가 본인이며, 담당 회원이어야 함
+      allow create: if isTrainer() &&
+        request.resource.data.trainerId == request.auth.uid &&
+        isAssignedTrainer(request.resource.data.memberId);
+      // 수정: 본인 트레이너 또는 관리자. 단 trainerId는 변경 불가
+      allow update: if isAdmin() || (
+        isTrainer() &&
+        resource.data.trainerId == request.auth.uid &&
+        request.resource.data.trainerId == resource.data.trainerId
+      );
+      // 삭제: 본인 트레이너 또는 관리자
+      allow delete: if isAdmin() || (
+        isTrainer() && resource.data.trainerId == request.auth.uid
+      );
+    }
+
+    // --- Community (Posts) ---
+    match /posts/{postId} {
+      // Anyone authenticated can read posts
+      allow read: if isAuth();
+      // Authenticated users can create posts
+      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid;
+      // Only author or admin can update/delete
+      allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+      
+      // Likes subcollection
+      match /likes/{userId} {
+        allow read: if isAuth();
+        allow write: if isOwner(userId);
+      }
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if isAuth();
+        allow create: if isAuth() && request.resource.data.authorId == request.auth.uid;
+        allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+      }
+    }
+
+    // --- Content Management (Workouts/Foods) ---
+    match /content_workouts/{document=**} {
+      allow read: if isAuth(); // All users can view workouts
+      allow write: if isAdmin(); // Only admin can manage
+    }
+
+    match /content_foods/{document=**} {
+      allow read: if isAuth(); // All users can view foods
+      allow write: if isAdmin(); // Only admin can manage
+    }
+
+    // --- Requests ---
+    match /requests/{requestId} {
+      allow create: if isAuth();
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

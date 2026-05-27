@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1011088994661",
+    "project_id": "dfetmanage",
+    "storage_bucket": "dfetmanage.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011088994661:android:8ec1270399fb3bb35df18c",
+        "android_client_info": {
+          "package_name": "com.example.dfet_coach"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011088994661-fajhfegjbdd39hnk71mqi9074rqjcjvo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dfet_coach",
+            "certificate_hash": "d09a540cecde6191b147e5be383ab9543feadb30"
+          }
+        },
+        {
+          "client_id": "1011088994661-bd0c7m70j3f6e8no8hcbdpk9ra5h3qil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiTrKQbkqt1nTw4M64sygpK-J4aTegO3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011088994661-bd0c7m70j3f6e8no8hcbdpk9ra5h3qil.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1011088994661-evig73mi1ou4eke97df4os1ah4bpu889.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dfetCoach"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

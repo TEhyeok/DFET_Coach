@@ -1,0 +1,92 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# === 비밀 / 자격 증명 (절대 커밋 금지) ===
+functions/service-account-key.json
+**/service-account*.json
+**/firebase-adminsdk-*.json
+*.keystore
+*.jks
+*.mobileprovision
+.env
+.env.*
+
+# === Firebase / Cloud Functions ===
+functions/node_modules/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# === iOS / CocoaPods ===
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios_backup/Pods/
+ios_backup/.symlinks/
+**/xcuserdata/
+**/*.xcuserstate
+**/DerivedData/
+
+# === SwiftUI 트레이너 앱 (trainer_ios/) ===
+trainer_ios/build/
+trainer_ios/DFETTrainer.xcodeproj/xcuserdata/
+trainer_ios/DFETTrainer.xcodeproj/project.xcworkspace/xcuserdata/
+trainer_ios/DFETTrainer.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+trainer_ios/.swiftpm/
+
+# === 빌드 로그 ===
+build_debug.log
+build_error.log
+build_log.txt
+flutter_build_err.log
+
+# === 기타 ===
+*.tar.gz
+*.zip
+.DS_Store
+**/.DS_Store

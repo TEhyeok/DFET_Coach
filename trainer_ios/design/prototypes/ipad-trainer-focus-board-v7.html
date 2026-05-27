@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Trainer Focus Board V7</title>
+  <style>
+    :root {
+      --ink: #101114;
+      --charcoal: #17181d;
+      --soft-ink: #2d3038;
+      --paper: #f6f4ef;
+      --white: #ffffff;
+      --line: rgba(16, 17, 20, .08);
+      --muted: #777b84;
+      --quiet: #a3a7b1;
+      --lime: #a8ff3e;
+      --lime-dark: #77c817;
+      --coral: #ff4b62;
+      --blue: #dce9ff;
+      --shadow: 0 32px 90px rgba(16, 17, 20, .16);
+      --soft-shadow: 0 18px 46px rgba(16, 17, 20, .08);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 1024px; }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 9% 12%, rgba(255, 75, 98, .10), transparent 28%),
+        radial-gradient(circle at 72% 8%, rgba(168, 255, 62, .22), transparent 31%),
+        linear-gradient(135deg, #fbfaf6 0%, var(--paper) 100%);
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr 348px;
+      gap: 28px;
+    }
+
+    .stage {
+      min-width: 0;
+      min-height: 0;
+      border-radius: 48px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 30px;
+      display: grid;
+      grid-template-rows: 64px 1fr 164px;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 18px;
+      background: var(--ink);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .brand b {
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tabs {
+      margin-left: auto;
+      height: 52px;
+      border-radius: 24px;
+      padding: 5px;
+      display: flex;
+      gap: 4px;
+      background: #f0f1f3;
+    }
+
+    .tabs span {
+      min-width: 112px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .tabs .active {
+      color: white;
+      background: var(--ink);
+      box-shadow: 0 14px 28px rgba(16, 17, 20, .16);
+    }
+
+    .new {
+      height: 52px;
+      border: 0;
+      border-radius: 24px;
+      padding: 0 22px;
+      color: var(--ink);
+      background: var(--lime);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+      box-shadow: 0 16px 34px rgba(168, 255, 62, .30);
+    }
+
+    .hero {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 460px) 1fr;
+      gap: 34px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .copy {
+      padding: 30px 0 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .copy h1 {
+      margin: 15px 0 0;
+      max-width: 450px;
+      font-size: 86px;
+      line-height: .86;
+      letter-spacing: 0;
+      font-weight: 950;
+    }
+
+    .copy p {
+      margin: 24px 0 0;
+      max-width: 398px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+      font-weight: 760;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .primary, .secondary {
+      height: 60px;
+      border-radius: 28px;
+      border: 0;
+      padding: 0 26px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    .primary {
+      color: white;
+      background: var(--ink);
+      box-shadow: 0 18px 36px rgba(16, 17, 20, .18);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #f0f1f3;
+    }
+
+    .visual {
+      min-width: 0;
+      min-height: 0;
+      border-radius: 52px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 63% 35%, rgba(168,255,62,.74), transparent 17%),
+        radial-gradient(circle at 34% 28%, rgba(255,255,255,.18), transparent 25%),
+        radial-gradient(circle at 79% 74%, rgba(255,75,98,.36), transparent 20%),
+        linear-gradient(145deg, #111217 0%, #262a32 52%, #131419 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .visual:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(118deg, transparent 0 42%, rgba(255,255,255,.12) 42% 44%, transparent 44%),
+        radial-gradient(circle at 20% 92%, rgba(255,255,255,.10), transparent 21%);
+      opacity: .98;
+    }
+
+    .visual:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), transparent 36%),
+        linear-gradient(0deg, rgba(0,0,0,.34), transparent 42%);
+      pointer-events: none;
+    }
+
+    .figure {
+      position: absolute;
+      right: 64px;
+      top: 70px;
+      width: 310px;
+      height: 500px;
+      z-index: 1;
+    }
+
+    .knee-pulse {
+      position: absolute;
+      right: 185px;
+      top: 382px;
+      width: 144px;
+      height: 144px;
+      border-radius: 50%;
+      background: rgba(255, 75, 98, .19);
+      z-index: 2;
+      box-shadow: 0 0 60px rgba(255, 75, 98, .28);
+    }
+
+    .knee-pulse:after {
+      content: "";
+      position: absolute;
+      inset: 42px;
+      border-radius: inherit;
+      background: var(--coral);
+    }
+
+    .visual-label {
+      position: absolute;
+      left: 34px;
+      top: 34px;
+      color: white;
+      z-index: 3;
+    }
+
+    .visual-label small {
+      display: block;
+      color: rgba(255,255,255,.58);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .visual-label b {
+      display: block;
+      margin-top: 10px;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .pain-chip {
+      position: absolute;
+      left: 34px;
+      bottom: 34px;
+      z-index: 4;
+      width: 172px;
+      height: 116px;
+      border-radius: 32px;
+      padding: 22px;
+      color: white;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.15);
+      backdrop-filter: blur(22px);
+    }
+
+    .pain-chip b {
+      display: block;
+      font-size: 38px;
+      line-height: .9;
+      font-weight: 950;
+    }
+
+    .pain-chip span {
+      display: block;
+      margin-top: 10px;
+      color: rgba(255,255,255,.68);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .rom-card {
+      position: absolute;
+      right: 40px;
+      bottom: 42px;
+      z-index: 4;
+      width: 164px;
+      height: 164px;
+      border-radius: 42px;
+      color: var(--ink);
+      background: var(--lime);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      transform: rotate(-8deg);
+      box-shadow: 0 26px 60px rgba(168, 255, 62, .28);
+    }
+
+    .rom-card b {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .rom-card span {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .bottom {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.08fr .92fr 1fr;
+      gap: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tile {
+      border-radius: 34px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .tile h3 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .tile p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    .chart {
+      width: 100%;
+      height: 78px;
+      margin-top: 16px;
+    }
+
+    .pills {
+      margin-top: 23px;
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .pills span {
+      height: 38px;
+      border-radius: 999px;
+      padding: 0 15px;
+      display: grid;
+      place-items: center;
+      background: white;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .queue {
+      min-height: 0;
+      border-radius: 48px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .queue h2 {
+      margin: 0;
+      font-size: 38px;
+      line-height: .94;
+      letter-spacing: 0;
+      font-weight: 950;
+    }
+
+    .queue > p {
+      margin: -5px 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    .member {
+      border-radius: 30px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      background: #fafafa;
+      border: 1px solid var(--line);
+    }
+
+    .member.active {
+      color: white;
+      background: var(--ink);
+      box-shadow: 0 18px 38px rgba(16,17,20,.16);
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--coral);
+      font-size: 20px;
+      font-weight: 950;
+    }
+
+    .member b {
+      display: block;
+      font-size: 15px;
+      font-weight: 950;
+    }
+
+    .member span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 820;
+    }
+
+    .member.active span { color: rgba(255,255,255,.62); }
+
+    .badge {
+      height: 34px;
+      border-radius: 999px;
+      padding: 0 12px;
+      display: grid;
+      place-items: center;
+      color: var(--coral);
+      background: white;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .focus-summary {
+      margin-top: auto;
+      border-radius: 38px;
+      padding: 26px;
+      background: var(--lime);
+      color: var(--ink);
+    }
+
+    .focus-summary b {
+      display: block;
+      font-size: 62px;
+      line-height: .88;
+      font-weight: 950;
+    }
+
+    .focus-summary span {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.38;
+      font-weight: 950;
+    }
+
+    .focus-summary button {
+      width: 100%;
+      height: 56px;
+      margin-top: 24px;
+      border: 0;
+      border-radius: 26px;
+      color: white;
+      background: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    svg text {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <main class="stage">
+      <header class="top">
+        <div class="brand">
+          <div class="mark">D</div>
+          <div>
+            <b>D-FET</b>
+            <span>Trainer Focus Board</span>
+          </div>
+        </div>
+        <nav class="tabs">
+          <span class="active">Focus</span>
+          <span>SOAP</span>
+          <span>Members</span>
+        </nav>
+        <button class="new">새 기록</button>
+      </header>
+
+      <section class="hero">
+        <div class="copy">
+          <div>
+            <div class="eyebrow">Today's focus</div>
+            <h1>무릎 상태만<br/>깊게 본다</h1>
+            <p>김회원의 오늘 세션은 통증, ROM, 스쿼트 cue만 빠르게 확인하고 바로 SOAP로 정리합니다.</p>
+          </div>
+          <div class="cta-row">
+            <button class="primary">SOAP 시작</button>
+            <button class="secondary">히스토리</button>
+          </div>
+        </div>
+
+        <div class="visual">
+          <div class="visual-label">
+            <small>Priority member</small>
+            <b>김회원 · 14:00</b>
+          </div>
+
+          <svg class="figure" viewBox="0 0 310 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="160" cy="48" r="33" stroke="white" stroke-opacity=".72" stroke-width="7"/>
+            <path d="M160 92 C116 108 93 145 94 197 C95 252 129 276 142 326 L126 464" stroke="white" stroke-opacity=".72" stroke-width="8" stroke-linecap="round"/>
+            <path d="M160 92 C204 108 227 145 226 197 C225 252 191 276 178 326 L196 464" stroke="white" stroke-opacity=".72" stroke-width="8" stroke-linecap="round"/>
+            <path d="M111 162 C67 184 50 230 48 284" stroke="white" stroke-opacity=".50" stroke-width="7" stroke-linecap="round"/>
+            <path d="M209 162 C253 184 270 230 272 284" stroke="white" stroke-opacity=".50" stroke-width="7" stroke-linecap="round"/>
+            <path d="M142 326 C105 342 82 380 76 430" stroke="#ff6a7d" stroke-width="6" stroke-linecap="round"/>
+            <path d="M178 326 C215 342 238 380 244 430" stroke="white" stroke-opacity=".46" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+
+          <div class="knee-pulse"></div>
+          <div class="pain-chip">
+            <b>7/10</b>
+            <span>스쿼트 하강 통증</span>
+          </div>
+          <div class="rom-card">
+            <div>
+              <b>ROM</b>
+              <span>재평가 필요</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom">
+        <div class="tile">
+          <h3>통증 트렌드</h3>
+          <p>최근 6회 기준</p>
+          <svg class="chart" viewBox="0 0 320 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 60 H320" stroke="#e7e8eb"/>
+            <path d="M0 34 H320" stroke="#e7e8eb"/>
+            <path d="M6 62 C46 46 86 51 126 43 C168 35 186 16 228 25 C266 34 286 13 314 8" stroke="#101114" stroke-width="6" stroke-linecap="round"/>
+            <path d="M6 70 C60 66 98 61 140 51 C186 40 226 42 314 24" stroke="#ff4b62" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="tile">
+          <h3>빠른 입력</h3>
+          <p>세션 중 바로 기록</p>
+          <div class="pills">
+            <span>ROM</span>
+            <span>MMT</span>
+            <span>통증</span>
+          </div>
+        </div>
+        <div class="tile">
+          <h3>오늘 액션</h3>
+          <p>딱 세 가지만 처리</p>
+          <div class="pills">
+            <span style="background:var(--ink);color:white">SOAP</span>
+            <span>재평가</span>
+            <span>공유</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="queue">
+      <h2>Today<br/>queue</h2>
+      <p>우선순위 높은 세션</p>
+
+      <div class="member active">
+        <div class="avatar">김</div>
+        <div>
+          <b>김회원</b>
+          <span>14:00 · 통증 상승</span>
+        </div>
+        <div class="badge">주의</div>
+      </div>
+
+      <div class="member">
+        <div class="avatar" style="background:#ffb63f">박</div>
+        <div>
+          <b>박회원</b>
+          <span>15:00 · 재평가</span>
+        </div>
+        <div class="badge">확인</div>
+      </div>
+
+      <div class="member">
+        <div class="avatar" style="background:#55c991">이</div>
+        <div>
+          <b>이회원</b>
+          <span>필기 저장됨</span>
+        </div>
+        <div class="badge">완료</div>
+      </div>
+
+      <div class="focus-summary">
+        <b>3</b>
+        <span>오늘은 SOAP 세 건만 끝내면 됩니다.</span>
+        <button>정리 시작</button>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

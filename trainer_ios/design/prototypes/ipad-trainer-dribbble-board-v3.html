@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-FET Trainer Board V3</title>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --ink: #17171c;
+      --muted: #6f7280;
+      --quiet: #a2a6b3;
+      --line: rgba(29, 29, 31, .08);
+      --red: #ff2d55;
+      --red-2: #ff6b86;
+      --blue: #3478f6;
+      --green: #24b86b;
+      --orange: #ff9f0a;
+      --purple: #7567f8;
+      --surface: rgba(255, 255, 255, .76);
+      --shadow: 0 28px 70px rgba(27, 31, 42, .12);
+      --soft-shadow: 0 16px 40px rgba(27, 31, 42, .10);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      width: 1440px;
+      height: 1024px;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255, 45, 85, .13), transparent 32%),
+        radial-gradient(circle at 82% 16%, rgba(52, 120, 246, .14), transparent 36%),
+        radial-gradient(circle at 80% 88%, rgba(36, 184, 107, .10), transparent 28%),
+        linear-gradient(135deg, #fbfbfd 0%, var(--bg) 45%, #eef2f7 100%);
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 254px 1fr 330px;
+      grid-template-rows: 68px 1fr;
+      gap: 14px;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 254px 1fr 330px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .brand, .toolbar, .profile-chip {
+      height: 68px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .78);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 18px 44px rgba(26, 31, 44, .08);
+    }
+
+    .brand {
+      border-radius: 26px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      background: linear-gradient(145deg, var(--red), #ff7a93);
+      box-shadow: 0 14px 26px rgba(255, 45, 85, .24);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .brand p, .toolbar p, .profile-chip p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      border-radius: 28px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .segment {
+      height: 48px;
+      padding: 5px;
+      border-radius: 18px;
+      display: flex;
+      background: rgba(235, 237, 243, .86);
+      gap: 4px;
+    }
+
+    .segment span {
+      min-width: 112px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .segment span.active {
+      color: white;
+      background: linear-gradient(135deg, #22242c, #454857);
+      box-shadow: 0 12px 24px rgba(23, 23, 28, .18);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ghost, .primary {
+      height: 44px;
+      border: 0;
+      border-radius: 16px;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 850;
+      font-family: inherit;
+    }
+
+    .ghost {
+      color: var(--ink);
+      background: rgba(236, 238, 244, .86);
+    }
+
+    .primary {
+      color: white;
+      background: linear-gradient(135deg, var(--red), #ff5c79);
+      box-shadow: 0 16px 34px rgba(255, 45, 85, .25);
+    }
+
+    .profile-chip {
+      border-radius: 28px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .profile-chip h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+      font-weight: 900;
+      background: #ffe0e8;
+      color: var(--red);
+    }
+
+    aside, main, .inspector {
+      min-height: 0;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      backdrop-filter: blur(26px);
+      box-shadow: var(--shadow);
+    }
+
+    aside {
+      border-radius: 30px;
+      padding: 22px 18px;
+    }
+
+    .side-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 18px;
+    }
+
+    .side-title h2, .section-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .count {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--red);
+      background: #ffe2ea;
+    }
+
+    .search {
+      height: 44px;
+      border-radius: 16px;
+      padding: 0 14px;
+      color: var(--quiet);
+      background: rgba(238, 240, 245, .82);
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 750;
+      margin-bottom: 22px;
+    }
+
+    .nav-item, .queue-card, .pinned-row {
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item {
+      height: 48px;
+      padding: 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .nav-item.active {
+      color: var(--red);
+      background: #ffe0e8;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .label {
+      margin: 28px 0 12px;
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .queue-card {
+      min-height: 72px;
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 26px rgba(27, 31, 42, .055);
+      margin-bottom: 10px;
+    }
+
+    .queue-card strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .queue-card small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .queue-card b {
+      margin-left: auto;
+      font-size: 18px;
+      color: var(--red);
+    }
+
+    .pinned-row {
+      height: 50px;
+      padding: 0 10px;
+      margin-bottom: 6px;
+    }
+
+    .mini-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 900;
+      background: #f0f1f5;
+    }
+
+    .pinned-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .pinned-row small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    main {
+      border-radius: 34px;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .board-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .board-head h2 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .board-head p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .board-stats {
+      display: flex;
+      gap: 10px;
+    }
+
+    .stat-pill {
+      min-width: 92px;
+      height: 50px;
+      border-radius: 17px;
+      padding: 9px 12px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 22px rgba(27, 31, 42, .05);
+    }
+
+    .stat-pill b {
+      display: block;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .stat-pill span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .lanes {
+      height: 712px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .lane {
+      border-radius: 28px;
+      padding: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.42)),
+        rgba(244, 246, 251, .82);
+      border: 1px solid rgba(29, 29, 31, .075);
+    }
+
+    .lane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .lane-head h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .lane-head span {
+      width: 28px;
+      height: 28px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: white;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .session-card {
+      position: relative;
+      border-radius: 24px;
+      padding: 15px;
+      background: white;
+      border: 1px solid rgba(29, 29, 31, .06);
+      box-shadow: var(--soft-shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .session-card::after {
+      content: "";
+      position: absolute;
+      inset: auto 12px 0;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      opacity: .16;
+    }
+
+    .session-card.active {
+      outline: 2px solid rgba(255, 45, 85, .28);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-top .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      flex: 0 0 auto;
+    }
+
+    .card-top strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 950;
+    }
+
+    .card-top small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .pain {
+      margin-left: auto;
+      color: var(--red);
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 13px;
+    }
+
+    .chip {
+      height: 24px;
+      border-radius: 999px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .chip.red { color: var(--red); background: #ffe3eb; }
+    .chip.blue { color: var(--blue); background: #e6f1ff; }
+    .chip.green { color: var(--green); background: #e5f8ee; }
+    .chip.orange { color: var(--orange); background: #fff1dc; }
+
+    .progress-line {
+      height: 8px;
+      border-radius: 999px;
+      background: #eef0f5;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+
+    .progress-line i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--red), var(--red-2));
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .canvas-preview {
+      height: 92px;
+      border-radius: 18px;
+      margin-top: 12px;
+      padding: 14px;
+      background:
+        linear-gradient(#edf0f6 1px, transparent 1px) 0 0 / 100% 30px,
+        linear-gradient(135deg, #ffffff, #f8f9fc);
+      border: 1px solid var(--line);
+    }
+
+    .inspector {
+      border-radius: 34px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .inspector h2 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 950;
+    }
+
+    .selected-profile {
+      border-radius: 24px;
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .selected-row {
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .selected-row h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .selected-row p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .risk-box {
+      border-radius: 16px;
+      padding: 10px;
+      background: #f7f8fb;
+    }
+
+    .risk-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      margin-bottom: 5px;
+    }
+
+    .risk-box b {
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .inspector-section h3 {
+      margin: 0 0 9px;
+      font-size: 16px;
+      font-weight: 950;
+    }
+
+    .action-row {
+      height: 43px;
+      border-radius: 16px;
+      padding: 0 12px;
+      background: white;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 850;
+      box-shadow: 0 10px 24px rgba(27, 31, 42, .045);
+    }
+
+    .action-row i {
+      width: 24px;
+      height: 24px;
+      border-radius: 11px;
+      display: block;
+    }
+
+    .chart-card {
+      border-radius: 22px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+      padding: 12px;
+    }
+
+    .chart-card svg {
+      width: 100%;
+      height: 76px;
+      display: block;
+    }
+
+    .bottom-cta {
+      margin-top: auto;
+      min-height: 48px;
+      height: 48px;
+      border-radius: 18px;
+      color: white;
+      background: linear-gradient(135deg, var(--red), #ff5e7d);
+      border: 0;
+      font-size: 15px;
+      font-weight: 900;
+      font-family: inherit;
+      box-shadow: 0 18px 38px rgba(255, 45, 85, .25);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <section class="brand">
+        <div class="mark">D</div>
+        <div>
+          <h1>D-FET</h1>
+          <p>Trainer Clinical Board</p>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="segment">
+          <span class="active">오늘 보드</span>
+          <span>SOAP</span>
+          <span>리포트</span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="ghost">센터 전체</button>
+          <button class="ghost">위험도순</button>
+          <button class="primary">새 세션</button>
+        </div>
+      </section>
+
+      <section class="profile-chip">
+        <div>
+          <h2>최재혁 트레이너</h2>
+          <p>6 sessions today · 3 SOAP pending</p>
+        </div>
+        <div class="avatar">최</div>
+      </section>
+    </div>
+
+    <aside>
+      <div class="side-title">
+        <h2>Navigator</h2>
+        <span class="count">LIVE</span>
+      </div>
+      <div class="search">회원, 통증, 재평가 검색</div>
+
+      <div class="nav-item active"><span class="dot"></span>오늘 세션 보드</div>
+      <div class="nav-item"><span class="dot"></span>회원 프로필</div>
+      <div class="nav-item"><span class="dot"></span>SOAP 노트</div>
+      <div class="nav-item"><span class="dot"></span>센터 리포트</div>
+
+      <div class="label">Smart queues</div>
+      <div class="queue-card">
+        <div>
+          <strong>SOAP 미작성</strong>
+          <small>공유 전 초안</small>
+        </div>
+        <b>3</b>
+      </div>
+      <div class="queue-card">
+        <div>
+          <strong>재평가 필요</strong>
+          <small>이번 주 기준</small>
+        </div>
+        <b style="color: var(--orange)">2</b>
+      </div>
+      <div class="queue-card">
+        <div>
+          <strong>통증 상승</strong>
+          <small>최근 2회 기준</small>
+        </div>
+        <b>2</b>
+      </div>
+
+      <div class="label">Pinned members</div>
+      <div class="pinned-row">
+        <div class="mini-avatar" style="color:var(--red);background:#ffe2ea">김</div>
+        <div><strong>김회원</strong><small>통증 상승 · 7/10</small></div>
+      </div>
+      <div class="pinned-row">
+        <div class="mini-avatar" style="color:var(--orange);background:#fff1dc">박</div>
+        <div><strong>박회원</strong><small>재평가 도래</small></div>
+      </div>
+      <div class="pinned-row">
+        <div class="mini-avatar" style="color:var(--green);background:#e8f8ed">이</div>
+        <div><strong>이회원</strong><small>목표 안정</small></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="board-head">
+        <div>
+          <h2>Session Board</h2>
+          <p>카드를 드래그해 상태를 이동하고, 우측 Inspector에서 SOAP를 완성합니다.</p>
+        </div>
+        <div class="board-stats">
+          <div class="stat-pill"><b>6</b><span>오늘 세션</span></div>
+          <div class="stat-pill"><b>72%</b><span>SOAP 평균</span></div>
+          <div class="stat-pill"><b>5.0</b><span>평균 통증</span></div>
+        </div>
+      </div>
+
+      <div class="lanes">
+        <section class="lane">
+          <div class="lane-head"><h3>예정</h3><span>3</span></div>
+          <article class="session-card active">
+            <div class="card-top">
+              <div class="avatar">김</div>
+              <div><strong>김회원</strong><small>14:00 · 좌측 무릎</small></div>
+              <div class="pain">7</div>
+            </div>
+            <div class="chips">
+              <span class="chip red">주의</span>
+              <span class="chip blue">SOAP 초안</span>
+            </div>
+            <div class="progress-line"><i style="width:72%"></i></div>
+            <div class="card-footer"><span>완료 72%</span><span>ROM 필요</span></div>
+          </article>
+
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--orange);background:#fff1dc">박</div>
+              <div><strong>박회원</strong><small>15:00 · 재평가</small></div>
+              <div class="pain" style="color:var(--orange)">5</div>
+            </div>
+            <div class="chips">
+              <span class="chip orange">재평가</span>
+              <span class="chip green">목표</span>
+            </div>
+            <div class="progress-line"><i style="width:54%;background:linear-gradient(90deg,var(--orange),#ffc166)"></i></div>
+            <div class="card-footer"><span>완료 54%</span><span>계획 확인</span></div>
+          </article>
+        </section>
+
+        <section class="lane">
+          <div class="lane-head"><h3>진행 중</h3><span>1</span></div>
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--green);background:#e8f8ed">이</div>
+              <div><strong>이회원</strong><small>필기 진행 중</small></div>
+            </div>
+            <div class="chips">
+              <span class="chip blue">PENCIL</span>
+              <span class="chip green">안정</span>
+            </div>
+            <div class="canvas-preview">
+              <svg viewBox="0 0 150 70" preserveAspectRatio="none">
+                <path d="M8 28 C34 8 58 38 86 20 S126 22 144 10" stroke="#3a3a3c" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <path d="M8 54 C38 42 68 60 96 44 S130 50 144 34" stroke="#3478f6" stroke-width="4" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-footer"><span>필기 자동 저장</span><span>방금 전</span></div>
+          </article>
+        </section>
+
+        <section class="lane">
+          <div class="lane-head"><h3>SOAP 정리</h3><span>3</span></div>
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--purple);background:#e9e7ff">최</div>
+              <div><strong>최회원</strong><small>O 항목 필요</small></div>
+            </div>
+            <div class="chips">
+              <span class="chip red">ROM 누락</span>
+              <span class="chip blue">검토</span>
+            </div>
+            <div class="progress-line"><i style="width:64%"></i></div>
+            <div class="card-footer"><span>완료 64%</span><span>Objective</span></div>
+          </article>
+
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--blue);background:#e6f2ff">오</div>
+              <div><strong>오회원</strong><small>공유 문장 확인</small></div>
+            </div>
+            <div class="chips">
+              <span class="chip blue">공유 전</span>
+              <span class="chip green">P 완료</span>
+            </div>
+            <div class="progress-line"><i style="width:88%;background:linear-gradient(90deg,var(--blue),#8ab8ff)"></i></div>
+            <div class="card-footer"><span>완료 88%</span><span>요약 필요</span></div>
+          </article>
+        </section>
+
+        <section class="lane">
+          <div class="lane-head"><h3>공유 완료</h3><span>4</span></div>
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--green);background:#e8f8ed">유</div>
+              <div><strong>유회원</strong><small>리포트 전송</small></div>
+            </div>
+            <div class="chips">
+              <span class="chip green">완료</span>
+              <span class="chip blue">홈운동</span>
+            </div>
+            <div class="card-footer"><span>오늘 11:20</span><span>읽음</span></div>
+          </article>
+
+          <article class="session-card">
+            <div class="card-top">
+              <div class="avatar" style="color:var(--orange);background:#fff1dc">한</div>
+              <div><strong>한회원</strong><small>운동 공유</small></div>
+            </div>
+            <div class="chips">
+              <span class="chip green">완료</span>
+            </div>
+            <div class="card-footer"><span>어제</span><span>확인</span></div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <section class="inspector">
+      <div>
+        <h2>Inspector</h2>
+        <p style="margin:6px 0 0;color:var(--muted);font-size:13px;font-weight:750">선택된 세션 카드 편집</p>
+      </div>
+
+      <div class="selected-profile">
+        <div class="selected-row">
+          <div class="avatar">김</div>
+          <div>
+            <h3>김회원</h3>
+            <p>오늘 14:00 · 좌측 무릎</p>
+          </div>
+        </div>
+        <div class="risk-grid">
+          <div class="risk-box"><span>통증</span><b style="color:var(--red)">7/10</b></div>
+          <div class="risk-box"><span>위험도</span><b>주의</b></div>
+        </div>
+      </div>
+
+      <div class="inspector-section">
+        <h3>SOAP 진행률</h3>
+        <div class="progress-line"><i style="width:72%"></i></div>
+        <div class="card-footer"><span>72% 완료</span><span>O: ROM 필요</span></div>
+      </div>
+
+      <div class="inspector-section">
+        <h3>빠른 작업</h3>
+        <div class="action-row"><i style="background:#e6f2ff"></i>Pencil 노트 열기</div>
+        <div class="action-row"><i style="background:#e8f8ed"></i>ROM/MMT 입력</div>
+        <div class="action-row"><i style="background:#fff1dc"></i>재평가 예약</div>
+      </div>
+
+      <div class="inspector-section">
+        <h3>미니 트렌드</h3>
+        <div class="chart-card">
+          <svg viewBox="0 0 260 100">
+            <path d="M8 74 L54 56 L100 62 L146 40 L208 30 L252 24" stroke="#ff3b30" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M8 84 L54 82 L100 76 L146 66 L208 48 L252 38" stroke="#3478f6" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="card-footer"><span>빨강: 통증</span><span>파랑: 완료율</span></div>
+        </div>
+      </div>
+
+      <button class="bottom-cta">저장 후 공유</button>
+    </section>
+  </div>
+</body>
+</html>

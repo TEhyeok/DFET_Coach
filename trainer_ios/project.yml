@@ -1,0 +1,87 @@
+name: DFETTrainer
+options:
+  minimumXcodeGenVersion: 2.0.0
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    DEVELOPMENT_TEAM: MT27Z7369H
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 11.0.0
+targets:
+  DFETTrainer:
+    type: application
+    platform: iOS
+    sources:
+      - DFETTrainer
+      - DFETTrainerShared
+    dependencies:
+      - target: DFETTrainerWidgets
+        embed: true
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseFunctions
+      - package: Firebase
+        product: FirebaseAppCheck
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer
+        PRODUCT_NAME: D-FET Trainer
+        INFOPLIST_FILE: DFETTrainer/Info.plist
+        CODE_SIGN_ENTITLEMENTS: DFETTrainer/DFETTrainer.entitlements
+        ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 2
+        ENABLE_PREVIEWS: YES
+        CODE_SIGN_STYLE: Automatic
+  DFETTrainerWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - DFETTrainerWidgets
+      - DFETTrainerShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.widgets
+        PRODUCT_NAME: D-FET Trainer Widgets
+        INFOPLIST_FILE: DFETTrainerWidgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: DFETTrainerWidgets/DFETTrainerWidgets.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 2
+        CODE_SIGN_STYLE: Automatic
+  DFETTrainerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - DFETTrainerTests
+    dependencies:
+      - target: DFETTrainer
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  DFETTrainer:
+    build:
+      targets:
+        DFETTrainer: all
+        DFETTrainerWidgets: all
+    test:
+      targets:
+        - DFETTrainerTests

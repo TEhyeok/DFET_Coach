@@ -1,0 +1,816 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01014D391AFB42F7677A085F /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 09A3C3DCF4EEA386F6E6559E /* FirebaseAppCheck */; };
+		06F48228DCA55FABE0A04528 /* TrainerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D56B4E4B2A452C71E55957FE /* TrainerStore.swift */; };
+		1148334A5F8A2335AA842590 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A631718E88C972FE659B1C0 /* SettingsView.swift */; };
+		114A7791FF7BFE4A36C6EFB4 /* SOAPWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E6B9AF53FC8983EFB0FD05 /* SOAPWorkspaceView.swift */; };
+		230958F4D57606E7222D53BC /* SoapNoteFirestoreCompatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1662C9C0D914CF660E8F25 /* SoapNoteFirestoreCompatTests.swift */; };
+		3074294E2901AF7392E89BDA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D7AEF4FC70C5EB5EDE1D5212 /* FirebaseAuth */; };
+		3202C36EB777B56D331B23F4 /* TrainerMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CD4114B9AE2A84A4D21C25 /* TrainerMember.swift */; };
+		36680B624461860F44238AC0 /* TrainerRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B9F266822B382407984F81 /* TrainerRootView.swift */; };
+		36DE3E21481251DE2A111683 /* ChartsAndPencil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38FDD09384DCF8F4512EEB0D /* ChartsAndPencil.swift */; };
+		3FE977F160FAB7596CF2C04C /* TrainerDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CACFB0FFB719530176E6E0 /* TrainerDashboard.swift */; };
+		40BEC2781788554D322F8A28 /* TrainerRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F694BC2D0FF5CA2E73076 /* TrainerRepositoryTests.swift */; };
+		45BC7030F867C0FA15A6A716 /* TrainerTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A174555163E799DEFB4BD4A3 /* TrainerTheme.swift */; };
+		4BCA8C859F534B6F1A6CBBD8 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D9374C0E79DFED61176E21 /* ReportsView.swift */; };
+		5699194EF75B54399B1CB799 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F6CB52B84CEC2425F091AF5F /* FirebaseFirestore */; };
+		61055E0E8B2DA1DCC29D5DF2 /* PreviewTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 883192C787B5F17595C0AE95 /* PreviewTrainerRepository.swift */; };
+		64211D5C9A3BA160C16D86F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 899D7E2CE5813B8ADBE71725 /* Assets.xcassets */; };
+		68DC2FED3D3D1155CE9827E1 /* DFETTrainerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4C839253E76BC9CBE2ABA7 /* DFETTrainerWidgets.swift */; };
+		8767D43C529393A356413391 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = FF60D9F3C3890809F423D82A /* FirebaseFunctions */; };
+		9169FFAFF191C164839067EB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 68AC61AF5827AA4E7ACC863C /* FirebaseFirestore */; };
+		921FE6340A43805F721A5575 /* DFETTrainerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF689D85329196909FB764EA /* DFETTrainerApp.swift */; };
+		9BDF13773AB84CA3ABB27A81 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 16EB4873998950E882B745C0 /* FirebaseAuth */; };
+		A0CABBBEC955BA475FD9199A /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40F19927840189A93D539EF /* SummaryView.swift */; };
+		ABB3CF7CBA2682F37C68BEC8 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE53BFC154DE5D297B3EC087 /* LoginView.swift */; };
+		AE565205AFE00F90274F12E5 /* DFETTrainerWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F8AB788EE3CE7F9AE7898076 /* DFETTrainerWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C34839AD2FEEAFAB0B39F2C1 /* TrainerRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC646071227036A6DBEF79A4 /* TrainerRoute.swift */; };
+		C85F51D38076B13B0D5D4B3D /* TrainerWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 248CA9D836C5018F01D5CEAE /* TrainerWidgetSnapshot.swift */; };
+		C9DC5CFE19C013DED57C6F59 /* FirebaseTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0999F382A76B0A34182C023B /* FirebaseTrainerRepository.swift */; };
+		CBDB3D08C6E217C3522B2192 /* TrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C79B81EDBACF14A715D2EC9 /* TrainerRepository.swift */; };
+		E30AEE241A0557971C687DCB /* TrainerWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 248CA9D836C5018F01D5CEAE /* TrainerWidgetSnapshot.swift */; };
+		E5B74AC02869565D6D38BD0A /* MembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4365D06807E06D6EA6BDAAF5 /* MembersView.swift */; };
+		EB545841B4400AE9F1A955BD /* SoapModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1763F89134FF9E5B845802AB /* SoapModels.swift */; };
+		ECECEA309C5E3C80A1E3CCB5 /* ProductivityTrainerExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FAAA97455316A25F989916 /* ProductivityTrainerExampleView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1FB44BE3F62CCF813173094E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B6B0E0104F66E64758728141 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41384EC1AE88C58AD8AAF781;
+			remoteInfo = DFETTrainer;
+		};
+		7BD6FD2D11C92C31DAED21FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B6B0E0104F66E64758728141 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A7F32F677292F62A205FAE7A;
+			remoteInfo = DFETTrainerWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		072402C88AD4596890EEC969 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AE565205AFE00F90274F12E5 /* DFETTrainerWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0999F382A76B0A34182C023B /* FirebaseTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseTrainerRepository.swift; sourceTree = "<group>"; };
+		1763F89134FF9E5B845802AB /* SoapModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoapModels.swift; sourceTree = "<group>"; };
+		248CA9D836C5018F01D5CEAE /* TrainerWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerWidgetSnapshot.swift; sourceTree = "<group>"; };
+		26FAAA97455316A25F989916 /* ProductivityTrainerExampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductivityTrainerExampleView.swift; sourceTree = "<group>"; };
+		2E4C839253E76BC9CBE2ABA7 /* DFETTrainerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFETTrainerWidgets.swift; sourceTree = "<group>"; };
+		38FDD09384DCF8F4512EEB0D /* ChartsAndPencil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartsAndPencil.swift; sourceTree = "<group>"; };
+		4365D06807E06D6EA6BDAAF5 /* MembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembersView.swift; sourceTree = "<group>"; };
+		462E8793D9361F85F767AC2D /* DFETTrainer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DFETTrainer.entitlements; sourceTree = "<group>"; };
+		50B9F266822B382407984F81 /* TrainerRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRootView.swift; sourceTree = "<group>"; };
+		53CC718DD850A4C3EE12EF68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5C79B81EDBACF14A715D2EC9 /* TrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRepository.swift; sourceTree = "<group>"; };
+		6A631718E88C972FE659B1C0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		73D9374C0E79DFED61176E21 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
+		86CACFB0FFB719530176E6E0 /* TrainerDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerDashboard.swift; sourceTree = "<group>"; };
+		883192C787B5F17595C0AE95 /* PreviewTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewTrainerRepository.swift; sourceTree = "<group>"; };
+		899D7E2CE5813B8ADBE71725 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E3DC1F47C313F3AD4C35A64 /* DFETTrainerWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DFETTrainerWidgets.entitlements; sourceTree = "<group>"; };
+		A174555163E799DEFB4BD4A3 /* TrainerTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerTheme.swift; sourceTree = "<group>"; };
+		AE53BFC154DE5D297B3EC087 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		B1E6B9AF53FC8983EFB0FD05 /* SOAPWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOAPWorkspaceView.swift; sourceTree = "<group>"; };
+		B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DFETTrainerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA0F694BC2D0FF5CA2E73076 /* TrainerRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRepositoryTests.swift; sourceTree = "<group>"; };
+		CCB565403A15CC9FE8AB16D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CF1662C9C0D914CF660E8F25 /* SoapNoteFirestoreCompatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoapNoteFirestoreCompatTests.swift; sourceTree = "<group>"; };
+		D40F19927840189A93D539EF /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		D56B4E4B2A452C71E55957FE /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
+		DC646071227036A6DBEF79A4 /* TrainerRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRoute.swift; sourceTree = "<group>"; };
+		EF689D85329196909FB764EA /* DFETTrainerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFETTrainerApp.swift; sourceTree = "<group>"; };
+		F7CD4114B9AE2A84A4D21C25 /* TrainerMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerMember.swift; sourceTree = "<group>"; };
+		F8AB788EE3CE7F9AE7898076 /* DFETTrainerWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DFETTrainerWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DFETTrainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0866BCD24A3C513926C6ECCA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BDF13773AB84CA3ABB27A81 /* FirebaseAuth in Frameworks */,
+				9169FFAFF191C164839067EB /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D8101F6CD43F7C0E8FFA164 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3074294E2901AF7392E89BDA /* FirebaseAuth in Frameworks */,
+				5699194EF75B54399B1CB799 /* FirebaseFirestore in Frameworks */,
+				8767D43C529393A356413391 /* FirebaseFunctions in Frameworks */,
+				01014D391AFB42F7677A085F /* FirebaseAppCheck in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0E8361321FC1703C1E5BF40D /* DFETTrainerShared */ = {
+			isa = PBXGroup;
+			children = (
+				248CA9D836C5018F01D5CEAE /* TrainerWidgetSnapshot.swift */,
+			);
+			path = DFETTrainerShared;
+			sourceTree = "<group>";
+		};
+		12D4A773F95776B71C8E030E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */,
+				B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */,
+				F8AB788EE3CE7F9AE7898076 /* DFETTrainerWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2248961EB680322C85A8B26C /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				0999F382A76B0A34182C023B /* FirebaseTrainerRepository.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		25DD419A66D6465B36A301F3 /* Members */ = {
+			isa = PBXGroup;
+			children = (
+				4365D06807E06D6EA6BDAAF5 /* MembersView.swift */,
+			);
+			path = Members;
+			sourceTree = "<group>";
+		};
+		4F8D20D904E8EAA34A22B2FD /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				73D9374C0E79DFED61176E21 /* ReportsView.swift */,
+			);
+			path = Reports;
+			sourceTree = "<group>";
+		};
+		53D902CD26BDBF1D0F9D8BEB /* DFETTrainerTests */ = {
+			isa = PBXGroup;
+			children = (
+				CF1662C9C0D914CF660E8F25 /* SoapNoteFirestoreCompatTests.swift */,
+				CA0F694BC2D0FF5CA2E73076 /* TrainerRepositoryTests.swift */,
+			);
+			path = DFETTrainerTests;
+			sourceTree = "<group>";
+		};
+		63C03F367898748261A8E49E /* Summary */ = {
+			isa = PBXGroup;
+			children = (
+				26FAAA97455316A25F989916 /* ProductivityTrainerExampleView.swift */,
+				D40F19927840189A93D539EF /* SummaryView.swift */,
+			);
+			path = Summary;
+			sourceTree = "<group>";
+		};
+		6F1FE3A7374AAC12B1427906 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				AE53BFC154DE5D297B3EC087 /* LoginView.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		A731221323256DB4F79F7ED4 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				883192C787B5F17595C0AE95 /* PreviewTrainerRepository.swift */,
+				1763F89134FF9E5B845802AB /* SoapModels.swift */,
+				86CACFB0FFB719530176E6E0 /* TrainerDashboard.swift */,
+				F7CD4114B9AE2A84A4D21C25 /* TrainerMember.swift */,
+				5C79B81EDBACF14A715D2EC9 /* TrainerRepository.swift */,
+				DC646071227036A6DBEF79A4 /* TrainerRoute.swift */,
+				D56B4E4B2A452C71E55957FE /* TrainerStore.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		A975D6847F6CD74792CDBADE /* SOAP */ = {
+			isa = PBXGroup;
+			children = (
+				B1E6B9AF53FC8983EFB0FD05 /* SOAPWorkspaceView.swift */,
+			);
+			path = SOAP;
+			sourceTree = "<group>";
+		};
+		AF21D12488CAECC366886269 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				EF689D85329196909FB764EA /* DFETTrainerApp.swift */,
+				50B9F266822B382407984F81 /* TrainerRootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		BA0F7B125B8E2B0401483C25 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				38FDD09384DCF8F4512EEB0D /* ChartsAndPencil.swift */,
+				A174555163E799DEFB4BD4A3 /* TrainerTheme.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		BA19B179B778B77E062D3F61 = {
+			isa = PBXGroup;
+			children = (
+				F9EA8FCDF9BD63E8F6547D29 /* DFETTrainer */,
+				0E8361321FC1703C1E5BF40D /* DFETTrainerShared */,
+				53D902CD26BDBF1D0F9D8BEB /* DFETTrainerTests */,
+				F6AB1BB6924FC70CFA4CD524 /* DFETTrainerWidgets */,
+				12D4A773F95776B71C8E030E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DFCD4F19C5BA10FDDDFE3612 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				6A631718E88C972FE659B1C0 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		E744D8E6D9D78CF1D3D518DA /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				6F1FE3A7374AAC12B1427906 /* Login */,
+				25DD419A66D6465B36A301F3 /* Members */,
+				4F8D20D904E8EAA34A22B2FD /* Reports */,
+				DFCD4F19C5BA10FDDDFE3612 /* Settings */,
+				A975D6847F6CD74792CDBADE /* SOAP */,
+				63C03F367898748261A8E49E /* Summary */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		F6AB1BB6924FC70CFA4CD524 /* DFETTrainerWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				9E3DC1F47C313F3AD4C35A64 /* DFETTrainerWidgets.entitlements */,
+				2E4C839253E76BC9CBE2ABA7 /* DFETTrainerWidgets.swift */,
+				CCB565403A15CC9FE8AB16D4 /* Info.plist */,
+			);
+			path = DFETTrainerWidgets;
+			sourceTree = "<group>";
+		};
+		F9EA8FCDF9BD63E8F6547D29 /* DFETTrainer */ = {
+			isa = PBXGroup;
+			children = (
+				899D7E2CE5813B8ADBE71725 /* Assets.xcassets */,
+				462E8793D9361F85F767AC2D /* DFETTrainer.entitlements */,
+				53CC718DD850A4C3EE12EF68 /* Info.plist */,
+				AF21D12488CAECC366886269 /* App */,
+				2248961EB680322C85A8B26C /* Data */,
+				BA0F7B125B8E2B0401483C25 /* DesignSystem */,
+				A731221323256DB4F79F7ED4 /* Domain */,
+				E744D8E6D9D78CF1D3D518DA /* Features */,
+			);
+			path = DFETTrainer;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		41384EC1AE88C58AD8AAF781 /* DFETTrainer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E2BDA343891532881157F3B7 /* Build configuration list for PBXNativeTarget "DFETTrainer" */;
+			buildPhases = (
+				D4EF63A0220C89CF668E208D /* Sources */,
+				DA986CA07BE23454A4635928 /* Resources */,
+				7D8101F6CD43F7C0E8FFA164 /* Frameworks */,
+				072402C88AD4596890EEC969 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5DB8378DE101E6945BA78447 /* PBXTargetDependency */,
+			);
+			name = DFETTrainer;
+			packageProductDependencies = (
+				D7AEF4FC70C5EB5EDE1D5212 /* FirebaseAuth */,
+				F6CB52B84CEC2425F091AF5F /* FirebaseFirestore */,
+				FF60D9F3C3890809F423D82A /* FirebaseFunctions */,
+				09A3C3DCF4EEA386F6E6559E /* FirebaseAppCheck */,
+			);
+			productName = DFETTrainer;
+			productReference = F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A7F32F677292F62A205FAE7A /* DFETTrainerWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 89E22D9F396D2366413D9D50 /* Build configuration list for PBXNativeTarget "DFETTrainerWidgets" */;
+			buildPhases = (
+				FB1A8923DBF423E4579C7226 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DFETTrainerWidgets;
+			packageProductDependencies = (
+			);
+			productName = DFETTrainerWidgets;
+			productReference = F8AB788EE3CE7F9AE7898076 /* DFETTrainerWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B7BD3D120AA999713D74EF14 /* DFETTrainerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1702279078D8244454B731E5 /* Build configuration list for PBXNativeTarget "DFETTrainerTests" */;
+			buildPhases = (
+				E53B55F8ED313804320E6B4C /* Sources */,
+				0866BCD24A3C513926C6ECCA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9860CEEB2706655E2F762545 /* PBXTargetDependency */,
+			);
+			name = DFETTrainerTests;
+			packageProductDependencies = (
+				16EB4873998950E882B745C0 /* FirebaseAuth */,
+				68AC61AF5827AA4E7ACC863C /* FirebaseFirestore */,
+			);
+			productName = DFETTrainerTests;
+			productReference = B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B6B0E0104F66E64758728141 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					41384EC1AE88C58AD8AAF781 = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+					};
+					A7F32F677292F62A205FAE7A = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+					};
+					B7BD3D120AA999713D74EF14 = {
+						DevelopmentTeam = MT27Z7369H;
+					};
+				};
+			};
+			buildConfigurationList = 80C4FB744AA63B014CFC3D53 /* Build configuration list for PBXProject "DFETTrainer" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = BA19B179B778B77E062D3F61;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				41384EC1AE88C58AD8AAF781 /* DFETTrainer */,
+				B7BD3D120AA999713D74EF14 /* DFETTrainerTests */,
+				A7F32F677292F62A205FAE7A /* DFETTrainerWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DA986CA07BE23454A4635928 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				64211D5C9A3BA160C16D86F5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D4EF63A0220C89CF668E208D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				36DE3E21481251DE2A111683 /* ChartsAndPencil.swift in Sources */,
+				921FE6340A43805F721A5575 /* DFETTrainerApp.swift in Sources */,
+				C9DC5CFE19C013DED57C6F59 /* FirebaseTrainerRepository.swift in Sources */,
+				ABB3CF7CBA2682F37C68BEC8 /* LoginView.swift in Sources */,
+				E5B74AC02869565D6D38BD0A /* MembersView.swift in Sources */,
+				61055E0E8B2DA1DCC29D5DF2 /* PreviewTrainerRepository.swift in Sources */,
+				ECECEA309C5E3C80A1E3CCB5 /* ProductivityTrainerExampleView.swift in Sources */,
+				4BCA8C859F534B6F1A6CBBD8 /* ReportsView.swift in Sources */,
+				114A7791FF7BFE4A36C6EFB4 /* SOAPWorkspaceView.swift in Sources */,
+				1148334A5F8A2335AA842590 /* SettingsView.swift in Sources */,
+				EB545841B4400AE9F1A955BD /* SoapModels.swift in Sources */,
+				A0CABBBEC955BA475FD9199A /* SummaryView.swift in Sources */,
+				3FE977F160FAB7596CF2C04C /* TrainerDashboard.swift in Sources */,
+				3202C36EB777B56D331B23F4 /* TrainerMember.swift in Sources */,
+				CBDB3D08C6E217C3522B2192 /* TrainerRepository.swift in Sources */,
+				36680B624461860F44238AC0 /* TrainerRootView.swift in Sources */,
+				C34839AD2FEEAFAB0B39F2C1 /* TrainerRoute.swift in Sources */,
+				06F48228DCA55FABE0A04528 /* TrainerStore.swift in Sources */,
+				45BC7030F867C0FA15A6A716 /* TrainerTheme.swift in Sources */,
+				E30AEE241A0557971C687DCB /* TrainerWidgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E53B55F8ED313804320E6B4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				230958F4D57606E7222D53BC /* SoapNoteFirestoreCompatTests.swift in Sources */,
+				40BEC2781788554D322F8A28 /* TrainerRepositoryTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB1A8923DBF423E4579C7226 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68DC2FED3D3D1155CE9827E1 /* DFETTrainerWidgets.swift in Sources */,
+				C85F51D38076B13B0D5D4B3D /* TrainerWidgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5DB8378DE101E6945BA78447 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A7F32F677292F62A205FAE7A /* DFETTrainerWidgets */;
+			targetProxy = 7BD6FD2D11C92C31DAED21FE /* PBXContainerItemProxy */;
+		};
+		9860CEEB2706655E2F762545 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41384EC1AE88C58AD8AAF781 /* DFETTrainer */;
+			targetProxy = 1FB44BE3F62CCF813173094E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		20E6174D906FA273AAB27E10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = MT27Z7369H;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		23D666B891C5D0F52DAE9A14 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DFETTrainer/DFETTrainer.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = DFETTrainer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer;
+				PRODUCT_NAME = "D-FET Trainer";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		51F49965589B80A77FDB9378 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DFETTrainerWidgets/DFETTrainerWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				INFOPLIST_FILE = DFETTrainerWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.widgets;
+				PRODUCT_NAME = "D-FET Trainer Widgets";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6243827970609B36E12944E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DFETTrainer/DFETTrainer.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = DFETTrainer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer;
+				PRODUCT_NAME = "D-FET Trainer";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		65E7B3D10758745550FF9942 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer";
+			};
+			name = Debug;
+		};
+		D9189658E8A6D8F5A689837C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = MT27Z7369H;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DF2798A401BE9CD350F98CB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer";
+			};
+			name = Release;
+		};
+		FD4FB707498CDE5E7158EDE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DFETTrainerWidgets/DFETTrainerWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				INFOPLIST_FILE = DFETTrainerWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.widgets;
+				PRODUCT_NAME = "D-FET Trainer Widgets";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1702279078D8244454B731E5 /* Build configuration list for PBXNativeTarget "DFETTrainerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				65E7B3D10758745550FF9942 /* Debug */,
+				DF2798A401BE9CD350F98CB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		80C4FB744AA63B014CFC3D53 /* Build configuration list for PBXProject "DFETTrainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D9189658E8A6D8F5A689837C /* Debug */,
+				20E6174D906FA273AAB27E10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		89E22D9F396D2366413D9D50 /* Build configuration list for PBXNativeTarget "DFETTrainerWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FD4FB707498CDE5E7158EDE5 /* Debug */,
+				51F49965589B80A77FDB9378 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E2BDA343891532881157F3B7 /* Build configuration list for PBXNativeTarget "DFETTrainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23D666B891C5D0F52DAE9A14 /* Debug */,
+				6243827970609B36E12944E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		09A3C3DCF4EEA386F6E6559E /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		16EB4873998950E882B745C0 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		68AC61AF5827AA4E7ACC863C /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		D7AEF4FC70C5EB5EDE1D5212 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		F6CB52B84CEC2425F091AF5F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		FF60D9F3C3890809F423D82A /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0177B64EC765370B7FDA0036 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B6B0E0104F66E64758728141 /* Project object */;
+}

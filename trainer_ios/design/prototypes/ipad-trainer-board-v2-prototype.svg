@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1024" viewBox="0 0 1440 1024">
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#000000" flood-opacity="0.075"/>
+    </filter>
+    <style>
+      .bg { fill: #f5f5f7; }
+      .bar { fill: rgba(255,255,255,0.88); stroke: #dfdfe5; stroke-width: 1; }
+      .sidebar { fill: #fbfbfd; stroke: #dedee4; stroke-width: 1; }
+      .board { fill: #ffffff; stroke: #e1e1e6; stroke-width: 1; filter: url(#softShadow); }
+      .lane { fill: #f7f7f9; stroke: #e2e2e8; stroke-width: 1; }
+      .card { fill: #ffffff; stroke: #e4e4e9; stroke-width: 1; filter: url(#softShadow); }
+      .flat { fill: #ffffff; stroke: #e5e5ea; stroke-width: 1; }
+      .muted { fill: #eeeeF1; }
+      .red { fill: #ff2d55; }
+      .red-soft { fill: #ffe1e8; }
+      .blue { fill: #007aff; }
+      .blue-soft { fill: #e6f2ff; }
+      .green { fill: #34c759; }
+      .green-soft { fill: #e8f8ed; }
+      .orange { fill: #ff9500; }
+      .orange-soft { fill: #fff1dc; }
+      .rule { stroke: #e5e5ea; stroke-width: 1; }
+      .stroke { stroke: #d7d7de; stroke-width: 1.2; fill: none; }
+      .ink { stroke: #3a3a3c; stroke-width: 3.3; fill: none; stroke-linecap: round; }
+      .chart-red { stroke: #ff3b30; stroke-width: 3.2; fill: none; stroke-linecap: round; }
+      .chart-blue { stroke: #007aff; stroke-width: 3.2; fill: none; stroke-linecap: round; }
+      .title { font: 850 30px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .nav { font: 850 27px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .h1 { font: 800 21px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .h2 { font: 760 16px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #1d1d1f; }
+      .body { font: 600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #6e6e73; }
+      .small { font: 650 11px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #7a7a82; }
+      .tiny { font: 700 9.5px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #8e8e93; }
+      .button { font: 800 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", sans-serif; fill: #ffffff; }
+      .redtext { fill: #ff2d55; }
+      .bluetext { fill: #007aff; }
+      .greentext { fill: #34c759; }
+      .orangetext { fill: #ff9500; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1440" height="1024"/>
+
+  <rect class="bar" x="0" y="0" width="1440" height="76"/>
+  <text class="title" x="32" y="48">D-FET</text>
+  <rect class="muted" x="236" y="20" width="360" height="36" rx="13"/>
+  <text class="body" x="262" y="43">오늘 보드 · 전체 센터 · 5월 5일 화요일</text>
+  <rect class="muted" x="960" y="20" width="80" height="36" rx="13"/>
+  <text class="body" x="984" y="43">필터</text>
+  <rect class="muted" x="1052" y="20" width="110" height="36" rx="13"/>
+  <text class="body" x="1078" y="43">정렬</text>
+  <rect class="red" x="1176" y="20" width="118" height="36" rx="14"/>
+  <text class="button" x="1206" y="43">새 세션</text>
+  <circle class="muted" cx="1344" cy="38" r="18"/>
+  <circle class="red" cx="1344" cy="38" r="7"/>
+
+  <rect class="sidebar" x="0" y="76" width="250" height="948"/>
+  <text class="h1" x="32" y="122">Board</text>
+  <rect class="red-soft" x="28" y="152" width="194" height="46" rx="16"/>
+  <circle class="red" cx="54" cy="175" r="9"/>
+  <text class="h2 redtext" x="78" y="181">오늘 세션</text>
+  <text class="body" x="38" y="240">회원</text>
+  <text class="body" x="38" y="282">SOAP</text>
+  <text class="body" x="38" y="324">리포트</text>
+
+  <text class="h1" x="32" y="390">Smart queues</text>
+  <rect class="flat" x="28" y="416" width="194" height="66" rx="18"/>
+  <text class="h2" x="52" y="446">SOAP 미작성</text>
+  <text class="small" x="52" y="465">공유 전 초안 3건</text>
+  <text class="h2 redtext" x="184" y="456">3</text>
+  <rect class="flat" x="28" y="496" width="194" height="66" rx="18"/>
+  <text class="h2" x="52" y="526">재평가 필요</text>
+  <text class="small" x="52" y="545">이번 주 2명</text>
+  <text class="h2 orangetext" x="184" y="536">2</text>
+  <rect class="flat" x="28" y="576" width="194" height="66" rx="18"/>
+  <text class="h2" x="52" y="606">통증 상승</text>
+  <text class="small" x="52" y="625">최근 2회 기준</text>
+  <text class="h2 redtext" x="184" y="616">2</text>
+
+  <text class="h1" x="32" y="704">Pinned</text>
+  <text class="body" x="38" y="744">김회원</text>
+  <text class="body" x="38" y="786">박회원</text>
+  <text class="body" x="38" y="828">이회원</text>
+
+  <rect class="board" x="278" y="104" width="810" height="876" rx="28"/>
+  <text class="nav" x="312" y="154">Session Board</text>
+  <text class="body" x="314" y="180">드래그로 상태 이동 · 선택 카드의 세부 편집은 우측 Inspector</text>
+
+  <rect class="lane" x="312" y="214" width="174" height="714" rx="22"/>
+  <text class="h1" x="336" y="252">예정</text>
+  <rect class="muted" x="444" y="232" width="24" height="24" rx="12"/>
+  <text class="small" x="453" y="249">3</text>
+  <rect class="card" x="332" y="282" width="134" height="136" rx="18"/>
+  <circle class="red-soft" cx="360" cy="314" r="20"/>
+  <text class="h2 redtext" x="353" y="321">김</text>
+  <text class="h2" x="390" y="308">김회원</text>
+  <text class="small" x="390" y="328">14:00 · 무릎</text>
+  <text class="body" x="350" y="362">통증 7/10</text>
+  <rect class="red-soft" x="350" y="382" width="68" height="22" rx="11"/>
+  <text class="tiny redtext" x="371" y="397">주의</text>
+  <rect class="card" x="332" y="436" width="134" height="122" rx="18"/>
+  <circle class="orange-soft" cx="360" cy="468" r="20"/>
+  <text class="h2 orangetext" x="353" y="475">박</text>
+  <text class="h2" x="390" y="462">박회원</text>
+  <text class="small" x="390" y="482">15:00</text>
+  <text class="body" x="350" y="520">재평가일 도래</text>
+
+  <rect class="lane" x="504" y="214" width="174" height="714" rx="22"/>
+  <text class="h1" x="528" y="252">진행 중</text>
+  <rect class="muted" x="636" y="232" width="24" height="24" rx="12"/>
+  <text class="small" x="645" y="249">1</text>
+  <rect class="card" x="524" y="282" width="134" height="210" rx="18"/>
+  <rect class="blue-soft" x="544" y="304" width="74" height="22" rx="11"/>
+  <text class="tiny bluetext" x="564" y="319">PENCIL</text>
+  <text class="h2" x="544" y="354">이회원</text>
+  <text class="small" x="544" y="376">필기 진행 중</text>
+  <path class="ink" d="M544 420 C574 398, 602 430, 636 404"/>
+  <path class="ink" d="M544 454 C582 444, 612 464, 638 448"/>
+
+  <rect class="lane" x="696" y="214" width="174" height="714" rx="22"/>
+  <text class="h1" x="720" y="252">SOAP 정리</text>
+  <rect class="muted" x="828" y="232" width="24" height="24" rx="12"/>
+  <text class="small" x="837" y="249">3</text>
+  <rect class="card" x="716" y="282" width="134" height="158" rx="18"/>
+  <text class="h2" x="736" y="314">최회원</text>
+  <text class="small" x="736" y="336">O 항목 필요</text>
+  <rect class="muted" x="736" y="366" width="92" height="8" rx="4"/>
+  <rect class="red" x="736" y="366" width="66" height="8" rx="4"/>
+  <text class="tiny" x="736" y="398">완료율 72%</text>
+  <rect class="card" x="716" y="458" width="134" height="132" rx="18"/>
+  <text class="h2" x="736" y="490">오회원</text>
+  <text class="small" x="736" y="512">공유 문장 확인</text>
+  <rect class="card" x="716" y="608" width="134" height="132" rx="18"/>
+  <text class="h2" x="736" y="640">정회원</text>
+  <text class="small" x="736" y="662">계획 입력 필요</text>
+
+  <rect class="lane" x="888" y="214" width="168" height="714" rx="22"/>
+  <text class="h1" x="912" y="252">공유 완료</text>
+  <rect class="muted" x="1014" y="232" width="24" height="24" rx="12"/>
+  <text class="small" x="1023" y="249">4</text>
+  <rect class="card" x="908" y="282" width="128" height="110" rx="18"/>
+  <text class="h2" x="928" y="316">유회원</text>
+  <text class="small" x="928" y="338">리포트 전송</text>
+  <rect class="green-soft" x="928" y="358" width="70" height="22" rx="11"/>
+  <text class="tiny greentext" x="949" y="373">완료</text>
+  <rect class="card" x="908" y="410" width="128" height="110" rx="18"/>
+  <text class="h2" x="928" y="444">한회원</text>
+  <text class="small" x="928" y="466">홈운동 공유</text>
+
+  <rect class="board" x="1114" y="104" width="296" height="876" rx="28"/>
+  <text class="nav" x="1142" y="154">Inspector</text>
+  <text class="body" x="1144" y="180">선택: 김회원 세션 카드</text>
+
+  <rect class="flat" x="1144" y="216" width="236" height="116" rx="20"/>
+  <circle class="red-soft" cx="1180" cy="258" r="24"/>
+  <text class="h1 redtext" x="1172" y="266">김</text>
+  <text class="h1" x="1216" y="250">김회원</text>
+  <text class="small" x="1216" y="272">오늘 14:00</text>
+  <text class="body" x="1168" y="306">좌측 무릎 · 스쿼트 패턴</text>
+
+  <text class="h1" x="1144" y="382">SOAP 상태</text>
+  <rect class="muted" x="1144" y="402" width="236" height="10" rx="5"/>
+  <rect class="red" x="1144" y="402" width="170" height="10" rx="5"/>
+  <text class="small" x="1144" y="432">72% · Objective ROM 필요</text>
+
+  <text class="h1" x="1144" y="486">빠른 작업</text>
+  <rect class="flat" x="1144" y="510" width="236" height="48" rx="15"/>
+  <circle class="blue" cx="1168" cy="534" r="8"/>
+  <text class="body" x="1190" y="540">Pencil 노트 열기</text>
+  <rect class="flat" x="1144" y="572" width="236" height="48" rx="15"/>
+  <circle class="green" cx="1168" cy="596" r="8"/>
+  <text class="body" x="1190" y="602">ROM/MMT 입력</text>
+  <rect class="flat" x="1144" y="634" width="236" height="48" rx="15"/>
+  <circle class="orange" cx="1168" cy="658" r="8"/>
+  <text class="body" x="1190" y="664">재평가 예약</text>
+
+  <text class="h1" x="1144" y="738">미니 트렌드</text>
+  <rect class="flat" x="1144" y="762" width="236" height="108" rx="18"/>
+  <path class="chart-red" d="M1166 832 L1208 816 L1250 822 L1292 800 L1354 792"/>
+  <path class="chart-blue" d="M1166 842 L1208 842 L1250 830 L1292 818 L1354 806"/>
+  <text class="tiny" x="1166" y="858">통증 · SOAP 완료율</text>
+
+  <rect class="red" x="1144" y="906" width="236" height="48" rx="17"/>
+  <text class="button" x="1214" y="935">저장 후 공유</text>
+</svg>

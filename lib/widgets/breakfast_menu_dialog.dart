@@ -27,10 +27,11 @@ class BreakfastMenuDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: PremiumColors.primary.withOpacity(0.2),
+                    color: PremiumColors.primary.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.wb_sunny_rounded, color: PremiumColors.primary, size: 24),
+                  child: const Icon(Icons.wb_sunny_rounded,
+                      color: PremiumColors.primary, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -45,8 +46,8 @@ class BreakfastMenuDialog extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close,
-                      color: context.wellness.textSecondary),
+                  icon:
+                      Icon(Icons.close, color: context.wellness.textSecondary),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -183,7 +184,7 @@ class BreakfastMenuDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

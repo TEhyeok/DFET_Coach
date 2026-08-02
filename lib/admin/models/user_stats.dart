@@ -152,7 +152,8 @@ class WorkoutSummary {
       }
 
       // 운동 이름별 빈도
-      exerciseFrequency[workout.name] = (exerciseFrequency[workout.name] ?? 0) + 1;
+      exerciseFrequency[workout.name] =
+          (exerciseFrequency[workout.name] ?? 0) + 1;
     }
 
     final weeks = days / 7;

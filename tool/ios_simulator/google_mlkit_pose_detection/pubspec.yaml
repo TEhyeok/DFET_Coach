@@ -1,0 +1,9 @@
+name: google_mlkit_pose_detection
+description: D-FET iOS simulator no-op replacement for the device-only ML Kit pose plugin.
+version: 0.13.0
+publish_to: none
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter

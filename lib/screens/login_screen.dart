@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/app_state.dart';
-import '../state/auth_state.dart';
-import '../state/user_state.dart';
 import '../core/utils/app_logger.dart';
 import '../models/user_profile.dart';
 import '../models/admin_profile.dart';
@@ -60,15 +58,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (userCredential.user != null && mounted) {
         final user = userCredential.user!;
         final adminAuthService = AdminAuthService();
-
-        // Super Admin Whitelist Check
-        if (user.email == 'fkdlfkdl68@gmail.com') {
-          // 슈퍼 어드민은 무조건 통과 및 계정 보장
-          await adminAuthService.ensureSuperAdmin(user);
-          await adminAuthService.updateLastLogin(user.uid);
-          AppLogger.info('[LoginScreen] 슈퍼 어드민 로그인 성공: ${user.email}');
-          return; // authStateProvider가 화면 전환 처리
-        }
 
         // 일반 관리자: admins 컬렉션에서 승인 여부 확인
         final adminDoc = await adminAuthService.getAdminProfile(user.uid);
@@ -152,15 +141,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (userCredential.user != null && mounted) {
         final user = userCredential.user!;
         final adminAuthService = AdminAuthService();
-
-        // Super Admin Whitelist Check for Sign Up
-        if (user.email == 'fkdlfkdl68@gmail.com') {
-          // 슈퍼 어드민은 가입 즉시 승인 및 로그인 유지
-          await adminAuthService.ensureSuperAdmin(user);
-          AppLogger.info('[LoginScreen] 슈퍼 어드민 회원가입 및 자동 승인 완료: ${user.email}');
-          // authStateProvider가 화면 전환 처리하므로 여기서 리턴
-          return;
-        }
 
         // admins 컬렉션에 승인 대기 상태로 저장
         await adminAuthService.createAdminRequest(
@@ -455,6 +435,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final authService = ref.read(authServiceProvider);
       final firestoreService = ref.read(firestoreServiceProvider);
+      final selectedCareType = ref.read(guestCareTypeProvider);
 
       final userCredential = signUp
           ? await authService.signUpWithEmailAndPassword(email, password)
@@ -478,10 +459,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           profile.copyWith(
             displayName: signUp && name.isNotEmpty ? name : profile.displayName,
             lastLoginAt: now,
+            careType: signUp && profile.careTypeVersion == 0
+                ? selectedCareType
+                : profile.careType,
+            careTypeVersion: signUp && profile.careTypeVersion == 0
+                ? 1
+                : profile.careTypeVersion,
+            careTypeConfirmedAt: signUp && profile.careTypeVersion == 0
+                ? now
+                : profile.careTypeConfirmedAt,
           ),
         );
       } else {
-        await firestoreService.saveUserProfile(
+        await firestoreService.createUserProfileIfAbsent(
           UserProfile(
             uid: user.uid,
             email: user.email ?? email,
@@ -490,6 +480,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             provider: 'password',
             createdAt: now,
             lastLoginAt: now,
+            careType: selectedCareType,
+            careTypeVersion: 1,
+            careTypeConfirmedAt: now,
           ),
         );
       }
@@ -658,11 +651,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           keyboardType: keyboardType,
           obscureText: obscureText,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          style: TextStyle(
-              color: context.wellness.textPrimary, fontSize: 15),
+          style: TextStyle(color: context.wellness.textPrimary, fontSize: 15),
           placeholder: placeholder,
-          placeholderStyle:
-              TextStyle(color: context.wellness.textTertiary),
+          placeholderStyle: TextStyle(color: context.wellness.textTertiary),
           decoration: BoxDecoration(
             color: context.wellness.bgSubtle,
             borderRadius: BorderRadius.circular(12),
@@ -716,7 +707,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       ref.invalidate(userProfileProvider);
-      if (mounted && Navigator.canPop(sheetContext)) {
+      if (sheetContext.mounted && Navigator.canPop(sheetContext)) {
         Navigator.pop(sheetContext);
       }
       AppLogger.info('[LoginScreen] 트레이너 로그인 성공: ${user.email}');
@@ -847,8 +838,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(color: context.wellness.textPrimary),
                 decoration: InputDecoration(
                   labelText: '이메일',
-                  labelStyle:
-                      TextStyle(color: context.wellness.textSecondary),
+                  labelStyle: TextStyle(color: context.wellness.textSecondary),
                   filled: true,
                   fillColor: context.wellness.bgSubtle,
                   border: OutlineInputBorder(
@@ -864,8 +854,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(color: context.wellness.textPrimary),
                 decoration: InputDecoration(
                   labelText: '비밀번호',
-                  labelStyle:
-                      TextStyle(color: context.wellness.textSecondary),
+                  labelStyle: TextStyle(color: context.wellness.textSecondary),
                   filled: true,
                   fillColor: context.wellness.bgSubtle,
                   border: OutlineInputBorder(
@@ -1015,8 +1004,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // 구분선
                   Row(
                     children: [
-                      Expanded(
-                          child: Divider(color: context.wellness.border)),
+                      Expanded(child: Divider(color: context.wellness.border)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -1027,8 +1015,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
-                      Expanded(
-                          child: Divider(color: context.wellness.border)),
+                      Expanded(child: Divider(color: context.wellness.border)),
                     ],
                   ),
 
@@ -1039,8 +1026,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   if (_isLoading) ...[
                     const SizedBox(height: 24),
-                    CupertinoActivityIndicator(
-                        color: context.wellness.primary),
+                    CupertinoActivityIndicator(color: context.wellness.primary),
                   ],
                 ],
               ),
@@ -1113,8 +1099,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // 구분선
                   Row(
                     children: [
-                      Expanded(
-                          child: Divider(color: context.wellness.border)),
+                      Expanded(child: Divider(color: context.wellness.border)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -1125,8 +1110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
-                      Expanded(
-                          child: Divider(color: context.wellness.border)),
+                      Expanded(child: Divider(color: context.wellness.border)),
                     ],
                   ),
 
@@ -1137,8 +1121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   if (_isLoading) ...[
                     const SizedBox(height: 24),
-                    CircularProgressIndicator(
-                        color: context.wellness.primary),
+                    CircularProgressIndicator(color: context.wellness.primary),
                   ],
                 ],
               ),
@@ -1387,8 +1370,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       height: 56,
       child: OutlinedButton.icon(
         onPressed: _isLoading ? null : _showTrainerLoginSheet,
-        icon:
-            Icon(Icons.badge_outlined, color: context.wellness.primaryDark),
+        icon: Icon(Icons.badge_outlined, color: context.wellness.primaryDark),
         label: Text(
           '트레이너 ID로 로그인',
           style: GoogleFonts.outfit(

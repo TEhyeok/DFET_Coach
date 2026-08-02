@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
-import 'dart:io' show Platform;
 
 import '../services/simple_pose_camera.dart';
 import '../services/pose_evaluation_service.dart';
 import '../state/pose_assessment_state.dart';
 import '../theme/tokens.dart';
-import '../theme/text_styles.dart';
 
 /// 간소화된 자세 평가 화면
 class SimpleAssessmentScreen extends ConsumerStatefulWidget {
   const SimpleAssessmentScreen({super.key});
 
   @override
-  ConsumerState<SimpleAssessmentScreen> createState() => _SimpleAssessmentScreenState();
+  ConsumerState<SimpleAssessmentScreen> createState() =>
+      _SimpleAssessmentScreenState();
 }
 
-class _SimpleAssessmentScreenState extends ConsumerState<SimpleAssessmentScreen> {
+class _SimpleAssessmentScreenState
+    extends ConsumerState<SimpleAssessmentScreen> {
   SimplePoseCamera? _camera;
   bool _isLoading = true;
   String? _error;
@@ -118,14 +117,16 @@ class _SimpleAssessmentScreenState extends ConsumerState<SimpleAssessmentScreen>
                   const Spacer(),
                   if (bestScore > 0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.green.withAlpha(150),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         '최고: ${bestScore.toInt()}점',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                 ],
@@ -155,11 +156,14 @@ class _SimpleAssessmentScreenState extends ConsumerState<SimpleAssessmentScreen>
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _buildExerciseButton(ExerciseType.squat, '스쿼트', Icons.fitness_center),
+                    _buildExerciseButton(
+                        ExerciseType.squat, '스쿼트', Icons.fitness_center),
                     const SizedBox(height: 12),
-                    _buildExerciseButton(ExerciseType.pushup, '푸시업', Icons.sports_gymnastics),
+                    _buildExerciseButton(
+                        ExerciseType.pushup, '푸시업', Icons.sports_gymnastics),
                     const SizedBox(height: 12),
-                    _buildExerciseButton(ExerciseType.plank, '플랭크', Icons.self_improvement),
+                    _buildExerciseButton(
+                        ExerciseType.plank, '플랭크', Icons.self_improvement),
                   ],
                 ),
               ),
@@ -215,7 +219,8 @@ class _SimpleAssessmentScreenState extends ConsumerState<SimpleAssessmentScreen>
                     // 점수
                     if (isPoseDetected) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 24),
                         decoration: BoxDecoration(
                           color: _getScoreColor(result.score).withAlpha(180),
                           borderRadius: BorderRadius.circular(12),
@@ -247,9 +252,11 @@ class _SimpleAssessmentScreenState extends ConsumerState<SimpleAssessmentScreen>
                     // 운동 변경 버튼
                     TextButton.icon(
                       onPressed: () {
-                        ref.read(selectedExerciseProvider.notifier).state = ExerciseType.none;
+                        ref.read(selectedExerciseProvider.notifier).state =
+                            ExerciseType.none;
                         ref.read(sessionBestScoreProvider.notifier).state = 0;
-                        ref.read(evaluationResultProvider.notifier).state = EvaluationResult.empty;
+                        ref.read(evaluationResultProvider.notifier).state =
+                            EvaluationResult.empty;
                       },
                       icon: const Icon(Icons.swap_horiz, color: Colors.white70),
                       label: const Text(

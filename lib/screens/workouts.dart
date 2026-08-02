@@ -107,7 +107,7 @@ class WorkoutsScreen extends ConsumerWidget {
             children: [
               _summaryCell(context, '$workoutCount', '운동', summaryHeight),
               _summaryCell(context, '$totalTime분', '총 시간', summaryHeight),
-              _summaryCell(context, '${(totalTime * 5).toStringAsFixed(0)}',
+              _summaryCell(context, (totalTime * 5).toStringAsFixed(0),
                   'kcal 소모', summaryHeight),
             ],
           ),
@@ -203,8 +203,7 @@ class WorkoutsScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: context.wellness.bgRoot,
                             borderRadius: BorderRadius.circular(12),
-                            border:
-                                Border.all(color: context.wellness.border),
+                            border: Border.all(color: context.wellness.border),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +219,7 @@ class WorkoutsScreen extends ConsumerWidget {
                                         decoration: BoxDecoration(
                                           color: _getCategoryColor(
                                                   workout.category)
-                                              .withOpacity(0.2),
+                                              .withValues(alpha: 0.2),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
@@ -245,8 +244,8 @@ class WorkoutsScreen extends ConsumerWidget {
                                                 .format(workout.timestamp),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
-                                                    color: context.wellness
-                                                        .textTertiary),
+                                                    color: context
+                                                        .wellness.textTertiary),
                                           ),
                                         ],
                                       ),
@@ -276,7 +275,7 @@ class WorkoutsScreen extends ConsumerWidget {
                                           horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: AppColors.brandPrimary
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(

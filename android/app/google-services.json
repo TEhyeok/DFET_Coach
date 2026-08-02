@@ -39,10 +39,54 @@
               "client_type": 3
             },
             {
-              "client_id": "1011088994661-evig73mi1ou4eke97df4os1ah4bpu889.apps.googleusercontent.com",
+              "client_id": "1011088994661-47hilstldtomus87di5es90vn06nv3nb.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.dfetCoach"
+                "bundle_id": "kr.co.dfet.coach"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011088994661:android:7b256f3f8c19223d5df18c",
+        "android_client_info": {
+          "package_name": "kr.co.dfet.coach"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011088994661-er5unn5l3g823752rglqocib9126h4qq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.co.dfet.coach",
+            "certificate_hash": "d09a540cecde6191b147e5be383ab9543feadb30"
+          }
+        },
+        {
+          "client_id": "1011088994661-bd0c7m70j3f6e8no8hcbdpk9ra5h3qil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiTrKQbkqt1nTw4M64sygpK-J4aTegO3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011088994661-bd0c7m70j3f6e8no8hcbdpk9ra5h3qil.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1011088994661-47hilstldtomus87di5es90vn06nv3nb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "kr.co.dfet.coach"
               }
             }
           ]

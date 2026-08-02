@@ -3,12 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../state/user_state.dart';
 import '../state/app_state.dart';
 import '../models/user_profile.dart';
 import '../core/utils/app_logger.dart';
-import '../state/auth_state.dart';
-import '../state/onboarding_state.dart';
 import '../theme/tokens.dart';
 import '../utils/responsive_layout.dart';
 import '../widgets/dfet_logo_mark.dart';
@@ -25,7 +22,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentPage = 0;
 
   // Form Data
-  String? _careType; // 2026 개편: 'microbiome' | 'fitness' | 'both'
+  CareType? _careType;
   String? _goal;
   String? _gender;
   int _age = 25;
@@ -93,6 +90,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             weight: _weight,
             activityLevel: _activityLevel,
             careType: _careType ?? UserCareType.fitness,
+            careTypeVersion: 1,
+            careTypeConfirmedAt: DateTime.now(),
             isOnboardingComplete: true,
           );
 
@@ -117,7 +116,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         final prefs = ref.read(sharedPreferencesProvider);
         await prefs.setBool('hasSeenOnboarding', true);
         await prefs.setString(
-            'guestCareType', _careType ?? UserCareType.fitness);
+            'guestCareType', (_careType ?? UserCareType.fitness).wireValue);
         ref.read(hasSeenOnboardingProvider.notifier).state = true;
         ref.read(guestCareTypeProvider.notifier).state =
             _careType ?? UserCareType.fitness;
@@ -270,11 +269,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: context.wellness.primary.withOpacity(0.1),
+              color: context.wellness.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: context.wellness.primary.withOpacity(0.2),
+                  color: context.wellness.primary.withValues(alpha: 0.2),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
@@ -366,7 +365,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 final isSelected = _careType == opt['type'];
                 return GestureDetector(
                   onTap: () =>
-                      setState(() => _careType = opt['type'] as String),
+                      setState(() => _careType = opt['type'] as CareType),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(20),
@@ -388,7 +387,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.white.withOpacity(0.2)
+                                ? Colors.white.withValues(alpha: 0.2)
                                 : context.wellness.bgSubtle,
                             shape: BoxShape.circle,
                           ),
@@ -604,7 +603,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isSelected ? context.wellness.primary : context.wellness.bgCard,
+            color:
+                isSelected ? context.wellness.primary : context.wellness.bgCard,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isSelected ? Colors.transparent : context.wellness.border,
@@ -617,9 +617,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Icon(
                 icon,
                 size: 60,
-                color: isSelected
-                    ? Colors.white
-                    : context.wellness.textTertiary,
+                color:
+                    isSelected ? Colors.white : context.wellness.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
@@ -942,7 +941,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               backgroundColor: context.wellness.primary,
               foregroundColor: Colors.white,
               disabledBackgroundColor:
-                  context.wellness.primary.withOpacity(0.3),
+                  context.wellness.primary.withValues(alpha: 0.3),
               disabledForegroundColor: Colors.white54,
               elevation: 0,
               shape: RoundedRectangleBorder(

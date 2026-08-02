@@ -101,7 +101,8 @@ class AnalyticsService {
       // 활성 사용자 카운트
       if (lastLoginAt != null && lastLoginAt.isAfter(sevenDaysAgo)) {
         activeUsers++;
-        final dateKey = '${lastLoginAt.year}-${lastLoginAt.month.toString().padLeft(2, '0')}-${lastLoginAt.day.toString().padLeft(2, '0')}';
+        final dateKey =
+            '${lastLoginAt.year}-${lastLoginAt.month.toString().padLeft(2, '0')}-${lastLoginAt.day.toString().padLeft(2, '0')}';
         dailyActiveUsers[dateKey] = (dailyActiveUsers[dateKey] ?? 0) + 1;
       }
 
@@ -113,7 +114,8 @@ class AnalyticsService {
         if (isToday) todaySignups++;
 
         if (createdAt.isAfter(thirtyDaysAgo)) {
-          final dateKey = '${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}';
+          final dateKey =
+              '${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}';
           dailySignups[dateKey] = (dailySignups[dateKey] ?? 0) + 1;
         }
       }
@@ -211,11 +213,17 @@ class AnalyticsService {
 
       if (workout.postureScore != null) {
         final score = workout.postureScore!;
-        if (score <= 20) postureDistribution['0-20'] = postureDistribution['0-20']! + 1;
-        else if (score <= 40) postureDistribution['20-40'] = postureDistribution['20-40']! + 1;
-        else if (score <= 60) postureDistribution['40-60'] = postureDistribution['40-60']! + 1;
-        else if (score <= 80) postureDistribution['60-80'] = postureDistribution['60-80']! + 1;
-        else postureDistribution['80-100'] = postureDistribution['80-100']! + 1;
+        if (score <= 20) {
+          postureDistribution['0-20'] = postureDistribution['0-20']! + 1;
+        } else if (score <= 40) {
+          postureDistribution['20-40'] = postureDistribution['20-40']! + 1;
+        } else if (score <= 60) {
+          postureDistribution['40-60'] = postureDistribution['40-60']! + 1;
+        } else if (score <= 80) {
+          postureDistribution['60-80'] = postureDistribution['60-80']! + 1;
+        } else {
+          postureDistribution['80-100'] = postureDistribution['80-100']! + 1;
+        }
       }
     }
 
@@ -230,7 +238,6 @@ class AnalyticsService {
   Future<UserAnalytics> getUserAnalytics(String uid) async {
     final now = DateTime.now();
     final sevenDaysAgo = now.subtract(const Duration(days: 7));
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
 
     // 최근 30개 식단 기록
     final mealsSnapshot = await _firestore
@@ -266,7 +273,8 @@ class AnalyticsService {
     for (var meal in recentMeals) {
       final mealDate = DateTime.tryParse(meal.date);
       if (mealDate != null && mealDate.isAfter(sevenDaysAgo)) {
-        dailyCalories[meal.date] = (dailyCalories[meal.date] ?? 0) + meal.calories;
+        dailyCalories[meal.date] =
+            (dailyCalories[meal.date] ?? 0) + meal.calories;
 
         if (!dailyNutrients.containsKey(meal.date)) {
           dailyNutrients[meal.date] = {'protein': 0, 'carbs': 0, 'fat': 0};
@@ -283,17 +291,22 @@ class AnalyticsService {
     // 일별 운동 횟수 (최근 7일)
     for (var workout in recentWorkouts) {
       if (workout.timestamp.isAfter(sevenDaysAgo)) {
-        final dateKey = '${workout.timestamp.year}-${workout.timestamp.month.toString().padLeft(2, '0')}-${workout.timestamp.day.toString().padLeft(2, '0')}';
+        final dateKey =
+            '${workout.timestamp.year}-${workout.timestamp.month.toString().padLeft(2, '0')}-${workout.timestamp.day.toString().padLeft(2, '0')}';
         dailyWorkouts[dateKey] = (dailyWorkouts[dateKey] ?? 0) + 1;
       }
     }
 
     // 주간 평균 칼로리
-    final weeklyCalories = dailyCalories.values.fold<double>(0, (sum, cal) => sum + cal);
-    final weeklyAvgCalories = dailyCalories.isNotEmpty ? (weeklyCalories / dailyCalories.length).toDouble() : 0.0;
+    final weeklyCalories =
+        dailyCalories.values.fold<double>(0, (total, cal) => total + cal);
+    final weeklyAvgCalories = dailyCalories.isNotEmpty
+        ? (weeklyCalories / dailyCalories.length).toDouble()
+        : 0.0;
 
     // 주간 평균 운동 빈도
-    final weeklyWorkouts = dailyWorkouts.values.fold<int>(0, (sum, count) => sum + count);
+    final weeklyWorkouts = dailyWorkouts.values
+        .fold<int>(0, (total, itemCount) => total + itemCount);
     final weeklyWorkoutFrequency = (weeklyWorkouts / 7.0).toDouble();
 
     // 평균 자세 점수
@@ -302,7 +315,9 @@ class AnalyticsService {
         .map((w) => w.postureScore!)
         .toList();
     final avgPostureScore = postureScores.isNotEmpty
-        ? (postureScores.fold<double>(0, (sum, score) => sum + score) / postureScores.length).toDouble()
+        ? (postureScores.fold<double>(0, (total, score) => total + score) /
+                postureScores.length)
+            .toDouble()
         : 0.0;
 
     return UserAnalytics(
@@ -316,5 +331,4 @@ class AnalyticsService {
       avgPostureScore: avgPostureScore,
     );
   }
-
 }

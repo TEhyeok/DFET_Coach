@@ -162,8 +162,8 @@ class MealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMacroCard(BuildContext context, int totalProtein,
-      int totalCarbs, int totalFat) {
+  Widget _buildMacroCard(
+      BuildContext context, int totalProtein, int totalCarbs, int totalFat) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,13 +352,13 @@ class MealsScreen extends ConsumerWidget {
                                       Text(meal.time,
                                           style: AppTextStyles.bodySmall
                                               .copyWith(
-                                                  color: context.wellness
-                                                      .textTertiary)),
+                                                  color: context
+                                                      .wellness.textTertiary)),
                                       Text(meal.name,
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
-                                                  color: context.wellness
-                                                      .textPrimary)),
+                                                  color: context
+                                                      .wellness.textPrimary)),
                                       if (meal.protein > 0 ||
                                           meal.carbs > 0 ||
                                           meal.fat > 0)
@@ -373,8 +373,7 @@ class MealsScreen extends ConsumerWidget {
                                 ),
                                 Text('${meal.calories} kcal',
                                     style: AppTextStyles.label.copyWith(
-                                        color:
-                                            context.wellness.textSecondary)),
+                                        color: context.wellness.textSecondary)),
                               ],
                             ),
                           ),

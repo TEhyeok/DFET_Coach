@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:async';
-import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import '../core/utils/app_logger.dart';
 
 /// Gemini Vision API를 사용한 음식 영양소 분석 서비스
@@ -12,7 +12,7 @@ class NutritionAnalyzerService {
 
     try {
       // Gemini 2.0 Flash 모델 초기화
-      final model = FirebaseVertexAI.instance.generativeModel(
+      final model = FirebaseAI.vertexAI().generativeModel(
         model: 'gemini-2.0-flash-exp',
       );
 

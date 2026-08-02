@@ -341,13 +341,13 @@ class FirestoreService {
         final workouts = allWorkouts[i];
 
         // 해당 날짜의 총합 계산
-        final totalCalories = meals.fold(0, (sum, m) => sum + m.calories);
-        final totalProtein = meals.fold(0, (sum, m) => sum + m.protein);
-        final totalWorkoutTime = workouts.fold(0, (sum, w) {
+        final totalCalories = meals.fold(0, (total, m) => total + m.calories);
+        final totalProtein = meals.fold(0, (total, m) => total + m.protein);
+        final totalWorkoutTime = workouts.fold(0, (total, w) {
           if (w.category == 'cardio') {
-            return sum + w.duration;
+            return total + w.duration;
           } else {
-            return sum + (w.sets.length * 3);
+            return total + (w.sets.length * 3);
           }
         });
 
@@ -433,13 +433,13 @@ class FirestoreService {
           final meals = allMeals[dayIndex];
           final workouts = allWorkouts[dayIndex];
 
-          final dayCalories = meals.fold(0, (sum, m) => sum + m.calories);
-          final dayProtein = meals.fold(0, (sum, m) => sum + m.protein);
-          final dayWorkoutTime = workouts.fold(0, (sum, w) {
+          final dayCalories = meals.fold(0, (total, m) => total + m.calories);
+          final dayProtein = meals.fold(0, (total, m) => total + m.protein);
+          final dayWorkoutTime = workouts.fold(0, (total, w) {
             if (w.category == 'cardio') {
-              return sum + w.duration;
+              return total + w.duration;
             } else {
-              return sum + (w.sets.length * 3);
+              return total + (w.sets.length * 3);
             }
           });
 
@@ -702,6 +702,23 @@ class FirestoreService {
       AppLogger.error('[FirestoreService] 프로필 저장 실패', e, stackTrace);
       rethrow;
     }
+  }
+
+  /// 신규 프로필을 한 번만 생성한다. 인증 직후 중복 초기화가 발생해도
+  /// 먼저 생성된 문서(및 케어 유형)를 덮어쓰지 않는다.
+  Future<UserProfile> createUserProfileIfAbsent(UserProfile profile) async {
+    final reference = _usersCollection.doc(profile.uid);
+    return _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(reference);
+      if (snapshot.exists) {
+        return UserProfile.fromMap(
+          snapshot.data()! as Map<String, dynamic>,
+          profile.uid,
+        );
+      }
+      transaction.set(reference, profile.toMap());
+      return profile;
+    });
   }
 
   /// 사용자 프로필 업데이트

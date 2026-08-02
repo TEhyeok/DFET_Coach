@@ -134,7 +134,7 @@ class IOSTextStyles {
   /// Dynamic Type 지원 헬퍼
   /// iOS 접근성 설정의 텍스트 크기를 반영
   static TextStyle scaledStyle(TextStyle style, BuildContext context) {
-    final scaleFactor = MediaQuery.of(context).textScaleFactor;
+    final scaleFactor = MediaQuery.textScalerOf(context).scale(1);
     return style.copyWith(
       fontSize: (style.fontSize ?? 17) * scaleFactor.clamp(0.8, 1.5),
     );

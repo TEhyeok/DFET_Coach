@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -22,7 +21,8 @@ class MemberSoapNotesScreen extends ConsumerWidget {
       navigationBar: CupertinoNavigationBar(
         backgroundColor: context.wellness.bgRoot,
         border: Border(
-            bottom: BorderSide(color: context.wellness.borderSubtle, width: 0.5)),
+            bottom:
+                BorderSide(color: context.wellness.borderSubtle, width: 0.5)),
         middle: const Text('SOAP 노트'),
       ),
       child: SafeArea(
@@ -176,7 +176,8 @@ class _Block extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.body.copyWith(color: context.wellness.textSecondary),
+            style: AppTextStyles.body
+                .copyWith(color: context.wellness.textSecondary),
           ),
         ],
       ),

@@ -60,9 +60,8 @@ class SmartCoachService {
     // 같은 우선순위라면 날짜 기반으로 로테이션
     if (recommendations.isNotEmpty) {
       final topPriority = recommendations.first.priorityScore;
-      final topRecommendations = recommendations
-          .where((r) => r.priorityScore == topPriority)
-          .toList();
+      final topRecommendations =
+          recommendations.where((r) => r.priorityScore == topPriority).toList();
 
       if (topRecommendations.length > 1) {
         final seed = _getDailySeed();
@@ -90,7 +89,8 @@ class SmartCoachService {
       recommendations.add(SmartRecommendation(
         icon: '⚠️',
         title: '칼로리 주의',
-        message: '오늘 목표보다 ${calories - 2000}kcal 높아요.\n내일은 가벼운 샐러드로 시작해보는 건 어떨까요?',
+        message:
+            '오늘 목표보다 ${calories - 2000}kcal 높아요.\n내일은 가벼운 샐러드로 시작해보는 건 어떨까요?',
         actionLabel: '건강 식단 보기',
         priority: RecommendationPriority.critical,
         category: RecommendationCategory.calories,
@@ -245,9 +245,9 @@ class SmartCoachService {
     // 운동 부족
     if (workoutTime > 0 && workoutTime < 30) {
       final messages = [
-        '${workoutTime}분 운동했어요! 좋아요!\n20분만 더 하면 목표 달성이에요.',
-        '시작이 반이에요! 이미 ${workoutTime}분 했으니\n조금만 더 힘내볼까요?',
-        '${workoutTime}분도 대단해요.\n가벼운 걷기 20분으로 마무리해요!',
+        '$workoutTime분 운동했어요! 좋아요!\n20분만 더 하면 목표 달성이에요.',
+        '시작이 반이에요! 이미 $workoutTime분 했으니\n조금만 더 힘내볼까요?',
+        '$workoutTime분도 대단해요.\n가벼운 걷기 20분으로 마무리해요!',
       ];
       final seed = _getDailySeed();
       recommendations.add(SmartRecommendation(
@@ -293,9 +293,9 @@ class SmartCoachService {
     // 양호한 진행
     else if (wellnessScore >= 70) {
       final messages = [
-        '잘하고 있어요! 웰니스 ${wellnessScore}점!\n이 페이스면 목표 달성이 가까워요.',
+        '잘하고 있어요! 웰니스 $wellnessScore점!\n이 페이스면 목표 달성이 가까워요.',
         '순조로운 하루네요.\n꾸준함이 결국 승리해요!',
-        '${wellnessScore}점! 훌륭해요.\n조금만 더 노력하면 완벽해요!',
+        '$wellnessScore점! 훌륭해요.\n조금만 더 노력하면 완벽해요!',
       ];
       final seed = _getDailySeed();
       recommendations.add(SmartRecommendation(

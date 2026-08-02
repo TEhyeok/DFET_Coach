@@ -151,12 +151,12 @@ class AppleShadows {
   // Card shadow - subtle and soft
   static List<BoxShadow> card = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 8,
       offset: const Offset(0, 2),
     ),
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
@@ -165,12 +165,12 @@ class AppleShadows {
   // Elevated card - more prominent
   static List<BoxShadow> cardElevated = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 12,
       offset: const Offset(0, 4),
     ),
     BoxShadow(
-      color: Colors.black.withOpacity(0.06),
+      color: Colors.black.withValues(alpha: 0.06),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -179,12 +179,12 @@ class AppleShadows {
   // Hover state
   static List<BoxShadow> cardHover = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.06),
+      color: Colors.black.withValues(alpha: 0.06),
       blurRadius: 16,
       offset: const Offset(0, 6),
     ),
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 32,
       offset: const Offset(0, 12),
     ),
@@ -193,7 +193,7 @@ class AppleShadows {
   // Sidebar shadow
   static List<BoxShadow> sidebar = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 8,
       offset: const Offset(2, 0),
     ),
@@ -312,14 +312,14 @@ class WellnessColorsDark {
 class WellnessShadows {
   static List<BoxShadow> card = [
     BoxShadow(
-      color: const Color(0xFF1D9E75).withOpacity(0.06),
+      color: const Color(0xFF1D9E75).withValues(alpha: 0.06),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
   ];
   static List<BoxShadow> soft = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.03),
+      color: Colors.black.withValues(alpha: 0.03),
       blurRadius: 12,
       offset: const Offset(0, 2),
     ),
@@ -331,55 +331,55 @@ class WellnessShadows {
 // ============================================================================
 
 class AppColorsDark {
-  static const bgRoot   = PremiumColors.backgroundStart;
-  static const bgApp    = PremiumColors.backgroundStart;
-  static const bgCard   = PremiumColors.cardBackground;
+  static const bgRoot = PremiumColors.backgroundStart;
+  static const bgApp = PremiumColors.backgroundStart;
+  static const bgCard = PremiumColors.cardBackground;
   static const bgStroke = Color(0xFF2E3A59); // Subtle stroke
   static const textStrong = PremiumColors.textWhite;
-  static const textBody   = PremiumColors.textGrey;
+  static const textBody = PremiumColors.textGrey;
   static const textSubtle = Colors.white38;
   static const brandPrimary = PremiumColors.primary;
   static const brandPrimaryHover = Color(0xFFD63D56);
   static const accentGold = Color(0xFFFFB545);
   static const danger = Color(0xFFEF4444);
-  static const warn   = Color(0xFFF59E0B);
-  static const info   = Color(0xFF60A5FA);
+  static const warn = Color(0xFFF59E0B);
+  static const info = Color(0xFF60A5FA);
 }
 
 class AppColorsLight {
   // Keeping Light mode as is for Admin, or mapping to Dark if we want full dark mode app
   // For now, let's keep it standard light for Admin, but Mobile App uses Dark mostly.
-  static const bgRoot   = Color(0xFFFFFFFF);
-  static const bgApp    = Color(0xFFF8F9FA);
-  static const bgCard   = Color(0xFFFFFFFF);
+  static const bgRoot = Color(0xFFFFFFFF);
+  static const bgApp = Color(0xFFF8F9FA);
+  static const bgCard = Color(0xFFFFFFFF);
   static const bgStroke = Color(0xFFE5E7EB);
   static const textStrong = Color(0xFF111827);
-  static const textBody   = Color(0xFF374151);
+  static const textBody = Color(0xFF374151);
   static const textSubtle = Color(0xFF6B7280);
   static const brandPrimary = Color(0xFF22C55E);
   static const brandPrimaryHover = Color(0xFF16A34A);
   static const accentGold = Color(0xFFEAB308);
   static const danger = Color(0xFFDC2626);
-  static const warn   = Color(0xFFF59E0B);
-  static const info   = Color(0xFF3B82F6);
+  static const warn = Color(0xFFF59E0B);
+  static const info = Color(0xFF3B82F6);
 }
 
 // 2026 개편: Soft Wellness 라이트 톤으로 값 교체 (멤버명 유지)
 class AppColors {
-  static const bgRoot   = WellnessColors.bgRoot;
-  static const bgApp    = WellnessColors.bgRoot;
-  static const bgCard   = WellnessColors.bgCard;
+  static const bgRoot = WellnessColors.bgRoot;
+  static const bgApp = WellnessColors.bgRoot;
+  static const bgCard = WellnessColors.bgCard;
   static const bgStroke = WellnessColors.border;
   static const textStrong = WellnessColors.textPrimary;
-  static const textBody   = WellnessColors.textSecondary;
+  static const textBody = WellnessColors.textSecondary;
   static const textSubtle = WellnessColors.textTertiary;
   static const textWeak = WellnessColors.textTertiary;
   static const brandPrimary = WellnessColors.primary;
   static const brandPrimaryHover = WellnessColors.primaryDark;
   static const accentGold = Color(0xFFEBA53E); // 라이트에 맞춘 앰버
   static const danger = WellnessColors.danger;
-  static const warn   = WellnessColors.warning;
-  static const info   = WellnessColors.info;
+  static const warn = WellnessColors.warning;
+  static const info = WellnessColors.info;
   static const success = WellnessColors.success;
 }
 
@@ -483,8 +483,7 @@ class WellnessScheme {
 
 extension WellnessContext on BuildContext {
   /// 현재 밝기에 맞는 Soft Wellness 색 스킴.
-  WellnessScheme get wellness =>
-      Theme.of(this).brightness == Brightness.dark
-          ? WellnessScheme.dark
-          : WellnessScheme.light;
+  WellnessScheme get wellness => Theme.of(this).brightness == Brightness.dark
+      ? WellnessScheme.dark
+      : WellnessScheme.light;
 }

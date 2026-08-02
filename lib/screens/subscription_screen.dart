@@ -1,10 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
 import '../services/payment_service.dart';
 import '../theme/tokens.dart';
 
@@ -28,7 +26,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   Future<void> _loadProducts() async {
     final paymentService = ref.read(paymentServiceProvider);
     paymentService.initialize();
-    
+
     try {
       final products = await paymentService.fetchProducts();
       if (mounted) {
@@ -108,11 +106,11 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: context.wellness.primary.withOpacity(0.1),
+        color: context.wellness.primary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: context.wellness.primary.withOpacity(0.2),
+            color: context.wellness.primary.withValues(alpha: 0.2),
             blurRadius: 40,
             spreadRadius: 10,
           ),
@@ -156,7 +154,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   Widget _buildBenefitsList() {
     return Column(
       children: [
-        _buildBenefitItem(Icons.auto_awesome, '고급 AI 코칭', '개인 맞춤형 운동 및 식단 계획 제공'),
+        _buildBenefitItem(
+            Icons.auto_awesome, '고급 AI 코칭', '개인 맞춤형 운동 및 식단 계획 제공'),
         _buildBenefitItem(Icons.insights, '상세 분석 리포트', '운동 성과 및 신체 변화 심층 분석'),
         _buildBenefitItem(Icons.history, '무제한 기록 조회', '모든 과거 운동/식단 기록 열람'),
         _buildBenefitItem(Icons.block, '광고 없는 환경', '방해 없이 운동에만 집중하세요'),
@@ -338,7 +337,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               boxShadow: isHighlight
                   ? [
                       BoxShadow(
-                        color: context.wellness.primary.withOpacity(0.4),
+                        color: context.wellness.primary.withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       )
@@ -370,14 +369,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           color: isHighlight
-                              ? Colors.white.withOpacity(0.9)
+                              ? Colors.white.withValues(alpha: 0.9)
                               : context.wellness.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Right Side: Price Info
                 Expanded(
                   flex: 4,
@@ -390,11 +389,11 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 14,
                             color: isHighlight
-                                ? Colors.white.withOpacity(0.7)
+                                ? Colors.white.withValues(alpha: 0.7)
                                 : context.wellness.textTertiary,
                             decoration: TextDecoration.lineThrough,
                             decorationColor: isHighlight
-                                ? Colors.white.withOpacity(0.7)
+                                ? Colors.white.withValues(alpha: 0.7)
                                 : context.wellness.textTertiary,
                           ),
                         ),
@@ -421,7 +420,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 color: isHighlight
-                                    ? Colors.white.withOpacity(0.9)
+                                    ? Colors.white.withValues(alpha: 0.9)
                                     : context.wellness.textSecondary,
                               ),
                             ),
@@ -439,13 +438,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               top: -12,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

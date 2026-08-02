@@ -18,7 +18,8 @@ class PostureAssessmentScreen extends StatefulWidget {
   });
 
   @override
-  State<PostureAssessmentScreen> createState() => _PostureAssessmentScreenState();
+  State<PostureAssessmentScreen> createState() =>
+      _PostureAssessmentScreenState();
 }
 
 class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
@@ -26,35 +27,13 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
   ExerciseType? _selectedExercise;
   bool _isLoading = false;
   bool _showCamera = false;
-  int _initAttempts = 0;  // 초기화 시도 횟수 추적 (무한 루프 방지)
+  int _initAttempts = 0; // 초기화 시도 횟수 추적 (무한 루프 방지)
 
   @override
   void initState() {
     super.initState();
     _poseService = PoseDetectionService();
     _selectedExercise = widget.initialExercise;
-  }
-
-  Future<void> _initializePoseDetection() async{
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await _poseService.initialize();
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        _showErrorDialog('자세 감지 초기화 실패: $e');
-      }
-    }
   }
 
   void _showPermissionDeniedDialog() {
@@ -65,8 +44,8 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: const Text('카메라 권한 필요'),
-          content: const Text(
-              '자세 평가 기능을 사용하려면 카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
+          content:
+              const Text('자세 평가 기능을 사용하려면 카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
           actions: [
             CupertinoDialogAction(
               child: const Text('취소'),
@@ -87,8 +66,8 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('카메라 권한 필요'),
-          content: const Text(
-              '자세 평가 기능을 사용하려면 카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
+          content:
+              const Text('자세 평가 기능을 사용하려면 카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
           actions: [
             TextButton(
               child: const Text('취소'),
@@ -141,73 +120,6 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
     }
   }
 
-  void _showCalibrationInfo() {
-    final isIOS = !kIsWeb && Platform.isIOS;
-
-    if (isIOS) {
-      showCupertinoDialog(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: const Text('개인 보정'),
-          content: const Text(
-            '개인 보정을 통해 본인의 체형에 맞는 정확한 자세 평가를 받을 수 있습니다.\n\n'
-            '보정 방법:\n'
-            '1. 카메라 앞에 바르게 서기\n'
-            '2. 팔을 자연스럽게 내리기\n'
-            '3. 정면을 바라보기\n'
-            '4. 3초간 자세 유지\n\n'
-            '보정 데이터는 30일간 유효합니다.',
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text('취소'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              child: const Text('시작'),
-              onPressed: () {
-                Navigator.pop(context);
-                // TODO: Implement calibration flow
-                _showErrorDialog('개인 보정 기능은 다음 업데이트에서 제공될 예정입니다.');
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('개인 보정'),
-          content: const Text(
-            '개인 보정을 통해 본인의 체형에 맞는 정확한 자세 평가를 받을 수 있습니다.\n\n'
-            '보정 방법:\n'
-            '1. 카메라 앞에 바르게 서기\n'
-            '2. 팔을 자연스럽게 내리기\n'
-            '3. 정면을 바라보기\n'
-            '4. 3초간 자세 유지\n\n'
-            '보정 데이터는 30일간 유효합니다.',
-          ),
-          actions: [
-            TextButton(
-              child: const Text('취소'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: const Text('시작'),
-              onPressed: () {
-                Navigator.pop(context);
-                // TODO: Implement calibration flow
-                _showErrorDialog('개인 보정 기능은 다음 업데이트에서 제공될 예정입니다.');
-              },
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   void _startAssessment() async {
     if (_selectedExercise == null) {
       _showErrorDialog('운동을 선택해주세요.');
@@ -218,12 +130,13 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
     if (_initAttempts >= 2) {
       AppLogger.warning('[PostureAssessment] 초기화 재시도 횟수 초과 (2회)');
       _showErrorDialog('카메라를 초기화할 수 없습니다.\n기기를 재시작하거나 앱을 다시 실행해주세요.');
-      _initAttempts = 0;  // 카운터 리셋
+      _initAttempts = 0; // 카운터 리셋
       return;
     }
 
     _initAttempts++;
-    AppLogger.info('[PostureAssessment] Starting assessment (attempt $_initAttempts)');
+    AppLogger.info(
+        '[PostureAssessment] Starting assessment (attempt $_initAttempts)');
 
     // 바로 카메라 초기화 시도
     setState(() {
@@ -232,8 +145,9 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
 
     try {
       await _poseService.initialize();
-      AppLogger.info('[PostureAssessment] Pose detection initialized successfully');
-      _initAttempts = 0;  // 성공 시 카운터 리셋
+      AppLogger.info(
+          '[PostureAssessment] Pose detection initialized successfully');
+      _initAttempts = 0; // 성공 시 카운터 리셋
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -241,7 +155,9 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
         });
       }
     } catch (e) {
-      AppLogger.error('[PostureAssessment] Failed to initialize pose detection (attempt $_initAttempts)', e);
+      AppLogger.error(
+          '[PostureAssessment] Failed to initialize pose detection (attempt $_initAttempts)',
+          e);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -249,16 +165,17 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
 
         // 카메라 초기화 실패 시 권한 요청
         final status = await Permission.camera.request();
-        AppLogger.debug('[PostureAssessment] Camera permission request result: $status');
+        AppLogger.debug(
+            '[PostureAssessment] Camera permission request result: $status');
 
         if (status.isGranted || status.isLimited) {
           // 권한 허용되면 다시 시도 (최대 2번)
           _startAssessment();
         } else if (status.isPermanentlyDenied) {
-          _initAttempts = 0;  // 리셋
+          _initAttempts = 0; // 리셋
           _showPermissionDeniedDialog();
         } else {
-          _initAttempts = 0;  // 리셋
+          _initAttempts = 0; // 리셋
           _showErrorDialog('카메라 권한이 거부되었습니다.\n자세 평가 기능을 사용하려면 카메라 권한이 필요합니다.');
         }
       }
@@ -404,7 +321,8 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
 
             // Collapsible Instructions
             Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data:
+                  Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
                 tilePadding: const EdgeInsets.symmetric(horizontal: 12),
                 childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -461,7 +379,7 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.brandPrimary.withOpacity(0.1)
+              ? AppColors.brandPrimary.withValues(alpha: 0.1)
               : AppColors.bgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -482,7 +400,8 @@ class _PostureAssessmentScreenState extends State<PostureAssessmentScreen> {
               title,
               style: AppTextStyles.bodySmall.copyWith(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? AppColors.brandPrimary : AppColors.textStrong,
+                color:
+                    isSelected ? AppColors.brandPrimary : AppColors.textStrong,
               ),
             ),
             if (isSelected) ...[

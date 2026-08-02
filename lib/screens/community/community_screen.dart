@@ -22,7 +22,8 @@ class CommunityScreen extends ConsumerWidget {
             ? Center(
                 child: Text(
                   '첫 게시글을 작성해보세요!',
-                  style: GoogleFonts.outfit(color: context.wellness.textSecondary),
+                  style:
+                      GoogleFonts.outfit(color: context.wellness.textSecondary),
                 ),
               )
             : Center(

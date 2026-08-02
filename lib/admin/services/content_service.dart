@@ -4,7 +4,8 @@ class ContentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // --- Workouts ---
-  CollectionReference get _workoutsRef => _firestore.collection('content_workouts');
+  CollectionReference get _workoutsRef =>
+      _firestore.collection('content_workouts');
 
   Stream<List<Map<String, dynamic>>> getWorkoutsStream() {
     return _workoutsRef.snapshots().map((snapshot) {

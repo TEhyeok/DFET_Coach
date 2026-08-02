@@ -9,7 +9,11 @@ class Gauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = value.clamp(0, 100).toDouble();
-    final status = value >= 80 ? '건강함' : value >= 50 ? '양호함' : '주의 필요';
+    final status = value >= 80
+        ? '건강함'
+        : value >= 50
+            ? '양호함'
+            : '주의 필요';
 
     // 빨-노-초 세그먼트 비율
     final sections = [
@@ -56,7 +60,7 @@ class Gauge extends StatelessWidget {
       {double stroke = 32}) {
     return PieChartSectionData(
       value: pct,
-      color: c.withOpacity(.85),
+      color: c.withValues(alpha: .85),
       radius: 80,
       title: '',
       showTitle: false,

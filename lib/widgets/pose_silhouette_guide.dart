@@ -67,7 +67,8 @@ class _SilhouettePainter extends CustomPainter {
         _drawPlankSilhouette(canvas, size, centerX, centerY, paint, fillPaint);
         break;
       default:
-        _drawStandingSilhouette(canvas, size, centerX, centerY, paint, fillPaint);
+        _drawStandingSilhouette(
+            canvas, size, centerX, centerY, paint, fillPaint);
     }
 
     // Draw alignment guides
@@ -228,8 +229,10 @@ class _SilhouettePainter extends CustomPainter {
 
     // Head
     final headRadius = scale * 0.08;
-    canvas.drawCircle(Offset(centerX - scale * 0.4, bodyY - scale * 0.05), headRadius, fillPaint);
-    canvas.drawCircle(Offset(centerX - scale * 0.4, bodyY - scale * 0.05), headRadius, paint);
+    canvas.drawCircle(Offset(centerX - scale * 0.4, bodyY - scale * 0.05),
+        headRadius, fillPaint);
+    canvas.drawCircle(
+        Offset(centerX - scale * 0.4, bodyY - scale * 0.05), headRadius, paint);
 
     // Body line (horizontal)
     canvas.drawLine(
@@ -257,7 +260,8 @@ class _SilhouettePainter extends CustomPainter {
       paint,
     );
 
-    _drawInstruction(canvas, size, '옆으로 누워서 전신이 보이게 해주세요', centerY + scale * 0.5);
+    _drawInstruction(
+        canvas, size, '옆으로 누워서 전신이 보이게 해주세요', centerY + scale * 0.5);
   }
 
   void _drawPlankSilhouette(
@@ -274,8 +278,10 @@ class _SilhouettePainter extends CustomPainter {
     // Similar to pushup but static hold position
     // Head
     final headRadius = scale * 0.07;
-    canvas.drawCircle(Offset(centerX - scale * 0.35, bodyY - scale * 0.03), headRadius, fillPaint);
-    canvas.drawCircle(Offset(centerX - scale * 0.35, bodyY - scale * 0.03), headRadius, paint);
+    canvas.drawCircle(Offset(centerX - scale * 0.35, bodyY - scale * 0.03),
+        headRadius, fillPaint);
+    canvas.drawCircle(Offset(centerX - scale * 0.35, bodyY - scale * 0.03),
+        headRadius, paint);
 
     // Body line (horizontal and straight)
     final bodyPaint = Paint()

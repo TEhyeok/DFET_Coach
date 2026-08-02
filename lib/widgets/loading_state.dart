@@ -50,7 +50,7 @@ class ErrorWidget extends StatelessWidget {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.danger.withOpacity(0.8),
+              color: AppColors.danger.withValues(alpha: 0.8),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -105,7 +105,7 @@ class EmptyStateWidget extends StatelessWidget {
               Icon(
                 icon,
                 size: 48,
-                color: context.wellness.textTertiary.withOpacity(0.5),
+                color: context.wellness.textTertiary.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
               Text(

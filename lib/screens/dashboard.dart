@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../state/app_state.dart';
+import '../state/clinical_state.dart';
 import '../models/user_profile.dart';
-import 'microbiome/microbiome_screen.dart';
 import '../widgets/app_card.dart';
 import '../widgets/activity_rings.dart';
 import '../theme/tokens.dart';
 import '../theme/text_styles.dart';
 import '../services/smart_coach_service.dart';
+import '../services/clinical_repository.dart';
 import '../models/smart_recommendation.dart';
 import '../widgets/protein_foods_dialog.dart';
 import '../widgets/nutrition_tips_dialog.dart';
@@ -51,8 +53,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     // 케어 유형 (장 건강 카드 노출 여부)
     final careType = _resolveCareType();
-    final showGutHealth = careType == UserCareType.microbiome ||
-        careType == UserCareType.both;
+    final featureFlags = ref.watch(featureFlagsProvider).valueOrNull ??
+        const AppFeatureFlags.disabled();
+    final showGutHealth =
+        featureFlags.gut &&
+        (careType == UserCareType.microbiome || careType == UserCareType.both);
 
     // 할 일 계산
     final todos =
@@ -192,11 +197,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// 현재 사용자(로그인/게스트)의 케어 유형
-  String _resolveCareType() {
+  CareType _resolveCareType() {
     final profile = ref.watch(userProfileProvider).valueOrNull;
-    if (profile != null && profile.careType.isNotEmpty) {
-      return profile.careType;
-    }
+    if (profile != null) return profile.careType;
     return ref.watch(guestCareTypeProvider);
   }
 
@@ -207,22 +210,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final report = ref.watch(latestGutReportProvider);
 
     void openDetail() {
-      Navigator.of(context).push(
-        CupertinoPageRoute(
-          builder: (context) => CupertinoPageScaffold(
-            backgroundColor: w.bgRoot,
-            navigationBar: CupertinoNavigationBar(
-              backgroundColor: w.bgRoot,
-              middle:
-                  Text('장 건강 리포트', style: TextStyle(color: w.textPrimary)),
-            ),
-            child: const SafeArea(child: MicrobiomeScreen()),
-          ),
+      context.push('/home/gut');
+    }
+
+    if (report.isLoading) {
+      return AppCard(
+        padding: const EdgeInsets.all(18),
+        child: const SizedBox(
+          height: 60,
+          child: Center(child: CupertinoActivityIndicator()),
         ),
       );
     }
 
-    if (report == null) {
+    final reportValue = report.valueOrNull;
+    if (reportValue == null) {
       // 검사 리포트가 아직 없는 사용자: 가짜 점수 대신 빈 상태 + 검사 유도
       return AppCard(
         padding: const EdgeInsets.all(18),
@@ -267,9 +269,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
 
-    final score = report.score;
-    final level = report.level;
-    final percentileLabel = report.percentileLabel;
+    final score = reportValue.overall.score;
+    final level = reportValue.overall.label;
 
     return AppCard(
       padding: const EdgeInsets.all(18),
@@ -286,7 +287,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             alignment: Alignment.center,
             child: Text(
-              '$score',
+              score?.round().toString() ?? '--',
               style: TextStyle(
                 color: w.textPrimary,
                 fontSize: 22,
@@ -315,7 +316,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '미생물 다양성 $level$percentileLabel',
+                  '미생물 다양성 · $level',
                   style: TextStyle(color: w.textSecondary, fontSize: 12),
                 ),
               ],
@@ -612,7 +613,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: recommendation.priorityColor.withOpacity(0.2),
+                        color:
+                            recommendation.priorityColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

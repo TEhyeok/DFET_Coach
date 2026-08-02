@@ -9,7 +9,8 @@ import '../../theme/tokens.dart';
 import '../services/analytics_service.dart';
 
 /// 사용자별 분석 데이터 Provider
-final userAnalyticsProvider = FutureProvider.family<UserAnalytics, String>((ref, uid) async {
+final userAnalyticsProvider =
+    FutureProvider.family<UserAnalytics, String>((ref, uid) async {
   final analyticsService = AnalyticsService();
   return await analyticsService.getUserAnalytics(uid);
 });
@@ -24,7 +25,8 @@ class UserDetailExpandable extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<UserDetailExpandable> createState() => _UserDetailExpandableState();
+  ConsumerState<UserDetailExpandable> createState() =>
+      _UserDetailExpandableState();
 }
 
 class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
@@ -137,7 +139,8 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
           // 프로필 사진
           CircleAvatar(
             radius: 40,
-            backgroundColor: isActive ? AppColors.brandPrimary : Colors.grey.shade400,
+            backgroundColor:
+                isActive ? AppColors.brandPrimary : Colors.grey.shade400,
             backgroundImage: widget.user.photoURL != null
                 ? NetworkImage(widget.user.photoURL!)
                 : null,
@@ -217,13 +220,18 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
                     context: context,
                     builder: (context) => AlertDialog(
                       backgroundColor: const Color(0xFF1E1E1E),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      title: const Text('Delete User', style: TextStyle(color: Colors.white)),
-                      content: Text('Are you sure you want to delete ${widget.user.displayName}?', style: const TextStyle(color: Colors.white70)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      title: const Text('Delete User',
+                          style: TextStyle(color: Colors.white)),
+                      content: Text(
+                          'Are you sure you want to delete ${widget.user.displayName}?',
+                          style: const TextStyle(color: Colors.white70)),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                          child: const Text('Cancel',
+                              style: TextStyle(color: Colors.grey)),
                         ),
                         ElevatedButton(
                           onPressed: () async {
@@ -231,11 +239,14 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
                             // Call AdminService deleteUser (Mock)
                             // Note: In a real app, we would use a provider to call the service and refresh the list
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('User deleted (Mock)')),
+                              const SnackBar(
+                                  content: Text('User deleted (Mock)')),
                             );
                           },
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                          child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red),
+                          child: const Text('Delete',
+                              style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
@@ -244,10 +255,11 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
                 icon: const Icon(Icons.delete_outline, size: 16),
                 label: const Text('Delete User'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.withOpacity(0.1),
+                  backgroundColor: Colors.red.withValues(alpha: 0.1),
                   foregroundColor: Colors.red,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
               ),
             ],
@@ -265,7 +277,7 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: (color ?? AppColors.brandPrimary).withOpacity(0.1),
+        color: (color ?? AppColors.brandPrimary).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -425,7 +437,7 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 28),
@@ -511,31 +523,38 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
               children: const [
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('날짜', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child:
+                      Text('날짜', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('시간', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child:
+                      Text('시간', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('음식명', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('음식명',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('칼로리', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('칼로리',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('단백질', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('단백질',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('탄수화물', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('탄수화물',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('지방', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child:
+                      Text('지방', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -579,9 +598,8 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                onPressed: _mealPage > 0
-                    ? () => setState(() => _mealPage--)
-                    : null,
+                onPressed:
+                    _mealPage > 0 ? () => setState(() => _mealPage--) : null,
                 icon: const Icon(Icons.chevron_left),
               ),
               ...List.generate(totalPages, (index) {
@@ -641,23 +659,28 @@ class _UserDetailExpandableState extends ConsumerState<UserDetailExpandable>
               children: const [
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('날짜', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child:
+                      Text('날짜', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('운동명', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('운동명',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('카테고리', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('카테고리',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('세트/시간', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('세트/시간',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('자세 점수', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('자세 점수',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

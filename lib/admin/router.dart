@@ -16,8 +16,6 @@ import 'pages/admin_management_page.dart';
 import 'widgets/admin_layout.dart';
 
 final adminRouterProvider = Provider<GoRouter>((ref) {
-  final isLoggedIn = ref.watch(isLoggedInProvider);
-
   return GoRouter(
     initialLocation: '/admin',
     debugLogDiagnostics: true,

@@ -32,7 +32,7 @@ class AdminLayout extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AdminTheme.primary.withOpacity(isLight ? 0.1 : 0.2),
+                    AdminTheme.primary.withValues(alpha: isLight ? 0.1 : 0.2),
                     Colors.transparent,
                   ],
                 ),
@@ -49,7 +49,8 @@ class AdminLayout extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AdminTheme.secondary.withOpacity(isLight ? 0.1 : 0.15),
+                    AdminTheme.secondary
+                        .withValues(alpha: isLight ? 0.1 : 0.15),
                     Colors.transparent,
                   ],
                 ),
@@ -57,31 +58,31 @@ class AdminLayout extends StatelessWidget {
             ),
           ),
 
-            // 2. Main Layout
-            Row(
-              children: [
-                // Sidebar
-                AdminSidebar(currentPage: currentPage),
+          // 2. Main Layout
+          Row(
+            children: [
+              // Sidebar
+              AdminSidebar(currentPage: currentPage),
 
-                // Content Area
-                Expanded(
-                  child: SelectionArea(
-                    child: Column(
-                      children: [
-                        const AdminHeader(),
-                        Expanded(
-                          child: ClipRect(
-                            child: child,
-                          ),
+              // Content Area
+              Expanded(
+                child: SelectionArea(
+                  child: Column(
+                    children: [
+                      const AdminHeader(),
+                      Expanded(
+                        child: ClipRect(
+                          child: child,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

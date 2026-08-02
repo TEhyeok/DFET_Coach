@@ -48,7 +48,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCiTrKQbkqt1nTw4M64sygpK-J4aTegO3I',
-    appId: '1:1011088994661:android:8ec1270399fb3bb35df18c',
+    appId: '1:1011088994661:android:7b256f3f8c19223d5df18c',
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
     storageBucket: 'dfetmanage.firebasestorage.app',
@@ -56,22 +56,23 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDTYdNFAGfCfexw-r89mGnzELFEvx0Hu-A',
-    appId: '1:1011088994661:ios:fee8b625c9902bfa5df18c',
+    appId: '1:1011088994661:ios:58e7f0262c084e555df18c',
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
     storageBucket: 'dfetmanage.firebasestorage.app',
-    androidClientId: '1011088994661-fajhfegjbdd39hnk71mqi9074rqjcjvo.apps.googleusercontent.com',
-    iosClientId: '1011088994661-evig73mi1ou4eke97df4os1ah4bpu889.apps.googleusercontent.com',
-    iosBundleId: 'com.example.dfetCoach',
+    androidClientId:
+        '1011088994661-fajhfegjbdd39hnk71mqi9074rqjcjvo.apps.googleusercontent.com',
+    iosClientId:
+        '1011088994661-evig73mi1ou4eke97df4os1ah4bpu889.apps.googleusercontent.com',
+    iosBundleId: 'kr.co.dfet.coach',
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCiTrKQbkqt1nTw4M64sygpK-J4aTegO3I',
-    appId: '1:1011088994661:web:abc123def456ghi789jkl',
+    apiKey: 'AIzaSyChn4MfHoqcxMKCkW49Oop3afe2wS8iK1M',
+    appId: '1:1011088994661:web:b53b172998bea9c85df18c',
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
     authDomain: 'dfetmanage.firebaseapp.com',
     storageBucket: 'dfetmanage.firebasestorage.app',
   );
-
 }

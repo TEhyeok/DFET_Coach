@@ -37,8 +37,7 @@ class PostCard extends ConsumerWidget {
                         : NetworkImage(post.authorProfileImage!))
                     : null,
                 child: post.authorProfileImage == null
-                    ? Icon(Icons.person,
-                        color: context.wellness.textTertiary)
+                    ? Icon(Icons.person, color: context.wellness.textTertiary)
                     : null,
               ),
               const SizedBox(width: 12),
@@ -65,7 +64,7 @@ class PostCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Content
           Text(
             post.content,

@@ -348,7 +348,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
   Widget _buildLoadingScreen() {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) widget.onClose?.call();
       },
       child: Scaffold(
@@ -456,7 +456,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
           if (_isRecording) {
             await _stopRecording();
@@ -494,7 +494,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.7),
+                      Colors.black.withValues(alpha: 0.7),
                       Colors.transparent,
                     ],
                   ),
@@ -570,7 +570,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.8),
                       Colors.transparent,
                     ],
                   ),
@@ -586,7 +586,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -652,7 +652,7 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
   Widget _buildTabletCameraScreen() {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
           if (_isRecording) {
             await _stopRecording();
@@ -678,9 +678,10 @@ class _CameraPreviewWidgetState extends State<CameraPreviewWidget> {
                 width: 360,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.86),
+                  color: Colors.black.withValues(alpha: 0.86),
                   border: Border(
-                    left: BorderSide(color: Colors.white.withOpacity(0.12)),
+                    left:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.12)),
                   ),
                 ),
                 child: _buildTabletControlPanel(),

@@ -19,7 +19,7 @@ Future<T?> showAdaptiveEntrySheet<T>({
 
   return showCupertinoModalPopup<T>(
     context: context,
-    barrierColor: Colors.black.withOpacity(0.48),
+    barrierColor: Colors.black.withValues(alpha: 0.48),
     builder: (modalContext) {
       final mediaQuery = MediaQuery.of(modalContext);
       final isTablet = ResponsiveLayout.isTablet(modalContext);
@@ -49,10 +49,11 @@ Future<T?> showAdaptiveEntrySheet<T>({
                   decoration: BoxDecoration(
                     color: AppColors.bgCard,
                     borderRadius: radius,
-                    border: Border.all(color: modalContext.wellness.borderSubtle),
+                    border:
+                        Border.all(color: modalContext.wellness.borderSubtle),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
+                        color: Colors.black.withValues(alpha: 0.12),
                         blurRadius: 28,
                         offset: const Offset(0, 12),
                       ),
@@ -117,7 +118,7 @@ class IOSActionRow extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.16),
+                color: color.withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 22),

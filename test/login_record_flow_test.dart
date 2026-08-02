@@ -46,7 +46,7 @@ void main() {
 
   /// 뷰포트/바인딩 의존 없이 Firebase 차단 오버라이드만 적용한 컨테이너 생성.
   /// (위젯을 펌프하지 않는 순수 상태-레벨 테스트에서 사용)
-  Future<ProviderContainer> _buildContainer() async {
+  Future<ProviderContainer> buildContainer() async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -66,7 +66,7 @@ void main() {
   ///
   /// [widePhysicalWidth] 가 true 면 가로폭을 넓혀 다이얼로그 내부 FilterChip Row 가
   /// 오버플로우하지 않도록 한다(lib 코드는 수정 불가하므로 뷰포트로 회피).
-  Future<ProviderContainer> _makeContainer(
+  Future<ProviderContainer> makeContainer(
     WidgetTester tester, {
     bool widePhysicalWidth = false,
   }) async {
@@ -78,7 +78,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    return _buildContainer();
+    return buildContainer();
   }
 
   // ---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ void main() {
       // (foundation 변수는 테스트 본문 종료 전에 반드시 원복해야 invariant 통과)
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       try {
-        final container = await _makeContainer(tester);
+        final container = await makeContainer(tester);
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -131,7 +131,7 @@ void main() {
         (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       try {
-        final container = await _makeContainer(tester, widePhysicalWidth: true);
+        final container = await makeContainer(tester, widePhysicalWidth: true);
 
         // 비로그인(uid == null) → mock 데이터 없이 빈 상태로 시작
         await tester.pumpWidget(
@@ -185,7 +185,7 @@ void main() {
 
     test('상태 레벨 검증 — mealsProvider.addMeal 직접 호출 시 저장된다', () async {
       // 실제 다이얼로그 흐름과 별개로, 추가 로직 자체를 순수 상태 레벨에서 검증.
-      final container = await _buildContainer();
+      final container = await buildContainer();
       addTearDown(container.dispose);
 
       final sub = container.listen(mealsProvider, (_, __) {});
@@ -215,7 +215,7 @@ void main() {
         (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       try {
-        final container = await _makeContainer(tester, widePhysicalWidth: true);
+        final container = await makeContainer(tester, widePhysicalWidth: true);
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -248,8 +248,7 @@ void main() {
         // 무게/횟수 입력 후 세트 추가 버튼(+) 탭
         await tester.enterText(
             find.widgetWithText(TextFormField, '무게(kg)'), '60');
-        await tester.enterText(
-            find.widgetWithText(TextFormField, '횟수'), '10');
+        await tester.enterText(find.widgetWithText(TextFormField, '횟수'), '10');
         await tester.tap(find.byTooltip('세트 추가'));
         await tester.pumpAndSettle();
 
@@ -276,7 +275,7 @@ void main() {
     });
 
     test('상태 레벨 검증 — workoutsProvider.addWorkout 직접 호출 시 저장된다', () async {
-      final container = await _buildContainer();
+      final container = await buildContainer();
       addTearDown(container.dispose);
 
       final sub = container.listen(workoutsProvider, (_, __) {});

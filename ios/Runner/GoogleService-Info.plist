@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>1011088994661-evig73mi1ou4eke97df4os1ah4bpu889.apps.googleusercontent.com</string>
+	<string>1011088994661-47hilstldtomus87di5es90vn06nv3nb.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.1011088994661-evig73mi1ou4eke97df4os1ah4bpu889</string>
+	<string>com.googleusercontent.apps.1011088994661-47hilstldtomus87di5es90vn06nv3nb</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>1011088994661-fajhfegjbdd39hnk71mqi9074rqjcjvo.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.dfetCoach</string>
+	<string>kr.co.dfet.coach</string>
 	<key>PROJECT_ID</key>
 	<string>dfetmanage</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1011088994661:ios:fee8b625c9902bfa5df18c</string>
+	<string>1:1011088994661:ios:58e7f0262c084e555df18c</string>
 </dict>
 </plist>

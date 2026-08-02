@@ -19,7 +19,7 @@ import 'ios_destination.dart';
 /// 2026 개편: 하단 탭을 4개로 고정 (홈 · 기록 · 리포트 · 내 정보).
 /// 리포트 탭이 careType에 따라 내용을 분기하므로 탭 개수는 항상 동일.
 /// (커뮤니티는 홈/내 정보 진입, 코칭·장건강 통계는 리포트로 통합)
-List<IOSDestination> destinationsForCareType(String careType) {
+List<IOSDestination> destinationsForCareType(CareType careType) {
   return const [
     IOSDestination.home,
     IOSDestination.record,
@@ -56,11 +56,9 @@ class _IOSShellState extends ConsumerState<IOSShell> {
   }
 
   /// 현재 사용자(로그인/게스트)의 케어 유형을 통합해서 읽는다.
-  String _resolveCareType() {
+  CareType _resolveCareType() {
     final profile = ref.watch(userProfileProvider).valueOrNull;
-    if (profile != null && profile.careType.isNotEmpty) {
-      return profile.careType;
-    }
+    if (profile != null) return profile.careType;
     return ref.watch(guestCareTypeProvider);
   }
 
@@ -221,11 +219,13 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                 backgroundColor:
                     context.wellness.bgRoot.withValues(alpha: 0.88),
                 border: Border(
-                  bottom: BorderSide(color: context.wellness.borderSubtle, width: 0.5),
+                  bottom: BorderSide(
+                      color: context.wellness.borderSubtle, width: 0.5),
                 ),
                 middle: Text(
                   destination.title,
-                  style: GoogleFonts.outfit(color: context.wellness.textPrimary),
+                  style:
+                      GoogleFonts.outfit(color: context.wellness.textPrimary),
                 ),
                 trailing: _buildToolbarActions(context),
               ),
@@ -326,12 +326,12 @@ class _IOSShellState extends ConsumerState<IOSShell> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
           color: isSelected
-              ? PremiumColors.primary.withOpacity(0.18)
+              ? PremiumColors.primary.withValues(alpha: 0.18)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
-                ? PremiumColors.primary.withOpacity(0.55)
+                ? PremiumColors.primary.withValues(alpha: 0.55)
                 : Colors.transparent,
           ),
         ),
@@ -340,13 +340,17 @@ class _IOSShellState extends ConsumerState<IOSShell> {
             Icon(
               isSelected ? destination.activeIcon : destination.icon,
               size: 22,
-              color: isSelected ? PremiumColors.primary : context.wellness.textTertiary,
+              color: isSelected
+                  ? PremiumColors.primary
+                  : context.wellness.textTertiary,
             ),
             const SizedBox(width: 12),
             Text(
               destination.label,
               style: GoogleFonts.outfit(
-                color: isSelected ? context.wellness.textPrimary : context.wellness.textTertiary,
+                color: isSelected
+                    ? context.wellness.textPrimary
+                    : context.wellness.textTertiary,
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -365,7 +369,8 @@ class _IOSShellState extends ConsumerState<IOSShell> {
           padding: EdgeInsets.zero,
           child: Stack(
             children: [
-              Icon(CupertinoIcons.bell, size: 24, color: context.wellness.textPrimary),
+              Icon(CupertinoIcons.bell,
+                  size: 24, color: context.wellness.textPrimary),
               Positioned(
                 right: 0,
                 top: 0,

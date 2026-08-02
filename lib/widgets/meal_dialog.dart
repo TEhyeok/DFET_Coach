@@ -522,8 +522,8 @@ class _MealDialogState extends State<MealDialog> {
                         ),
                         label: Text('정확도: ${_analysisResult!['confidence']}'),
                         backgroundColor: _analysisResult!['confidence'] == '높음'
-                            ? AppColors.brandPrimary.withOpacity(0.2)
-                            : AppColors.warn.withOpacity(0.2),
+                            ? AppColors.brandPrimary.withValues(alpha: 0.2)
+                            : AppColors.warn.withValues(alpha: 0.2),
                       ),
                     ),
                 ],
@@ -644,8 +644,8 @@ class _MealDialogState extends State<MealDialog> {
             ? Icon(icon, color: context.wellness.textTertiary)
             : null,
         labelStyle: TextStyle(color: context.wellness.textTertiary),
-        hintStyle:
-            TextStyle(color: context.wellness.textTertiary.withOpacity(0.5)),
+        hintStyle: TextStyle(
+            color: context.wellness.textTertiary.withValues(alpha: 0.5)),
         filled: true,
         fillColor: context.wellness.bgRoot,
         border: OutlineInputBorder(

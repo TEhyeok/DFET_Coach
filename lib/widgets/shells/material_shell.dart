@@ -90,7 +90,7 @@ class MaterialShell extends ConsumerWidget {
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           backgroundColor: PremiumColors.cardBackground,
-          indicatorColor: PremiumColors.primary.withOpacity(0.2),
+          indicatorColor: PremiumColors.primary.withValues(alpha: 0.2),
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return GoogleFonts.outfit(

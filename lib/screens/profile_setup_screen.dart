@@ -3,11 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../state/user_state.dart';
 import '../state/app_state.dart';
 import '../models/user_profile.dart';
 import '../core/utils/app_logger.dart';
-import '../state/auth_state.dart';
 import '../theme/tokens.dart';
 import '../utils/responsive_layout.dart';
 
@@ -419,7 +417,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isSelected ? context.wellness.primary : context.wellness.bgCard,
+            color:
+                isSelected ? context.wellness.primary : context.wellness.bgCard,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isSelected ? Colors.transparent : context.wellness.border,
@@ -432,9 +431,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               Icon(
                 icon,
                 size: 60,
-                color: isSelected
-                    ? Colors.white
-                    : context.wellness.textTertiary,
+                color:
+                    isSelected ? Colors.white : context.wellness.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(

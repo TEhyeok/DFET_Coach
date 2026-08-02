@@ -7,12 +7,12 @@ import 'workout_state.dart';
 /// CoachingCorrelationService에서 사용
 final todayWorkoutMetadataProvider = Provider<List<WorkoutMetadata>>((ref) {
   final workouts = ref.watch(workoutsProvider);
-  
+
   return workouts.map((workout) {
     // Workout 모델을 WorkoutMetadata로 변환
     final intensity = _determineIntensity(workout);
     final exerciseType = _normalizeExerciseType(workout.name);
-    
+
     return WorkoutMetadata(
       id: workout.id,
       exerciseType: exerciseType,
@@ -43,15 +43,33 @@ ExerciseIntensity _determineIntensity(Workout workout) {
 /// 운동 이름 정규화 (영어 대문자로)
 String _normalizeExerciseType(String name) {
   final lowerName = name.toLowerCase();
-  
-  if (lowerName.contains('스쿼트') || lowerName.contains('squat')) return 'SQUAT';
-  if (lowerName.contains('푸시업') || lowerName.contains('pushup') || lowerName.contains('press')) return 'BENCH';
-  if (lowerName.contains('데드') || lowerName.contains('dead')) return 'DEADLIFT';
+
+  if (lowerName.contains('스쿼트') || lowerName.contains('squat')) {
+    return 'SQUAT';
+  }
+  if (lowerName.contains('푸시업') ||
+      lowerName.contains('pushup') ||
+      lowerName.contains('press')) {
+    return 'BENCH';
+  }
+  if (lowerName.contains('데드') || lowerName.contains('dead')) {
+    return 'DEADLIFT';
+  }
   if (lowerName.contains('로우') || lowerName.contains('row')) return 'ROW';
-  if (lowerName.contains('런') || lowerName.contains('run') || lowerName.contains('조깅')) return 'RUNNING';
-  if (lowerName.contains('사이클') || lowerName.contains('cycle') || lowerName.contains('자전거')) return 'CYCLING';
+  if (lowerName.contains('런') ||
+      lowerName.contains('run') ||
+      lowerName.contains('조깅')) {
+    return 'RUNNING';
+  }
+  if (lowerName.contains('사이클') ||
+      lowerName.contains('cycle') ||
+      lowerName.contains('자전거')) {
+    return 'CYCLING';
+  }
   if (lowerName.contains('요가') || lowerName.contains('yoga')) return 'YOGA';
-  if (lowerName.contains('필라테스') || lowerName.contains('pilates')) return 'PILATES';
-  
+  if (lowerName.contains('필라테스') || lowerName.contains('pilates')) {
+    return 'PILATES';
+  }
+
   return name.toUpperCase();
 }

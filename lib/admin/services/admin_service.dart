@@ -146,10 +146,10 @@ class AdminService {
       final dateString = entry.key;
       final dayMeals = entry.value;
 
-      final calories = dayMeals.fold<int>(0, (sum, m) => sum + m.calories);
-      final protein = dayMeals.fold<int>(0, (sum, m) => sum + m.protein);
-      final carbs = dayMeals.fold<int>(0, (sum, m) => sum + m.carbs);
-      final fat = dayMeals.fold<int>(0, (sum, m) => sum + m.fat);
+      final calories = dayMeals.fold<int>(0, (total, m) => total + m.calories);
+      final protein = dayMeals.fold<int>(0, (total, m) => total + m.protein);
+      final carbs = dayMeals.fold<int>(0, (total, m) => total + m.carbs);
+      final fat = dayMeals.fold<int>(0, (total, m) => total + m.fat);
 
       dailyStats[dateString] = DailyStats(
         date: dateString,
@@ -222,8 +222,7 @@ class AdminService {
       // 주의: 사용자 수가 많아지면 이 방식은 비효율적이므로 Cloud Functions로 이관 필요
       for (final user in users) {
         // 활성 사용자 계산 (최근 7일 이내 로그인)
-        if (user.lastLoginAt != null &&
-            user.lastLoginAt!.isAfter(sevenDaysAgo)) {
+        if (user.lastLoginAt.isAfter(sevenDaysAgo)) {
           activeUsers++;
         }
 
@@ -233,13 +232,13 @@ class AdminService {
             .doc(user.uid)
             .collection('meals')
             .get();
-        
+
         totalMeals += mealsSnapshot.docs.length;
 
         for (final doc in mealsSnapshot.docs) {
           final data = doc.data();
           final meal = Meal.fromFirestore(data, doc.id);
-          
+
           // AI 토큰 사용량 집계
           if (meal.aiTokenUsage != null) {
             final tokens = (meal.aiTokenUsage!['totalTokens'] as int? ?? 0);
@@ -247,7 +246,7 @@ class AdminService {
 
             // 일별 토큰 사용량 (최근 7일만)
             if (dailyAiTokenUsage.containsKey(meal.date)) {
-              dailyAiTokenUsage[meal.date] = 
+              dailyAiTokenUsage[meal.date] =
                   (dailyAiTokenUsage[meal.date] ?? 0) + tokens;
             }
           }
@@ -259,7 +258,7 @@ class AdminService {
             .doc(user.uid)
             .collection('workouts')
             .get();
-        
+
         totalWorkouts += workoutsSnapshot.docs.length;
       }
 
@@ -270,9 +269,7 @@ class AdminService {
         totalWorkouts: totalWorkouts,
         totalAiTokens: totalAiTokens,
         dailyAiTokenUsage: dailyAiTokenUsage,
-        recentUsers: users
-          ..sort((a, b) => (b.createdAt ?? DateTime(2000))
-              .compareTo(a.createdAt ?? DateTime(2000))),
+        recentUsers: users..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
       );
 
       AppLogger.info('[AdminService] 대시보드 통계 조회 완료');
@@ -330,18 +327,22 @@ class AdminService {
 
     // Mock Data 생성
     final now = DateTime.now();
-    final dates = List.generate(30, (i) => now.subtract(Duration(days: 29 - i)));
-    
+    final dates =
+        List.generate(30, (i) => now.subtract(Duration(days: 29 - i)));
+
     // 1. User Growth (Cumulative)
     int baseUsers = 150;
     final userGrowth = dates.map((date) {
       baseUsers += (date.day % 3); // Randomish growth
-      return FlSpot(date.millisecondsSinceEpoch.toDouble(), baseUsers.toDouble());
+      return FlSpot(
+          date.millisecondsSinceEpoch.toDouble(), baseUsers.toDouble());
     }).toList();
 
     // 2. Daily Active Users (DAU)
     final dau = dates.map((date) {
-      final value = 20 + (date.day % 15) + (date.weekday == 6 || date.weekday == 7 ? 10 : 0);
+      final value = 20 +
+          (date.day % 15) +
+          (date.weekday == 6 || date.weekday == 7 ? 10 : 0);
       return FlSpot(date.millisecondsSinceEpoch.toDouble(), value.toDouble());
     }).toList();
 

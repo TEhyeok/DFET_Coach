@@ -29,8 +29,8 @@ class AdminProfile {
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       approvalStatus: map['approvalStatus'] as String? ?? 'pending',
       role: map['role'] as String? ?? 'admin',
-      lastLoginAt: map['lastLoginAt'] != null 
-          ? (map['lastLoginAt'] as Timestamp).toDate() 
+      lastLoginAt: map['lastLoginAt'] != null
+          ? (map['lastLoginAt'] as Timestamp).toDate()
           : null,
     );
   }
@@ -43,7 +43,8 @@ class AdminProfile {
       'createdAt': Timestamp.fromDate(createdAt),
       'approvalStatus': approvalStatus,
       'role': role,
-      'lastLoginAt': lastLoginAt != null ? Timestamp.fromDate(lastLoginAt!) : null,
+      'lastLoginAt':
+          lastLoginAt != null ? Timestamp.fromDate(lastLoginAt!) : null,
     };
   }
 

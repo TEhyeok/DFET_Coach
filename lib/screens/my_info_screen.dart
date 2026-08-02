@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/user_state.dart';
@@ -20,8 +19,8 @@ class MyInfoScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios,
-                color: context.wellness.textPrimary),
+            icon:
+                Icon(Icons.arrow_back_ios, color: context.wellness.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
@@ -47,7 +46,8 @@ class MyInfoScreen extends ConsumerWidget {
                   children: [
                     _buildInfoRow(context, '이름', profile.displayName ?? '사용자'),
                     _buildInfoRow(context, '이메일', profile.email ?? '-'),
-                    _buildInfoRow(context, '가입일', profile.createdAt != null ? profile.createdAt.toString().split(' ')[0] : '-'),
+                    _buildInfoRow(context, '가입일',
+                        profile.createdAt.toString().split(' ')[0]),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -55,10 +55,17 @@ class MyInfoScreen extends ConsumerWidget {
                   context,
                   title: '신체 정보',
                   children: [
-                    _buildInfoRow(context, '성별', profile.gender == 'Male' ? '남성' : (profile.gender == 'Female' ? '여성' : '-')),
+                    _buildInfoRow(
+                        context,
+                        '성별',
+                        profile.gender == 'Male'
+                            ? '남성'
+                            : (profile.gender == 'Female' ? '여성' : '-')),
                     _buildInfoRow(context, '나이', '${profile.age ?? -1}세'),
-                    _buildInfoRow(context, '키', '${profile.height?.toInt() ?? -1}cm'),
-                    _buildInfoRow(context, '몸무게', '${profile.weight?.toInt() ?? -1}kg'),
+                    _buildInfoRow(
+                        context, '키', '${profile.height?.toInt() ?? -1}cm'),
+                    _buildInfoRow(
+                        context, '몸무게', '${profile.weight?.toInt() ?? -1}kg'),
                   ],
                 ),
                 const SizedBox(height: 20),

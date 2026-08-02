@@ -29,10 +29,10 @@ class WorkoutMetadata {
   /// 메타데이터 문자열 파싱
   static WorkoutMetadata? fromMetadataString(String raw) {
     if (!raw.startsWith('#DFET_META|')) return null;
-    
+
     final parts = raw.split('|');
     if (parts.length < 8) return null;
-    
+
     return WorkoutMetadata(
       id: parts[2],
       exerciseType: parts[3],
@@ -97,9 +97,9 @@ class WorkoutMetadata {
 
 /// 운동 강도 레벨
 enum ExerciseIntensity {
-  low,    // 저강도: 요가, 스트레칭
+  low, // 저강도: 요가, 스트레칭
   medium, // 중강도: 일반 웨이트
-  high,   // 고강도: HIIT, 대근육 고반복
+  high, // 고강도: HIIT, 대근육 고반복
 }
 
 /// 코칭 연동 상태

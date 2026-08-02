@@ -141,7 +141,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
               _metricDivider(),
               Expanded(child: _summaryMetric('$totalCalories', 'kcal')),
               _metricDivider(),
-              Expanded(child: _summaryMetric('${totalWorkoutTime}분', '시간')),
+              Expanded(child: _summaryMetric('$totalWorkoutTime분', '시간')),
             ],
           ),
         ),
@@ -223,11 +223,11 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           ),
           const SizedBox(width: 8),
           CupertinoButton(
-            minSize: 34,
+            minimumSize: const Size.square(34),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             color: isToday
                 ? context.wellness.bgSubtle
-                : context.wellness.primary.withOpacity(0.22),
+                : context.wellness.primary.withValues(alpha: 0.22),
             borderRadius: BorderRadius.circular(12),
             onPressed: isToday
                 ? null
@@ -255,7 +255,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
     required VoidCallback? onPressed,
   }) {
     return CupertinoButton(
-      minSize: 34,
+      minimumSize: const Size.square(34),
       padding: EdgeInsets.zero,
       onPressed: onPressed,
       child: Icon(
@@ -365,7 +365,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
     return CupertinoSlidingSegmentedControl<RecordSection>(
       groupValue: _selectedSection,
       backgroundColor: context.wellness.bgSubtle,
-      thumbColor: context.wellness.primary.withOpacity(0.28),
+      thumbColor: context.wellness.primary.withValues(alpha: 0.28),
       children: {
         for (final section in RecordSection.values)
           section: Padding(
@@ -502,12 +502,12 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
         padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.success.withOpacity(0.16)
+              ? AppColors.success.withValues(alpha: 0.16)
               : context.wellness.bgSubtle,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected
-                ? AppColors.success.withOpacity(0.75)
+                ? AppColors.success.withValues(alpha: 0.75)
                 : context.wellness.borderSubtle,
           ),
         ),
@@ -515,7 +515,8 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           children: [
             Icon(
               icon,
-              color: selected ? AppColors.success : context.wellness.textTertiary,
+              color:
+                  selected ? AppColors.success : context.wellness.textTertiary,
               size: 26,
             ),
             const SizedBox(height: 6),

@@ -21,7 +21,8 @@ class CommunityService {
 
     // Upload images
     for (var image in images) {
-      final ref = _storage.ref().child('posts/${DateTime.now().millisecondsSinceEpoch}_${user.uid}.jpg');
+      final ref = _storage.ref().child(
+          'posts/${DateTime.now().millisecondsSinceEpoch}_${user.uid}.jpg');
       await ref.putFile(image);
       final url = await ref.getDownloadURL();
       imageUrls.add(url);

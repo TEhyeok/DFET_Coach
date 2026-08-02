@@ -59,7 +59,9 @@ class AdminSettings {
   }
 }
 
-final adminSettingsProvider = StateNotifierProvider<AdminSettingsService, AsyncValue<AdminSettings>>((ref) {
+final adminSettingsProvider =
+    StateNotifierProvider<AdminSettingsService, AsyncValue<AdminSettings>>(
+        (ref) {
   return AdminSettingsService();
 });
 
@@ -68,7 +70,9 @@ class AdminSettingsService extends StateNotifier<AsyncValue<AdminSettings>> {
     _init();
   }
 
-  final _docRef = FirebaseFirestore.instance.collection('system_settings').doc('admin_config');
+  final _docRef = FirebaseFirestore.instance
+      .collection('system_settings')
+      .doc('admin_config');
 
   Future<void> _init() async {
     try {
@@ -81,7 +85,7 @@ class AdminSettingsService extends StateNotifier<AsyncValue<AdminSettings>> {
         await _docRef.set(defaultSettings.toMap());
         state = AsyncValue.data(defaultSettings);
       }
-      
+
       // Listen for real-time updates
       _docRef.snapshots().listen((snapshot) {
         if (snapshot.exists) {
@@ -99,9 +103,9 @@ class AdminSettingsService extends StateNotifier<AsyncValue<AdminSettings>> {
     } catch (e) {
       // If document doesn't exist (e.g. deleted manually), recreate it
       if (e is FirebaseException && e.code == 'not-found') {
-         final defaultSettings = AdminSettings();
-         await _docRef.set(defaultSettings.toMap());
-         await _docRef.update({key: value});
+        final defaultSettings = AdminSettings();
+        await _docRef.set(defaultSettings.toMap());
+        await _docRef.update({key: value});
       } else {
         rethrow;
       }

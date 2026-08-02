@@ -18,7 +18,7 @@ class RequestCard extends StatelessWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final statusColor = _getStatusColor(request.status);
     final typeIcon = _getTypeIcon(request.type);
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -38,11 +38,13 @@ class RequestCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                      border:
+                          Border.all(color: statusColor.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       request.status.name.toUpperCase(),
@@ -57,7 +59,9 @@ class RequestCard extends StatelessWidget {
                     DateFormat('MMM d, HH:mm').format(request.createdAt),
                     style: AdminTheme.bodyMedium.copyWith(
                       fontSize: 12,
-                      color: isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary,
+                      color: isLight
+                          ? AdminTheme.textSecondaryLight
+                          : AdminTheme.textSecondary,
                     ),
                   ),
                 ],
@@ -67,7 +71,7 @@ class RequestCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: AdminTheme.primary.withOpacity(0.2),
+                    backgroundColor: AdminTheme.primary.withValues(alpha: 0.2),
                     backgroundImage: request.userPhotoUrl != null
                         ? NetworkImage(request.userPhotoUrl!)
                         : null,
@@ -89,7 +93,9 @@ class RequestCard extends StatelessWidget {
                       request.userName,
                       style: AdminTheme.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                        color: isLight
+                            ? AdminTheme.textPrimaryLight
+                            : AdminTheme.textWhite,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -106,7 +112,9 @@ class RequestCard extends StatelessWidget {
                       request.title,
                       style: AdminTheme.titleMedium.copyWith(
                         fontSize: 14,
-                        color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                        color: isLight
+                            ? AdminTheme.textPrimaryLight
+                            : AdminTheme.textWhite,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -118,7 +126,9 @@ class RequestCard extends StatelessWidget {
               Text(
                 request.description,
                 style: AdminTheme.bodyMedium.copyWith(
-                  color: isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary,
+                  color: isLight
+                      ? AdminTheme.textSecondaryLight
+                      : AdminTheme.textSecondary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../state/user_state.dart';
 import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
@@ -38,7 +38,8 @@ class IOSProfileScreen extends ConsumerWidget {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: context.wellness.primary.withOpacity(0.18),
+                          color:
+                              context.wellness.primary.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -124,6 +125,14 @@ class IOSProfileScreen extends ConsumerWidget {
                     builder: (context) => const MemberSoapNotesScreen(),
                   ),
                 ),
+              ),
+              const SizedBox(height: 8),
+              IOSActionRow(
+                icon: CupertinoIcons.heart_circle,
+                title: '케어 유형',
+                subtitle: '운동·식단, 장 건강, 통합 케어 선택',
+                color: AppColors.brandPrimary,
+                onPressed: () => context.push('/home/myPage/careType'),
               ),
               const SizedBox(height: 8),
               IOSActionRow(

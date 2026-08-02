@@ -36,7 +36,8 @@ class AuthService {
       }
 
       // 인증 정보 가져오기
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Firebase 자격증명 생성
       final credential = GoogleAuthProvider.credential(
@@ -93,7 +94,9 @@ class AuthService {
       if (userCredential.user != null &&
           userCredential.user!.displayName == null &&
           appleCredential.givenName != null) {
-        final displayName = '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim();
+        final displayName =
+            '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'
+                .trim();
         if (displayName.isNotEmpty) {
           await userCredential.user!.updateDisplayName(displayName);
         }
@@ -205,7 +208,8 @@ class AuthService {
   }
 
   /// 이메일/비밀번호 로그인
-  Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
       AppLogger.info('이메일 로그인 시도: $email');
       final userCredential = await _auth.signInWithEmailAndPassword(
@@ -224,7 +228,8 @@ class AuthService {
   }
 
   /// 이메일/비밀번호 회원가입
-  Future<UserCredential> signUpWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential> signUpWithEmailAndPassword(
+      String email, String password) async {
     try {
       AppLogger.info('이메일 회원가입 시도: $email');
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -246,9 +251,11 @@ class AuthService {
 
   /// Nonce 생성 (Apple 로그인용)
   String _generateNonce([int length = 32]) {
-    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
   }
 
   /// SHA256 해시 생성

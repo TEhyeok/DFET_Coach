@@ -22,7 +22,7 @@ class CommunityScreen extends ConsumerWidget {
             ? Center(
                 child: Text(
                   '첫 게시글을 작성해보세요!',
-                  style: GoogleFonts.outfit(color: Colors.white54),
+                  style: GoogleFonts.outfit(color: context.wellness.textSecondary),
                 ),
               )
             : Center(
@@ -40,7 +40,7 @@ class CommunityScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Text('에러 발생: $error',
-              style: const TextStyle(color: Colors.white)),
+              style: TextStyle(color: context.wellness.textPrimary)),
         ),
       ),
       floatingActionButton: FloatingActionButton(

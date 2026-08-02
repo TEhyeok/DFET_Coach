@@ -182,8 +182,8 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
                               style: AppTextStyles.label
                                   .copyWith(color: AppColors.info)),
                           Text('카메라로 실시간 자세를 평가할 수 있습니다',
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.textSubtle)),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                  color: context.wellness.textTertiary)),
                         ],
                       ),
                     ),
@@ -277,7 +277,7 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
     }
 
     return Dialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: context.wellness.bgCard,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Radii.xxl)),
       child: content,
@@ -294,8 +294,9 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
           children: [
             Icon(icon,
                 size: 16,
-                color:
-                    isSelected ? AppColors.brandPrimary : AppColors.textSubtle),
+                color: isSelected
+                    ? AppColors.brandPrimary
+                    : context.wellness.textTertiary),
             const SizedBox(width: 4),
             Text(label),
           ],
@@ -303,7 +304,7 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
         onSelected: (selected) {
           setState(() => _selectedCategory = value);
         },
-        backgroundColor: AppColors.bgApp,
+        backgroundColor: context.wellness.bgRoot,
         selectedColor: AppColors.brandPrimary.withOpacity(0.1),
       ),
     );
@@ -322,7 +323,7 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
       inputFormatters: isNumber
           ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
           : null,
-      style: const TextStyle(color: AppColors.textStrong),
+      style: TextStyle(color: context.wellness.textPrimary),
       validator: (value) {
         if (required && (value == null || value.isEmpty)) {
           return '필수 입력 항목입니다';
@@ -341,17 +342,18 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: const TextStyle(color: AppColors.textSubtle),
-        hintStyle: TextStyle(color: AppColors.textSubtle.withOpacity(0.5)),
+        labelStyle: TextStyle(color: context.wellness.textTertiary),
+        hintStyle:
+            TextStyle(color: context.wellness.textTertiary.withOpacity(0.5)),
         filled: true,
-        fillColor: AppColors.bgApp,
+        fillColor: context.wellness.bgRoot,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.bgStroke),
+          borderSide: BorderSide(color: context.wellness.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.bgStroke),
+          borderSide: BorderSide(color: context.wellness.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

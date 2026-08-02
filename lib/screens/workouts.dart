@@ -53,8 +53,8 @@ class WorkoutsScreen extends ConsumerWidget {
                         flex: 4,
                         child: SizedBox(
                           height: summaryHeight,
-                          child: _buildSummaryCard(workouts.length, totalTime,
-                              summaryHeight, isToday),
+                          child: _buildSummaryCard(context, workouts.length,
+                              totalTime, summaryHeight, isToday),
                         ),
                       ),
                       const SizedBox(width: 20),
@@ -72,8 +72,8 @@ class WorkoutsScreen extends ConsumerWidget {
                     children: [
                       SizedBox(
                         height: summaryHeight,
-                        child: _buildSummaryCard(
-                            workouts.length, totalTime, summaryHeight, isToday),
+                        child: _buildSummaryCard(context, workouts.length,
+                            totalTime, summaryHeight, isToday),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
@@ -89,22 +89,26 @@ class WorkoutsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(
-      int workoutCount, int totalTime, double summaryHeight, bool isToday) {
+  Widget _buildSummaryCard(BuildContext context, int workoutCount,
+      int totalTime, double summaryHeight, bool isToday) {
     return AppCard(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isToday ? '오늘의 운동' : '선택 날짜 운동', style: AppTextStyles.h3),
+          Text(
+            isToday ? '오늘의 운동' : '선택 날짜 운동',
+            style:
+                AppTextStyles.h3.copyWith(color: context.wellness.textPrimary),
+          ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _summaryCell('$workoutCount', '운동', summaryHeight),
-              _summaryCell('$totalTime분', '총 시간', summaryHeight),
-              _summaryCell('${(totalTime * 5).toStringAsFixed(0)}', 'kcal 소모',
-                  summaryHeight),
+              _summaryCell(context, '$workoutCount', '운동', summaryHeight),
+              _summaryCell(context, '$totalTime분', '총 시간', summaryHeight),
+              _summaryCell(context, '${(totalTime * 5).toStringAsFixed(0)}',
+                  'kcal 소모', summaryHeight),
             ],
           ),
         ],
@@ -121,7 +125,11 @@ class WorkoutsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('운동 기록', style: AppTextStyles.h3),
+              Text(
+                '운동 기록',
+                style: AppTextStyles.h3
+                    .copyWith(color: context.wellness.textPrimary),
+              ),
               if (showEntryActions)
                 Row(
                   children: [
@@ -193,9 +201,10 @@ class WorkoutsScreen extends ConsumerWidget {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.bgApp,
+                            color: context.wellness.bgRoot,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.bgStroke),
+                            border:
+                                Border.all(color: context.wellness.border),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,25 +237,32 @@ class WorkoutsScreen extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(workout.name,
-                                              style: AppTextStyles.h3),
+                                              style: AppTextStyles.h3.copyWith(
+                                                  color: context
+                                                      .wellness.textPrimary)),
                                           Text(
                                             DateFormat('HH:mm')
                                                 .format(workout.timestamp),
-                                            style: AppTextStyles.bodySmall,
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                    color: context.wellness
+                                                        .textTertiary),
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
                                   Text(workout.displaySummary,
-                                      style: AppTextStyles.label),
+                                      style: AppTextStyles.label.copyWith(
+                                          color:
+                                              context.wellness.textSecondary)),
                                 ],
                               ),
                               if (workout.category == 'strength' &&
                                   workout.sets.isNotEmpty) ...[
                                 const SizedBox(height: 8),
-                                const Divider(
-                                    color: AppColors.bgStroke, height: 1),
+                                Divider(
+                                    color: context.wellness.border, height: 1),
                                 const SizedBox(height: 8),
                                 Wrap(
                                   spacing: 8,
@@ -285,7 +301,8 @@ class WorkoutsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _summaryCell(String value, String label, double height) {
+  Widget _summaryCell(
+      BuildContext context, String value, String label, double height) {
     final valueFontSize = (height * 0.30).clamp(18.0, 28.0);
     final labelFontSize = (height * 0.12).clamp(10.0, 12.0);
 
@@ -303,7 +320,10 @@ class WorkoutsScreen extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(fontSize: labelFontSize),
+            style: AppTextStyles.bodySmall.copyWith(
+              fontSize: labelFontSize,
+              color: context.wellness.textTertiary,
+            ),
           ),
         ],
       ),

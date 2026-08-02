@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -71,7 +72,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         isLoading = false;
         _loadTimeMs = stopwatch.elapsedMilliseconds;
       });
-      print('📊 [ReportsScreen] 데이터 로드 완료: ${stopwatch.elapsedMilliseconds}ms');
+      if (kDebugMode) {
+        debugPrint(
+            '📊 [ReportsScreen] 데이터 로드 완료: ${stopwatch.elapsedMilliseconds}ms');
+      }
     }
   }
 
@@ -202,14 +206,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         caloriesData.any((c) => c > 0) || workoutsData.any((w) => w > 0);
     final dataLength = isWeekly ? 7 : 4;
 
-    // 화면 크기 기반 비율 계산
+    // 화면 크기 기반 비율 계산 (한 화면에 토글+차트1개가 보이도록 압축)
     final screenHeight = MediaQuery.of(context).size.height;
     final safeAreaPadding = MediaQuery.of(context).padding;
     final availableHeight =
         screenHeight - safeAreaPadding.top - safeAreaPadding.bottom - 140;
-    final selectorHeight = (availableHeight * 0.08).clamp(60.0, 80.0);
-    final chartHeight = (availableHeight * 0.28).clamp(250.0, 400.0);
-    final summaryHeight = (availableHeight * 0.20).clamp(180.0, 300.0);
+    final selectorHeight = (availableHeight * 0.07).clamp(52.0, 64.0);
+    final chartHeight = (availableHeight * 0.24).clamp(180.0, 240.0);
+    final summaryHeight = (availableHeight * 0.18).clamp(160.0, 200.0);
 
     return Stack(
       children: [
@@ -225,9 +229,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     child: AppCard(
                       child: Row(
                         children: [
-                          _periodButton('주간', 'week'),
+                          _periodButton(context, '주간', 'week'),
                           const SizedBox(width: 8),
-                          _periodButton('월간', 'month'),
+                          _periodButton(context, '월간', 'month'),
                           if (!isWeekly) ...[
                             const SizedBox(width: 8),
                             IconButton(
@@ -235,7 +239,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                               icon: const Icon(Icons.calendar_month, size: 20),
                               tooltip: '월 선택',
                               style: IconButton.styleFrom(
-                                backgroundColor: AppColors.brandPrimary
+                                backgroundColor: context.wellness.primary
                                     .withValues(alpha: 0.1),
                               ),
                             ),
@@ -249,35 +253,43 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       '${selectedMonth.year}년 ${selectedMonth.month}월',
                       style: AppTextStyles.caption
-                          .copyWith(color: AppColors.brandPrimary),
+                          .copyWith(color: context.wellness.primary),
                       textAlign: TextAlign.center,
                     ),
                   ],
-                  // 디버그: 로딩 시간 표시
-                  if (_loadTimeMs != null) ...[
+                  // 디버그: 로딩 시간 표시 (디버그 빌드에서만)
+                  if (kDebugMode && _loadTimeMs != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       '⏱️ 로딩 시간: ${_loadTimeMs}ms',
                       style: AppTextStyles.caption.copyWith(
                         color: _loadTimeMs! < 1000
-                            ? AppColors.brandPrimary
-                            : AppColors.warn,
+                            ? context.wellness.primary
+                            : context.wellness.warning,
                         fontSize: 10,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
+                  if (!hasAnyData)
+                    _buildEmptyState(context, chartHeight + summaryHeight)
+                  else ...[
                   // Wellness score trend
                   SizedBox(
                     height: chartHeight,
                     child: AppCard(
+                      padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('웰니스 점수 추이', style: AppTextStyles.h3),
-                          const SizedBox(height: 8),
+                          Text(
+                            '웰니스 점수 추이',
+                            style: AppTextStyles.h3.copyWith(
+                                color: context.wellness.textPrimary),
+                          ),
+                          const SizedBox(height: 6),
                           Expanded(
                             child: LineChart(
                               LineChartData(
@@ -287,7 +299,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                   horizontalInterval: 25,
                                   getDrawingHorizontalLine: (value) {
                                     return FlLine(
-                                      color: AppColors.bgStroke,
+                                      color: context.wellness.border,
                                       strokeWidth: 1,
                                     );
                                   },
@@ -300,7 +312,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                       getTitlesWidget: (value, meta) {
                                         return Text(
                                           value.toInt().toString(),
-                                          style: AppTextStyles.caption,
+                                          style: AppTextStyles.caption.copyWith(
+                                              color: context
+                                                  .wellness.textTertiary),
                                         );
                                       },
                                     ),
@@ -314,7 +328,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                         if (index >= 0 &&
                                             index < labels.length) {
                                           return Text(labels[index],
-                                              style: AppTextStyles.caption);
+                                              style: AppTextStyles.caption
+                                                  .copyWith(
+                                                      color: context.wellness
+                                                          .textTertiary));
                                         }
                                         return const Text('');
                                       },
@@ -339,12 +356,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                             FlSpot(e.key.toDouble(), e.value))
                                         .toList(),
                                     isCurved: false,
-                                    color: AppColors.brandPrimary,
+                                    color: context.wellness.primary,
                                     barWidth: 3,
                                     dotData: const FlDotData(show: true),
                                     belowBarData: BarAreaData(
                                       show: true,
-                                      color: AppColors.brandPrimary
+                                      color: context.wellness.primary
                                           .withValues(alpha: 0.1),
                                     ),
                                   ),
@@ -356,17 +373,22 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Calories bar chart
                   SizedBox(
                     height: chartHeight,
                     child: AppCard(
+                      padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('칼로리 섭취량', style: AppTextStyles.h3),
-                          const SizedBox(height: 8),
+                          Text(
+                            '칼로리 섭취량',
+                            style: AppTextStyles.h3.copyWith(
+                                color: context.wellness.textPrimary),
+                          ),
+                          const SizedBox(height: 6),
                           Expanded(
                             child: BarChart(
                               BarChartData(
@@ -377,7 +399,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                   horizontalInterval: 500,
                                   getDrawingHorizontalLine: (value) {
                                     return FlLine(
-                                      color: AppColors.bgStroke,
+                                      color: context.wellness.border,
                                       strokeWidth: 1,
                                     );
                                   },
@@ -390,7 +412,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                       getTitlesWidget: (value, meta) {
                                         return Text(
                                           '${(value / 1000).toStringAsFixed(1)}k',
-                                          style: AppTextStyles.caption,
+                                          style: AppTextStyles.caption.copyWith(
+                                              color: context
+                                                  .wellness.textTertiary),
                                         );
                                       },
                                     ),
@@ -403,7 +427,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                         if (index >= 0 &&
                                             index < labels.length) {
                                           return Text(labels[index],
-                                              style: AppTextStyles.caption);
+                                              style: AppTextStyles.caption
+                                                  .copyWith(
+                                                      color: context.wellness
+                                                          .textTertiary));
                                         }
                                         return const Text('');
                                       },
@@ -423,7 +450,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                     barRods: [
                                       BarChartRodData(
                                         toY: caloriesData[index].toDouble(),
-                                        color: AppColors.accentGold,
+                                        color: context.wellness.accent,
                                         width: isWeekly ? 12 : 20,
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -437,49 +464,57 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Summary stats
                   SizedBox(
                     height: summaryHeight,
                     child: AppCard(
+                      padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(isWeekly ? '이번 주 요약' : '이번 달 요약',
-                              style: AppTextStyles.h3),
-                          const SizedBox(height: 8),
+                          Text(
+                            isWeekly ? '이번 주 요약' : '이번 달 요약',
+                            style: AppTextStyles.h3.copyWith(
+                                color: context.wellness.textPrimary),
+                          ),
+                          const SizedBox(height: 6),
                           Expanded(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 _statRow(
+                                  context,
                                   '평균 웰니스 점수',
                                   hasAnyData
                                       ? '${(wellnessData.reduce((a, b) => a + b) / wellnessData.length).round()}점'
                                       : '0점',
-                                  AppColors.brandPrimary,
+                                  context.wellness.primary,
                                 ),
                                 _statRow(
+                                  context,
                                   '총 칼로리 섭취',
                                   hasAnyData
                                       ? '${caloriesData.reduce((a, b) => a + b).toStringAsFixed(0)} kcal'
                                       : '0 kcal',
-                                  AppColors.accentGold,
+                                  context.wellness.accent,
                                 ),
                                 _statRow(
+                                  context,
                                   '총 운동 시간',
                                   hasAnyData
                                       ? '${workoutsData.reduce((a, b) => a + b)}분'
                                       : '0분',
-                                  AppColors.info,
+                                  context.wellness.info,
                                 ),
                                 _statRow(
+                                  context,
                                   '목표 달성률',
                                   hasAnyData
                                       ? '${((wellnessData.reduce((a, b) => a + b) / wellnessData.length) / 100 * 100).round()}%'
                                       : '0%',
-                                  AppColors.brandPrimary,
+                                  context.wellness.primary,
                                 ),
                               ],
                             ),
@@ -488,6 +523,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ),
                     ),
                   ),
+                  ],
                 ],
               ),
             ),
@@ -504,7 +540,41 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
   }
 
-  Widget _periodButton(String label, String value) {
+  Widget _buildEmptyState(BuildContext context, double height) {
+    return SizedBox(
+      height: height.clamp(280.0, 560.0),
+      child: AppCard(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.insights_outlined,
+                size: 48,
+                color: context.wellness.textTertiary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '아직 표시할 데이터가 없어요',
+                style: AppTextStyles.h3
+                    .copyWith(color: context.wellness.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '식단과 운동을 기록하면 추이가 여기에 나타나요.',
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: context.wellness.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _periodButton(BuildContext context, String label, String value) {
     final isSelected = selectedPeriod == value;
     return Expanded(
       child: OutlinedButton(
@@ -514,27 +584,35 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         },
         style: OutlinedButton.styleFrom(
           backgroundColor: isSelected
-              ? AppColors.brandPrimary.withValues(alpha: 0.1)
+              ? context.wellness.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           side: BorderSide(
-            color: isSelected ? AppColors.brandPrimary : AppColors.bgStroke,
+            color:
+                isSelected ? context.wellness.primary : context.wellness.border,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppColors.brandPrimary : AppColors.textSubtle,
+            color: isSelected
+                ? context.wellness.primary
+                : context.wellness.textTertiary,
           ),
         ),
       ),
     );
   }
 
-  Widget _statRow(String label, String value, Color color) {
+  Widget _statRow(
+      BuildContext context, String label, String value, Color color) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTextStyles.body),
+        Text(
+          label,
+          style: AppTextStyles.body
+              .copyWith(color: context.wellness.textSecondary),
+        ),
         Text(
           value,
           style: AppTextStyles.h3.copyWith(color: color),

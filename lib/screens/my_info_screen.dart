@@ -13,78 +13,84 @@ class MyInfoScreen extends ConsumerWidget {
     final userProfileAsync = ref.watch(userProfileProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [PremiumColors.backgroundStart, PremiumColors.backgroundEnd],
-        ),
-      ),
+      color: context.wellness.bgRoot,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios,
+                color: context.wellness.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             '내 정보',
-            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: context.wellness.textPrimary,
+                fontWeight: FontWeight.bold),
           ),
         ),
         body: userProfileAsync.when(
           data: (profile) {
             if (profile == null) {
-              return const Center(child: Text('프로필 정보를 불러올 수 없습니다.', style: TextStyle(color: Colors.white)));
+              return Center(
+                  child: Text('프로필 정보를 불러올 수 없습니다.',
+                      style: TextStyle(color: context.wellness.textPrimary)));
             }
             return ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 _buildInfoCard(
+                  context,
                   title: '기본 정보',
                   children: [
-                    _buildInfoRow('이름', profile.displayName ?? '사용자'),
-                    _buildInfoRow('이메일', profile.email ?? '-'),
-                    _buildInfoRow('가입일', profile.createdAt != null ? profile.createdAt.toString().split(' ')[0] : '-'),
+                    _buildInfoRow(context, '이름', profile.displayName ?? '사용자'),
+                    _buildInfoRow(context, '이메일', profile.email ?? '-'),
+                    _buildInfoRow(context, '가입일', profile.createdAt != null ? profile.createdAt.toString().split(' ')[0] : '-'),
                   ],
                 ),
                 const SizedBox(height: 20),
                 _buildInfoCard(
+                  context,
                   title: '신체 정보',
                   children: [
-                    _buildInfoRow('성별', profile.gender == 'Male' ? '남성' : (profile.gender == 'Female' ? '여성' : '-')),
-                    _buildInfoRow('나이', '${profile.age ?? -1}세'),
-                    _buildInfoRow('키', '${profile.height?.toInt() ?? -1}cm'),
-                    _buildInfoRow('몸무게', '${profile.weight?.toInt() ?? -1}kg'),
+                    _buildInfoRow(context, '성별', profile.gender == 'Male' ? '남성' : (profile.gender == 'Female' ? '여성' : '-')),
+                    _buildInfoRow(context, '나이', '${profile.age ?? -1}세'),
+                    _buildInfoRow(context, '키', '${profile.height?.toInt() ?? -1}cm'),
+                    _buildInfoRow(context, '몸무게', '${profile.weight?.toInt() ?? -1}kg'),
                   ],
                 ),
                 const SizedBox(height: 20),
                 _buildInfoCard(
+                  context,
                   title: '목표 및 활동',
                   children: [
-                    _buildInfoRow('목표', profile.goal ?? '-'),
-                    _buildInfoRow('활동량', profile.activityLevel ?? '-'),
+                    _buildInfoRow(context, '목표', profile.goal ?? '-'),
+                    _buildInfoRow(context, '활동량', profile.activityLevel ?? '-'),
                   ],
                 ),
               ],
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white))),
+          error: (err, stack) => Center(
+              child: Text('Error: $err',
+                  style: TextStyle(color: context.wellness.textPrimary))),
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard({required String title, required List<Widget> children}) {
+  Widget _buildInfoCard(BuildContext context,
+      {required String title, required List<Widget> children}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: context.wellness.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.wellness.borderSubtle),
+        boxShadow: WellnessShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +110,7 @@ class MyInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -114,7 +120,7 @@ class MyInfoScreen extends ConsumerWidget {
             label,
             style: GoogleFonts.outfit(
               fontSize: 16,
-              color: Colors.white70,
+              color: context.wellness.textSecondary,
             ),
           ),
           Text(
@@ -122,7 +128,7 @@ class MyInfoScreen extends ConsumerWidget {
             style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
         ],

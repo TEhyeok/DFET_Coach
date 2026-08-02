@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
+import '../theme/tokens.dart';
 
 class GuideScreen extends StatelessWidget {
   const GuideScreen({super.key});
@@ -9,19 +10,10 @@ class GuideScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIOS = Platform.isIOS;
-    // Premium Dark Theme Colors
-    const bgGradientStart = Color(0xFF1A1A2E);
-    const bgGradientEnd = Color(0xFF16213E);
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [bgGradientStart, bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: SafeArea(
           child: Column(
             children: [
@@ -84,7 +76,7 @@ class GuideScreen extends StatelessWidget {
           IconButton(
             icon: Icon(
               isIOS ? CupertinoIcons.back : Icons.arrow_back,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
             onPressed: () => Navigator.pop(context),
           ),
@@ -94,7 +86,7 @@ class GuideScreen extends StatelessWidget {
             style: GoogleFonts.outfit(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
         ],
@@ -110,9 +102,10 @@ class GuideScreen extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: context.wellness.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.wellness.borderSubtle),
+        boxShadow: WellnessShadows.soft,
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -120,21 +113,21 @@ class GuideScreen extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE94560).withOpacity(0.2),
+              color: context.wellness.primarySubtle,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFFE94560)),
+            child: Icon(icon, color: context.wellness.primary),
           ),
           title: Text(
             title,
             style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
-          iconColor: Colors.white70,
-          collapsedIconColor: Colors.white70,
+          iconColor: context.wellness.textSecondary,
+          collapsedIconColor: context.wellness.textSecondary,
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -142,7 +135,7 @@ class GuideScreen extends StatelessWidget {
                 content,
                 style: GoogleFonts.outfit(
                   fontSize: 14,
-                  color: Colors.white70,
+                  color: context.wellness.textSecondary,
                   height: 1.6,
                 ),
               ),

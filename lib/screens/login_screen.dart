@@ -12,6 +12,7 @@ import '../core/utils/app_logger.dart';
 import '../models/user_profile.dart';
 import '../models/admin_profile.dart';
 import '../services/admin_auth_service.dart';
+import '../theme/tokens.dart';
 import '../utils/responsive_layout.dart';
 import '../widgets/dfet_logo_mark.dart';
 import '../widgets/ios_adaptive_sheet.dart';
@@ -326,7 +327,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Text(
                           isSignUp ? '회원등록' : '이메일 로그인',
                           style: GoogleFonts.outfit(
-                            color: Colors.white,
+                            color: context.wellness.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
@@ -337,9 +338,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: isSubmitting
                             ? null
                             : () => Navigator.pop(sheetContext),
-                        child: const Icon(
+                        child: Icon(
                           CupertinoIcons.xmark_circle_fill,
-                          color: Colors.white38,
+                          color: context.wellness.textTertiary,
                           size: 26,
                         ),
                       ),
@@ -351,7 +352,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? '기록을 저장하고 코칭 리포트를 이어서 관리합니다'
                         : '등록한 이메일 계정으로 계속합니다',
                     style: GoogleFonts.outfit(
-                      color: Colors.white54,
+                      color: context.wellness.textSecondary,
                       fontSize: 14,
                       height: 1.4,
                     ),
@@ -380,7 +381,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 22),
                   CupertinoButton(
-                    color: const Color(0xFFE94560),
+                    color: context.wellness.primary,
                     borderRadius: BorderRadius.circular(12),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     onPressed: isSubmitting
@@ -399,7 +400,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : Text(
                             isSignUp ? '회원등록 완료' : '로그인',
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
+                              color: context.wellness.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
@@ -419,7 +420,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Text(
                       isSignUp ? '이미 계정이 있어요' : '새 회원으로 등록하기',
                       style: GoogleFonts.outfit(
-                        color: Colors.white60,
+                        color: context.wellness.textSecondary,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -556,7 +557,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Text(
                           '트레이너 ID 로그인',
                           style: GoogleFonts.outfit(
-                            color: Colors.white,
+                            color: context.wellness.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
@@ -567,9 +568,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: isSubmitting
                             ? null
                             : () => Navigator.pop(sheetContext),
-                        child: const Icon(
+                        child: Icon(
                           CupertinoIcons.xmark_circle_fill,
-                          color: Colors.white38,
+                          color: context.wellness.textTertiary,
                           size: 26,
                         ),
                       ),
@@ -579,7 +580,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text(
                     '등록된 트레이너 계정으로 SOAP 노트와 회원 관리를 시작합니다',
                     style: GoogleFonts.outfit(
-                      color: Colors.white54,
+                      color: context.wellness.textSecondary,
                       fontSize: 14,
                       height: 1.4,
                     ),
@@ -600,7 +601,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 22),
                   CupertinoButton(
-                    color: const Color(0xFFE94560),
+                    color: context.wellness.primary,
                     borderRadius: BorderRadius.circular(12),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     onPressed: isSubmitting
@@ -618,7 +619,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : Text(
                             '트레이너로 로그인',
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
+                              color: context.wellness.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
@@ -646,7 +647,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Text(
           label,
           style: GoogleFonts.outfit(
-            color: Colors.white70,
+            color: context.wellness.textSecondary,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -657,13 +658,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           keyboardType: keyboardType,
           obscureText: obscureText,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(
+              color: context.wellness.textPrimary, fontSize: 15),
           placeholder: placeholder,
-          placeholderStyle: const TextStyle(color: Colors.white30),
+          placeholderStyle:
+              TextStyle(color: context.wellness.textTertiary),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: context.wellness.bgSubtle,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(color: context.wellness.borderSubtle),
           ),
         ),
       ],
@@ -790,21 +793,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   /// Web Layout (Email/Password)
   Widget _buildWebLayout() {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E), // Dark Background
+      backgroundColor: context.wellness.bgRoot, // Light mint background
       body: Center(
         child: Container(
           width: 400,
           padding: const EdgeInsets.all(40),
           decoration: BoxDecoration(
-            color: const Color(0xFF16213E),
+            color: context.wellness.bgCard,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: WellnessShadows.card,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -820,7 +817,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.wellness.textPrimary,
                 ),
               ),
               const SizedBox(height: 40),
@@ -829,12 +826,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               if (_isSignUp) ...[
                 TextField(
                   controller: _nameController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: context.wellness.textPrimary),
                   decoration: InputDecoration(
                     labelText: '이름',
-                    labelStyle: const TextStyle(color: Colors.white70),
+                    labelStyle:
+                        TextStyle(color: context.wellness.textSecondary),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: context.wellness.bgSubtle,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -846,12 +844,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               TextField(
                 controller: _emailController,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: context.wellness.textPrimary),
                 decoration: InputDecoration(
                   labelText: '이메일',
-                  labelStyle: const TextStyle(color: Colors.white70),
+                  labelStyle:
+                      TextStyle(color: context.wellness.textSecondary),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: context.wellness.bgSubtle,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -862,12 +861,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: context.wellness.textPrimary),
                 decoration: InputDecoration(
                   labelText: '비밀번호',
-                  labelStyle: const TextStyle(color: Colors.white70),
+                  labelStyle:
+                      TextStyle(color: context.wellness.textSecondary),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: context.wellness.bgSubtle,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -885,7 +885,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ? null
                       : (_isSignUp ? _handleEmailSignUp : _handleEmailSignIn),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE94560),
+                    backgroundColor: context.wellness.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -904,7 +904,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.wellness.onPrimary,
                           ),
                         ),
                 ),
@@ -924,7 +924,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Text(
                   _isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입',
                   style: GoogleFonts.outfit(
-                    color: Colors.white70,
+                    color: context.wellness.textSecondary,
                     fontSize: 14,
                   ),
                 ),
@@ -945,7 +945,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
 
               const SizedBox(height: 40),
-              const Divider(color: Colors.white24),
+              Divider(color: context.wellness.border),
               const SizedBox(height: 16),
             ],
           ),
@@ -957,7 +957,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   /// iOS Cupertino 스타일 레이아웃
   Widget _buildIOSLayout() {
     return CupertinoPageScaffold(
-      backgroundColor: Colors.black, // Pure Black Background
+      backgroundColor: context.wellness.bgRoot, // Light mint background
       child: SafeArea(
         child: Center(
           child: ResponsiveConstrainedBox(
@@ -981,7 +981,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: GoogleFonts.outfit(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // White Text
+                      color: context.wellness.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -989,7 +989,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     '당신의 건강한 라이프스타일 파트너',
                     style: GoogleFonts.outfit(
                       fontSize: 16,
-                      color: Colors.white70,
+                      color: context.wellness.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -1015,18 +1015,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // 구분선
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: Colors.white24)),
+                      Expanded(
+                          child: Divider(color: context.wellness.border)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           '또는',
                           style: GoogleFonts.outfit(
-                            color: Colors.white38,
+                            color: context.wellness.textTertiary,
                             fontSize: 14,
                           ),
                         ),
                       ),
-                      const Expanded(child: Divider(color: Colors.white24)),
+                      Expanded(
+                          child: Divider(color: context.wellness.border)),
                     ],
                   ),
 
@@ -1037,7 +1039,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   if (_isLoading) ...[
                     const SizedBox(height: 24),
-                    const CupertinoActivityIndicator(color: Colors.white),
+                    CupertinoActivityIndicator(
+                        color: context.wellness.primary),
                   ],
                 ],
               ),
@@ -1051,7 +1054,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   /// Android Material 스타일 레이아웃
   Widget _buildMaterialLayout() {
     return Scaffold(
-      backgroundColor: Colors.black, // Pure Black Background
+      backgroundColor: context.wellness.bgRoot, // Light mint background
       body: SafeArea(
         child: Center(
           child: ResponsiveConstrainedBox(
@@ -1075,7 +1078,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: GoogleFonts.outfit(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // White Text
+                      color: context.wellness.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1083,7 +1086,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     '당신의 건강한 라이프스타일 파트너',
                     style: GoogleFonts.outfit(
                       fontSize: 16,
-                      color: Colors.white70,
+                      color: context.wellness.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -1110,18 +1113,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // 구분선
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: Colors.white24)),
+                      Expanded(
+                          child: Divider(color: context.wellness.border)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           '또는',
                           style: GoogleFonts.outfit(
-                            color: Colors.white38,
+                            color: context.wellness.textTertiary,
                             fontSize: 14,
                           ),
                         ),
                       ),
-                      const Expanded(child: Divider(color: Colors.white24)),
+                      Expanded(
+                          child: Divider(color: context.wellness.border)),
                     ],
                   ),
 
@@ -1132,7 +1137,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   if (_isLoading) ...[
                     const SizedBox(height: 24),
-                    const CircularProgressIndicator(color: Colors.white),
+                    CircularProgressIndicator(
+                        color: context.wellness.primary),
                   ],
                 ],
               ),
@@ -1186,7 +1192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
             backgroundColor: Colors.white,
-            side: const BorderSide(color: Colors.white),
+            side: BorderSide(color: context.wellness.border),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -1230,14 +1236,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: WellnessShadows.soft,
       ),
       child: Material(
         color: Colors.transparent,
@@ -1276,7 +1275,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Text(
           '게스트로 계속하기',
           style: GoogleFonts.outfit(
-            color: Colors.white54,
+            color: context.wellness.textSecondary,
             fontSize: 16,
           ),
         ),
@@ -1287,7 +1286,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Text(
           '게스트로 계속하기',
           style: GoogleFonts.outfit(
-            color: Colors.white54,
+            color: context.wellness.textSecondary,
             fontSize: 16,
           ),
         ),
@@ -1300,7 +1299,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return SizedBox(
         width: double.infinity,
         child: CupertinoButton(
-          color: const Color(0xFFE94560),
+          color: context.wellness.primary,
           borderRadius: BorderRadius.circular(12),
           padding: const EdgeInsets.symmetric(vertical: 16),
           onPressed: _isLoading ? null : () => _showMemberAuthSheet(),
@@ -1342,7 +1341,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFFE94560),
+          backgroundColor: context.wellness.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -1356,23 +1355,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return SizedBox(
         width: double.infinity,
         child: CupertinoButton(
-          color: const Color(0xFF1F2943),
+          color: context.wellness.bgSubtle,
           borderRadius: BorderRadius.circular(12),
           padding: const EdgeInsets.symmetric(vertical: 16),
           onPressed: _isLoading ? null : _showTrainerLoginSheet,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 CupertinoIcons.person_badge_plus,
-                color: Colors.white,
+                color: context.wellness.primaryDark,
                 size: 21,
               ),
               const SizedBox(width: 10),
               Text(
                 '트레이너 ID로 로그인',
                 style: GoogleFonts.outfit(
-                  color: Colors.white,
+                  color: context.wellness.primaryDark,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1388,17 +1387,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       height: 56,
       child: OutlinedButton.icon(
         onPressed: _isLoading ? null : _showTrainerLoginSheet,
-        icon: const Icon(Icons.badge_outlined, color: Colors.white),
+        icon:
+            Icon(Icons.badge_outlined, color: context.wellness.primaryDark),
         label: Text(
           '트레이너 ID로 로그인',
           style: GoogleFonts.outfit(
-            color: Colors.white,
+            color: context.wellness.primaryDark,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.white24),
+          side: BorderSide(color: context.wellness.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -1415,7 +1415,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Text(
           '트레이너 게스트로 시작',
           style: GoogleFonts.outfit(
-            color: Colors.white60,
+            color: context.wellness.textSecondary,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
@@ -1428,7 +1428,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Text(
         '트레이너 게스트로 시작',
         style: GoogleFonts.outfit(
-          color: Colors.white60,
+          color: context.wellness.textSecondary,
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),

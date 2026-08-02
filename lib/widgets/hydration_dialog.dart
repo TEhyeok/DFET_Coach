@@ -32,7 +32,7 @@ class _HydrationDialogState extends State<HydrationDialog> {
     final progress = (waterIntake / dailyGoal).clamp(0.0, 1.0);
 
     return Dialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: context.wellness.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -75,7 +75,7 @@ class _HydrationDialogState extends State<HydrationDialog> {
                         child: CircularProgressIndicator(
                           value: progress,
                           strokeWidth: 12,
-                          backgroundColor: AppColors.bgStroke,
+                          backgroundColor: context.wellness.border,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             progress >= 1.0 ? AppColors.brandPrimary : AppColors.info,
                           ),
@@ -100,7 +100,9 @@ class _HydrationDialogState extends State<HydrationDialog> {
                   Text(
                     '${(progress * 100).toInt()}% 달성',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: progress >= 1.0 ? AppColors.brandPrimary : AppColors.textSubtle,
+                      color: progress >= 1.0
+                          ? AppColors.brandPrimary
+                          : context.wellness.textTertiary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

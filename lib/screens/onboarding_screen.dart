@@ -25,6 +25,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentPage = 0;
 
   // Form Data
+  String? _careType; // 2026 개편: 'microbiome' | 'fitness' | 'both'
   String? _goal;
   String? _gender;
   int _age = 25;
@@ -34,11 +35,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // Animation State
   bool _isAnalyzing = false;
-
-  // Premium Theme Colors
-  static const Color _primaryColor = Color(0xFFE94560);
-  static const Color _bgGradientStart = Color(0xFF1A1A2E);
-  static const Color _bgGradientEnd = Color(0xFF16213E);
 
   final List<String> _goals = [
     "체중 감량",
@@ -96,8 +92,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             height: _height,
             weight: _weight,
             activityLevel: _activityLevel,
+            careType: _careType ?? UserCareType.fitness,
             isOnboardingComplete: true,
           );
+
+          // 게스트 케어 유형 상태도 동기화 (탭 분기에 즉시 반영)
+          ref.read(guestCareTypeProvider.notifier).state =
+              _careType ?? UserCareType.fitness;
 
           AppLogger.info('Selected Goal: $_goal');
 
@@ -112,10 +113,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           AppLogger.info('Onboarding completed for ${userProfile.email}');
         }
       } else {
-        // 비로그인 사용자: 온보딩 완료 플래그 저장 후 로그인 화면으로 이동
+        // 비로그인 사용자: 온보딩 완료 플래그 + 케어 유형 저장 후 로그인 화면으로 이동
         final prefs = ref.read(sharedPreferencesProvider);
         await prefs.setBool('hasSeenOnboarding', true);
+        await prefs.setString(
+            'guestCareType', _careType ?? UserCareType.fitness);
         ref.read(hasSeenOnboardingProvider.notifier).state = true;
+        ref.read(guestCareTypeProvider.notifier).state =
+            _careType ?? UserCareType.fitness;
 
         AppLogger.info('Onboarding completed for guest/new user');
       }
@@ -141,14 +146,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
 
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: SafeArea(
           child: Column(
             children: [
@@ -164,6 +164,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   },
                   children: [
                     _responsivePage(_buildWelcomePage()),
+                    _responsivePage(_buildCareTypePage()),
                     _responsivePage(_buildGoalPage()),
                     _responsivePage(_buildGenderPage()),
                     _responsivePage(_buildWheelPickerPage(
@@ -228,8 +229,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           if (_currentPage > 0)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios,
-                  color: Colors.white, size: 20),
+              icon: Icon(Icons.arrow_back_ios,
+                  color: context.wellness.textPrimary, size: 20),
               onPressed: _previousPage,
             )
           else
@@ -237,14 +238,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           // Progress Indicator
           Row(
-            children: List.generate(8, (index) {
+            children: List.generate(9, (index) {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 2),
                 width: _currentPage == index ? 20 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: _currentPage == index ? _primaryColor : Colors.white24,
+                  color: _currentPage == index
+                      ? context.wellness.primary
+                      : context.wellness.border,
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
@@ -267,11 +270,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.1),
+              color: context.wellness.primary.withOpacity(0.1),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: _primaryColor.withOpacity(0.2),
+                  color: context.wellness.primary.withOpacity(0.2),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
@@ -288,7 +291,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 42,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               letterSpacing: 2.0,
             ),
           ),
@@ -298,11 +301,144 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               fontSize: 18,
-              color: Colors.white70,
+              color: context.wellness.textSecondary,
               height: 1.5,
             ),
           ),
           const Spacer(flex: 2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCareTypePage() {
+    final options = [
+      {
+        'type': UserCareType.fitness,
+        'icon': Icons.fitness_center_rounded,
+        'title': '운동 · 신체조성',
+        'desc': '운동 기록, AI 자세분석, 식단 관리로\n체형과 컨디션을 관리해요.',
+      },
+      {
+        'type': UserCareType.microbiome,
+        'icon': Icons.biotech_rounded,
+        'title': '장내미생물 케어',
+        'desc': '장내미생물 분석 리포트로\n장 건강과 저속노화를 관리해요.',
+      },
+      {
+        'type': UserCareType.both,
+        'icon': Icons.all_inclusive_rounded,
+        'title': '통합 케어',
+        'desc': '운동·식단과 장내미생물을\n모두 함께 관리해요.',
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            "어떤 케어를\n받고 싶으세요?",
+            style: GoogleFonts.outfit(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: context.wellness.textPrimary,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "선택에 따라 맞춤 화면을 구성해 드려요. (나중에 변경 가능)",
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: context.wellness.textTertiary,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: ListView.separated(
+              itemCount: options.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final opt = options[index];
+                final isSelected = _careType == opt['type'];
+                return GestureDetector(
+                  onTap: () =>
+                      setState(() => _careType = opt['type'] as String),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? context.wellness.primary
+                          : context.wellness.bgCard,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.transparent
+                            : context.wellness.border,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.white.withOpacity(0.2)
+                                : context.wellness.bgSubtle,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            opt['icon'] as IconData,
+                            color: isSelected
+                                ? Colors.white
+                                : context.wellness.primary,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                opt['title'] as String,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : context.wellness.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                opt['desc'] as String,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 13,
+                                  color: isSelected
+                                      ? Colors.white70
+                                      : context.wellness.textSecondary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(Icons.check_circle,
+                              color: Colors.white, size: 24),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -320,7 +456,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -347,13 +483,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         duration: const Duration(milliseconds: 200),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? _primaryColor
-                              : Colors.white.withOpacity(0.05),
+                              ? context.wellness.primary
+                              : context.wellness.bgCard,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.transparent
-                                : Colors.white10,
+                                : context.wellness.border,
                             width: 1,
                           ),
                         ),
@@ -380,7 +516,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.white70,
+                                      : context.wellness.textSecondary,
                                 ),
                               ),
                             ),
@@ -425,7 +561,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -468,10 +604,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isSelected ? _primaryColor : Colors.white.withOpacity(0.05),
+            color: isSelected ? context.wellness.primary : context.wellness.bgCard,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isSelected ? Colors.transparent : Colors.white10,
+              color: isSelected ? Colors.transparent : context.wellness.border,
               width: 1,
             ),
           ),
@@ -481,7 +617,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Icon(
                 icon,
                 size: 60,
-                color: isSelected ? Colors.white : Colors.white38,
+                color: isSelected
+                    ? Colors.white
+                    : context.wellness.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
@@ -489,7 +627,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : Colors.white70,
+                  color: isSelected
+                      ? Colors.white
+                      : context.wellness.textSecondary,
                 ),
               ),
             ],
@@ -519,7 +659,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -527,7 +667,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             subtitle,
             style: GoogleFonts.outfit(
               fontSize: 16,
-              color: Colors.white60,
+              color: context.wellness.textTertiary,
             ),
           ),
           Expanded(
@@ -546,10 +686,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onChanged(min + index);
                     },
                     selectionOverlay: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         border: Border.symmetric(
-                          horizontal:
-                              BorderSide(color: _primaryColor, width: 2),
+                          horizontal: BorderSide(
+                              color: context.wellness.primary, width: 2),
                         ),
                       ),
                     ),
@@ -561,7 +701,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.wellness.textPrimary,
                           ),
                         ),
                       );
@@ -572,7 +712,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   unit,
                   style: GoogleFonts.outfit(
                     fontSize: 24,
-                    color: _primaryColor,
+                    color: context.wellness.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -596,7 +736,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -615,11 +755,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? _primaryColor
-                          : Colors.white.withOpacity(0.05),
+                          ? context.wellness.primary
+                          : context.wellness.bgCard,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? Colors.transparent : Colors.white10,
+                        color: isSelected
+                            ? Colors.transparent
+                            : context.wellness.border,
                       ),
                     ),
                     child: Row(
@@ -632,7 +774,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               fontWeight: isSelected
                                   ? FontWeight.bold
                                   : FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.white70,
+                              color: isSelected
+                                  ? Colors.white
+                                  : context.wellness.textSecondary,
                             ),
                           ),
                         ),
@@ -660,13 +804,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: context.wellness.primarySubtle,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.security_rounded,
               size: 60,
-              color: Colors.white,
+              color: context.wellness.primary,
             ),
           ),
           const SizedBox(height: 32),
@@ -675,7 +819,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -684,7 +828,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               fontSize: 16,
-              color: Colors.white70,
+              color: context.wellness.textSecondary,
               height: 1.5,
             ),
           ),
@@ -715,11 +859,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       height: 56,
       child: OutlinedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: context.wellness.primaryDark),
         label: Text(label),
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.white24),
+          foregroundColor: context.wellness.primaryDark,
+          side: BorderSide(color: context.wellness.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -734,20 +878,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildAnalyzingPage() {
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                color: _primaryColor,
+              CircularProgressIndicator(
+                color: context.wellness.primary,
                 strokeWidth: 4,
               ),
               const SizedBox(height: 40),
@@ -756,7 +895,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.wellness.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -764,7 +903,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 "잠시만 기다려주세요.",
                 style: GoogleFonts.outfit(
                   fontSize: 16,
-                  color: Colors.white60,
+                  color: context.wellness.textTertiary,
                 ),
               ),
             ],
@@ -775,8 +914,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildBottomControls() {
-    bool isLastPage = _currentPage == 7; // Permission page
+    bool isLastPage = _currentPage == 8; // Permission page (케어유형 추가로 +1)
     bool isWelcomePage = _currentPage == 0;
+    bool isCareTypePage = _currentPage == 1;
+
+    // 케어 유형 페이지에서는 선택해야 다음으로 진행 가능
+    final bool canProceed = !isCareTypePage || _careType != null;
 
     return ResponsiveConstrainedBox(
       maxWidth: ResponsiveLayout.maxFormWidth,
@@ -786,16 +929,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
-            onPressed: () {
-              if (isLastPage) {
-                _completeOnboarding();
-              } else {
-                _nextPage();
-              }
-            },
+            onPressed: !canProceed
+                ? null
+                : () {
+                    if (isLastPage) {
+                      _completeOnboarding();
+                    } else {
+                      _nextPage();
+                    }
+                  },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
+              backgroundColor: context.wellness.primary,
               foregroundColor: Colors.white,
+              disabledBackgroundColor:
+                  context.wellness.primary.withOpacity(0.3),
+              disabledForegroundColor: Colors.white54,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

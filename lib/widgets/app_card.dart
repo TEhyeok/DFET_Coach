@@ -13,10 +13,10 @@ class AppCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: context.wellness.bgCard,
           borderRadius: BorderRadius.circular(Radii.xxl),
-          border: Border.all(color: AppColors.bgStroke),
-          boxShadow: const [BoxShadow(blurRadius: 24, color: Colors.black54, offset: Offset(0, 8))],
+          border: Border.all(color: context.wellness.borderSubtle),
+          boxShadow: WellnessShadows.soft,
         ),
         padding: padding,
         child: child,

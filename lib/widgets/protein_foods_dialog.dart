@@ -9,7 +9,7 @@ class ProteinFoodsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: context.wellness.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -147,9 +147,9 @@ class ProteinFoodsDialog extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.bgApp,
+        color: context.wellness.bgRoot,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.bgStroke),
+        border: Border.all(color: context.wellness.border),
       ),
       child: ListTile(
         leading: Text(icon, style: const TextStyle(fontSize: 32)),

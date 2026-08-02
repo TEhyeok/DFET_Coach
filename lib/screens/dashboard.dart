@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/app_state.dart';
+import '../models/user_profile.dart';
+import 'microbiome/microbiome_screen.dart';
 import '../widgets/app_card.dart';
 import '../widgets/activity_rings.dart';
 import '../theme/tokens.dart';
@@ -47,6 +49,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final meals = ref.watch(mealsProvider);
     final isToday = ref.watch(isSelectedDateTodayProvider);
 
+    // 케어 유형 (장 건강 카드 노출 여부)
+    final careType = _resolveCareType();
+    final showGutHealth = careType == UserCareType.microbiome ||
+        careType == UserCareType.both;
+
     // 할 일 계산
     final todos =
         _calculateTodos(totalCalories, totalProtein, totalWorkoutTime);
@@ -68,25 +75,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       builder: (context, constraints) {
         final isTablet = ResponsiveLayout.isTablet(context);
         final useTwoColumns = isTablet && constraints.maxWidth >= 920;
+
+        // 가용 높이 기반 카드 높이 (장 건강 카드 자리 확보 위해 컴팩트하게).
         final screenHeight = MediaQuery.of(context).size.height;
         final safeAreaPadding = MediaQuery.of(context).padding;
         final chromeHeight = isTablet ? 96 : 140;
+        final gutReserve = showGutHealth ? 92.0 : 0.0; // 장 건강 카드 + 간격
         final availableHeight = screenHeight -
             safeAreaPadding.top -
             safeAreaPadding.bottom -
-            chromeHeight;
-        final heroCardHeight = useTwoColumns
-            ? 520.0
-            : (availableHeight * (isTablet ? 0.42 : 0.38))
-                .clamp(300.0, 520.0)
-                .toDouble();
+            chromeHeight -
+            gutReserve;
+        final heroCardHeight =
+            (availableHeight * 0.46).clamp(260.0, 460.0).toDouble();
         final kpiHeight =
-            (availableHeight * 0.16).clamp(124.0, 156.0).toDouble();
-        final feedbackHeight = useTwoColumns
-            ? 344.0
-            : (availableHeight * (isTablet ? 0.28 : 0.26))
-                .clamp(240.0, 344.0)
-                .toDouble();
+            (availableHeight * 0.18).clamp(110.0, 150.0).toDouble();
+        final feedbackHeight =
+            (availableHeight * 0.30).clamp(180.0, 320.0).toDouble();
 
         final heroCard = SizedBox(
           height: heroCardHeight,
@@ -101,8 +106,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             isToday,
           ),
         );
-        final kpiRow =
-            _buildKpiRow(totalCalories, totalWorkoutTime, todos, kpiHeight);
+        final kpiRow = SizedBox(
+          height: kpiHeight,
+          child: _buildKpiRow(
+              context, totalCalories, totalWorkoutTime, todos, kpiHeight),
+        );
         final feedbackCard = SizedBox(
           height: feedbackHeight,
           child: _buildSmartFeedback(
@@ -114,57 +122,215 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         );
 
+        if (useTwoColumns) {
+          return SingleChildScrollView(
+            child: ResponsiveConstrainedBox(
+              child: Padding(
+                padding: ResponsiveLayout.pagePadding(context),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        children: [
+                          if (showGutHealth) ...[
+                            _buildGutHealthCard(context),
+                            const SizedBox(height: 16),
+                          ],
+                          SizedBox(height: 480, child: heroCard),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        children: [
+                          SizedBox(height: 140, child: kpiRow),
+                          const SizedBox(height: 16),
+                          SizedBox(height: 300, child: feedbackCard),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // 폰: 컴팩트 카드 + CustomScrollView(안전망). 일반 기기에선 한 화면에 모두 표시.
         return CustomScrollView(
           slivers: [
-            if (isIOS)
-              CupertinoSliverRefreshControl(
-                onRefresh: _refresh,
-              ),
+            if (isIOS) CupertinoSliverRefreshControl(onRefresh: _refresh),
             SliverToBoxAdapter(
               child: ResponsiveConstrainedBox(
                 child: Padding(
                   padding: ResponsiveLayout.pagePadding(context),
-                  child: useTwoColumns
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 5, child: heroCard),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              flex: 4,
-                              child: Column(
-                                children: [
-                                  kpiRow,
-                                  const SizedBox(height: 20),
-                                  feedbackCard,
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            heroCard,
-                            const SizedBox(height: 12),
-                            kpiRow,
-                            const SizedBox(height: 12),
-                            feedbackCard,
-                          ],
-                        ),
+                  child: Column(
+                    children: [
+                      if (showGutHealth) ...[
+                        _buildGutHealthCard(context),
+                        const SizedBox(height: 10),
+                      ],
+                      heroCard,
+                      const SizedBox(height: 10),
+                      kpiRow,
+                      const SizedBox(height: 10),
+                      feedbackCard,
+                    ],
+                  ),
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
           ],
         );
       },
     );
   }
 
-  Widget _buildKpiRow(
-      int totalCalories, int totalWorkoutTime, int todos, double height) {
-    return SizedBox(
-      height: height,
+  /// 현재 사용자(로그인/게스트)의 케어 유형
+  String _resolveCareType() {
+    final profile = ref.watch(userProfileProvider).valueOrNull;
+    if (profile != null && profile.careType.isNotEmpty) {
+      return profile.careType;
+    }
+    return ref.watch(guestCareTypeProvider);
+  }
+
+  /// 홈 상단 '오늘의 장 건강' 요약 카드 (탭 시 상세로 이동)
+  Widget _buildGutHealthCard(BuildContext context) {
+    final w = context.wellness;
+    // 최신 장 건강 리포트. 실제 검사 데이터가 없으면 null → '리포트 없음' 빈 상태 노출.
+    final report = ref.watch(latestGutReportProvider);
+
+    void openDetail() {
+      Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (context) => CupertinoPageScaffold(
+            backgroundColor: w.bgRoot,
+            navigationBar: CupertinoNavigationBar(
+              backgroundColor: w.bgRoot,
+              middle:
+                  Text('장 건강 리포트', style: TextStyle(color: w.textPrimary)),
+            ),
+            child: const SafeArea(child: MicrobiomeScreen()),
+          ),
+        ),
+      );
+    }
+
+    if (report == null) {
+      // 검사 리포트가 아직 없는 사용자: 가짜 점수 대신 빈 상태 + 검사 유도
+      return AppCard(
+        padding: const EdgeInsets.all(18),
+        onTap: openDetail,
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: w.bgSubtle,
+                border: Border.all(color: w.border, width: 2),
+              ),
+              alignment: Alignment.center,
+              child: Icon(Icons.eco_rounded, size: 26, color: w.textTertiary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '장 건강 리포트 없음',
+                    style: TextStyle(
+                      color: w.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '검사 진행하기 →',
+                    style: TextStyle(color: w.textSecondary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: w.textTertiary),
+          ],
+        ),
+      );
+    }
+
+    final score = report.score;
+    final level = report.level;
+    final percentileLabel = report.percentileLabel;
+
+    return AppCard(
+      padding: const EdgeInsets.all(18),
+      onTap: openDetail,
+      child: Row(
+        children: [
+          // 점수 원형 (라임 포인트)
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: w.energy, width: 5),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$score',
+              style: TextStyle(
+                color: w.textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.eco_rounded, size: 16, color: w.energy),
+                    const SizedBox(width: 6),
+                    Text(
+                      '오늘의 장 건강',
+                      style: TextStyle(
+                        color: w.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '미생물 다양성 $level$percentileLabel',
+                  style: TextStyle(color: w.textSecondary, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: w.textTertiary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKpiRow(BuildContext context, int totalCalories,
+      int totalWorkoutTime, int todos, double height) {
+    // height는 무시 — 외부 Expanded/SizedBox가 높이를 제어한다.
+    return SizedBox.expand(
       child: Row(
         children: [
           Expanded(
@@ -196,7 +362,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               value: todos,
               goal: 0,
               unit: '개',
-              color: AppColors.textSubtle,
+              color: context.wellness.textTertiary,
               inverse: true,
             ),
           ),
@@ -231,24 +397,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.bgCard.withOpacity(0.6),
-                AppColors.bgCard.withOpacity(0.4),
-              ],
-            ),
+            color: context.wellness.bgCard,
             borderRadius: BorderRadius.circular(Radii.xxl),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: context.wellness.borderSubtle,
               width: 1,
             ),
           ),
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Text(greeting, style: AppTextStyles.h3),
+              Text(
+                greeting,
+                style: AppTextStyles.h3
+                    .copyWith(color: context.wellness.textPrimary),
+              ),
               const SizedBox(height: 8),
               Expanded(
                 child: ActivityRings(
@@ -284,19 +447,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   child: LinearProgressIndicator(
                     value: value,
                     minHeight: 8,
-                    backgroundColor: AppColors.bgStroke,
+                    backgroundColor: context.wellness.bgSubtle,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       value > 0.85
-                          ? AppColors.brandPrimary
-                          : AppColors.accentGold,
+                          ? context.wellness.energy
+                          : context.wellness.accent,
                     ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   '${isToday ? '오늘' : '선택 날짜'} 목표 ${(value * 100).toInt()}% 달성!',
-                  style:
-                      AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.wellness.textSecondary,
+                  ),
                 ),
               ],
             );
@@ -337,7 +502,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   '$animatedValue',
                   style: AppTextStyles.kpi.copyWith(fontSize: 20, color: color),
                 ),
-                Text(unit, style: AppTextStyles.caption),
+                Text(
+                  unit,
+                  style: AppTextStyles.caption
+                      .copyWith(color: context.wellness.textTertiary),
+                ),
                 const SizedBox(height: 4),
                 if (goal > 0) ...[
                   ClipRRect(
@@ -348,7 +517,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 4,
-                        backgroundColor: AppColors.bgStroke,
+                        backgroundColor: context.wellness.bgSubtle,
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     ),
@@ -356,10 +525,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(height: 2),
                   Text(
                     '/$goal',
-                    style: AppTextStyles.caption.copyWith(fontSize: 10),
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: context.wellness.textTertiary,
+                    ),
                   ),
                 ] else
-                  Text(label, style: AppTextStyles.caption),
+                  Text(
+                    label,
+                    style: AppTextStyles.caption
+                        .copyWith(color: context.wellness.textTertiary),
+                  ),
               ],
             ),
           ),
@@ -415,6 +591,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // 헤더: 아이콘 + 타이틀 + 우선순위 배지
           Row(
@@ -425,7 +602,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(displayTitle, style: AppTextStyles.h3),
+                    Text(
+                      displayTitle,
+                      style: AppTextStyles.h3
+                          .copyWith(color: context.wellness.textPrimary),
+                    ),
                     const SizedBox(height: 2),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -463,7 +644,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               recommendation.progressGoal!)
                           .clamp(0.0, 1.0),
                       minHeight: 6,
-                      backgroundColor: AppColors.bgStroke,
+                      backgroundColor: context.wellness.bgSubtle,
                       valueColor: AlwaysStoppedAnimation<Color>(
                           recommendation.priorityColor),
                     ),
@@ -486,7 +667,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           Expanded(
             child: Text(
               displayMessage,
-              style: AppTextStyles.body,
+              style: AppTextStyles.body
+                  .copyWith(color: context.wellness.textSecondary),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),

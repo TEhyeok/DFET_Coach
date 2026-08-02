@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import '../services/payment_service.dart';
+import '../theme/tokens.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({super.key});
@@ -16,11 +18,6 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   List<ProductDetails> _products = [];
   bool _isLoading = true;
-
-  // Premium Theme Colors
-  static const Color _primaryColor = Color(0xFFE94560);
-  static const Color _bgGradientStart = Color(0xFF1A1A2E);
-  static const Color _bgGradientEnd = Color(0xFF16213E);
 
   @override
   void initState() {
@@ -50,21 +47,18 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: SafeArea(
           child: Column(
             children: [
               _buildAppBar(context),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: _primaryColor))
+                    ? Center(
+                        child: CircularProgressIndicator(
+                            color: context.wellness.primary))
                     : SingleChildScrollView(
                         padding: const EdgeInsets.all(24),
                         child: Column(
@@ -100,7 +94,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white, size: 28),
+            icon: Icon(Icons.close,
+                color: context.wellness.textPrimary, size: 28),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
@@ -113,20 +108,20 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: _primaryColor.withOpacity(0.1),
+        color: context.wellness.primary.withOpacity(0.1),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: _primaryColor.withOpacity(0.2),
+            color: context.wellness.primary.withOpacity(0.2),
             blurRadius: 40,
             spreadRadius: 10,
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.workspace_premium_rounded,
         size: 64,
-        color: _primaryColor,
+        color: context.wellness.primary,
       ),
     );
   }
@@ -139,7 +134,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           style: GoogleFonts.outfit(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: context.wellness.textPrimary,
             height: 1.2,
           ),
           textAlign: TextAlign.center,
@@ -149,7 +144,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           '고급 AI 코칭과 상세 분석으로\n당신의 운동 잠재력을 깨워보세요.',
           style: GoogleFonts.outfit(
             fontSize: 16,
-            color: Colors.white70,
+            color: context.wellness.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -177,10 +172,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: context.wellness.primarySubtle,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: _primaryColor, size: 24),
+            child: Icon(icon, color: context.wellness.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -192,7 +187,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: context.wellness.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -200,7 +195,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   subtitle,
                   style: GoogleFonts.outfit(
                     fontSize: 14,
-                    color: Colors.white60,
+                    color: context.wellness.textSecondary,
                   ),
                 ),
               ],
@@ -213,29 +208,91 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   Widget _buildProductList() {
     if (_products.isEmpty) {
-      return Column(
-        children: [
-          _buildMockProductCard(
-            title: '월간 플랜',
-            price: '₩9,900',
-            originalPrice: null,
-            period: '/ 월',
-            isHighlight: false,
-          ),
-          const SizedBox(height: 16),
-          _buildMockProductCard(
-            title: '연간 플랜',
-            price: '₩59,400', // 9900 * 12 * 0.5
-            originalPrice: '₩118,800', // 9900 * 12
-            period: '/ 연',
-            isHighlight: true,
-            discountPercent: '50%',
-          ),
-        ],
-      );
+      // 디버그 빌드에서는 레이아웃 확인용 목업 카드를 노출.
+      // 실제(릴리스) 빌드에서는 가짜 가격 대신 빈/오류 상태를 보여준다.
+      if (kDebugMode) {
+        return Column(
+          children: [
+            _buildMockProductCard(
+              title: '월간 플랜',
+              price: '₩9,900',
+              originalPrice: null,
+              period: '/ 월',
+              isHighlight: false,
+            ),
+            const SizedBox(height: 16),
+            _buildMockProductCard(
+              title: '연간 플랜',
+              price: '₩59,400', // 9900 * 12 * 0.5
+              originalPrice: '₩118,800', // 9900 * 12
+              period: '/ 연',
+              isHighlight: true,
+              discountPercent: '50%',
+            ),
+          ],
+        );
+      }
+      return _buildProductsEmptyState();
     }
     return Column(
       children: _products.map((product) => _buildProductCard(product)).toList(),
+    );
+  }
+
+  Widget _buildProductsEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.wellness.bgCard,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.wellness.border, width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 44,
+            color: context.wellness.textTertiary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '상품 정보를 불러올 수 없습니다',
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: context.wellness.textPrimary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '잠시 후 다시 시도해주세요.',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              color: context.wellness.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () {
+              setState(() => _isLoading = true);
+              _loadProducts();
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: context.wellness.primary),
+            ),
+            child: Text(
+              '다시 시도',
+              style: GoogleFonts.outfit(
+                color: context.wellness.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -269,21 +326,24 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             decoration: BoxDecoration(
-              color: isHighlight ? _primaryColor : Colors.white.withOpacity(0.05),
+              color: isHighlight
+                  ? context.wellness.primary
+                  : context.wellness.bgCard,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isHighlight ? Colors.transparent : Colors.white10,
+                color:
+                    isHighlight ? Colors.transparent : context.wellness.border,
                 width: 1.5,
               ),
               boxShadow: isHighlight
                   ? [
                       BoxShadow(
-                        color: _primaryColor.withOpacity(0.4),
+                        color: context.wellness.primary.withOpacity(0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       )
                     ]
-                  : [],
+                  : WellnessShadows.soft,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -299,7 +359,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: isHighlight
+                              ? Colors.white
+                              : context.wellness.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -307,7 +369,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                         '모든 프리미엄 기능',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
-                          color: isHighlight ? Colors.white.withOpacity(0.9) : Colors.white60,
+                          color: isHighlight
+                              ? Colors.white.withOpacity(0.9)
+                              : context.wellness.textSecondary,
                         ),
                       ),
                     ],
@@ -325,9 +389,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                           originalPrice,
                           style: GoogleFonts.outfit(
                             fontSize: 14,
-                            color: isHighlight ? Colors.white.withOpacity(0.7) : Colors.white38,
+                            color: isHighlight
+                                ? Colors.white.withOpacity(0.7)
+                                : context.wellness.textTertiary,
                             decoration: TextDecoration.lineThrough,
-                            decorationColor: isHighlight ? Colors.white.withOpacity(0.7) : Colors.white38,
+                            decorationColor: isHighlight
+                                ? Colors.white.withOpacity(0.7)
+                                : context.wellness.textTertiary,
                           ),
                         ),
                       FittedBox(
@@ -342,7 +410,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: isHighlight
+                                    ? Colors.white
+                                    : context.wellness.textPrimary,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -350,7 +420,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                               period,
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
-                                color: isHighlight ? Colors.white.withOpacity(0.9) : Colors.white60,
+                                color: isHighlight
+                                    ? Colors.white.withOpacity(0.9)
+                                    : context.wellness.textSecondary,
                               ),
                             ),
                           ],
@@ -384,7 +456,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    color: _primaryColor,
+                    color: context.wellness.primary,
                   ),
                 ),
               ),
@@ -403,7 +475,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
         '구매 내역 복원',
         style: GoogleFonts.outfit(
           fontSize: 14,
-          color: Colors.white70,
+          color: context.wellness.textSecondary,
           decoration: TextDecoration.underline,
         ),
       ),
@@ -415,7 +487,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       '정기 결제는 언제든 취소할 수 있습니다.\n계속 진행 시 이용약관 및 개인정보처리방침에 동의하게 됩니다.',
       style: GoogleFonts.outfit(
         fontSize: 12,
-        color: Colors.white38,
+        color: context.wellness.textTertiary,
         height: 1.5,
       ),
       textAlign: TextAlign.center,

@@ -19,7 +19,8 @@ class PostCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: PremiumColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.wellness.borderSubtle),
+        boxShadow: WellnessShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,14 +30,15 @@ class PostCard extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Colors.grey[800],
+                backgroundColor: context.wellness.bgSubtle,
                 backgroundImage: post.authorProfileImage != null
                     ? (post.authorProfileImage!.startsWith('assets/')
                         ? AssetImage(post.authorProfileImage!) as ImageProvider
                         : NetworkImage(post.authorProfileImage!))
                     : null,
                 child: post.authorProfileImage == null
-                    ? const Icon(Icons.person, color: Colors.white)
+                    ? Icon(Icons.person,
+                        color: context.wellness.textTertiary)
                     : null,
               ),
               const SizedBox(width: 12),
@@ -46,7 +48,7 @@ class PostCard extends ConsumerWidget {
                   Text(
                     post.authorName,
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: context.wellness.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -54,7 +56,7 @@ class PostCard extends ConsumerWidget {
                   Text(
                     DateFormat('yyyy.MM.dd HH:mm').format(post.createdAt),
                     style: GoogleFonts.outfit(
-                      color: Colors.white54,
+                      color: context.wellness.textTertiary,
                       fontSize: 12,
                     ),
                   ),
@@ -68,7 +70,7 @@ class PostCard extends ConsumerWidget {
           Text(
             post.content,
             style: GoogleFonts.outfit(
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               fontSize: 14,
               height: 1.5,
             ),
@@ -98,7 +100,9 @@ class PostCard extends ConsumerWidget {
               _ActionButton(
                 icon: post.isLikedByMe ? Icons.favorite : Icons.favorite_border,
                 label: '${post.likeCount}',
-                color: post.isLikedByMe ? PremiumColors.primary : Colors.white70,
+                color: post.isLikedByMe
+                    ? PremiumColors.primary
+                    : context.wellness.textSecondary,
                 onTap: () {
                   ref.read(communityServiceProvider).toggleLike(post.id);
                 },
@@ -107,7 +111,7 @@ class PostCard extends ConsumerWidget {
               _ActionButton(
                 icon: Icons.chat_bubble_outline,
                 label: '${post.commentCount}',
-                color: Colors.white70,
+                color: context.wellness.textSecondary,
                 onTap: () {
                   // TODO: Navigate to detail
                 },

@@ -18,11 +18,12 @@ class MemberSoapNotesScreen extends ConsumerWidget {
     final notesAsync = ref.watch(soapNotesProvider);
 
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.bgRoot,
-      navigationBar: const CupertinoNavigationBar(
-        backgroundColor: AppColors.bgRoot,
-        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
-        middle: Text('SOAP 노트'),
+      backgroundColor: context.wellness.bgRoot,
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: context.wellness.bgRoot,
+        border: Border(
+            bottom: BorderSide(color: context.wellness.borderSubtle, width: 0.5)),
+        middle: const Text('SOAP 노트'),
       ),
       child: SafeArea(
         child: notesAsync.when(
@@ -175,7 +176,7 @@ class _Block extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.body.copyWith(color: Colors.white70),
+            style: AppTextStyles.body.copyWith(color: context.wellness.textSecondary),
           ),
         ],
       ),

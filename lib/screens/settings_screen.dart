@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/app_state.dart';
+import '../state/theme_provider.dart';
 import '../models/user_profile.dart';
 import 'guide_screen.dart';
 import 'subscription_screen.dart';
@@ -28,15 +29,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isGuest =
         ref.watch(isGuestModeProvider) || ref.watch(isTrainerGuestModeProvider);
 
-    // Premium Gradient Background
+    // Soft Wellness Background (theme-aware)
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [PremiumColors.backgroundStart, PremiumColors.backgroundEnd],
-        ),
-      ),
+      color: context.wellness.bgRoot,
       child: isIOS
           ? _buildIOSLayout(context, ref, isGuest)
           : _buildMaterialLayout(context, ref, isGuest),
@@ -53,7 +48,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           '설정',
-          style: GoogleFonts.outfit(color: Colors.white),
+          style: GoogleFonts.outfit(color: context.wellness.textPrimary),
         ),
         backgroundColor: Colors.transparent,
         border: null,
@@ -75,8 +70,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 const SizedBox(height: 30),
 
+                // 화면(테마)
+                _buildSectionHeader(context, '화면'),
+                _buildGlassContainer(context: context, child: _buildThemeSelector(context, ref)),
+
+                const SizedBox(height: 30),
+
                 // 구독 관리
-                _buildSectionHeader('멤버십'),
+                _buildSectionHeader(context, '멤버십'),
                 _buildPremiumCard(context),
 
                 const SizedBox(height: 30),
@@ -84,19 +85,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // 게스트 모드가 아닐 때만 계정 섹션 표시
                 if (!isGuest) ...[
                   // 계정 섹션
-                  _buildSectionHeader('계정'),
+                  _buildSectionHeader(context, '계정'),
                   _buildGlassContainer(
+                    context: context,
                     child: Column(
                       children: [
                         _buildListTile(
+                          context: context,
                           icon: CupertinoIcons.arrow_right_arrow_left_circle,
                           title: '계정 전환',
                           onTap: () =>
                               _handleSwitchAccount(context, ref, isIOS: true),
                           isIOS: true,
                         ),
-                        _buildDivider(),
+                        _buildDivider(context),
                         _buildListTile(
+                          context: context,
                           icon: CupertinoIcons.square_arrow_right,
                           title: '로그아웃',
                           onTap: () => _handleLogout(context, ref, isIOS: true),
@@ -109,9 +113,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 20),
 
                   // 위험 구역
-                  _buildSectionHeader('위험 구역'),
+                  _buildSectionHeader(context, '위험 구역'),
                   _buildGlassContainer(
+                    context: context,
                     child: _buildListTile(
+                      context: context,
                       icon: CupertinoIcons.delete,
                       iconColor: CupertinoColors.destructiveRed,
                       title: '회원탈퇴',
@@ -126,9 +132,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 30),
 
                 // 지원
-                _buildSectionHeader('지원'),
+                _buildSectionHeader(context, '지원'),
                 _buildGlassContainer(
+                  context: context,
                   child: _buildListTile(
+                    context: context,
                     icon: CupertinoIcons.question_circle,
                     title: '사용 가이드',
                     onTap: () => _handleGuide(context),
@@ -146,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'D-FET',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
-                          color: Colors.white54,
+                          color: context.wellness.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -154,7 +162,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Version 1.0.0',
                         style: GoogleFonts.outfit(
                           fontSize: 12,
-                          color: Colors.white38,
+                          color: context.wellness.textTertiary,
                         ),
                       ),
                     ],
@@ -178,10 +186,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text('설정', style: GoogleFonts.outfit(color: Colors.white)),
+        title: Text('설정',
+            style: GoogleFonts.outfit(color: context.wellness.textPrimary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: context.wellness.textPrimary),
       ),
       body: SafeArea(
         child: Center(
@@ -200,8 +209,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 const SizedBox(height: 30),
 
+                // 화면(테마)
+                _buildSectionHeader(context, '화면'),
+                _buildGlassContainer(context: context, child: _buildThemeSelector(context, ref)),
+
+                const SizedBox(height: 30),
+
                 // 구독 관리
-                _buildSectionHeader('멤버십'),
+                _buildSectionHeader(context, '멤버십'),
                 _buildPremiumCard(context),
 
                 const SizedBox(height: 30),
@@ -209,19 +224,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // 게스트 모드가 아닐 때만 계정 섹션 표시
                 if (!isGuest) ...[
                   // 계정 섹션
-                  _buildSectionHeader('계정'),
+                  _buildSectionHeader(context, '계정'),
                   _buildGlassContainer(
+                    context: context,
                     child: Column(
                       children: [
                         _buildListTile(
+                          context: context,
                           icon: Icons.swap_horiz,
                           title: '계정 전환',
                           onTap: () =>
                               _handleSwitchAccount(context, ref, isIOS: false),
                           isIOS: false,
                         ),
-                        _buildDivider(),
+                        _buildDivider(context),
                         _buildListTile(
+                          context: context,
                           icon: Icons.logout,
                           title: '로그아웃',
                           onTap: () =>
@@ -235,9 +253,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 30),
 
                   // 위험 구역
-                  _buildSectionHeader('위험 구역'),
+                  _buildSectionHeader(context, '위험 구역'),
                   _buildGlassContainer(
+                    context: context,
                     child: _buildListTile(
+                      context: context,
                       icon: Icons.delete_forever,
                       iconColor: Colors.red,
                       title: '회원탈퇴',
@@ -252,9 +272,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 30),
 
                 // 지원
-                _buildSectionHeader('지원'),
+                _buildSectionHeader(context, '지원'),
                 _buildGlassContainer(
+                  context: context,
                   child: _buildListTile(
+                    context: context,
                     icon: Icons.help_outline,
                     title: '사용 가이드',
                     onTap: () => _handleGuide(context),
@@ -272,7 +294,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'D-FET',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
-                          color: Colors.white54,
+                          color: context.wellness.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -280,7 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Version 1.0.0',
                         style: GoogleFonts.outfit(
                           fontSize: 12,
-                          color: Colors.white38,
+                          color: context.wellness.textTertiary,
                         ),
                       ),
                     ],
@@ -295,7 +317,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
       child: Text(
@@ -303,34 +325,95 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         style: GoogleFonts.outfit(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Colors.white60,
+          color: context.wellness.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _buildGlassContainer({required Widget child}) {
+  Widget _buildThemeSelector(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
+    final options = [
+      (ThemeMode.light, '라이트', CupertinoIcons.sun_max_fill),
+      (ThemeMode.dark, '다크', CupertinoIcons.moon_fill),
+      (ThemeMode.system, '시스템', CupertinoIcons.gear_alt_fill),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          for (final (m, label, icon) in options) ...[
+            Expanded(
+              child: GestureDetector(
+                onTap: () =>
+                    ref.read(themeModeProvider.notifier).setTheme(m),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: mode == m
+                        ? context.wellness.primary
+                        : context.wellness.bgSubtle,
+                    borderRadius: WellnessRadius.button,
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        icon,
+                        size: 20,
+                        color: mode == m
+                            ? context.wellness.onPrimary
+                            : context.wellness.textTertiary,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        label,
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: mode == m
+                              ? context.wellness.onPrimary
+                              : context.wellness.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (m != options.last.$1) const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlassContainer(
+      {required BuildContext context, required Widget child}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: context.wellness.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.wellness.borderSubtle),
+        boxShadow: WellnessShadows.soft,
       ),
       child: child,
     );
   }
 
-  Widget _buildDivider() {
-    return const Divider(
+  Widget _buildDivider(BuildContext context) {
+    return Divider(
       height: 1,
-      color: Colors.white10,
+      color: context.wellness.borderSubtle,
       indent: 16,
       endIndent: 16,
     );
   }
 
   Widget _buildListTile({
+    required BuildContext context,
     required IconData icon,
     Color? iconColor,
     required String title,
@@ -340,24 +423,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }) {
     if (isIOS) {
       return CupertinoListTile(
-        leading: Icon(icon, color: iconColor ?? Colors.white),
+        leading: Icon(icon, color: iconColor ?? context.wellness.textPrimary),
         title: Text(
           title,
-          style: GoogleFonts.outfit(color: titleColor ?? Colors.white),
+          style: GoogleFonts.outfit(
+              color: titleColor ?? context.wellness.textPrimary),
         ),
-        trailing: const Icon(CupertinoIcons.chevron_right,
-            color: Colors.white38, size: 16),
+        trailing: Icon(CupertinoIcons.chevron_right,
+            color: context.wellness.textTertiary, size: 16),
         onTap: onTap,
         backgroundColor: Colors.transparent,
       );
     } else {
       return ListTile(
-        leading: Icon(icon, color: iconColor ?? Colors.white),
+        leading: Icon(icon, color: iconColor ?? context.wellness.textPrimary),
         title: Text(
           title,
-          style: GoogleFonts.outfit(color: titleColor ?? Colors.white),
+          style: GoogleFonts.outfit(
+              color: titleColor ?? context.wellness.textPrimary),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+        trailing: Icon(Icons.chevron_right,
+            color: context.wellness.textTertiary),
         onTap: onTap,
       );
     }
@@ -376,16 +462,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: context.wellness.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: context.wellness.borderSubtle),
+        boxShadow: WellnessShadows.card,
       ),
       child: Column(
         children: [
@@ -394,7 +474,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // 프로필 사진
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: context.wellness.bgSubtle,
                 backgroundImage: !isGuest && user?.photoURL != null
                     ? NetworkImage(user!.photoURL!)
                     : null,
@@ -402,7 +482,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ? Icon(
                         isIOS ? CupertinoIcons.person_fill : Icons.person,
                         size: 30,
-                        color: Colors.white70,
+                        color: context.wellness.textSecondary,
                       )
                     : null,
               ),
@@ -418,7 +498,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.wellness.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -426,7 +506,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       isGuest ? '임시 계정으로 사용 중입니다' : (user?.email ?? ''),
                       style: GoogleFonts.outfit(
                         fontSize: 14,
-                        color: Colors.white60,
+                        color: context.wellness.textSecondary,
                       ),
                     ),
                     if (!isGuest) ...[
@@ -439,14 +519,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: PremiumColors.primary.withOpacity(0.2),
+                                  color: context.wellness.primary
+                                      .withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   '${profile.provider?.toUpperCase()} 계정',
                                   style: GoogleFonts.outfit(
                                     fontSize: 12,
-                                    color: PremiumColors.primary,
+                                    color: context.wellness.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -476,8 +557,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white24),
+                  foregroundColor: context.wellness.primary,
+                  side: BorderSide(color: context.wellness.primary),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -501,7 +582,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: double.infinity,
               child: isIOS
                   ? CupertinoButton(
-                      color: PremiumColors.primary,
+                      color: context.wellness.primary,
                       borderRadius: BorderRadius.circular(12),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       onPressed: () =>
@@ -509,7 +590,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: Text(
                         '계정 연결하기',
                         style: GoogleFonts.outfit(
-                          color: Colors.white,
+                          color: context.wellness.onPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -517,7 +598,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     )
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: PremiumColors.primary,
+                        backgroundColor: context.wellness.primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -528,7 +609,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: Text(
                         '계정 연결하기',
                         style: GoogleFonts.outfit(
-                          color: Colors.white,
+                          color: context.wellness.onPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -540,7 +621,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               '계정을 연결하면 데이터가 저장됩니다',
               style: GoogleFonts.outfit(
                 fontSize: 12,
-                color: Colors.white38,
+                color: context.wellness.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -774,25 +855,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
-        height: 100, // Fixed height for consistency
+        constraints: const BoxConstraints(minHeight: 100),
         child: Stack(
           children: [
             // Main Card Background
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1BFFFF).withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      context.wellness.primary,
+                      context.wellness.primaryLight,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.wellness.primary.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -811,27 +897,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         color: Colors.white, size: 30),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '프리미엄 업그레이드',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '프리미엄 업그레이드',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '모든 기능을 제한 없이 이용하세요',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          color: Colors.white.withOpacity(0.9),
+                        const SizedBox(height: 4),
+                        Text(
+                          '모든 기능을 제한 없이 이용하세요',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -844,9 +932,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFF4B4B), // Red color for discount
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: context.wellness.danger,
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(20),
                     bottomLeft: Radius.circular(20),
                   ),

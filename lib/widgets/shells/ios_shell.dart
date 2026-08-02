@@ -5,13 +5,28 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../screens/dashboard.dart';
 import '../../screens/ios_profile_screen.dart';
 import '../../screens/record_hub_screen.dart';
+import '../../screens/report_hub_screen.dart';
 import '../../screens/reports.dart';
 import '../../screens/community/community_screen.dart';
+import '../../screens/microbiome/microbiome_screen.dart';
 import '../../screens/settings_screen.dart';
+import '../../models/user_profile.dart';
 import '../../state/app_state.dart';
 import '../../theme/tokens.dart';
 import '../../utils/responsive_layout.dart';
 import 'ios_destination.dart';
+
+/// 2026 개편: 하단 탭을 4개로 고정 (홈 · 기록 · 리포트 · 내 정보).
+/// 리포트 탭이 careType에 따라 내용을 분기하므로 탭 개수는 항상 동일.
+/// (커뮤니티는 홈/내 정보 진입, 코칭·장건강 통계는 리포트로 통합)
+List<IOSDestination> destinationsForCareType(String careType) {
+  return const [
+    IOSDestination.home,
+    IOSDestination.record,
+    IOSDestination.report,
+    IOSDestination.profile,
+  ];
+}
 
 /// iOS 스타일 Shell (CupertinoTabScaffold)
 class IOSShell extends ConsumerStatefulWidget {
@@ -22,11 +37,15 @@ class IOSShell extends ConsumerStatefulWidget {
 }
 
 class _IOSShellState extends ConsumerState<IOSShell> {
-  static const List<IOSDestination> _destinations = IOSDestination.values;
+  // careType에 따라 build 시점에 결정되는 동적 탭 목록
+  List<IOSDestination> _destinations = destinationsForCareType(
+    UserCareType.fitness,
+  );
 
   late CupertinoTabController _tabController;
+  // 최대 탭 수(both = 6)만큼 미리 키를 생성해 두고 인덱스로 사용
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
-    _destinations.length,
+    6,
     (_) => GlobalKey<NavigatorState>(),
   );
 
@@ -34,6 +53,15 @@ class _IOSShellState extends ConsumerState<IOSShell> {
   void initState() {
     super.initState();
     _tabController = CupertinoTabController(initialIndex: 0);
+  }
+
+  /// 현재 사용자(로그인/게스트)의 케어 유형을 통합해서 읽는다.
+  String _resolveCareType() {
+    final profile = ref.watch(userProfileProvider).valueOrNull;
+    if (profile != null && profile.careType.isNotEmpty) {
+      return profile.careType;
+    }
+    return ref.watch(guestCareTypeProvider);
   }
 
   @override
@@ -44,8 +72,12 @@ class _IOSShellState extends ConsumerState<IOSShell> {
 
   @override
   Widget build(BuildContext context) {
-    // Provider로부터 현재 탭 인덱스 감지
-    final tabIndex = ref.watch(currentTabIndexProvider);
+    // careType에 따라 탭 구성 결정
+    _destinations = destinationsForCareType(_resolveCareType());
+
+    // Provider로부터 현재 탭 인덱스 감지 (범위 보정)
+    final rawIndex = ref.watch(currentTabIndexProvider);
+    final tabIndex = rawIndex.clamp(0, _destinations.length - 1).toInt();
 
     if (ResponsiveLayout.isTablet(context)) {
       return _buildTabletShell(context, tabIndex);
@@ -62,15 +94,14 @@ class _IOSShellState extends ConsumerState<IOSShell> {
 
     return CupertinoTabScaffold(
       controller: _tabController,
-      backgroundColor: Colors.black, // Pure black background behind tabs
+      backgroundColor: context.wellness.bgRoot,
       tabBar: CupertinoTabBar(
-        backgroundColor:
-            PremiumColors.cardBackground.withOpacity(0.8), // Glassmorphism
-        activeColor: PremiumColors.primary, // Neon Pink
-        inactiveColor: Colors.white60,
+        backgroundColor: context.wellness.bgCard.withValues(alpha: 0.95),
+        activeColor: context.wellness.primary,
+        inactiveColor: context.wellness.textTertiary,
         height: 60,
-        border: const Border(
-          top: BorderSide(color: Colors.white10, width: 0.5),
+        border: Border(
+          top: BorderSide(color: context.wellness.borderSubtle, width: 0.5),
         ),
         iconSize: 28,
         onTap: (index) {
@@ -102,19 +133,16 @@ class _IOSShellState extends ConsumerState<IOSShell> {
           navigatorKey: _navigatorKeys[index],
           builder: (context) {
             return CupertinoPageScaffold(
-              backgroundColor: PremiumColors.backgroundStart,
+              backgroundColor: context.wellness.bgRoot,
               navigationBar: CupertinoNavigationBar(
-                backgroundColor: PremiumColors.backgroundStart.withOpacity(0.8),
-                border: const Border(
+                backgroundColor: context.wellness.bgRoot.withValues(alpha: 0.9),
+                border: Border(
                   bottom: BorderSide(
-                    color: Colors.white10,
+                    color: context.wellness.borderSubtle,
                     width: 0.5,
                   ),
                 ),
-                middle: Text(
-                  title,
-                  style: GoogleFonts.outfit(color: Colors.white),
-                ),
+                middle: _navTitle(context, title),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -122,8 +150,8 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                       padding: EdgeInsets.zero,
                       child: Stack(
                         children: [
-                          const Icon(CupertinoIcons.bell,
-                              size: 24, color: Colors.white),
+                          Icon(CupertinoIcons.bell,
+                              size: 24, color: context.wellness.textPrimary),
                           Positioned(
                             right: 0,
                             top: 0,
@@ -155,8 +183,8 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                     ),
                     CupertinoButton(
                       padding: EdgeInsets.zero,
-                      child: const Icon(CupertinoIcons.settings,
-                          size: 24, color: Colors.white),
+                      child: Icon(CupertinoIcons.settings,
+                          size: 24, color: context.wellness.textPrimary),
                       onPressed: () {
                         Navigator.of(context).push(
                           CupertinoPageRoute(
@@ -191,13 +219,13 @@ class _IOSShellState extends ConsumerState<IOSShell> {
               navigationBar: CupertinoNavigationBar(
                 automaticallyImplyLeading: false,
                 backgroundColor:
-                    PremiumColors.backgroundStart.withOpacity(0.88),
-                border: const Border(
-                  bottom: BorderSide(color: Colors.white10, width: 0.5),
+                    context.wellness.bgRoot.withValues(alpha: 0.88),
+                border: Border(
+                  bottom: BorderSide(color: context.wellness.borderSubtle, width: 0.5),
                 ),
                 middle: Text(
                   destination.title,
-                  style: GoogleFonts.outfit(color: Colors.white),
+                  style: GoogleFonts.outfit(color: context.wellness.textPrimary),
                 ),
                 trailing: _buildToolbarActions(context),
               ),
@@ -216,9 +244,9 @@ class _IOSShellState extends ConsumerState<IOSShell> {
     return Container(
       width: 248,
       decoration: BoxDecoration(
-        color: PremiumColors.cardBackground.withOpacity(0.72),
-        border: const Border(
-          right: BorderSide(color: Colors.white10, width: 0.5),
+        color: context.wellness.bgCard.withValues(alpha: 0.72),
+        border: Border(
+          right: BorderSide(color: context.wellness.borderSubtle, width: 0.5),
         ),
       ),
       child: SafeArea(
@@ -232,7 +260,7 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                 child: Text(
                   'D-FET',
                   style: GoogleFonts.outfit(
-                    color: Colors.white,
+                    color: context.wellness.textPrimary,
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
                   ),
@@ -257,19 +285,19 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: context.wellness.bgSubtle,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: context.wellness.borderSubtle),
                   ),
                   child: Row(
                     children: [
-                      const Icon(CupertinoIcons.settings,
-                          size: 20, color: Colors.white70),
+                      Icon(CupertinoIcons.settings,
+                          size: 20, color: context.wellness.textSecondary),
                       const SizedBox(width: 10),
                       Text(
                         '설정',
                         style: GoogleFonts.outfit(
-                          color: Colors.white70,
+                          color: context.wellness.textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -312,13 +340,13 @@ class _IOSShellState extends ConsumerState<IOSShell> {
             Icon(
               isSelected ? destination.activeIcon : destination.icon,
               size: 22,
-              color: isSelected ? PremiumColors.primary : Colors.white54,
+              color: isSelected ? PremiumColors.primary : context.wellness.textTertiary,
             ),
             const SizedBox(width: 12),
             Text(
               destination.label,
               style: GoogleFonts.outfit(
-                color: isSelected ? Colors.white : Colors.white60,
+                color: isSelected ? context.wellness.textPrimary : context.wellness.textTertiary,
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -337,7 +365,7 @@ class _IOSShellState extends ConsumerState<IOSShell> {
           padding: EdgeInsets.zero,
           child: Stack(
             children: [
-              const Icon(CupertinoIcons.bell, size: 24, color: Colors.white),
+              Icon(CupertinoIcons.bell, size: 24, color: context.wellness.textPrimary),
               Positioned(
                 right: 0,
                 top: 0,
@@ -369,8 +397,8 @@ class _IOSShellState extends ConsumerState<IOSShell> {
         ),
         CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.settings,
-              size: 24, color: Colors.white),
+          child: Icon(CupertinoIcons.settings,
+              size: 24, color: context.wellness.textPrimary),
           onPressed: () {
             Navigator.of(context).push(
               CupertinoPageRoute(
@@ -383,6 +411,28 @@ class _IOSShellState extends ConsumerState<IOSShell> {
     );
   }
 
+  /// 네비게이션 바 타이틀. 홈 탭은 로고 마크, 나머지는 텍스트.
+  Widget _navTitle(BuildContext context, String title) {
+    if (title == 'D-FET') {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      // 다크: 흰색 로고(D-FET_logo.png), 라이트: 네이비 로고(D-FET_logo_2.png)
+      return Image.asset(
+        isDark
+            ? 'assets/image/D-FET_logo.png'
+            : 'assets/image/D-FET_logo_2.png',
+        height: 26,
+        fit: BoxFit.contain,
+      );
+    }
+    return Text(
+      title,
+      style: GoogleFonts.outfit(
+        color: context.wellness.textPrimary,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
   Widget _screenForIndex(int index) {
     final destination =
         _destinations[index.clamp(0, _destinations.length - 1).toInt()];
@@ -392,6 +442,10 @@ class _IOSShellState extends ConsumerState<IOSShell> {
         return const DashboardScreen();
       case IOSDestination.record:
         return const RecordHubScreen();
+      case IOSDestination.report:
+        return const ReportHubScreen();
+      case IOSDestination.microbiome:
+        return const MicrobiomeScreen();
       case IOSDestination.coaching:
         return const ReportsScreen();
       case IOSDestination.community:

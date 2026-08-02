@@ -51,7 +51,7 @@ class MealsScreen extends ConsumerWidget {
             ? (availableHeight * 0.72).clamp(520.0, 720.0).toDouble()
             : (availableHeight * 0.40).clamp(320.0, 620.0).toDouble();
         final feedbackCard = totalProtein < 100
-            ? _buildProteinFeedbackCard(totalProtein)
+            ? _buildProteinFeedbackCard(context, totalProtein)
             : const SizedBox.shrink();
 
         return SingleChildScrollView(
@@ -67,14 +67,14 @@ class MealsScreen extends ConsumerWidget {
                           children: [
                             SizedBox(
                               height: calorieCardHeight,
-                              child: _buildCalorieCard(
-                                  totalCalories, dailyGoal, calorieProgress),
+                              child: _buildCalorieCard(context, totalCalories,
+                                  dailyGoal, calorieProgress),
                             ),
                             const SizedBox(height: 16),
                             SizedBox(
                               height: macroCardHeight,
                               child: _buildMacroCard(
-                                  totalProtein, totalCarbs, totalFat),
+                                  context, totalProtein, totalCarbs, totalFat),
                             ),
                             if (totalProtein < 100) ...[
                               const SizedBox(height: 16),
@@ -99,13 +99,13 @@ class MealsScreen extends ConsumerWidget {
                       SizedBox(
                         height: calorieCardHeight,
                         child: _buildCalorieCard(
-                            totalCalories, dailyGoal, calorieProgress),
+                            context, totalCalories, dailyGoal, calorieProgress),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
                         height: macroCardHeight,
-                        child:
-                            _buildMacroCard(totalProtein, totalCarbs, totalFat),
+                        child: _buildMacroCard(
+                            context, totalProtein, totalCarbs, totalFat),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
@@ -125,8 +125,8 @@ class MealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCalorieCard(
-      int totalCalories, int dailyGoal, double calorieProgress) {
+  Widget _buildCalorieCard(BuildContext context, int totalCalories,
+      int dailyGoal, double calorieProgress) {
     return AppCard(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -135,9 +135,14 @@ class MealsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('일일 칼로리', style: AppTextStyles.h3),
+              Text(
+                '일일 칼로리',
+                style: AppTextStyles.h3
+                    .copyWith(color: context.wellness.textPrimary),
+              ),
               Text('$totalCalories / $dailyGoal kcal',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body
+                      .copyWith(color: context.wellness.textSecondary)),
             ],
           ),
           const SizedBox(height: 8),
@@ -146,7 +151,7 @@ class MealsScreen extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: calorieProgress,
               minHeight: 12,
-              backgroundColor: AppColors.bgStroke,
+              backgroundColor: context.wellness.border,
               valueColor: AlwaysStoppedAnimation<Color>(
                 calorieProgress > 0.9 ? AppColors.warn : AppColors.brandPrimary,
               ),
@@ -157,12 +162,17 @@ class MealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMacroCard(int totalProtein, int totalCarbs, int totalFat) {
+  Widget _buildMacroCard(BuildContext context, int totalProtein,
+      int totalCarbs, int totalFat) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('영양소 비율', style: AppTextStyles.h3),
+          Text(
+            '영양소 비율',
+            style:
+                AppTextStyles.h3.copyWith(color: context.wellness.textPrimary),
+          ),
           const SizedBox(height: 12),
           Expanded(
             child: Row(
@@ -217,11 +227,13 @@ class MealsScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _macroLegend('단백질', totalProtein, AppColors.brandPrimary),
+                      _macroLegend(
+                          context, '단백질', totalProtein, AppColors.brandPrimary),
                       const SizedBox(height: 8),
-                      _macroLegend('탄수화물', totalCarbs, AppColors.accentGold),
+                      _macroLegend(
+                          context, '탄수화물', totalCarbs, AppColors.accentGold),
                       const SizedBox(height: 8),
-                      _macroLegend('지방', totalFat, AppColors.info),
+                      _macroLegend(context, '지방', totalFat, AppColors.info),
                     ],
                   ),
                 ),
@@ -242,7 +254,11 @@ class MealsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(isToday ? '오늘 식단' : '선택 날짜 식단', style: AppTextStyles.h3),
+              Text(
+                isToday ? '오늘 식단' : '선택 날짜 식단',
+                style: AppTextStyles.h3
+                    .copyWith(color: context.wellness.textPrimary),
+              ),
               if (showEntryActions)
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -334,21 +350,31 @@ class MealsScreen extends ConsumerWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(meal.time,
-                                          style: AppTextStyles.bodySmall),
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                  color: context.wellness
+                                                      .textTertiary)),
                                       Text(meal.name,
-                                          style: AppTextStyles.bodyLarge),
+                                          style: AppTextStyles.bodyLarge
+                                              .copyWith(
+                                                  color: context.wellness
+                                                      .textPrimary)),
                                       if (meal.protein > 0 ||
                                           meal.carbs > 0 ||
                                           meal.fat > 0)
                                         Text(
                                           'P:${meal.protein}g C:${meal.carbs}g F:${meal.fat}g',
-                                          style: AppTextStyles.caption,
+                                          style: AppTextStyles.caption.copyWith(
+                                              color: context
+                                                  .wellness.textTertiary),
                                         ),
                                     ],
                                   ),
                                 ),
                                 Text('${meal.calories} kcal',
-                                    style: AppTextStyles.label),
+                                    style: AppTextStyles.label.copyWith(
+                                        color:
+                                            context.wellness.textSecondary)),
                               ],
                             ),
                           ),
@@ -362,19 +388,21 @@ class MealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProteinFeedbackCard(int totalProtein) {
+  Widget _buildProteinFeedbackCard(BuildContext context, int totalProtein) {
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
           '결핍: 단백질 ${100 - totalProtein}g 부족  →  추천 식단 보기를 눌러 채우세요',
-          style: AppTextStyles.body,
+          style: AppTextStyles.body
+              .copyWith(color: context.wellness.textSecondary),
         ),
       ),
     );
   }
 
-  Widget _macroLegend(String label, int value, Color color) {
+  Widget _macroLegend(
+      BuildContext context, String label, int value, Color color) {
     return Row(
       children: [
         Container(
@@ -389,10 +417,13 @@ class MealsScreen extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTextStyles.caption),
+            Text(label,
+                style: AppTextStyles.caption
+                    .copyWith(color: context.wellness.textTertiary)),
             Text('${value}g',
-                style: AppTextStyles.bodySmall
-                    .copyWith(fontWeight: FontWeight.w600)),
+                style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.wellness.textSecondary)),
           ],
         ),
       ],

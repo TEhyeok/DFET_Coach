@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/onboarding_state.dart';
+import '../theme/tokens.dart';
 import '../utils/responsive_layout.dart';
 import '../widgets/dfet_logo_mark.dart';
 import 'login_screen.dart';
 
 class IntroScreen extends ConsumerWidget {
   const IntroScreen({super.key});
-
-  static const Color _primaryColor = Color(0xFFE94560);
-  static const Color _bgGradientStart = Color(0xFF1A1A2E);
-  static const Color _bgGradientEnd = Color(0xFF16213E);
 
   Future<void> _onStart(BuildContext context, WidgetRef ref) async {
     // 온보딩 완료 처리 (인트로 봄)
@@ -28,14 +25,9 @@ class IntroScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: SafeArea(
           child: ResponsiveConstrainedBox(
             maxWidth: ResponsiveLayout.maxFormWidth,
@@ -49,11 +41,11 @@ class IntroScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: _primaryColor.withOpacity(0.1),
+                      color: context.wellness.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: _primaryColor.withOpacity(0.2),
+                          color: context.wellness.primary.withOpacity(0.2),
                           blurRadius: 40,
                           spreadRadius: 10,
                         ),
@@ -70,7 +62,7 @@ class IntroScreen extends ConsumerWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 42,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: context.wellness.textPrimary,
                       letterSpacing: 2.0,
                     ),
                   ),
@@ -80,7 +72,7 @@ class IntroScreen extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(
                       fontSize: 18,
-                      color: Colors.white70,
+                      color: context.wellness.textSecondary,
                       height: 1.5,
                     ),
                   ),
@@ -91,7 +83,7 @@ class IntroScreen extends ConsumerWidget {
                     child: ElevatedButton(
                       onPressed: () => _onStart(context, ref),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
+                        backgroundColor: context.wellness.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

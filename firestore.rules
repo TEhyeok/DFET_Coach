@@ -5,6 +5,8 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && 
         (
+          ('admin' in request.auth.token && request.auth.token.admin == true) ||
+          ('super_admin' in request.auth.token && request.auth.token.super_admin == true) ||
           // Check 'admins' collection
           (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
            get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'super_admin'] &&
@@ -29,7 +31,15 @@ service cloud.firestore {
 
     // Helper function to check if user is a trainer (Custom Claim)
     function isTrainer() {
-      return request.auth != null && request.auth.token.trainer == true;
+      return request.auth != null &&
+        'trainer' in request.auth.token && request.auth.token.trainer == true;
+    }
+
+    function isLabOperator() {
+      return request.auth != null && (
+        ('lab_operator' in request.auth.token && request.auth.token.lab_operator == true) ||
+        ('role' in request.auth.token && request.auth.token.role == 'lab_operator')
+      );
     }
 
     // Helper to check if caller is the assigned trainer for a given member
@@ -42,21 +52,45 @@ service cloud.firestore {
 
     // --- Admins Collection (New) ---
     match /admins/{userId} {
-      // Allow creating a request (signup) if you are the owner
-      allow create: if isOwner(userId);
+      // 본인은 승인 대기 요청만 생성할 수 있다. 승인은 서버/기존 관리자만 수행한다.
+      allow create: if isOwner(userId) &&
+        request.resource.data.approvalStatus == 'pending' &&
+        request.resource.data.role == 'admin' &&
+        request.resource.data.keys().hasOnly([
+          'email', 'displayName', 'createdAt', 'approvalStatus', 'role', 'lastLoginAt'
+        ]);
       // Allow reading your own profile
       allow read: if isOwner(userId) || isAdmin();
-      // Allow updates only if you are a super admin or it's your own profile (limited fields?)
-      // For simplicity, let's allow admins to update (e.g. approval)
-      allow update: if isAdmin() || isOwner(userId); 
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'lastLoginAt'
+        ])
+      );
+      allow delete: if isAdmin();
     }
 
     // --- Users Collection ---
     match /users/{userId} {
       // 본인 / 관리자 / 담당 트레이너만 읽기 가능
       allow read: if isOwner(userId) || isAdmin() || isAssignedTrainer(userId);
-      // 본인 / 관리자만 쓰기 가능 (트레이너는 회원 프로필 직접 수정 불가)
-      allow write: if isOwner(userId) || isAdmin();
+      // 역할·승인·구독 필드는 클라이언트가 스스로 승격할 수 없도록 고정한다.
+      allow create: if isOwner(userId) &&
+        request.resource.data.role in ['user', 'member'] &&
+        request.resource.data.isAdmin != true &&
+        request.resource.data.isTrainer != true &&
+        request.resource.data.isApproved != true &&
+        request.resource.data.isPremium != true;
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'email', 'displayName', 'photoURL', 'provider', 'lastLoginAt',
+          'gender', 'age', 'height', 'weight', 'activityLevel', 'goal',
+          'careType', 'careTypeVersion', 'careTypeConfirmedAt',
+          'isOnboardingComplete'
+        ])
+      );
+      allow delete: if isAdmin();
 
       // Subcollections (meals, workouts)
       // 본인은 read/write, 담당 트레이너는 read만, 관리자는 모두
@@ -136,9 +170,92 @@ service cloud.firestore {
 
     // --- Requests ---
     match /requests/{requestId} {
-      allow create: if isAuth();
-      allow read: if isOwner(resource.data.userId) || isAdmin();
-      allow update, delete: if isAdmin();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read: if isOwner(resource.data.userId) ||
+        isAssignedTrainer(resource.data.userId) || isAdmin();
+      allow update: if isAssignedTrainer(resource.data.userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Clinical consumer projections ---
+    // All writes are performed with the Admin SDK after ingestion validation.
+    match /gutReports/{reportId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        isAssignedTrainer(resource.data.userId) ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    match /bloodReports/{reportId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        isAssignedTrainer(resource.data.userId) ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    match /healthSnapshots/{snapshotId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        isAssignedTrainer(resource.data.userId) ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // --- Clinical expert projections ---
+    // Members cannot read these documents, even when the report is theirs.
+    match /gutReportExperts/{reportId} {
+      allow read: if isAuth() && (
+        isAssignedTrainer(resource.data.userId) || isAdmin()
+      );
+      allow write: if false;
+    }
+
+    match /bloodReportExperts/{reportId} {
+      allow read: if isAuth() && (
+        isAssignedTrainer(resource.data.userId) || isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // Operational collections are accessed by the Next.js server after role
+    // verification. Direct client writes are intentionally disabled.
+    match /ingestionJobs/{jobId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /referenceRangeVersions/{versionId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /insightPolicyVersions/{versionId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /memberAliases/{aliasId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /clinicalReportKeys/{reportKeyId} {
+      allow read, write: if false;
+    }
+
+    match /auditLogs/{auditId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /appConfig/{configId} {
+      allow read: if isAuth();
+      allow write: if false;
     }
   }
 }

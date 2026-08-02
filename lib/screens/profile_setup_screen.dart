@@ -33,11 +33,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   // Animation State
   bool _isAnalyzing = false;
 
-  // Premium Theme Colors
-  static const Color _primaryColor = Color(0xFFE94560);
-  static const Color _bgGradientStart = Color(0xFF1A1A2E);
-  static const Color _bgGradientEnd = Color(0xFF16213E);
-
   final List<String> _goals = [
     "체중 감량",
     "근육 증가",
@@ -152,14 +147,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
 
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: SafeArea(
           child: Column(
             children: [
@@ -238,8 +228,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         children: [
           if (_currentPage > 0)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios,
-                  color: Colors.white, size: 20),
+              icon: Icon(Icons.arrow_back_ios,
+                  color: context.wellness.textPrimary, size: 20),
               onPressed: _previousPage,
             )
           else
@@ -254,7 +244,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 width: _currentPage == index ? 20 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: _currentPage == index ? _primaryColor : Colors.white24,
+                  color: _currentPage == index
+                      ? context.wellness.primary
+                      : context.wellness.border,
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
@@ -279,7 +271,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -306,13 +298,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         duration: const Duration(milliseconds: 200),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? _primaryColor
-                              : Colors.white.withOpacity(0.05),
+                              ? context.wellness.primary
+                              : context.wellness.bgCard,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.transparent
-                                : Colors.white10,
+                                : context.wellness.border,
                             width: 1,
                           ),
                         ),
@@ -339,7 +331,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.white70,
+                                      : context.wellness.textSecondary,
                                 ),
                               ),
                             ),
@@ -384,7 +376,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -427,10 +419,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isSelected ? _primaryColor : Colors.white.withOpacity(0.05),
+            color: isSelected ? context.wellness.primary : context.wellness.bgCard,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isSelected ? Colors.transparent : Colors.white10,
+              color: isSelected ? Colors.transparent : context.wellness.border,
               width: 1,
             ),
           ),
@@ -440,7 +432,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               Icon(
                 icon,
                 size: 60,
-                color: isSelected ? Colors.white : Colors.white38,
+                color: isSelected
+                    ? Colors.white
+                    : context.wellness.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
@@ -448,7 +442,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : Colors.white70,
+                  color: isSelected
+                      ? Colors.white
+                      : context.wellness.textSecondary,
                 ),
               ),
             ],
@@ -478,7 +474,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -486,7 +482,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             subtitle,
             style: GoogleFonts.outfit(
               fontSize: 16,
-              color: Colors.white60,
+              color: context.wellness.textTertiary,
             ),
           ),
           Expanded(
@@ -505,10 +501,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       onChanged(min + index);
                     },
                     selectionOverlay: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         border: Border.symmetric(
-                          horizontal:
-                              BorderSide(color: _primaryColor, width: 2),
+                          horizontal: BorderSide(
+                              color: context.wellness.primary, width: 2),
                         ),
                       ),
                     ),
@@ -520,7 +516,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.wellness.textPrimary,
                           ),
                         ),
                       );
@@ -531,7 +527,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   unit,
                   style: GoogleFonts.outfit(
                     fontSize: 24,
-                    color: _primaryColor,
+                    color: context.wellness.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -555,7 +551,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             style: GoogleFonts.outfit(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
               height: 1.2,
             ),
           ),
@@ -574,11 +570,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? _primaryColor
-                          : Colors.white.withOpacity(0.05),
+                          ? context.wellness.primary
+                          : context.wellness.bgCard,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? Colors.transparent : Colors.white10,
+                        color: isSelected
+                            ? Colors.transparent
+                            : context.wellness.border,
                       ),
                     ),
                     child: Row(
@@ -591,7 +589,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                               fontWeight: isSelected
                                   ? FontWeight.bold
                                   : FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.white70,
+                              color: isSelected
+                                  ? Colors.white
+                                  : context.wellness.textSecondary,
                             ),
                           ),
                         ),
@@ -619,13 +619,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: context.wellness.primarySubtle,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.security_rounded,
               size: 60,
-              color: Colors.white,
+              color: context.wellness.primary,
             ),
           ),
           const SizedBox(height: 32),
@@ -634,7 +634,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: context.wellness.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -643,7 +643,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               fontSize: 16,
-              color: Colors.white70,
+              color: context.wellness.textSecondary,
               height: 1.5,
             ),
           ),
@@ -674,11 +674,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       height: 56,
       child: OutlinedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: context.wellness.primaryDark),
         label: Text(label),
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.white24),
+          foregroundColor: context.wellness.primaryDark,
+          side: BorderSide(color: context.wellness.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -693,20 +693,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Widget _buildAnalyzingPage() {
     return Scaffold(
+      backgroundColor: context.wellness.bgRoot,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgGradientStart, _bgGradientEnd],
-          ),
-        ),
+        color: context.wellness.bgRoot,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                color: _primaryColor,
+              CircularProgressIndicator(
+                color: context.wellness.primary,
                 strokeWidth: 4,
               ),
               const SizedBox(height: 40),
@@ -715,7 +710,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.wellness.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -723,7 +718,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 "잠시만 기다려주세요.",
                 style: GoogleFonts.outfit(
                   fontSize: 16,
-                  color: Colors.white60,
+                  color: context.wellness.textTertiary,
                 ),
               ),
             ],
@@ -754,7 +749,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
+              backgroundColor: context.wellness.primary,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(

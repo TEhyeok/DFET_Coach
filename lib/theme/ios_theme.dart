@@ -7,12 +7,12 @@ import 'ios_text_styles.dart';
 CupertinoThemeData iosThemeDark() {
   return const CupertinoThemeData(
     brightness: Brightness.dark,
-    primaryColor: AppColorsDark.brandPrimary,
-    primaryContrastingColor: CupertinoColors.white,
-    scaffoldBackgroundColor: AppColors.bgApp,
-    barBackgroundColor: AppColors.bgCard,
+    primaryColor: WellnessColorsDark.primary,
+    primaryContrastingColor: WellnessColorsDark.onPrimary,
+    scaffoldBackgroundColor: WellnessColorsDark.bgRoot,
+    barBackgroundColor: WellnessColorsDark.bgCard,
     textTheme: CupertinoTextThemeData(
-      primaryColor: AppColors.textStrong,
+      primaryColor: WellnessColorsDark.textPrimary,
       textStyle: IOSTextStyles.body,
       actionTextStyle: IOSTextStyles.button,
       tabLabelTextStyle: IOSTextStyles.tabLabel,

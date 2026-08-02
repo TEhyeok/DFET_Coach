@@ -61,7 +61,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       backgroundColor: PremiumColors.backgroundStart,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text('새 게시글', style: GoogleFonts.outfit(color: Colors.white)),
+        title: Text('새 게시글',
+            style: GoogleFonts.outfit(color: context.wellness.textPrimary)),
         actions: [
           TextButton(
             onPressed: _isUploading ? null : _submitPost,
@@ -87,10 +88,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             child: TextField(
               controller: _contentController,
               maxLines: null,
-              style: GoogleFonts.outfit(color: Colors.white),
+              style: GoogleFonts.outfit(color: context.wellness.textPrimary),
               decoration: InputDecoration(
                 hintText: '운동 기록을 공유해보세요...',
-                hintStyle: GoogleFonts.outfit(color: Colors.white54),
+                hintStyle: GoogleFonts.outfit(color: context.wellness.textTertiary),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(16),
               ),
@@ -140,8 +141,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.white10)),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: context.wellness.borderSubtle)),
             ),
             child: Row(
               children: [
@@ -149,7 +150,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   onPressed: _pickImage,
                   icon: const Icon(Icons.image, color: PremiumColors.primary),
                 ),
-                const Text('사진 추가', style: TextStyle(color: Colors.white54)),
+                Text('사진 추가',
+                    style: TextStyle(color: context.wellness.textSecondary)),
               ],
             ),
           ),

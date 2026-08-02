@@ -74,7 +74,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
         }
 
         final sectionHeight =
-            (constraints.maxHeight * 0.72).clamp(460.0, 720.0).toDouble();
+            (constraints.maxHeight * 0.72).clamp(420.0, 720.0).toDouble();
 
         return ListView(
           padding: ResponsiveLayout.compactPagePadding(context),
@@ -88,7 +88,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
               isToday: isToday,
               showTitle: false,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             SizedBox(
               height: sectionHeight,
               child: _buildSectionView(
@@ -115,20 +115,24 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showTitle) ...[
-          Text('기록 허브', style: AppTextStyles.h2),
+          Text(
+            '기록 허브',
+            style:
+                AppTextStyles.h2.copyWith(color: context.wellness.textPrimary),
+          ),
           const SizedBox(height: 6),
           Text(
             _dateSubtitle(selectedDate, isToday),
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSubtle,
+              color: context.wellness.textTertiary,
             ),
           ),
           const SizedBox(height: 16),
         ],
         _buildDateNavigator(selectedDate, isToday),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         AppCard(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(11),
           child: Row(
             children: [
               Expanded(child: _summaryMetric('$mealsCount', '식단')),
@@ -141,15 +145,15 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         IOSActionRow(
           icon: CupertinoIcons.camera,
           title: RecordEntryMode.photoMeal.title,
           subtitle: 'AI 분석',
-          color: AppColors.brandPrimary,
+          color: context.wellness.primary,
           onPressed: () => RecordEntryActions.showPhotoMeal(context, ref),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         IOSActionRow(
           icon: CupertinoIcons.pencil,
           title: RecordEntryMode.manualMeal.title,
@@ -157,7 +161,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           color: AppColors.accentGold,
           onPressed: () => RecordEntryActions.showManualMeal(context, ref),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         IOSActionRow(
           icon: CupertinoIcons.flame,
           title: RecordEntryMode.workout.title,
@@ -165,7 +169,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           color: AppColors.info,
           onPressed: () => RecordEntryActions.showWorkout(context, ref),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         IOSActionRow(
           icon: CupertinoIcons.person_crop_rectangle,
           title: RecordEntryMode.posture.title,
@@ -175,7 +179,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
             setState(() => _selectedSection = RecordSection.posture);
           },
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         _buildSegmentedControl(),
       ],
     );
@@ -183,7 +187,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
 
   Widget _buildDateNavigator(DateTime selectedDate, bool isToday) {
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           _dateIconButton(
@@ -192,20 +196,21 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           ),
           Expanded(
             child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
               onPressed: _pickDate,
               child: Column(
                 children: [
                   Text(
                     _dateTitle(selectedDate, isToday),
-                    style: AppTextStyles.h3,
+                    style: AppTextStyles.h3
+                        .copyWith(color: context.wellness.textPrimary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     DateFormat('yyyy.MM.dd').format(selectedDate),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSubtle,
+                      color: context.wellness.textTertiary,
                     ),
                   ),
                 ],
@@ -221,8 +226,8 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
             minSize: 34,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             color: isToday
-                ? Colors.white.withOpacity(0.06)
-                : AppColors.brandPrimary.withOpacity(0.22),
+                ? context.wellness.bgSubtle
+                : context.wellness.primary.withOpacity(0.22),
             borderRadius: BorderRadius.circular(12),
             onPressed: isToday
                 ? null
@@ -233,7 +238,9 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
             child: Text(
               '오늘',
               style: AppTextStyles.caption.copyWith(
-                color: isToday ? AppColors.textSubtle : AppColors.textStrong,
+                color: isToday
+                    ? context.wellness.textTertiary
+                    : context.wellness.textPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -253,7 +260,9 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
       onPressed: onPressed,
       child: Icon(
         icon,
-        color: onPressed == null ? Colors.white24 : AppColors.textStrong,
+        color: onPressed == null
+            ? context.wellness.textTertiary
+            : context.wellness.textPrimary,
         size: 20,
       ),
     );
@@ -278,7 +287,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
         context: context,
         builder: (context) => Container(
           height: 320,
-          color: AppColors.bgCard,
+          color: context.wellness.bgCard,
           child: SafeArea(
             top: false,
             child: Column(
@@ -355,8 +364,8 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
   Widget _buildSegmentedControl() {
     return CupertinoSlidingSegmentedControl<RecordSection>(
       groupValue: _selectedSection,
-      backgroundColor: Colors.white.withOpacity(0.06),
-      thumbColor: AppColors.brandPrimary.withOpacity(0.28),
+      backgroundColor: context.wellness.bgSubtle,
+      thumbColor: context.wellness.primary.withOpacity(0.28),
       children: {
         for (final section in RecordSection.values)
           section: Padding(
@@ -365,8 +374,8 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
               section.label,
               style: TextStyle(
                 color: _selectedSection == section
-                    ? AppColors.textStrong
-                    : AppColors.textSubtle,
+                    ? context.wellness.textPrimary
+                    : context.wellness.textTertiary,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
@@ -407,11 +416,15 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
 
   Widget _buildPosturePanel() {
     return AppCard(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('자세 평가', style: AppTextStyles.h3),
+          Text(
+            '자세 평가',
+            style:
+                AppTextStyles.h3.copyWith(color: context.wellness.textPrimary),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -440,7 +453,7 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           CupertinoButton(
             color: AppColors.success,
             borderRadius: BorderRadius.circular(14),
@@ -456,18 +469,18 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: context.wellness.bgSubtle,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(color: context.wellness.borderSubtle),
             ),
-            child: const Text(
+            child: Text(
               '전신이 보이도록 카메라를 고정하고 밝은 곳에서 진행하세요.',
               style: TextStyle(
-                color: AppColors.textSubtle,
+                color: context.wellness.textTertiary,
                 fontSize: 13,
                 height: 1.35,
               ),
@@ -486,31 +499,34 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
       onPressed: () => setState(() => _selectedExercise = type),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.success.withOpacity(0.16)
-              : Colors.white.withOpacity(0.05),
+              : context.wellness.bgSubtle,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color:
-                selected ? AppColors.success.withOpacity(0.75) : Colors.white10,
+            color: selected
+                ? AppColors.success.withOpacity(0.75)
+                : context.wellness.borderSubtle,
           ),
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              color: selected ? AppColors.success : AppColors.textSubtle,
-              size: 28,
+              color: selected ? AppColors.success : context.wellness.textTertiary,
+              size: 26,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 label,
                 style: TextStyle(
-                  color: selected ? AppColors.textStrong : AppColors.textSubtle,
+                  color: selected
+                      ? context.wellness.textPrimary
+                      : context.wellness.textTertiary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -529,13 +545,15 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
           fit: BoxFit.scaleDown,
           child: Text(
             value,
-            style: AppTextStyles.h3.copyWith(color: AppColors.textStrong),
+            style:
+                AppTextStyles.h3.copyWith(color: context.wellness.textPrimary),
           ),
         ),
         const SizedBox(height: 3),
         Text(
           label,
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSubtle),
+          style: AppTextStyles.caption
+              .copyWith(color: context.wellness.textTertiary),
         ),
       ],
     );
@@ -544,8 +562,8 @@ class _RecordHubScreenState extends ConsumerState<RecordHubScreen> {
   Widget _metricDivider() {
     return Container(
       width: 1,
-      height: 36,
-      color: Colors.white10,
+      height: 30,
+      color: context.wellness.border,
       margin: const EdgeInsets.symmetric(horizontal: 8),
     );
   }

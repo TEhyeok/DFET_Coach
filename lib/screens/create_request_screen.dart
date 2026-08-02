@@ -155,10 +155,12 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
       backgroundColor: PremiumColors.backgroundStart,
       navigationBar: CupertinoNavigationBar(
         backgroundColor: PremiumColors.backgroundStart.withOpacity(0.8),
-        middle: const Text('새로운 자세 교정 요청', style: TextStyle(color: Colors.white)),
+        middle: Text('새로운 자세 교정 요청',
+            style: TextStyle(color: context.wellness.textPrimary)),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.back, color: Colors.white),
+          child: Icon(CupertinoIcons.back,
+              color: context.wellness.textPrimary),
           onPressed: () {
             AppLogger.debug('Back button pressed');
             Navigator.of(context).pop();
@@ -179,11 +181,13 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
             CupertinoTextField(
               controller: _titleController,
               placeholder: '제목 (예: 스쿼트 자세 확인)',
-              placeholderStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-              style: const TextStyle(color: Colors.white),
+              placeholderStyle:
+                  TextStyle(color: context.wellness.textTertiary),
+              style: TextStyle(color: context.wellness.textPrimary),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: context.wellness.bgSubtle,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: context.wellness.border),
               ),
               padding: const EdgeInsets.all(12),
             ),
@@ -191,17 +195,23 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
             CupertinoTextField(
               controller: _descriptionController,
               placeholder: '고민되는 부분을 설명해주세요...',
-              placeholderStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-              style: const TextStyle(color: Colors.white),
+              placeholderStyle:
+                  TextStyle(color: context.wellness.textTertiary),
+              style: TextStyle(color: context.wellness.textPrimary),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: context.wellness.bgSubtle,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: context.wellness.border),
               ),
               padding: const EdgeInsets.all(12),
               maxLines: 5,
             ),
             const SizedBox(height: 24),
-            const Text('동영상 첨부', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('동영상 첨부',
+                style: TextStyle(
+                    color: context.wellness.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             if (_videoFile != null && _videoController != null && _videoController!.value.isInitialized)
               AspectRatio(
@@ -254,16 +264,19 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       child: Container(
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: context.wellness.bgCard,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          border: Border.all(color: context.wellness.border),
+                          boxShadow: WellnessShadows.soft,
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(CupertinoIcons.camera, color: PremiumColors.primary, size: 32),
-                            SizedBox(height: 8),
-                            Text('동영상 촬영', style: TextStyle(color: Colors.white)),
+                          children: [
+                            const Icon(CupertinoIcons.camera, color: PremiumColors.primary, size: 32),
+                            const SizedBox(height: 8),
+                            Text('동영상 촬영',
+                                style: TextStyle(
+                                    color: context.wellness.textPrimary)),
                           ],
                         ),
                       ),
@@ -276,16 +289,19 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       child: Container(
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: context.wellness.bgCard,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          border: Border.all(color: context.wellness.border),
+                          boxShadow: WellnessShadows.soft,
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(CupertinoIcons.photo, color: PremiumColors.secondary, size: 32),
-                            SizedBox(height: 8),
-                            Text('갤러리에서 선택', style: TextStyle(color: Colors.white)),
+                          children: [
+                            const Icon(CupertinoIcons.photo, color: PremiumColors.secondary, size: 32),
+                            const SizedBox(height: 8),
+                            Text('갤러리에서 선택',
+                                style: TextStyle(
+                                    color: context.wellness.textPrimary)),
                           ],
                         ),
                       ),

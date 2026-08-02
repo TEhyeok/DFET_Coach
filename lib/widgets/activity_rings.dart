@@ -169,6 +169,10 @@ class _ActivityRingsState extends State<ActivityRings>
                               exercise: _animation2.value,
                               wellness: _animation3.value,
                               scaleFactor: ringSize / 240,
+                              trackColor: context.wellness.border,
+                              nutritionColor: context.wellness.energy,
+                              exerciseColor: context.wellness.primary,
+                              wellnessColor: context.wellness.info,
                             ),
                           );
                         },
@@ -182,11 +186,17 @@ class _ActivityRingsState extends State<ActivityRings>
                             children: [
                               Text(
                                 '${_scoreAnimation.value}',
-                                style: AppTextStyles.number.copyWith(fontSize: scoreFontSize),
+                                style: AppTextStyles.number.copyWith(
+                                  fontSize: scoreFontSize,
+                                  color: context.wellness.textPrimary,
+                                ),
                               ),
                               Text(
                                 '평균 점수',
-                                style: AppTextStyles.caption.copyWith(fontSize: scoreFontSize * 0.28),
+                                style: AppTextStyles.caption.copyWith(
+                                  fontSize: scoreFontSize * 0.28,
+                                  color: context.wellness.textTertiary,
+                                ),
                               ),
                             ],
                           );
@@ -200,11 +210,11 @@ class _ActivityRingsState extends State<ActivityRings>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildLegend('영양', widget.nutritionProgress, AppColors.brandPrimary),
+                    _buildLegend(context, '영양', widget.nutritionProgress, context.wellness.energy),
                     const SizedBox(width: 12),
-                    _buildLegend('운동', widget.exerciseProgress, AppColors.success),
+                    _buildLegend(context, '운동', widget.exerciseProgress, context.wellness.primary),
                     const SizedBox(width: 12),
-                    _buildLegend('웰니스', widget.wellnessProgress, const Color(0xFF0071E3)),
+                    _buildLegend(context, '웰니스', widget.wellnessProgress, context.wellness.info),
                   ],
                 ),
               ],
@@ -215,7 +225,8 @@ class _ActivityRingsState extends State<ActivityRings>
     );
   }
 
-  Widget _buildLegend(String label, double progress, Color color) {
+  Widget _buildLegend(
+      BuildContext context, String label, double progress, Color color) {
     return Column(
       children: [
         Container(
@@ -227,7 +238,11 @@ class _ActivityRingsState extends State<ActivityRings>
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.caption),
+        Text(
+          label,
+          style: AppTextStyles.caption
+              .copyWith(color: context.wellness.textTertiary),
+        ),
         Text(
           '${(progress * 100).toInt()}%',
           style: AppTextStyles.bodySmall.copyWith(color: color, fontWeight: FontWeight.w600),
@@ -242,12 +257,20 @@ class ActivityRingsPainter extends CustomPainter {
   final double exercise;
   final double wellness;
   final double scaleFactor;
+  final Color trackColor;
+  final Color nutritionColor;
+  final Color exerciseColor;
+  final Color wellnessColor;
 
   ActivityRingsPainter({
     required this.nutrition,
     required this.exercise,
     required this.wellness,
     this.scaleFactor = 1.0,
+    this.trackColor = WellnessColors.border,
+    this.nutritionColor = WellnessColors.energy,
+    this.exerciseColor = WellnessColors.primary,
+    this.wellnessColor = WellnessColors.info,
   });
 
   @override
@@ -256,10 +279,11 @@ class ActivityRingsPainter extends CustomPainter {
     final startAngle = -pi / 2; // 12시 방향부터 시작
 
     // 링 설정 (바깥 → 안쪽) - scaleFactor 적용
+    // 스포티 테마: 바깥 링(영양)=에너지 라임, 운동=프라이머리, 웰니스=인포 블루 (테마 적응)
     final rings = [
-      {'progress': nutrition, 'color': AppColors.brandPrimary, 'radius': 110.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
-      {'progress': exercise, 'color': AppColors.success, 'radius': 85.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
-      {'progress': wellness, 'color': const Color(0xFF0071E3), 'radius': 60.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
+      {'progress': nutrition, 'color': nutritionColor, 'radius': 110.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
+      {'progress': exercise, 'color': exerciseColor, 'radius': 85.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
+      {'progress': wellness, 'color': wellnessColor, 'radius': 60.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
     ];
 
     for (var ring in rings) {
@@ -270,7 +294,7 @@ class ActivityRingsPainter extends CustomPainter {
 
       // 배경 링 (회색)
       final bgPaint = Paint()
-        ..color = AppColors.bgStroke
+        ..color = trackColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
@@ -307,6 +331,10 @@ class ActivityRingsPainter extends CustomPainter {
     return oldDelegate.nutrition != nutrition ||
            oldDelegate.exercise != exercise ||
            oldDelegate.wellness != wellness ||
-           oldDelegate.scaleFactor != scaleFactor;
+           oldDelegate.scaleFactor != scaleFactor ||
+           oldDelegate.trackColor != trackColor ||
+           oldDelegate.nutritionColor != nutritionColor ||
+           oldDelegate.exerciseColor != exerciseColor ||
+           oldDelegate.wellnessColor != wellnessColor;
   }
 }

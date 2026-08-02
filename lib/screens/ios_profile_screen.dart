@@ -10,6 +10,7 @@ import '../widgets/app_card.dart';
 import '../widgets/ios_adaptive_sheet.dart';
 import 'member_soap_notes_screen.dart';
 import 'my_info_screen.dart';
+import 'community/community_screen.dart';
 import 'settings_screen.dart';
 import 'tickets.dart';
 
@@ -21,7 +22,7 @@ class IOSProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return ListView(
-      padding: ResponsiveLayout.pagePadding(context),
+      padding: const EdgeInsets.all(12),
       children: [
         ResponsiveConstrainedBox(
           maxWidth: 820,
@@ -29,37 +30,38 @@ class IOSProfileScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppCard(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(14),
                 child: profileAsync.when(
                   data: (profile) => Row(
                     children: [
                       Container(
-                        width: 58,
-                        height: 58,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
-                          color: AppColors.brandPrimary.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(18),
+                          color: context.wellness.primary.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           CupertinoIcons.person_crop_circle_fill,
-                          color: AppColors.brandPrimary,
-                          size: 34,
+                          color: context.wellness.primary,
+                          size: 30,
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               profile?.displayName ?? '사용자',
-                              style: AppTextStyles.h3,
+                              style: AppTextStyles.h3.copyWith(
+                                  color: context.wellness.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               profile?.email ?? '계정 정보 없음',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSubtle,
+                                color: context.wellness.textTertiary,
                               ),
                             ),
                           ],
@@ -69,13 +71,26 @@ class IOSProfileScreen extends ConsumerWidget {
                   ),
                   loading: () =>
                       const Center(child: CupertinoActivityIndicator()),
-                  error: (_, __) => const Text(
+                  error: (_, __) => Text(
                     '프로필 정보를 불러올 수 없습니다',
-                    style: AppTextStyles.body,
+                    style: AppTextStyles.body
+                        .copyWith(color: context.wellness.textSecondary),
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
+              IOSActionRow(
+                icon: CupertinoIcons.person_2,
+                title: '커뮤니티',
+                subtitle: '운동·식단 공유 피드',
+                color: AppColors.brandPrimary,
+                onPressed: () => Navigator.of(context).push(
+                  adaptivePageRoute(
+                    builder: (context) => const CommunityScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
               IOSActionRow(
                 icon: CupertinoIcons.person,
                 title: '프로필',
@@ -86,7 +101,7 @@ class IOSProfileScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               IOSActionRow(
                 icon: CupertinoIcons.chat_bubble_2,
                 title: '요청',
@@ -98,7 +113,7 @@ class IOSProfileScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               IOSActionRow(
                 icon: CupertinoIcons.doc_text,
                 title: 'SOAP 노트',
@@ -110,7 +125,7 @@ class IOSProfileScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               IOSActionRow(
                 icon: CupertinoIcons.settings,
                 title: '설정',

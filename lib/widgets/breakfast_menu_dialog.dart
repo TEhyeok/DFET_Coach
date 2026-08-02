@@ -12,16 +12,10 @@ class BreakfastMenuDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
         decoration: BoxDecoration(
-          color: PremiumColors.cardBackground.withOpacity(0.95),
+          color: PremiumColors.cardBackground,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          border: Border.all(color: context.wellness.borderSubtle),
+          boxShadow: WellnessShadows.card,
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -45,13 +39,14 @@ class BreakfastMenuDialog extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.wellness.textPrimary,
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white70),
+                  icon: Icon(Icons.close,
+                      color: context.wellness.textSecondary),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -63,6 +58,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildMenuItem(
+                      context,
                       icon: '🥣',
                       title: '오트밀 & 베리',
                       description: '복합 탄수화물과 항산화 성분이 풍부한 완벽한 시작',
@@ -70,6 +66,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                       protein: 12,
                     ),
                     _buildMenuItem(
+                      context,
                       icon: '🥑',
                       title: '아보카도 토스트',
                       description: '통곡물 빵과 건강한 지방의 조화',
@@ -77,6 +74,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                       protein: 14,
                     ),
                     _buildMenuItem(
+                      context,
                       icon: '🥚',
                       title: '스크램블 에그 & 시금치',
                       description: '고단백질과 비타민의 든든한 한 끼',
@@ -84,6 +82,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                       protein: 22,
                     ),
                     _buildMenuItem(
+                      context,
                       icon: '🥛',
                       title: '그릭 요거트 볼',
                       description: '프로바이오틱스와 단백질이 가득',
@@ -123,7 +122,8 @@ class BreakfastMenuDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildMenuItem(
+    BuildContext context, {
     required String icon,
     required String title,
     required String description,
@@ -134,9 +134,9 @@ class BreakfastMenuDialog extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: context.wellness.bgSubtle,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.wellness.borderSubtle),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +152,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.wellness.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -160,7 +160,7 @@ class BreakfastMenuDialog extends StatelessWidget {
                   description,
                   style: GoogleFonts.outfit(
                     fontSize: 13,
-                    color: Colors.white60,
+                    color: context.wellness.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),

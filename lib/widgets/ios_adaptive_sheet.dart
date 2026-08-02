@@ -49,10 +49,10 @@ Future<T?> showAdaptiveEntrySheet<T>({
                   decoration: BoxDecoration(
                     color: AppColors.bgCard,
                     borderRadius: radius,
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: modalContext.wellness.borderSubtle),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.28),
+                        color: Colors.black.withOpacity(0.12),
                         blurRadius: 28,
                         offset: const Offset(0, 12),
                       ),
@@ -66,7 +66,7 @@ Future<T?> showAdaptiveEntrySheet<T>({
                         width: 44,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: Colors.white24,
+                          color: modalContext.wellness.textTertiary,
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -107,9 +107,9 @@ class IOSActionRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.055),
+          color: context.wellness.bgSubtle,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: context.wellness.borderSubtle),
         ),
         child: Row(
           children: [
@@ -129,8 +129,8 @@ class IOSActionRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: AppColors.textStrong,
+                    style: TextStyle(
+                      color: context.wellness.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -138,8 +138,8 @@ class IOSActionRow extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: AppColors.textSubtle,
+                    style: TextStyle(
+                      color: context.wellness.textSecondary,
                       fontSize: 12,
                       height: 1.25,
                     ),
@@ -148,9 +148,9 @@ class IOSActionRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               CupertinoIcons.chevron_forward,
-              color: Colors.white38,
+              color: context.wellness.textTertiary,
               size: 18,
             ),
           ],

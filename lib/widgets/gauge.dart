@@ -13,12 +13,12 @@ class Gauge extends StatelessWidget {
 
     // 빨-노-초 세그먼트 비율
     final sections = [
-      _seg(30, const Color(0xFFEF4444)),
-      _seg(30, const Color(0xFFF59E0B)),
-      _seg(40, const Color(0xFF35C56E)),
+      _seg(context, 30, const Color(0xFFEF4444)),
+      _seg(context, 30, const Color(0xFFF59E0B)),
+      _seg(context, 40, const Color(0xFF35C56E)),
     ];
     // 실제 값 오버레이 (얇은 바)
-    final indicator = _seg(v, AppColors.brandPrimary, stroke: 22);
+    final indicator = _seg(context, v, AppColors.brandPrimary, stroke: 22);
 
     return Semantics(
       label: '웰니스 점수',
@@ -52,14 +52,15 @@ class Gauge extends StatelessWidget {
     );
   }
 
-  PieChartSectionData _seg(double pct, Color c, {double stroke = 32}) {
+  PieChartSectionData _seg(BuildContext context, double pct, Color c,
+      {double stroke = 32}) {
     return PieChartSectionData(
       value: pct,
       color: c.withOpacity(.85),
       radius: 80,
       title: '',
       showTitle: false,
-      borderSide: BorderSide(color: Colors.white.withOpacity(.04), width: 2),
+      borderSide: BorderSide(color: context.wellness.bgCard, width: 2),
     );
   }
 }

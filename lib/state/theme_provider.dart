@@ -8,7 +8,8 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((r
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.dark) {
+  // 2026 개편: 기본값 라이트(Soft Wellness)
+  ThemeModeNotifier() : super(ThemeMode.light) {
     _loadTheme();
   }
 
@@ -17,22 +18,31 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getString(_themeKey);
-    if (savedTheme == 'light') {
-      state = ThemeMode.light;
-    } else {
-      state = ThemeMode.dark; // Default to dark
+    switch (savedTheme) {
+      case 'dark':
+        state = ThemeMode.dark;
+        break;
+      case 'system':
+        state = ThemeMode.system;
+        break;
+      case 'light':
+      default:
+        state = ThemeMode.light;
     }
   }
 
   Future<void> toggleTheme(bool isDark) async {
-    state = isDark ? ThemeMode.dark : ThemeMode.light;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, isDark ? 'dark' : 'light');
+    setTheme(isDark ? ThemeMode.dark : ThemeMode.light);
   }
 
   Future<void> setTheme(ThemeMode mode) async {
     state = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, mode == ThemeMode.light ? 'light' : 'dark');
+    final value = switch (mode) {
+      ThemeMode.light => 'light',
+      ThemeMode.dark => 'dark',
+      ThemeMode.system => 'system',
+    };
+    await prefs.setString(_themeKey, value);
   }
 }

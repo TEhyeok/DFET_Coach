@@ -18,9 +18,9 @@ class TicketsScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
 
     if (user == null) {
-      return const Center(
+      return Center(
           child: Text('요청 내역을 보려면 로그인해주세요',
-              style: TextStyle(color: Colors.white)));
+              style: TextStyle(color: context.wellness.textPrimary)));
     }
 
     return Scaffold(
@@ -46,7 +46,8 @@ class TicketsScreen extends ConsumerWidget {
           if (snapshot.hasError) {
             return Center(
                 child: Text('오류: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.white)));
+                    style:
+                        TextStyle(color: context.wellness.textPrimary)));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -61,19 +62,19 @@ class TicketsScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(CupertinoIcons.doc_text_search,
-                      size: 64, color: Colors.white.withOpacity(0.3)),
+                      size: 64, color: context.wellness.textTertiary),
                   const SizedBox(height: 16),
                   Text(
                     '아직 요청 내역이 없습니다',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.5), fontSize: 16),
+                        color: context.wellness.textSecondary, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '아래 버튼을 눌러\n자세 분석이나 식단 피드백을 요청해보세요.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.3), fontSize: 14),
+                        color: context.wellness.textTertiary, fontSize: 14),
                   ),
                 ],
               ),
@@ -106,7 +107,7 @@ class TicketsScreen extends ConsumerWidget {
                               Text(
                                 DateFormat('MMM d, yyyy').format(createdAt),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.4),
+                                  color: context.wellness.textTertiary,
                                   fontSize: 12,
                                 ),
                               ),
@@ -115,8 +116,8 @@ class TicketsScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(
                             data['title'] ?? '제목 없음',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.wellness.textPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -125,7 +126,7 @@ class TicketsScreen extends ConsumerWidget {
                           Text(
                             data['description'] ?? '',
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: context.wellness.textSecondary,
                                 fontSize: 14),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -165,8 +166,9 @@ class TicketsScreen extends ConsumerWidget {
                                   const SizedBox(height: 8),
                                   Text(
                                     data['adminFeedback'],
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14),
+                                    style: TextStyle(
+                                        color: context.wellness.textPrimary,
+                                        fontSize: 14),
                                   ),
                                 ],
                               ),

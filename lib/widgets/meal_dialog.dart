@@ -158,7 +158,7 @@ class _MealDialogState extends State<MealDialog> {
       // Android/Web 스타일
       showModalBottomSheet<void>(
         context: context,
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: context.wellness.bgCard,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -272,7 +272,7 @@ class _MealDialogState extends State<MealDialog> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.bgCard,
+          backgroundColor: context.wellness.bgCard,
           title: const Text('음식이 아닙니다', style: AppTextStyles.h3),
           content: Text(
             '이 이미지는 음식이 아닌 것 같습니다.\n\n감지된 내용: $reason\n\n음식 사진을 다시 촬영해주세요.',
@@ -592,7 +592,7 @@ class _MealDialogState extends State<MealDialog> {
     }
 
     return Dialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: context.wellness.bgCard,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Radii.xxl)),
       insetPadding: EdgeInsets.only(
@@ -618,7 +618,7 @@ class _MealDialogState extends State<MealDialog> {
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       inputFormatters:
           isNumber ? [FilteringTextInputFormatter.digitsOnly] : null,
-      style: const TextStyle(color: AppColors.textStrong),
+      style: TextStyle(color: context.wellness.textPrimary),
       validator: (value) {
         if (required && (value == null || value.isEmpty)) {
           return '필수 입력 항목입니다';
@@ -640,19 +640,21 @@ class _MealDialogState extends State<MealDialog> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        suffixIcon:
-            icon != null ? Icon(icon, color: AppColors.textSubtle) : null,
-        labelStyle: const TextStyle(color: AppColors.textSubtle),
-        hintStyle: TextStyle(color: AppColors.textSubtle.withOpacity(0.5)),
+        suffixIcon: icon != null
+            ? Icon(icon, color: context.wellness.textTertiary)
+            : null,
+        labelStyle: TextStyle(color: context.wellness.textTertiary),
+        hintStyle:
+            TextStyle(color: context.wellness.textTertiary.withOpacity(0.5)),
         filled: true,
-        fillColor: AppColors.bgApp,
+        fillColor: context.wellness.bgRoot,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.bgStroke),
+          borderSide: BorderSide(color: context.wellness.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.bgStroke),
+          borderSide: BorderSide(color: context.wellness.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

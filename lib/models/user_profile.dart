@@ -1,3 +1,28 @@
+/// 사용자 케어 유형 (2026 개편: 로그인 단계 분기)
+/// - microbiome: 장내미생물 케어 중심
+/// - fitness: 운동/신체조성 중심
+/// - both: 둘 다
+class UserCareType {
+  static const microbiome = 'microbiome';
+  static const fitness = 'fitness';
+  static const both = 'both';
+
+  static const all = [microbiome, fitness, both];
+
+  static String label(String? type) {
+    switch (type) {
+      case microbiome:
+        return '장내미생물 케어';
+      case fitness:
+        return '운동·신체조성';
+      case both:
+        return '통합 케어';
+      default:
+        return '운동·신체조성';
+    }
+  }
+}
+
 /// 사용자 프로필 모델
 class UserProfile {
   final String uid;
@@ -15,6 +40,7 @@ class UserProfile {
   final double? weight;
   final String? activityLevel;
   final String? goal; // Added goal field
+  final String careType; // 2026 개편: 'microbiome' | 'fitness' | 'both'
   final bool isOnboardingComplete;
 
   // Subscription Data
@@ -39,6 +65,7 @@ class UserProfile {
     this.weight,
     this.activityLevel,
     this.goal,
+    this.careType = UserCareType.fitness,
     this.isOnboardingComplete = false,
     this.isPremium = false,
     this.subscriptionExpiryDate,
@@ -70,6 +97,7 @@ class UserProfile {
       weight: (map['weight'] as num?)?.toDouble(),
       activityLevel: map['activityLevel'] as String?,
       goal: map['goal'] as String?,
+      careType: map['careType'] as String? ?? UserCareType.fitness,
       isOnboardingComplete: map['isOnboardingComplete'] as bool? ?? false,
       isPremium: map['isPremium'] as bool? ?? false,
       subscriptionExpiryDate: map['subscriptionExpiryDate'] != null
@@ -96,6 +124,7 @@ class UserProfile {
       'weight': weight,
       'activityLevel': activityLevel,
       'goal': goal,
+      'careType': careType,
       'isOnboardingComplete': isOnboardingComplete,
       'isPremium': isPremium,
       'subscriptionExpiryDate': subscriptionExpiryDate?.millisecondsSinceEpoch,
@@ -119,6 +148,7 @@ class UserProfile {
     double? weight,
     String? activityLevel,
     String? goal,
+    String? careType,
     bool? isOnboardingComplete,
     bool? isPremium,
     DateTime? subscriptionExpiryDate,
@@ -139,6 +169,7 @@ class UserProfile {
       weight: weight ?? this.weight,
       activityLevel: activityLevel ?? this.activityLevel,
       goal: goal ?? this.goal,
+      careType: careType ?? this.careType,
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
       isPremium: isPremium ?? this.isPremium,
       subscriptionExpiryDate:

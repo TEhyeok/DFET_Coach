@@ -16,8 +16,8 @@ class AdminSidebar extends ConsumerWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final surfaceColor = isLight ? AdminTheme.surfaceLight : AdminTheme.surface;
     final borderColor = isLight
-        ? Colors.black.withOpacity(0.05)
-        : Colors.white.withOpacity(0.05);
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.05);
 
     return ClipRRect(
       child: BackdropFilter(
@@ -25,7 +25,7 @@ class AdminSidebar extends ConsumerWidget {
         child: Container(
           width: 260,
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.7),
+            color: surfaceColor.withValues(alpha: 0.7),
             border: Border(
               right: BorderSide(
                 color: borderColor,
@@ -265,8 +265,8 @@ class AdminSidebar extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         hoverColor: isLight
-            ? Colors.black.withOpacity(0.05)
-            : Colors.white.withOpacity(0.05),
+            ? Colors.black.withValues(alpha: 0.05)
+            : Colors.white.withValues(alpha: 0.05),
         child: Container(
           height: 48,
           margin: const EdgeInsets.only(bottom: 4),
@@ -275,15 +275,16 @@ class AdminSidebar extends ConsumerWidget {
               ? BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AdminTheme.primary.withOpacity(isLight ? 0.1 : 0.2),
-                      AdminTheme.primary.withOpacity(isLight ? 0.05 : 0.05),
+                      AdminTheme.primary.withValues(alpha: isLight ? 0.1 : 0.2),
+                      AdminTheme.primary
+                          .withValues(alpha: isLight ? 0.05 : 0.05),
                     ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AdminTheme.primary.withOpacity(0.3),
+                    color: AdminTheme.primary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 )

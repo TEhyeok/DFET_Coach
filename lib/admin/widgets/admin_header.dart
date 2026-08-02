@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../theme/admin_theme.dart';
 import '../../services/admin_auth_service.dart';
 import '../../models/admin_profile.dart';
@@ -17,8 +16,11 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final backgroundColor = isLight ? AdminTheme.backgroundLight : AdminTheme.background;
-    final borderColor = isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05);
+    final backgroundColor =
+        isLight ? AdminTheme.backgroundLight : AdminTheme.background;
+    final borderColor = isLight
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.05);
 
     return ClipRRect(
       child: BackdropFilter(
@@ -27,7 +29,7 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
           height: 80,
           padding: const EdgeInsets.symmetric(horizontal: 32),
           decoration: BoxDecoration(
-            color: backgroundColor.withOpacity(0.5),
+            color: backgroundColor.withValues(alpha: 0.5),
             border: Border(
               bottom: BorderSide(
                 color: borderColor,
@@ -40,11 +42,13 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
               Text(
                 'Overview',
                 style: AdminTheme.titleLarge.copyWith(
-                  color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                  color: isLight
+                      ? AdminTheme.textPrimaryLight
+                      : AdminTheme.textWhite,
                 ),
               ),
               const Spacer(),
-              
+
               // Search Bar
               Container(
                 width: 300,
@@ -57,17 +61,25 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary, size: 20),
+                    Icon(Icons.search,
+                        color: isLight
+                            ? AdminTheme.textSecondaryLight
+                            : AdminTheme.textSecondary,
+                        size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
                         style: AdminTheme.bodyMedium.copyWith(
-                          color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                          color: isLight
+                              ? AdminTheme.textPrimaryLight
+                              : AdminTheme.textWhite,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Search...',
                           hintStyle: AdminTheme.bodyMedium.copyWith(
-                            color: isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary,
+                            color: isLight
+                                ? AdminTheme.textSecondaryLight
+                                : AdminTheme.textSecondary,
                           ),
                           border: InputBorder.none,
                           isDense: true,
@@ -91,16 +103,21 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildNotificationButton(BuildContext context, WidgetRef ref, bool isLight) {
+  Widget _buildNotificationButton(
+      BuildContext context, WidgetRef ref, bool isLight) {
     final pendingAdminsAsync = ref.watch(pendingAdminsProvider);
-    final backgroundColor = isLight ? AdminTheme.surfaceLight : AdminTheme.surface;
-    final borderColor = isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05);
-    final iconColor = isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite;
+    final backgroundColor =
+        isLight ? AdminTheme.surfaceLight : AdminTheme.surface;
+    final borderColor = isLight
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.05);
+    final iconColor =
+        isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite;
 
     return pendingAdminsAsync.when(
       data: (pendingAdmins) {
         final hasNotifications = pendingAdmins.isNotEmpty;
-        
+
         return PopupMenuButton<String>(
           offset: const Offset(0, 50),
           color: isLight ? Colors.white : AdminTheme.surface,
@@ -130,37 +147,40 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
               ),
               const PopupMenuDivider(),
               ...pendingAdmins.map((admin) => PopupMenuItem(
-                value: '/admin/admins',
-                child: Row(
-                  children: [
-                    const Icon(Icons.person_add, color: AdminTheme.primary, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '새 관리자 승인 요청',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: isLight ? Colors.black : Colors.white,
-                            ),
+                    value: '/admin/admins',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_add,
+                            color: AdminTheme.primary, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '새 관리자 승인 요청',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: isLight ? Colors.black : Colors.white,
+                                ),
+                              ),
+                              Text(
+                                '${admin.displayName} (${admin.email})',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isLight
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400],
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          Text(
-                            '${admin.displayName} (${admin.email})',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isLight ? Colors.grey[600] : Colors.grey[400],
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
             ];
           },
           onSelected: (value) {
@@ -202,9 +222,13 @@ class AdminHeader extends ConsumerWidget implements PreferredSizeWidget {
   }
 
   Widget _buildIconButton(IconData icon, bool isLight) {
-    final backgroundColor = isLight ? AdminTheme.surfaceLight : AdminTheme.surface;
-    final borderColor = isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05);
-    final iconColor = isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite;
+    final backgroundColor =
+        isLight ? AdminTheme.surfaceLight : AdminTheme.surface;
+    final borderColor = isLight
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.05);
+    final iconColor =
+        isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite;
 
     return Container(
       width: 40,

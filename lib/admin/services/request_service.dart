@@ -13,7 +13,9 @@ class RequestService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => RequestItem.fromFirestore(doc)).toList();
+      return snapshot.docs
+          .map((doc) => RequestItem.fromFirestore(doc))
+          .toList();
     });
   }
 
@@ -25,7 +27,9 @@ class RequestService {
           .where('status', isEqualTo: status.name)
           .orderBy('createdAt', descending: true)
           .get();
-      return snapshot.docs.map((doc) => RequestItem.fromFirestore(doc)).toList();
+      return snapshot.docs
+          .map((doc) => RequestItem.fromFirestore(doc))
+          .toList();
     } catch (e) {
       debugPrint('Error fetching requests by status: $e');
       return [];
@@ -33,7 +37,8 @@ class RequestService {
   }
 
   /// 요청 상태 업데이트
-  Future<void> updateRequestStatus(String requestId, RequestStatus status) async {
+  Future<void> updateRequestStatus(
+      String requestId, RequestStatus status) async {
     try {
       await _firestore.collection(_collection).doc(requestId).update({
         'status': status.name,
@@ -46,7 +51,8 @@ class RequestService {
   }
 
   /// 피드백 전송 및 완료 처리
-  Future<void> sendFeedback(String requestId, String feedback, String adminId) async {
+  Future<void> sendFeedback(
+      String requestId, String feedback, String adminId) async {
     try {
       await _firestore.collection(_collection).doc(requestId).update({
         'status': RequestStatus.completed.name,

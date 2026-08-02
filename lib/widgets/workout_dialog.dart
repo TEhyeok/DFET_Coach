@@ -166,9 +166,10 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withOpacity(0.1),
+                  color: AppColors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.info.withOpacity(0.3)),
+                  border:
+                      Border.all(color: AppColors.info.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -234,7 +235,8 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
                     return Chip(
                       label: Text('$index세트: ${set.weight}kg × ${set.reps}회',
                           style: AppTextStyles.bodySmall),
-                      backgroundColor: AppColors.brandPrimary.withOpacity(0.1),
+                      backgroundColor:
+                          AppColors.brandPrimary.withValues(alpha: 0.1),
                       deleteIcon: const Icon(Icons.close, size: 16),
                       onDeleted: () => _removeSet(entry.key),
                     );
@@ -305,7 +307,7 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
           setState(() => _selectedCategory = value);
         },
         backgroundColor: context.wellness.bgRoot,
-        selectedColor: AppColors.brandPrimary.withOpacity(0.1),
+        selectedColor: AppColors.brandPrimary.withValues(alpha: 0.1),
       ),
     );
   }
@@ -343,8 +345,8 @@ class _WorkoutDialogState extends State<WorkoutDialog> {
         labelText: label,
         hintText: hint,
         labelStyle: TextStyle(color: context.wellness.textTertiary),
-        hintStyle:
-            TextStyle(color: context.wellness.textTertiary.withOpacity(0.5)),
+        hintStyle: TextStyle(
+            color: context.wellness.textTertiary.withValues(alpha: 0.5)),
         filled: true,
         fillColor: context.wellness.bgRoot,
         border: OutlineInputBorder(

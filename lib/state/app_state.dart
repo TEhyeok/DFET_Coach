@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/user_profile.dart';
 import '../services/firestore_service.dart';
 
 // Export sub-states
@@ -11,6 +12,7 @@ export 'onboarding_state.dart';
 export 'date_state.dart';
 
 import 'meal_state.dart';
+import 'onboarding_state.dart';
 import 'workout_state.dart';
 
 // === App Global State Providers ===
@@ -21,26 +23,10 @@ final currentTabIndexProvider = StateProvider<int>((ref) => 0);
 /// 게스트 사용자의 케어 유형 ('microbiome' | 'fitness' | 'both')
 /// 로그인 사용자는 UserProfile.careType을 사용하고, 게스트는 이 메모리 상태를 사용.
 /// 2026 개편: 온보딩에서 선택.
-final guestCareTypeProvider = StateProvider<String>((ref) => 'fitness');
-
-/// 장 건강(마이크로바이옴) 최신 리포트 요약.
-/// 실제 검사 결과가 연동되기 전까지는 데이터가 없음(null)을 의미.
-class GutHealthReport {
-  final int score; // 0~100
-  final String level; // 예: '양호'
-  final String percentileLabel; // 예: ' · 또래 상위 18%' (없으면 빈 문자열)
-
-  const GutHealthReport({
-    required this.score,
-    required this.level,
-    this.percentileLabel = '',
-  });
-}
-
-/// 최신 장 건강 리포트. 검사 데이터가 없으면 null을 반환해
-/// UI가 가짜 점수 대신 '리포트 없음' 빈 상태를 보여주도록 한다.
-/// (실제 리포트 소스가 연동되면 여기서 최신 결과를 반환.)
-final latestGutReportProvider = Provider<GutHealthReport?>((ref) => null);
+final guestCareTypeProvider = StateProvider<CareType>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return CareType.fromWire(prefs.getString('guestCareType'));
+});
 
 /// Wellness Score - 식단과 운동 데이터를 기반으로 동적 계산
 final wellnessScoreProvider = Provider<int>((ref) {

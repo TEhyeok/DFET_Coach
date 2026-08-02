@@ -21,7 +21,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final List<XFile> images = await picker.pickMultiImage();
-    
+
     if (images.isNotEmpty) {
       setState(() {
         _selectedImages.addAll(images.map((x) => File(x.path)));
@@ -36,9 +36,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       await ref.read(communityServiceProvider).createPost(
-        _contentController.text,
-        _selectedImages,
-      );
+            _contentController.text,
+            _selectedImages,
+          );
       if (mounted) {
         Navigator.pop(context);
       }
@@ -91,7 +91,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               style: GoogleFonts.outfit(color: context.wellness.textPrimary),
               decoration: InputDecoration(
                 hintText: '운동 기록을 공유해보세요...',
-                hintStyle: GoogleFonts.outfit(color: context.wellness.textTertiary),
+                hintStyle:
+                    GoogleFonts.outfit(color: context.wellness.textTertiary),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(16),
               ),
@@ -129,7 +130,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             child: const CircleAvatar(
                               radius: 10,
                               backgroundColor: Colors.black54,
-                              child: Icon(Icons.close, size: 14, color: Colors.white),
+                              child: Icon(Icons.close,
+                                  size: 14, color: Colors.white),
                             ),
                           ),
                         ),
@@ -142,7 +144,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: context.wellness.borderSubtle)),
+              border:
+                  Border(top: BorderSide(color: context.wellness.borderSubtle)),
             ),
             child: Row(
               children: [

@@ -28,14 +28,16 @@ class LocalMetadataService {
   /// 비디오 파일에 메타데이터 주입
   /// 현재 구현: 별도 사이드카 파일(.dfet) 방식 (크로스 플랫폼 호환성)
   /// 향후: Native 코드로 XMP/EXIF 직접 수정 가능
-  static Future<bool> injectMetadata(File videoFile, WorkoutMetadata meta) async {
+  static Future<bool> injectMetadata(
+      File videoFile, WorkoutMetadata meta) async {
     try {
       final sidecarPath = '${videoFile.path}.dfet';
       final sidecarFile = File(sidecarPath);
-      
+
       await sidecarFile.writeAsString(meta.toMetadataString());
-      
-      AppLogger.info('[LocalMetadataService] 메타데이터 주입 완료: ${meta.exerciseType}');
+
+      AppLogger.info(
+          '[LocalMetadataService] 메타데이터 주입 완료: ${meta.exerciseType}');
       return true;
     } catch (e) {
       AppLogger.error('[LocalMetadataService] 메타데이터 주입 실패', e);
@@ -48,11 +50,11 @@ class LocalMetadataService {
     try {
       final sidecarPath = '${videoFile.path}.dfet';
       final sidecarFile = File(sidecarPath);
-      
+
       if (!await sidecarFile.exists()) {
         return null;
       }
-      
+
       final raw = await sidecarFile.readAsString();
       return WorkoutMetadata.fromMetadataString(raw);
     } catch (e) {
@@ -70,14 +72,14 @@ class LocalMetadataService {
     try {
       final existing = await readMetadata(videoFile);
       if (existing == null) return false;
-      
+
       final updated = existing.copyWith(
         coachingStatus: existing.coachingStatus.copyWith(
           nutritionLogged: nutritionLogged,
           restLogged: restLogged,
         ),
       );
-      
+
       return await injectMetadata(videoFile, updated);
     } catch (e) {
       AppLogger.error('[LocalMetadataService] 상태 업데이트 실패', e);

@@ -24,7 +24,8 @@ class Meal {
   }) : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   /// 오늘 날짜 문자열 반환
-  static String get todayString => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  static String get todayString =>
+      DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   Meal copyWith({
     String? id,
@@ -60,7 +61,8 @@ class Meal {
       protein: data['protein'] as int? ?? 0,
       carbs: data['carbs'] as int? ?? 0,
       fat: data['fat'] as int? ?? 0,
-      date: data['date'] as String? ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      date: data['date'] as String? ??
+          DateFormat('yyyy-MM-dd').format(DateTime.now()),
       aiTokenUsage: data['aiTokenUsage'] as Map<String, dynamic>?,
     );
   }

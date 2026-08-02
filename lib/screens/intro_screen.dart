@@ -5,7 +5,6 @@ import '../state/onboarding_state.dart';
 import '../theme/tokens.dart';
 import '../utils/responsive_layout.dart';
 import '../widgets/dfet_logo_mark.dart';
-import 'login_screen.dart';
 
 class IntroScreen extends ConsumerWidget {
   const IntroScreen({super.key});
@@ -41,11 +40,12 @@ class IntroScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: context.wellness.primary.withOpacity(0.1),
+                      color: context.wellness.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: context.wellness.primary.withOpacity(0.2),
+                          color:
+                              context.wellness.primary.withValues(alpha: 0.2),
                           blurRadius: 40,
                           spreadRadius: 10,
                         ),

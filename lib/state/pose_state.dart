@@ -27,7 +27,8 @@ class PostureAssessmentNotifier extends StateNotifier<PostureAssessment?> {
   }
 }
 
-final postureAssessmentProvider = StateNotifierProvider<PostureAssessmentNotifier, PostureAssessment?>((ref) {
+final postureAssessmentProvider =
+    StateNotifierProvider<PostureAssessmentNotifier, PostureAssessment?>((ref) {
   return PostureAssessmentNotifier();
 });
 
@@ -45,4 +46,5 @@ class PoseDetectionResults {
   });
 }
 
-final poseDetectionResultsProvider = StateProvider<PoseDetectionResults?>((ref) => null);
+final poseDetectionResultsProvider =
+    StateProvider<PoseDetectionResults?>((ref) => null);

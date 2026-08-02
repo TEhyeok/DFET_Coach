@@ -35,8 +35,12 @@ class PoseEvaluationService {
     final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftHip == null || leftKnee == null || leftAnkle == null ||
-        rightHip == null || rightKnee == null || rightAnkle == null) {
+    if (leftHip == null ||
+        leftKnee == null ||
+        leftAnkle == null ||
+        rightHip == null ||
+        rightKnee == null ||
+        rightAnkle == null) {
       return const EvaluationResult(
         score: 0,
         feedback: '하체가 보이지 않습니다',
@@ -96,8 +100,10 @@ class PoseEvaluationService {
     final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
 
-    if (leftShoulder == null || leftElbow == null ||
-        leftWrist == null || leftHip == null) {
+    if (leftShoulder == null ||
+        leftElbow == null ||
+        leftWrist == null ||
+        leftHip == null) {
       return const EvaluationResult(
         score: 0,
         feedback: '상체가 보이지 않습니다',
@@ -149,8 +155,12 @@ class PoseEvaluationService {
     final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftShoulder == null || leftHip == null || leftAnkle == null ||
-        rightShoulder == null || rightHip == null || rightAnkle == null) {
+    if (leftShoulder == null ||
+        leftHip == null ||
+        leftAnkle == null ||
+        rightShoulder == null ||
+        rightHip == null ||
+        rightAnkle == null) {
       return const EvaluationResult(
         score: 0,
         feedback: '전신이 보이지 않습니다',
@@ -255,8 +265,8 @@ class PoseEvaluationService {
   }
 
   double _calculateAngle(Point<double> a, Point<double> b, Point<double> c) {
-    final radians = math.atan2(c.y - b.y, c.x - b.x) -
-        math.atan2(a.y - b.y, a.x - b.x);
+    final radians =
+        math.atan2(c.y - b.y, c.x - b.x) - math.atan2(a.y - b.y, a.x - b.x);
     var angle = (radians * 180 / math.pi).abs();
     if (angle > 180) angle = 360 - angle;
     return angle;

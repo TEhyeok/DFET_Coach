@@ -4,7 +4,6 @@ import '../models/workout.dart';
 class MockDataService {
   /// 예시 식단 데이터
   static List<Meal> getMockMeals() {
-    final now = DateTime.now();
     return [
       Meal(
         id: 'mock_meal_1',

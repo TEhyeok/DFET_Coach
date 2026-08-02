@@ -5,9 +5,9 @@ import '../theme/text_styles.dart';
 
 class ActivityRings extends StatefulWidget {
   final double nutritionProgress; // 0.0 ~ 1.0
-  final double exerciseProgress;  // 0.0 ~ 1.0
-  final double wellnessProgress;  // 0.0 ~ 1.0
-  final int wellnessScore;        // 0 ~ 100
+  final double exerciseProgress; // 0.0 ~ 1.0
+  final double wellnessProgress; // 0.0 ~ 1.0
+  final int wellnessScore; // 0 ~ 100
 
   const ActivityRings({
     super.key,
@@ -56,13 +56,14 @@ class _ActivityRingsState extends State<ActivityRings>
     );
 
     _animation1 = Tween<double>(begin: 0, end: widget.nutritionProgress)
-        .animate(CurvedAnimation(parent: _controller1, curve: Curves.easeOutCubic));
-    _animation2 = Tween<double>(begin: 0, end: widget.exerciseProgress)
-        .animate(CurvedAnimation(parent: _controller2, curve: Curves.easeOutCubic));
-    _animation3 = Tween<double>(begin: 0, end: widget.wellnessProgress)
-        .animate(CurvedAnimation(parent: _controller3, curve: Curves.easeOutCubic));
-    _scoreAnimation = IntTween(begin: 0, end: widget.wellnessScore)
-        .animate(CurvedAnimation(parent: _scoreController, curve: Curves.easeOut));
+        .animate(
+            CurvedAnimation(parent: _controller1, curve: Curves.easeOutCubic));
+    _animation2 = Tween<double>(begin: 0, end: widget.exerciseProgress).animate(
+        CurvedAnimation(parent: _controller2, curve: Curves.easeOutCubic));
+    _animation3 = Tween<double>(begin: 0, end: widget.wellnessProgress).animate(
+        CurvedAnimation(parent: _controller3, curve: Curves.easeOutCubic));
+    _scoreAnimation = IntTween(begin: 0, end: widget.wellnessScore).animate(
+        CurvedAnimation(parent: _scoreController, curve: Curves.easeOut));
 
     // 순차적 시작 (각각 300ms 간격)
     _controller1.forward();
@@ -84,27 +85,30 @@ class _ActivityRingsState extends State<ActivityRings>
         oldWidget.exerciseProgress != widget.exerciseProgress ||
         oldWidget.wellnessProgress != widget.wellnessProgress ||
         oldWidget.wellnessScore != widget.wellnessScore) {
-
       // 새로운 값으로 애니메이션 재설정
       _animation1 = Tween<double>(
-        begin: _animation1.value,  // 현재값부터 시작
+        begin: _animation1.value, // 현재값부터 시작
         end: widget.nutritionProgress,
-      ).animate(CurvedAnimation(parent: _controller1, curve: Curves.easeOutCubic));
+      ).animate(
+          CurvedAnimation(parent: _controller1, curve: Curves.easeOutCubic));
 
       _animation2 = Tween<double>(
         begin: _animation2.value,
         end: widget.exerciseProgress,
-      ).animate(CurvedAnimation(parent: _controller2, curve: Curves.easeOutCubic));
+      ).animate(
+          CurvedAnimation(parent: _controller2, curve: Curves.easeOutCubic));
 
       _animation3 = Tween<double>(
         begin: _animation3.value,
         end: widget.wellnessProgress,
-      ).animate(CurvedAnimation(parent: _controller3, curve: Curves.easeOutCubic));
+      ).animate(
+          CurvedAnimation(parent: _controller3, curve: Curves.easeOutCubic));
 
       _scoreAnimation = IntTween(
         begin: _scoreAnimation.value,
         end: widget.wellnessScore,
-      ).animate(CurvedAnimation(parent: _scoreController, curve: Curves.easeOut));
+      ).animate(
+          CurvedAnimation(parent: _scoreController, curve: Curves.easeOut));
 
       // 애니메이션 리셋 후 재시작
       _controller1.reset();
@@ -137,8 +141,8 @@ class _ActivityRingsState extends State<ActivityRings>
     return Semantics(
       label: '활동 링',
       value: '영양 ${(widget.nutritionProgress * 100).toInt()}%, '
-             '운동 ${(widget.exerciseProgress * 100).toInt()}%, '
-             '웰니스 ${widget.wellnessScore}점',
+          '운동 ${(widget.exerciseProgress * 100).toInt()}%, '
+          '웰니스 ${widget.wellnessScore}점',
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 사용 가능한 공간에 맞게 크기 조정
@@ -160,7 +164,8 @@ class _ActivityRingsState extends State<ActivityRings>
                     children: [
                       // 3개 링
                       AnimatedBuilder(
-                        animation: Listenable.merge([_controller1, _controller2, _controller3]),
+                        animation: Listenable.merge(
+                            [_controller1, _controller2, _controller3]),
                         builder: (context, child) {
                           return CustomPaint(
                             size: Size(ringSize, ringSize),
@@ -210,11 +215,14 @@ class _ActivityRingsState extends State<ActivityRings>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildLegend(context, '영양', widget.nutritionProgress, context.wellness.energy),
+                    _buildLegend(context, '영양', widget.nutritionProgress,
+                        context.wellness.energy),
                     const SizedBox(width: 12),
-                    _buildLegend(context, '운동', widget.exerciseProgress, context.wellness.primary),
+                    _buildLegend(context, '운동', widget.exerciseProgress,
+                        context.wellness.primary),
                     const SizedBox(width: 12),
-                    _buildLegend(context, '웰니스', widget.wellnessProgress, context.wellness.info),
+                    _buildLegend(context, '웰니스', widget.wellnessProgress,
+                        context.wellness.info),
                   ],
                 ),
               ],
@@ -245,7 +253,8 @@ class _ActivityRingsState extends State<ActivityRings>
         ),
         Text(
           '${(progress * 100).toInt()}%',
-          style: AppTextStyles.bodySmall.copyWith(color: color, fontWeight: FontWeight.w600),
+          style: AppTextStyles.bodySmall
+              .copyWith(color: color, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -281,9 +290,24 @@ class ActivityRingsPainter extends CustomPainter {
     // 링 설정 (바깥 → 안쪽) - scaleFactor 적용
     // 스포티 테마: 바깥 링(영양)=에너지 라임, 운동=프라이머리, 웰니스=인포 블루 (테마 적응)
     final rings = [
-      {'progress': nutrition, 'color': nutritionColor, 'radius': 110.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
-      {'progress': exercise, 'color': exerciseColor, 'radius': 85.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
-      {'progress': wellness, 'color': wellnessColor, 'radius': 60.0 * scaleFactor, 'strokeWidth': 18.0 * scaleFactor},
+      {
+        'progress': nutrition,
+        'color': nutritionColor,
+        'radius': 110.0 * scaleFactor,
+        'strokeWidth': 18.0 * scaleFactor
+      },
+      {
+        'progress': exercise,
+        'color': exerciseColor,
+        'radius': 85.0 * scaleFactor,
+        'strokeWidth': 18.0 * scaleFactor
+      },
+      {
+        'progress': wellness,
+        'color': wellnessColor,
+        'radius': 60.0 * scaleFactor,
+        'strokeWidth': 18.0 * scaleFactor
+      },
     ];
 
     for (var ring in rings) {
@@ -329,12 +353,12 @@ class ActivityRingsPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant ActivityRingsPainter oldDelegate) {
     return oldDelegate.nutrition != nutrition ||
-           oldDelegate.exercise != exercise ||
-           oldDelegate.wellness != wellness ||
-           oldDelegate.scaleFactor != scaleFactor ||
-           oldDelegate.trackColor != trackColor ||
-           oldDelegate.nutritionColor != nutritionColor ||
-           oldDelegate.exerciseColor != exerciseColor ||
-           oldDelegate.wellnessColor != wellnessColor;
+        oldDelegate.exercise != exercise ||
+        oldDelegate.wellness != wellness ||
+        oldDelegate.scaleFactor != scaleFactor ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.nutritionColor != nutritionColor ||
+        oldDelegate.exerciseColor != exerciseColor ||
+        oldDelegate.wellnessColor != wellnessColor;
   }
 }

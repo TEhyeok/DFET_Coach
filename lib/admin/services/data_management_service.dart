@@ -66,8 +66,9 @@ class DataManagementService {
         final bytes = utf8.encode(csvData);
         final blob = html.Blob([bytes]);
         final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute("download", "users_export_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.csv")
+        html.AnchorElement(href: url)
+          ..setAttribute("download",
+              "users_export_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.csv")
           ..click();
         html.Url.revokeObjectUrl(url);
         AppLogger.info('CSV export started');
@@ -94,10 +95,11 @@ class DataManagementService {
         if (bytes == null) return {'success': 0, 'failed': 0, 'total': 0};
 
         final csvString = utf8.decode(bytes);
-        final List<List<dynamic>> rows = const CsvToListConverter().convert(csvString);
+        final List<List<dynamic>> rows =
+            const CsvToListConverter().convert(csvString);
 
         if (rows.isEmpty || rows.length < 2) {
-           return {'success': 0, 'failed': 0, 'total': 0};
+          return {'success': 0, 'failed': 0, 'total': 0};
         }
 
         // Remove header
@@ -111,48 +113,50 @@ class DataManagementService {
             // Assuming CSV format matches export format:
             // UID(0), Email(1), Name(2), Gender(3), Age(4), Height(5), Weight(6), Activity(7), Role(8)...
             // If UID exists, we might update, or skip. Let's skip if exists for safety, or update if needed.
-            // For this implementation, let's assume we are creating NEW users if they don't exist, 
+            // For this implementation, let's assume we are creating NEW users if they don't exist,
             // or updating if they do.
-            
+
             // Note: We cannot create Auth users from here easily without Admin SDK.
             // So this will only create/update Firestore documents.
-            
+
             String uid = row[0].toString();
             if (uid.isEmpty) {
-               // Generate a new ID if empty? Or skip.
-               // Firestore auto-id is better if we are creating new.
-               // But for import, usually we want to restore data.
-               failCount++;
-               continue;
+              // Generate a new ID if empty? Or skip.
+              // Firestore auto-id is better if we are creating new.
+              // But for import, usually we want to restore data.
+              failCount++;
+              continue;
             }
 
             final userRef = _firestore.collection('users').doc(uid);
             final doc = await userRef.get();
 
             if (doc.exists) {
-               AppLogger.info('User $uid already exists, skipping import for this user.');
-               // Optional: Update logic here
+              AppLogger.info(
+                  'User $uid already exists, skipping import for this user.');
+              // Optional: Update logic here
             } else {
-               await userRef.set({
-                 'email': row[1],
-                 'displayName': row[2],
-                 'gender': row[3],
-                 'age': row[4],
-                 'height': row[5],
-                 'weight': row[6],
-                 'activityLevel': row[7],
-                 'role': row[8],
-                 'createdAt': FieldValue.serverTimestamp(), // Reset created at or parse from CSV
-                 'importedAt': FieldValue.serverTimestamp(),
-               });
-               successCount++;
+              await userRef.set({
+                'email': row[1],
+                'displayName': row[2],
+                'gender': row[3],
+                'age': row[4],
+                'height': row[5],
+                'weight': row[6],
+                'activityLevel': row[7],
+                'role': row[8],
+                'createdAt': FieldValue
+                    .serverTimestamp(), // Reset created at or parse from CSV
+                'importedAt': FieldValue.serverTimestamp(),
+              });
+              successCount++;
             }
           } catch (e) {
             failCount++;
             AppLogger.error('Error importing row: $row', e);
           }
         }
-        
+
         return {
           'success': successCount,
           'failed': failCount,

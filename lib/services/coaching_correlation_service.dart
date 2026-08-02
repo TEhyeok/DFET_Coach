@@ -4,7 +4,6 @@ import '../core/utils/app_logger.dart';
 /// 코칭 상관관계 분석 서비스
 /// 특허 핵심 기술: 운동 메타데이터 → 영양 처방 연동
 class CoachingCorrelationService {
-  
   /// 운동 기록 기반 영양 처방 생성
   /// [workoutLogs]: 오늘 수행한 운동 목록
   /// [currentNutrition]: 현재까지 섭취한 영양소
@@ -18,10 +17,10 @@ class CoachingCorrelationService {
 
     // 1. 오늘의 총 운동 강도 점수 계산
     final intensityScore = _calculateTotalIntensity(workoutLogs);
-    
+
     // 2. 주요 운동 타입 분석
     final primaryExercise = _getPrimaryExerciseType(workoutLogs);
-    
+
     // 3. 상관관계 기반 영양 처방 결정
     final prescription = _correlateToNutrition(
       intensityScore: intensityScore,
@@ -30,8 +29,7 @@ class CoachingCorrelationService {
     );
 
     AppLogger.info(
-      '[CorrelationService] 처방 생성: $primaryExercise (강도: $intensityScore) → ${prescription.type}'
-    );
+        '[CorrelationService] 처방 생성: $primaryExercise (강도: $intensityScore) → ${prescription.type}');
 
     return prescription;
   }
@@ -55,7 +53,7 @@ class CoachingCorrelationService {
   /// 주요 운동 타입 결정 (가장 오래 수행한 운동)
   static String _getPrimaryExerciseType(List<WorkoutMetadata> logs) {
     if (logs.isEmpty) return 'NONE';
-    
+
     final sorted = [...logs]
       ..sort((a, b) => b.durationSeconds.compareTo(a.durationSeconds));
     return sorted.first.exerciseType;
@@ -70,7 +68,7 @@ class CoachingCorrelationService {
     // 대근육 + 고강도 운동
     final isLargeMusclework = ['SQUAT', 'DEADLIFT', 'BENCH', 'ROW']
         .contains(primaryExercise.toUpperCase());
-    
+
     // 유산소/유연성 운동
     final isCardioOrFlexibility = ['YOGA', 'PILATES', 'RUNNING', 'CYCLING']
         .contains(primaryExercise.toUpperCase());
@@ -116,9 +114,11 @@ class CoachingCorrelationService {
   }) {
     switch (prescription.type) {
       case PrescriptionType.highCarb:
-        return actualIntake.carbs >= (actualIntake.targetCarbs + prescription.carbsAdjustment * 0.7);
+        return actualIntake.carbs >=
+            (actualIntake.targetCarbs + prescription.carbsAdjustment * 0.7);
       case PrescriptionType.highProtein:
-        return actualIntake.protein >= (actualIntake.targetProtein + prescription.proteinAdjustment * 0.7);
+        return actualIntake.protein >=
+            (actualIntake.targetProtein + prescription.proteinAdjustment * 0.7);
       case PrescriptionType.balanced:
       case PrescriptionType.light:
       case PrescriptionType.standard:
@@ -155,11 +155,11 @@ class NutritionPrescription {
 }
 
 enum PrescriptionType {
-  highCarb,    // 고탄수 (글리코겐 회복)
+  highCarb, // 고탄수 (글리코겐 회복)
   highProtein, // 고단백 (근합성)
-  balanced,    // 균형
-  light,       // 가벼운 식사
-  standard,    // 기본
+  balanced, // 균형
+  light, // 가벼운 식사
+  standard, // 기본
 }
 
 /// 일일 영양 섭취 현황 (for correlation)

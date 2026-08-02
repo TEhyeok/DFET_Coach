@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 
 /// 스마트 추천 우선순위
 enum RecommendationPriority {
-  critical,  // 긴급 (빨강)
-  warning,   // 경고 (주황)
-  improve,   // 개선 (노랑)
-  good,      // 양호 (초록)
+  critical, // 긴급 (빨강)
+  warning, // 경고 (주황)
+  improve, // 개선 (노랑)
+  good, // 양호 (초록)
   excellent, // 완벽 (파랑)
 }
 
 /// 스마트 추천 카테고리
 enum RecommendationCategory {
-  protein,     // 단백질
-  calories,    // 칼로리
-  exercise,    // 운동
-  hydration,   // 수분
-  motivation,  // 동기부여
+  protein, // 단백질
+  calories, // 칼로리
+  exercise, // 운동
+  hydration, // 수분
+  motivation, // 동기부여
   achievement, // 성취
-  advice,      // 일반 조언
-  sleep,       // 수면
+  advice, // 일반 조언
+  sleep, // 수면
 }
 
 /// 스마트 추천 모델

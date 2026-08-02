@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../core/utils/app_logger.dart';
-import 'auth_state.dart';
 import 'app_state.dart'; // For firestoreServiceProvider
 
 /// 사용자 프로필 Provider (Firestore에서 로드)
@@ -17,6 +16,9 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
       return UserProfile.fromMap(doc.data()!, user.uid);
     } else {
       // 첫 로그인 - 프로필 생성
+      final hasSelectedCareType = ref.read(hasSeenOnboardingProvider);
+      final selectedCareType = ref.read(guestCareTypeProvider);
+      final now = DateTime.now();
       final newProfile = UserProfile(
         uid: user.uid,
         email: user.email,
@@ -25,13 +27,17 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
         provider: user.providerData.isNotEmpty
             ? user.providerData.first.providerId.replaceAll('.com', '')
             : 'unknown',
-        createdAt: DateTime.now(),
-        lastLoginAt: DateTime.now(),
+        createdAt: now,
+        lastLoginAt: now,
+        careType: selectedCareType,
+        careTypeVersion: hasSelectedCareType ? 1 : 0,
+        careTypeConfirmedAt: hasSelectedCareType ? now : null,
       );
 
-      await firestoreService.saveUserProfile(newProfile);
+      final storedProfile =
+          await firestoreService.createUserProfileIfAbsent(newProfile);
       AppLogger.info('[userProfileProvider] 새 사용자 프로필 생성: ${user.email}');
-      return newProfile;
+      return storedProfile;
     }
   } catch (e, stackTrace) {
     AppLogger.error('[userProfileProvider] 사용자 프로필 로드 실패', e, stackTrace);

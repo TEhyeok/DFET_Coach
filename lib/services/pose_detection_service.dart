@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:math' show Point;
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/user_calibration.dart';
 
@@ -49,7 +48,7 @@ class PoseDetectionService {
   UserCalibration? _userCalibration;
   Function(UserCalibration)? onCalibrationComplete;
   bool _isCalibrating = false;
-  List<Pose> _calibrationPoses = [];
+  final List<Pose> _calibrationPoses = [];
 
   Future<void> initialize() async {
     try {
@@ -112,9 +111,11 @@ class PoseDetectionService {
 
       final InputImageRotation imageRotation = _getImageRotation();
 
-      final InputImageFormat inputImageFormat = InputImageFormatValue.fromRawValue(
-        image.format.raw,
-      ) ?? InputImageFormat.nv21;
+      final InputImageFormat inputImageFormat =
+          InputImageFormatValue.fromRawValue(
+                image.format.raw,
+              ) ??
+              InputImageFormat.nv21;
 
       final InputImageMetadata inputImageData = InputImageMetadata(
         size: imageSize,
@@ -321,9 +322,8 @@ class PoseDetectionService {
 
     // 준비 상태 판단
     bool isReady = missingParts.isEmpty;
-    double avgConfidence = requiredCount > 0
-        ? totalConfidence / requiredCount
-        : 0;
+    double avgConfidence =
+        requiredCount > 0 ? totalConfidence / requiredCount : 0;
 
     // Check lighting quality
     bool hasGoodLighting = _lastLightingQuality >= 0.5;
@@ -387,20 +387,21 @@ class PoseDetectionService {
     final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftHip != null && leftKnee != null && leftAnkle != null &&
-        rightHip != null && rightKnee != null && rightAnkle != null) {
-
+    if (leftHip != null &&
+        leftKnee != null &&
+        leftAnkle != null &&
+        rightHip != null &&
+        rightKnee != null &&
+        rightAnkle != null) {
       // Calculate knee angles
       final leftKneeAngle = _calculateAngle(
-        Point(leftHip.x.toDouble(), leftHip.y.toDouble()),
-        Point(leftKnee.x.toDouble(), leftKnee.y.toDouble()),
-        Point(leftAnkle.x.toDouble(), leftAnkle.y.toDouble())
-      );
+          Point(leftHip.x.toDouble(), leftHip.y.toDouble()),
+          Point(leftKnee.x.toDouble(), leftKnee.y.toDouble()),
+          Point(leftAnkle.x.toDouble(), leftAnkle.y.toDouble()));
       final rightKneeAngle = _calculateAngle(
-        Point(rightHip.x.toDouble(), rightHip.y.toDouble()),
-        Point(rightKnee.x.toDouble(), rightKnee.y.toDouble()),
-        Point(rightAnkle.x.toDouble(), rightAnkle.y.toDouble())
-      );
+          Point(rightHip.x.toDouble(), rightHip.y.toDouble()),
+          Point(rightKnee.x.toDouble(), rightKnee.y.toDouble()),
+          Point(rightAnkle.x.toDouble(), rightAnkle.y.toDouble()));
 
       // Average knee angle
       final avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
@@ -419,7 +420,8 @@ class PoseDetectionService {
       } else if (avgKneeAngle > targetAngle + 30) {
         feedback = '더 깊게 내려가세요';
         score = 60;
-      } else if (avgKneeAngle >= targetAngle - 10 && avgKneeAngle <= targetAngle + 10) {
+      } else if (avgKneeAngle >= targetAngle - 10 &&
+          avgKneeAngle <= targetAngle + 10) {
         feedback = '완벽한 자세입니다!';
         score = 100;
       } else if (avgKneeAngle >= minDepth && avgKneeAngle <= targetAngle + 20) {
@@ -460,21 +462,23 @@ class PoseDetectionService {
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
     final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
 
-    if (leftShoulder != null && leftElbow != null && leftWrist != null &&
-        rightShoulder != null && rightElbow != null && rightWrist != null &&
-        leftHip != null && rightHip != null) {
-
+    if (leftShoulder != null &&
+        leftElbow != null &&
+        leftWrist != null &&
+        rightShoulder != null &&
+        rightElbow != null &&
+        rightWrist != null &&
+        leftHip != null &&
+        rightHip != null) {
       // Calculate elbow angles
       final leftElbowAngle = _calculateAngle(
-        Point(leftShoulder.x.toDouble(), leftShoulder.y.toDouble()),
-        Point(leftElbow.x.toDouble(), leftElbow.y.toDouble()),
-        Point(leftWrist.x.toDouble(), leftWrist.y.toDouble())
-      );
+          Point(leftShoulder.x.toDouble(), leftShoulder.y.toDouble()),
+          Point(leftElbow.x.toDouble(), leftElbow.y.toDouble()),
+          Point(leftWrist.x.toDouble(), leftWrist.y.toDouble()));
       final rightElbowAngle = _calculateAngle(
-        Point(rightShoulder.x.toDouble(), rightShoulder.y.toDouble()),
-        Point(rightElbow.x.toDouble(), rightElbow.y.toDouble()),
-        Point(rightWrist.x.toDouble(), rightWrist.y.toDouble())
-      );
+          Point(rightShoulder.x.toDouble(), rightShoulder.y.toDouble()),
+          Point(rightElbow.x.toDouble(), rightElbow.y.toDouble()),
+          Point(rightWrist.x.toDouble(), rightWrist.y.toDouble()));
 
       final avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
 
@@ -517,10 +521,12 @@ class PoseDetectionService {
     final leftAnkle = pose.landmarks[PoseLandmarkType.leftAnkle];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftShoulder != null && rightShoulder != null &&
-        leftHip != null && rightHip != null &&
-        leftAnkle != null && rightAnkle != null) {
-
+    if (leftShoulder != null &&
+        rightShoulder != null &&
+        leftHip != null &&
+        rightHip != null &&
+        leftAnkle != null &&
+        rightAnkle != null) {
       // Calculate body alignment
       final shoulderCenter = Point<double>(
         (leftShoulder.x + rightShoulder.x) / 2,
@@ -536,9 +542,8 @@ class PoseDetectionService {
       );
 
       // Calculate the angle of the body line
-      final bodyLineAngle = _calculateAngle(
-        shoulderCenter, hipCenter, ankleCenter
-      );
+      final bodyLineAngle =
+          _calculateAngle(shoulderCenter, hipCenter, ankleCenter);
 
       double score = 100.0;
       String feedback = '';
@@ -564,8 +569,8 @@ class PoseDetectionService {
   }
 
   double _calculateAngle(Point<double> a, Point<double> b, Point<double> c) {
-    final radians = math.atan2(c.y - b.y, c.x - b.x) -
-                   math.atan2(a.y - b.y, a.x - b.x);
+    final radians =
+        math.atan2(c.y - b.y, c.x - b.x) - math.atan2(a.y - b.y, a.x - b.x);
     var angle = (radians * 180 / math.pi).abs();
 
     if (angle > 180) {

@@ -49,7 +49,8 @@ class Workout {
   }) : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   /// 오늘 날짜 문자열 반환
-  static String get todayString => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  static String get todayString =>
+      DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   Workout copyWith({
     String? id,
@@ -92,11 +93,14 @@ class Workout {
       name: data['name'] as String? ?? '',
       category: data['category'] as String? ?? 'strength',
       sets: (data['sets'] as List<dynamic>?)
-          ?.map((setData) => WorkoutSet.fromFirestore(setData as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((setData) =>
+                  WorkoutSet.fromFirestore(setData as Map<String, dynamic>))
+              .toList() ??
+          [],
       duration: data['duration'] as int? ?? 0,
       timestamp: (data['timestamp'] as dynamic)?.toDate() ?? DateTime.now(),
-      date: data['date'] as String? ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      date: data['date'] as String? ??
+          DateFormat('yyyy-MM-dd').format(DateTime.now()),
       postureScore: (data['postureScore'] as num?)?.toDouble(),
       formFeedback: data['formFeedback'] as String?,
       assessmentVideoPath: data['assessmentVideoPath'] as String?,
@@ -114,7 +118,8 @@ class Workout {
       'date': date,
       if (postureScore != null) 'postureScore': postureScore,
       if (formFeedback != null) 'formFeedback': formFeedback,
-      if (assessmentVideoPath != null) 'assessmentVideoPath': assessmentVideoPath,
+      if (assessmentVideoPath != null)
+        'assessmentVideoPath': assessmentVideoPath,
     };
   }
 }

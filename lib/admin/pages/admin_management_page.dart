@@ -10,7 +10,8 @@ class AdminManagementPage extends ConsumerStatefulWidget {
   const AdminManagementPage({super.key});
 
   @override
-  ConsumerState<AdminManagementPage> createState() => _AdminManagementPageState();
+  ConsumerState<AdminManagementPage> createState() =>
+      _AdminManagementPageState();
 }
 
 class _AdminManagementPageState extends ConsumerState<AdminManagementPage> {
@@ -42,7 +43,6 @@ class _AdminManagementPageState extends ConsumerState<AdminManagementPage> {
               ),
             ),
             const SizedBox(height: 32),
-            
             Expanded(
               child: StreamBuilder<List<AdminProfile>>(
                 stream: _adminAuthService.getPendingAdminsStream(),
@@ -62,7 +62,8 @@ class _AdminManagementPageState extends ConsumerState<AdminManagementPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle_outline, size: 64, color: AdminColors.textSecondary),
+                          Icon(Icons.check_circle_outline,
+                              size: 64, color: AdminColors.textSecondary),
                           const SizedBox(height: 16),
                           Text(
                             '승인 대기 중인 요청이 없습니다.',
@@ -104,7 +105,7 @@ class _AdminManagementPageState extends ConsumerState<AdminManagementPage> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AdminColors.primary.withOpacity(0.1),
+            backgroundColor: AdminColors.primary.withValues(alpha: 0.1),
             child: Text(
               admin.displayName.isNotEmpty ? admin.displayName[0] : '?',
               style: TextStyle(color: AdminColors.primary),

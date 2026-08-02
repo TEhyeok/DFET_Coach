@@ -77,19 +77,23 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                     style: AdminTheme.bodyMedium,
                     decoration: InputDecoration(
                       hintText: 'Search by email or name...',
-                      hintStyle: AdminTheme.bodyMedium.copyWith(color: AdminTheme.textDisabled),
-                      prefixIcon: const Icon(Icons.search, color: AdminTheme.textSecondary),
+                      hintStyle: AdminTheme.bodyMedium
+                          .copyWith(color: AdminTheme.textDisabled),
+                      prefixIcon: const Icon(Icons.search,
+                          color: AdminTheme.textSecondary),
                       suffixIcon: searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: AdminTheme.textSecondary),
+                              icon: const Icon(Icons.clear,
+                                  color: AdminTheme.textSecondary),
                               onPressed: () {
                                 _searchController.clear();
-                                ref.read(searchQueryProvider.notifier).state = '';
+                                ref.read(searchQueryProvider.notifier).state =
+                                    '';
                               },
                             )
                           : null,
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
+                      fillColor: Colors.white.withValues(alpha: 0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -105,7 +109,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                 const SizedBox(width: 16),
                 ElevatedButton.icon(
                   onPressed: () {
-                    ref.refresh(usersListProvider);
+                    ref.invalidate(usersListProvider);
                   },
                   icon: const Icon(Icons.refresh, size: 20),
                   label: const Text('Refresh'),
@@ -133,18 +137,22 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                 final filteredUsers = _filterUsers(users, searchQuery);
                 return _buildUsersList(filteredUsers);
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: AdminTheme.primary)),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: AdminTheme.primary)),
               error: (error, stack) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AdminTheme.error),
+                    const Icon(Icons.error_outline,
+                        size: 48, color: AdminTheme.error),
                     const SizedBox(height: 16),
-                    Text('Failed to load data: $error', style: AdminTheme.bodyLarge),
+                    Text('Failed to load data: $error',
+                        style: AdminTheme.bodyLarge),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ref.refresh(usersListProvider),
-                      style: ElevatedButton.styleFrom(backgroundColor: AdminTheme.primary),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AdminTheme.primary),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -174,11 +182,13 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.people_outline, size: 64, color: AdminTheme.textDisabled),
+            const Icon(Icons.people_outline,
+                size: 64, color: AdminTheme.textDisabled),
             const SizedBox(height: 16),
             Text(
               'No users found',
-              style: AdminTheme.titleMedium.copyWith(color: AdminTheme.textSecondary),
+              style: AdminTheme.titleMedium
+                  .copyWith(color: AdminTheme.textSecondary),
             ),
           ],
         ),
@@ -196,7 +206,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
           children: [
             // 헤더
             _buildTableHeader(),
-            Divider(height: 1, color: Colors.white.withOpacity(0.1)),
+            Divider(height: 1, color: Colors.white.withValues(alpha: 0.1)),
 
             // 사용자 목록
             ListView.builder(
@@ -207,7 +217,10 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                 final user = users[index];
                 return Column(
                   children: [
-                    if (index > 0) Divider(height: 1, color: Colors.white.withOpacity(0.05)),
+                    if (index > 0)
+                      Divider(
+                          height: 1,
+                          color: Colors.white.withValues(alpha: 0.05)),
                     _buildUserRow(user),
                   ],
                 );
@@ -223,7 +236,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
@@ -270,8 +283,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
   Widget _buildUserRow(UserProfile user) {
     final now = DateTime.now();
     final sevenDaysAgo = now.subtract(const Duration(days: 7));
-    final isActive =
-        user.lastLoginAt != null && user.lastLoginAt!.isAfter(sevenDaysAgo);
+    final isActive = user.lastLoginAt.isAfter(sevenDaysAgo);
     final isHovered = _hoveredUserId == user.uid;
 
     return MouseRegion(
@@ -280,17 +292,22 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () {
-          context.go('/admin/users/${user.uid}', extra: {'userName': user.displayName});
+          context.go('/admin/users/${user.uid}',
+              extra: {'userName': user.displayName});
         },
         child: Container(
           padding: const EdgeInsets.all(16),
-          color: isHovered ? Colors.white.withOpacity(0.05) : Colors.transparent,
+          color: isHovered
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.transparent,
           child: Row(
             children: [
               // 아바타
               CircleAvatar(
                 radius: 20,
-                backgroundColor: isActive ? AdminTheme.success : AdminTheme.textDisabled.withOpacity(0.3),
+                backgroundColor: isActive
+                    ? AdminTheme.success
+                    : AdminTheme.textDisabled.withValues(alpha: 0.3),
                 child: Text(
                   (user.displayName?.isNotEmpty ?? false)
                       ? user.displayName![0].toUpperCase()
@@ -317,7 +334,8 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
               Expanded(
                 child: Text(
                   user.displayName ?? '-',
-                  style: AdminTheme.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+                  style: AdminTheme.bodyMedium
+                      .copyWith(fontWeight: FontWeight.w500),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -325,9 +343,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
               // 가입일
               Expanded(
                 child: Text(
-                  user.createdAt != null
-                      ? DateFormat('yyyy-MM-dd').format(user.createdAt!)
-                      : '-',
+                  DateFormat('yyyy-MM-dd').format(user.createdAt),
                   style: AdminTheme.bodyMedium,
                 ),
               ),
@@ -348,9 +364,7 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                       ),
                     Expanded(
                       child: Text(
-                        user.lastLoginAt != null
-                            ? DateFormat('yyyy-MM-dd').format(user.lastLoginAt!)
-                            : '-',
+                        DateFormat('yyyy-MM-dd').format(user.lastLoginAt),
                         style: AdminTheme.bodyMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -364,11 +378,13 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
                 width: 100,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AdminTheme.primary.withOpacity(0.5)),
+                      border: Border.all(
+                          color: AdminTheme.primary.withValues(alpha: 0.5)),
                     ),
                     child: Text(
                       'Details',
@@ -388,4 +404,3 @@ class _UsersListPageState extends ConsumerState<UsersListPage> {
     );
   }
 }
-

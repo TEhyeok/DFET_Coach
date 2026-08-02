@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../state/app_state.dart';
@@ -68,7 +67,7 @@ class PaymentService {
   /// 상품 구매 요청
   Future<void> buyProduct(ProductDetails product) async {
     final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
-    
+
     // 소모품이 아닌 구독형 상품이므로 non-consumable 처리 (Android의 경우)
     // iOS는 기본적으로 non-consumable/subscription 처리됨
     await _iap.buyNonConsumable(purchaseParam: purchaseParam);
@@ -85,14 +84,14 @@ class PaymentService {
     for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
       if (purchaseDetails.status == PurchaseStatus.pending) {
         // 결제 대기 중 (UI 로딩 표시 등)
-        AppLogger.info('[PaymentService] Purchase Pending: ${purchaseDetails.productID}');
+        AppLogger.info(
+            '[PaymentService] Purchase Pending: ${purchaseDetails.productID}');
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
           AppLogger.error(
               '[PaymentService] Purchase Error', purchaseDetails.error!);
         } else if (purchaseDetails.status == PurchaseStatus.purchased ||
             purchaseDetails.status == PurchaseStatus.restored) {
-          
           // 결제 성공 또는 복원 성공
           final bool valid = await _verifyPurchase(purchaseDetails);
           if (valid) {
@@ -137,11 +136,12 @@ class PaymentService {
         await _ref
             .read(firestoreServiceProvider)
             .updateUserProfile(updatedProfile);
-        
+
         // Provider 갱신
         _ref.invalidate(userProfileProvider);
-        
-        AppLogger.info('[PaymentService] Premium activated for ${userProfile.email}');
+
+        AppLogger.info(
+            '[PaymentService] Premium activated for ${userProfile.email}');
       }
     } catch (e) {
       AppLogger.error('[PaymentService] Failed to deliver product', e);

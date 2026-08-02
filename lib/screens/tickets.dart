@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../theme/tokens.dart';
 import '../state/auth_state.dart';
@@ -46,8 +45,7 @@ class TicketsScreen extends ConsumerWidget {
           if (snapshot.hasError) {
             return Center(
                 child: Text('오류: ${snapshot.error}',
-                    style:
-                        TextStyle(color: context.wellness.textPrimary)));
+                    style: TextStyle(color: context.wellness.textPrimary)));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -136,11 +134,12 @@ class TicketsScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: PremiumColors.primary.withOpacity(0.1),
+                                color: PremiumColors.primary
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                    color:
-                                        PremiumColors.primary.withOpacity(0.3)),
+                                    color: PremiumColors.primary
+                                        .withValues(alpha: 0.3)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,9 +215,9 @@ class TicketsScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,

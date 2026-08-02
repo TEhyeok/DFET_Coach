@@ -66,7 +66,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AdminTheme.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AdminTheme.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -165,7 +166,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           _buildDivider(),
           Row(
             children: [
-              const Icon(Icons.bar_chart_rounded, size: 20, color: AdminTheme.textSecondary),
+              const Icon(Icons.bar_chart_rounded,
+                  size: 20, color: AdminTheme.textSecondary),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -180,7 +182,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 onPressed: () {
                   _showFeatureNotAvailableDialog('Firebase Console Link');
                 },
-                style: TextButton.styleFrom(foregroundColor: AdminTheme.primary),
+                style:
+                    TextButton.styleFrom(foregroundColor: AdminTheme.primary),
                 child: const Text('Open Console'),
               ),
             ],
@@ -221,7 +224,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   /// 화면 설정
   Widget _buildAppearanceSettings() {
     final themeMode = ref.watch(themeModeProvider);
-    final isDark = themeMode == ThemeMode.dark;
     final isLight = themeMode == ThemeMode.light;
 
     return Container(
@@ -244,14 +246,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       'Theme Mode',
                       style: AdminTheme.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                        color: isLight
+                            ? AdminTheme.textPrimaryLight
+                            : AdminTheme.textWhite,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Select your preferred interface theme',
                       style: isLight
-                          ? AdminTheme.bodyMedium.copyWith(color: AdminTheme.textSecondaryLight)
+                          ? AdminTheme.bodyMedium
+                              .copyWith(color: AdminTheme.textSecondaryLight)
                           : AdminTheme.bodyMedium,
                     ),
                   ],
@@ -259,10 +264,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: isLight ? AdminTheme.surfaceHighlightLight : AdminTheme.surfaceHighlight,
+                  color: isLight
+                      ? AdminTheme.surfaceHighlightLight
+                      : AdminTheme.surfaceHighlight,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.1),
+                    color: isLight
+                        ? Colors.black.withValues(alpha: 0.05)
+                        : Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Row(
@@ -272,19 +281,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       icon: Icons.light_mode_rounded,
                       label: 'Light',
                       isSelected: themeMode == ThemeMode.light,
-                      onTap: () => ref.read(themeModeProvider.notifier).setTheme(ThemeMode.light),
+                      onTap: () => ref
+                          .read(themeModeProvider.notifier)
+                          .setTheme(ThemeMode.light),
                       isLight: isLight,
                     ),
                     Container(
                       width: 1,
                       height: 24,
-                      color: isLight ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1),
+                      color: isLight
+                          ? Colors.black.withValues(alpha: 0.1)
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
                     _buildThemeOption(
                       icon: Icons.dark_mode_rounded,
                       label: 'Dark',
                       isSelected: themeMode == ThemeMode.dark,
-                      onTap: () => ref.read(themeModeProvider.notifier).setTheme(ThemeMode.dark),
+                      onTap: () => ref
+                          .read(themeModeProvider.notifier)
+                          .setTheme(ThemeMode.dark),
                       isLight: isLight,
                     ),
                   ],
@@ -305,8 +320,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required bool isLight,
   }) {
     final selectedColor = isLight ? AdminTheme.primary : AdminTheme.primary;
-    final unselectedColor = isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary;
-    final selectedBg = isLight ? AdminTheme.primary.withOpacity(0.1) : AdminTheme.primary.withOpacity(0.2);
+    final unselectedColor =
+        isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary;
+    final selectedBg = isLight
+        ? AdminTheme.primary.withValues(alpha: 0.1)
+        : AdminTheme.primary.withValues(alpha: 0.2);
 
     return InkWell(
       onTap: onTap,
@@ -357,7 +375,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: (value) {
               setState(() => _notifyNewUser = value);
               _saveSetting('notifyNewUser', value);
-              _showSaveSnackBar('New User Alerts ${value ? 'Enabled' : 'Disabled'}');
+              _showSaveSnackBar(
+                  'New User Alerts ${value ? 'Enabled' : 'Disabled'}');
             },
           ),
           _buildDivider(),
@@ -368,7 +387,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: (value) {
               setState(() => _dailyReport = value);
               _saveSetting('dailyReport', value);
-              _showSaveSnackBar('Daily Reports ${value ? 'Enabled' : 'Disabled'}');
+              _showSaveSnackBar(
+                  'Daily Reports ${value ? 'Enabled' : 'Disabled'}');
             },
           ),
           _buildDivider(),
@@ -379,7 +399,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: (value) {
               setState(() => _errorAlert = value);
               _saveSetting('errorAlert', value);
-              _showSaveSnackBar('Error Alerts ${value ? 'Enabled' : 'Disabled'}');
+              _showSaveSnackBar(
+                  'Error Alerts ${value ? 'Enabled' : 'Disabled'}');
             },
           ),
         ],
@@ -417,8 +438,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AdminTheme.primary,
-          activeTrackColor: AdminTheme.primary.withOpacity(0.3),
+          activeThumbColor: AdminTheme.primary,
+          activeTrackColor: AdminTheme.primary.withValues(alpha: 0.3),
           inactiveThumbColor: AdminTheme.textDisabled,
           inactiveTrackColor: AdminTheme.surfaceHighlight,
         ),
@@ -478,25 +499,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     onPressed: () async {
                       try {
                         await DataManagementService().exportUsersToCsv();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Export started...'),
-                              backgroundColor: AdminTheme.success,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Export started...'),
+                            backgroundColor: AdminTheme.success,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
                       } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Export failed: $e'),
-                              backgroundColor: AdminTheme.error,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Export failed: $e'),
+                            backgroundColor: AdminTheme.error,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
                       }
                     },
                     icon: const Icon(Icons.download, size: 18),
@@ -519,15 +538,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         onPressed: () => _showCsvGuide(context),
                         icon: const Icon(Icons.help_outline, size: 18),
                         label: const Text('Guide'),
-                        style: TextButton.styleFrom(foregroundColor: AdminTheme.textSecondary),
+                        style: TextButton.styleFrom(
+                            foregroundColor: AdminTheme.textSecondary),
                       ),
                       const SizedBox(width: 8),
                       FilledButton.icon(
                         onPressed: () async {
-                          final result = await DataManagementService().importUsersFromCsv();
-                          if (context.mounted) {
-                            _showImportResultDialog(context, result);
-                          }
+                          final result = await DataManagementService()
+                              .importUsersFromCsv();
+                          if (!mounted) return;
+                          _showImportResultDialog(context, result);
                         },
                         icon: const Icon(Icons.upload, size: 18),
                         label: const Text('Import CSV'),
@@ -640,7 +660,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: (value) {
               setState(() => _maskPrivacy = value);
               _saveSetting('maskPrivacy', value);
-              _showSaveSnackBar('Privacy Masking ${value ? 'Enabled' : 'Disabled'}');
+              _showSaveSnackBar(
+                  'Privacy Masking ${value ? 'Enabled' : 'Disabled'}');
             },
           ),
         ],
@@ -681,18 +702,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           decoration: BoxDecoration(
             color: AdminTheme.surfaceHighlight,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: currentValue.replaceAll('일', ' days').replaceAll('비활성화', 'Disabled'), // Simple mapping for demo
+              value: currentValue
+                  .replaceAll('일', ' days')
+                  .replaceAll('비활성화', 'Disabled'), // Simple mapping for demo
               dropdownColor: const Color(0xFF1E1E1E),
               items: options.map((option) {
                 return DropdownMenuItem(
                   value: option,
                   child: Text(
                     option,
-                    style: AdminTheme.bodyMedium.copyWith(color: AdminTheme.textWhite),
+                    style: AdminTheme.bodyMedium
+                        .copyWith(color: AdminTheme.textWhite),
                   ),
                 );
               }).toList(),
@@ -700,7 +724,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 // Map back to original values if needed, or just use as is
                 onChanged(val);
               },
-              icon: const Icon(Icons.arrow_drop_down, color: AdminTheme.textSecondary),
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: AdminTheme.textSecondary),
             ),
           ),
         ),
@@ -711,7 +736,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _buildDivider() {
     return Divider(
       height: 32,
-      color: Colors.white.withOpacity(0.05),
+      color: Colors.white.withValues(alpha: 0.05),
     );
   }
 
@@ -739,7 +764,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Notice', style: AdminTheme.titleLarge),
-        content: Text('$featureName is not implemented yet.', style: AdminTheme.bodyMedium),
+        content: Text('$featureName is not implemented yet.',
+            style: AdminTheme.bodyMedium),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -767,7 +793,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(foregroundColor: AdminTheme.textSecondary),
+            style:
+                TextButton.styleFrom(foregroundColor: AdminTheme.textSecondary),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -776,9 +803,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               onConfirm();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDestructive ? AdminTheme.error : AdminTheme.primary,
+              backgroundColor:
+                  isDestructive ? AdminTheme.error : AdminTheme.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Confirm'),
           ),
@@ -786,6 +815,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       ),
     );
   }
+
   void _showCsvGuide(BuildContext context) {
     showDialog(
       context: context,
@@ -810,7 +840,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('주의: 이미 존재하는 이메일은 건너뜁니다.', style: AdminTheme.bodyMedium.copyWith(color: AdminTheme.warning)),
+            Text('주의: 이미 존재하는 이메일은 건너뜁니다.',
+                style:
+                    AdminTheme.bodyMedium.copyWith(color: AdminTheme.warning)),
           ],
         ),
         actions: [
@@ -823,7 +855,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  void _showImportResultDialog(BuildContext context, Map<String, dynamic> result) {
+  void _showImportResultDialog(
+      BuildContext context, Map<String, dynamic> result) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -833,8 +866,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildResultRow('Total Rows', '${result['total']}'),
-            _buildResultRow('Success', '${result['success']}', color: AdminTheme.success),
-            _buildResultRow('Failed', '${result['failed']}', color: AdminTheme.error),
+            _buildResultRow('Success', '${result['success']}',
+                color: AdminTheme.success),
+            _buildResultRow('Failed', '${result['failed']}',
+                color: AdminTheme.error),
           ],
         ),
         actions: [

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,7 +6,8 @@ class AdminTheme {
   // --- Colors ---
   static const Color background = Color(0xFF000000); // Pure Black
   static const Color surface = Color(0xFF121212); // Material Dark Surface
-  static const Color surfaceHighlight = Color(0xFF1E1E1E); // Slightly lighter for hover
+  static const Color surfaceHighlight =
+      Color(0xFF1E1E1E); // Slightly lighter for hover
 
   static const Color primary = Color(0xFF6C5DD3); // Modern Purple
   static const Color secondary = Color(0xFF3F8CFF); // Bright Blue
@@ -105,15 +105,20 @@ class AdminTheme {
     bool isLight = false,
   }) {
     return BoxDecoration(
-      color: isLight ? color.withOpacity(0.7) : const Color(0xFF1E1E1E).withOpacity(0.6), // Darker glass in dark mode
+      color: isLight
+          ? color.withValues(alpha: 0.7)
+          : const Color(0xFF1E1E1E)
+              .withValues(alpha: 0.6), // Darker glass in dark mode
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
-        color: isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.08),
+        color: isLight
+            ? Colors.black.withValues(alpha: 0.05)
+            : Colors.white.withValues(alpha: 0.08),
         width: 1,
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(isLight ? 0.05 : 0.1),
+          color: Colors.black.withValues(alpha: isLight ? 0.05 : 0.1),
           blurRadius: 16,
           spreadRadius: 0,
           offset: const Offset(0, 4),
@@ -142,7 +147,7 @@ class AdminTheme {
         bodyMedium: bodyMedium,
       ),
       iconTheme: const IconThemeData(color: textSecondary),
-      dividerColor: Colors.white.withOpacity(0.05),
+      dividerColor: Colors.white.withValues(alpha: 0.05),
     );
   }
 
@@ -166,7 +171,7 @@ class AdminTheme {
         bodyMedium: bodyMedium.copyWith(color: textSecondaryLight),
       ),
       iconTheme: const IconThemeData(color: textSecondaryLight),
-      dividerColor: Colors.black.withOpacity(0.05),
+      dividerColor: Colors.black.withValues(alpha: 0.05),
     );
   }
 }
@@ -178,7 +183,7 @@ class AdminColors {
   static const Color surface = AdminTheme.surface;
   static const Color border = Color(0xFF2D2D2D); // Dark border
   static const Color error = AdminTheme.error; // Added
-  
+
   static const Color textPrimary = AdminTheme.textWhite;
   static const Color textSecondary = AdminTheme.textSecondary;
   static const Color textTertiary = AdminTheme.textDisabled; // Added

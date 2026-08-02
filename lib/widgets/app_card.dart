@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
 
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, this.child, this.padding = const EdgeInsets.all(16), this.onTap});
+  const AppCard(
+      {super.key,
+      this.child,
+      this.padding = const EdgeInsets.all(16),
+      this.onTap});
   final Widget? child;
   final EdgeInsets padding;
   final VoidCallback? onTap;

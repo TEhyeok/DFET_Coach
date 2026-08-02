@@ -95,10 +95,12 @@ class UserCalibration {
       armLengthRatio: (map['armLengthRatio'] as num?)?.toDouble() ?? 1.0,
       legLengthRatio: (map['legLengthRatio'] as num?)?.toDouble() ?? 1.0,
       torsoLengthRatio: (map['torsoLengthRatio'] as num?)?.toDouble() ?? 0.5,
-      shoulderWidthRatio: (map['shoulderWidthRatio'] as num?)?.toDouble() ?? 0.4,
+      shoulderWidthRatio:
+          (map['shoulderWidthRatio'] as num?)?.toDouble() ?? 0.4,
       naturalKneeAngle: (map['naturalKneeAngle'] as num?)?.toDouble() ?? 175.0,
       naturalHipAngle: (map['naturalHipAngle'] as num?)?.toDouble() ?? 175.0,
-      naturalShoulderAngle: (map['naturalShoulderAngle'] as num?)?.toDouble() ?? 15.0,
+      naturalShoulderAngle:
+          (map['naturalShoulderAngle'] as num?)?.toDouble() ?? 15.0,
       maxKneeFlexion: (map['maxKneeFlexion'] as num?)?.toDouble() ?? 90.0,
       maxHipFlexion: (map['maxHipFlexion'] as num?)?.toDouble() ?? 90.0,
     );

@@ -10,7 +10,6 @@ void main() {
         UserCareType.fitness,
         UserCareType.microbiome,
         UserCareType.both,
-        'unknown',
       ]) {
         final d = destinationsForCareType(ct);
         expect(d.length, 4, reason: 'careType=$ct');
@@ -31,10 +30,14 @@ void main() {
     });
 
     test('리포트 탭이 항상 포함된다', () {
-      expect(destinationsForCareType(UserCareType.fitness)
-          .contains(IOSDestination.report), true);
-      expect(destinationsForCareType(UserCareType.microbiome)
-          .contains(IOSDestination.report), true);
+      expect(
+          destinationsForCareType(UserCareType.fitness)
+              .contains(IOSDestination.report),
+          true);
+      expect(
+          destinationsForCareType(UserCareType.microbiome)
+              .contains(IOSDestination.report),
+          true);
     });
   });
 

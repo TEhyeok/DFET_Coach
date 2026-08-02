@@ -276,253 +276,257 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   if (!hasAnyData)
                     _buildEmptyState(context, chartHeight + summaryHeight)
                   else ...[
-                  // Wellness score trend
-                  SizedBox(
-                    height: chartHeight,
-                    child: AppCard(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '웰니스 점수 추이',
-                            style: AppTextStyles.h3.copyWith(
-                                color: context.wellness.textPrimary),
-                          ),
-                          const SizedBox(height: 6),
-                          Expanded(
-                            child: LineChart(
-                              LineChartData(
-                                gridData: FlGridData(
-                                  show: true,
-                                  drawVerticalLine: false,
-                                  horizontalInterval: 25,
-                                  getDrawingHorizontalLine: (value) {
-                                    return FlLine(
-                                      color: context.wellness.border,
-                                      strokeWidth: 1,
+                    // Wellness score trend
+                    SizedBox(
+                      height: chartHeight,
+                      child: AppCard(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '웰니스 점수 추이',
+                              style: AppTextStyles.h3.copyWith(
+                                  color: context.wellness.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: LineChart(
+                                LineChartData(
+                                  gridData: FlGridData(
+                                    show: true,
+                                    drawVerticalLine: false,
+                                    horizontalInterval: 25,
+                                    getDrawingHorizontalLine: (value) {
+                                      return FlLine(
+                                        color: context.wellness.border,
+                                        strokeWidth: 1,
+                                      );
+                                    },
+                                  ),
+                                  titlesData: FlTitlesData(
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 30,
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            value.toInt().toString(),
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                    color: context
+                                                        .wellness.textTertiary),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        interval: 1,
+                                        getTitlesWidget: (value, meta) {
+                                          final index = value.toInt();
+                                          if (index >= 0 &&
+                                              index < labels.length) {
+                                            return Text(labels[index],
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: context.wellness
+                                                            .textTertiary));
+                                          }
+                                          return const Text('');
+                                        },
+                                      ),
+                                    ),
+                                    topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  minY: 0,
+                                  maxY: 100,
+                                  lineBarsData: [
+                                    LineChartBarData(
+                                      spots: wellnessData
+                                          .asMap()
+                                          .entries
+                                          .map((e) =>
+                                              FlSpot(e.key.toDouble(), e.value))
+                                          .toList(),
+                                      isCurved: false,
+                                      color: context.wellness.primary,
+                                      barWidth: 3,
+                                      dotData: const FlDotData(show: true),
+                                      belowBarData: BarAreaData(
+                                        show: true,
+                                        color: context.wellness.primary
+                                            .withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Calories bar chart
+                    SizedBox(
+                      height: chartHeight,
+                      child: AppCard(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '칼로리 섭취량',
+                              style: AppTextStyles.h3.copyWith(
+                                  color: context.wellness.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: BarChart(
+                                BarChartData(
+                                  alignment: BarChartAlignment.spaceAround,
+                                  gridData: FlGridData(
+                                    show: true,
+                                    drawVerticalLine: false,
+                                    horizontalInterval: 500,
+                                    getDrawingHorizontalLine: (value) {
+                                      return FlLine(
+                                        color: context.wellness.border,
+                                        strokeWidth: 1,
+                                      );
+                                    },
+                                  ),
+                                  titlesData: FlTitlesData(
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 35,
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            '${(value / 1000).toStringAsFixed(1)}k',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                    color: context
+                                                        .wellness.textTertiary),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitlesWidget: (value, meta) {
+                                          final index = value.toInt();
+                                          if (index >= 0 &&
+                                              index < labels.length) {
+                                            return Text(labels[index],
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: context.wellness
+                                                            .textTertiary));
+                                          }
+                                          return const Text('');
+                                        },
+                                      ),
+                                    ),
+                                    topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  barGroups: List.generate(dataLength, (index) {
+                                    return BarChartGroupData(
+                                      x: index,
+                                      barRods: [
+                                        BarChartRodData(
+                                          toY: caloriesData[index].toDouble(),
+                                          color: context.wellness.accent,
+                                          width: isWeekly ? 12 : 20,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                      ],
                                     );
-                                  },
+                                  }),
                                 ),
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      reservedSize: 30,
-                                      getTitlesWidget: (value, meta) {
-                                        return Text(
-                                          value.toInt().toString(),
-                                          style: AppTextStyles.caption.copyWith(
-                                              color: context
-                                                  .wellness.textTertiary),
-                                        );
-                                      },
-                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Summary stats
+                    SizedBox(
+                      height: summaryHeight,
+                      child: AppCard(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isWeekly ? '이번 주 요약' : '이번 달 요약',
+                              style: AppTextStyles.h3.copyWith(
+                                  color: context.wellness.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _statRow(
+                                    context,
+                                    '평균 웰니스 점수',
+                                    hasAnyData
+                                        ? '${(wellnessData.reduce((a, b) => a + b) / wellnessData.length).round()}점'
+                                        : '0점',
+                                    context.wellness.primary,
                                   ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      interval: 1,
-                                      getTitlesWidget: (value, meta) {
-                                        final index = value.toInt();
-                                        if (index >= 0 &&
-                                            index < labels.length) {
-                                          return Text(labels[index],
-                                              style: AppTextStyles.caption
-                                                  .copyWith(
-                                                      color: context.wellness
-                                                          .textTertiary));
-                                        }
-                                        return const Text('');
-                                      },
-                                    ),
+                                  _statRow(
+                                    context,
+                                    '총 칼로리 섭취',
+                                    hasAnyData
+                                        ? '${caloriesData.reduce((a, b) => a + b).toStringAsFixed(0)} kcal'
+                                        : '0 kcal',
+                                    context.wellness.accent,
                                   ),
-                                  topTitles: const AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
-                                  rightTitles: const AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                minY: 0,
-                                maxY: 100,
-                                lineBarsData: [
-                                  LineChartBarData(
-                                    spots: wellnessData
-                                        .asMap()
-                                        .entries
-                                        .map((e) =>
-                                            FlSpot(e.key.toDouble(), e.value))
-                                        .toList(),
-                                    isCurved: false,
-                                    color: context.wellness.primary,
-                                    barWidth: 3,
-                                    dotData: const FlDotData(show: true),
-                                    belowBarData: BarAreaData(
-                                      show: true,
-                                      color: context.wellness.primary
-                                          .withValues(alpha: 0.1),
-                                    ),
+                                  _statRow(
+                                    context,
+                                    '총 운동 시간',
+                                    hasAnyData
+                                        ? '${workoutsData.reduce((a, b) => a + b)}분'
+                                        : '0분',
+                                    context.wellness.info,
+                                  ),
+                                  _statRow(
+                                    context,
+                                    '목표 달성률',
+                                    hasAnyData
+                                        ? '${((wellnessData.reduce((a, b) => a + b) / wellnessData.length) / 100 * 100).round()}%'
+                                        : '0%',
+                                    context.wellness.primary,
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Calories bar chart
-                  SizedBox(
-                    height: chartHeight,
-                    child: AppCard(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '칼로리 섭취량',
-                            style: AppTextStyles.h3.copyWith(
-                                color: context.wellness.textPrimary),
-                          ),
-                          const SizedBox(height: 6),
-                          Expanded(
-                            child: BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.spaceAround,
-                                gridData: FlGridData(
-                                  show: true,
-                                  drawVerticalLine: false,
-                                  horizontalInterval: 500,
-                                  getDrawingHorizontalLine: (value) {
-                                    return FlLine(
-                                      color: context.wellness.border,
-                                      strokeWidth: 1,
-                                    );
-                                  },
-                                ),
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      reservedSize: 35,
-                                      getTitlesWidget: (value, meta) {
-                                        return Text(
-                                          '${(value / 1000).toStringAsFixed(1)}k',
-                                          style: AppTextStyles.caption.copyWith(
-                                              color: context
-                                                  .wellness.textTertiary),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget: (value, meta) {
-                                        final index = value.toInt();
-                                        if (index >= 0 &&
-                                            index < labels.length) {
-                                          return Text(labels[index],
-                                              style: AppTextStyles.caption
-                                                  .copyWith(
-                                                      color: context.wellness
-                                                          .textTertiary));
-                                        }
-                                        return const Text('');
-                                      },
-                                    ),
-                                  ),
-                                  topTitles: const AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
-                                  rightTitles: const AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                barGroups: List.generate(dataLength, (index) {
-                                  return BarChartGroupData(
-                                    x: index,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: caloriesData[index].toDouble(),
-                                        color: context.wellness.accent,
-                                        width: isWeekly ? 12 : 20,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ],
-                                  );
-                                }),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Summary stats
-                  SizedBox(
-                    height: summaryHeight,
-                    child: AppCard(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isWeekly ? '이번 주 요약' : '이번 달 요약',
-                            style: AppTextStyles.h3.copyWith(
-                                color: context.wellness.textPrimary),
-                          ),
-                          const SizedBox(height: 6),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _statRow(
-                                  context,
-                                  '평균 웰니스 점수',
-                                  hasAnyData
-                                      ? '${(wellnessData.reduce((a, b) => a + b) / wellnessData.length).round()}점'
-                                      : '0점',
-                                  context.wellness.primary,
-                                ),
-                                _statRow(
-                                  context,
-                                  '총 칼로리 섭취',
-                                  hasAnyData
-                                      ? '${caloriesData.reduce((a, b) => a + b).toStringAsFixed(0)} kcal'
-                                      : '0 kcal',
-                                  context.wellness.accent,
-                                ),
-                                _statRow(
-                                  context,
-                                  '총 운동 시간',
-                                  hasAnyData
-                                      ? '${workoutsData.reduce((a, b) => a + b)}분'
-                                      : '0분',
-                                  context.wellness.info,
-                                ),
-                                _statRow(
-                                  context,
-                                  '목표 달성률',
-                                  hasAnyData
-                                      ? '${((wellnessData.reduce((a, b) => a + b) / wellnessData.length) / 100 * 100).round()}%'
-                                      : '0%',
-                                  context.wellness.primary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   ],
                 ],
               ),

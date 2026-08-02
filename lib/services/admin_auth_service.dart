@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/admin_profile.dart';
 import '../core/utils/app_logger.dart';
 
@@ -51,42 +50,11 @@ class AdminAuthService {
       if (!doc.exists) {
         return 'not_found';
       }
-      final profile = AdminProfile.fromMap(doc.data() as Map<String, dynamic>, uid);
+      final profile =
+          AdminProfile.fromMap(doc.data() as Map<String, dynamic>, uid);
       return profile.approvalStatus;
     } catch (e, stackTrace) {
       AppLogger.error('승인 상태 확인 실패', e, stackTrace);
-      rethrow;
-    }
-  }
-
-  /// 슈퍼 어드민 계정 보장 (없으면 생성, 있으면 업데이트)
-  Future<void> ensureSuperAdmin(User user) async {
-    try {
-      final doc = await _adminsCollection.doc(user.uid).get();
-      
-      if (!doc.exists) {
-        // 없으면 생성
-        final adminProfile = AdminProfile(
-          uid: user.uid,
-          email: user.email!,
-          displayName: user.displayName ?? 'Super Admin',
-          createdAt: DateTime.now(),
-          approvalStatus: 'approved',
-          role: 'super_admin',
-          lastLoginAt: DateTime.now(),
-        );
-        await _adminsCollection.doc(user.uid).set(adminProfile.toMap());
-        AppLogger.info('슈퍼 어드민 계정 생성 완료');
-      } else {
-        // 있으면 권한/상태 강제 업데이트
-        await _adminsCollection.doc(user.uid).update({
-          'role': 'super_admin',
-          'approvalStatus': 'approved',
-          'lastLoginAt': FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error('슈퍼 어드민 계정 보장 실패', e, stackTrace);
       rethrow;
     }
   }

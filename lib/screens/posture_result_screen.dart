@@ -82,7 +82,8 @@ class PostureResultScreen extends StatelessWidget {
               // Score Section (35% of space)
               Flexible(
                 flex: 35,
-                child: _buildScoreSection(scoreColor, circleSize, scoreFontSize),
+                child:
+                    _buildScoreSection(scoreColor, circleSize, scoreFontSize),
               ),
 
               const SizedBox(height: 12),
@@ -115,7 +116,8 @@ class PostureResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreSection(Color scoreColor, double circleSize, double fontSize) {
+  Widget _buildScoreSection(
+      Color scoreColor, double circleSize, double fontSize) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -186,7 +188,7 @@ class PostureResultScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: scoreColor.withOpacity(0.2),
+                    color: scoreColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

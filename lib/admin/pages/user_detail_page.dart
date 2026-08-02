@@ -7,7 +7,6 @@ import '../models/user_stats.dart';
 
 import '../../theme/admin_theme.dart';
 
-
 /// 사용자 상세 페이지 Provider
 final userStatsProvider =
     FutureProvider.family<UserStats, String>((ref, uid) async {
@@ -49,7 +48,7 @@ class UserDetailPage extends ConsumerWidget {
             indicatorColor: AdminTheme.accent,
             indicatorWeight: 3,
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withOpacity(0.5),
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
             labelStyle: AdminTheme.titleMedium,
             tabs: const [
               Tab(text: 'Overview'),
@@ -71,7 +70,8 @@ class UserDetailPage extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: AdminTheme.error),
+                const Icon(Icons.error_outline,
+                    size: 48, color: AdminTheme.error),
                 const SizedBox(height: 16),
                 Text(
                   'Data Load Failed: $error',
@@ -233,7 +233,7 @@ class UserDetailPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AdminTheme.primary.withOpacity(0.3),
+                      color: AdminTheme.primary.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -273,10 +273,10 @@ class UserDetailPage extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AdminTheme.success.withOpacity(0.1),
+                    color: AdminTheme.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AdminTheme.success.withOpacity(0.3),
+                      color: AdminTheme.success.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(
@@ -290,7 +290,7 @@ class UserDetailPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -366,7 +366,7 @@ class UserDetailPage extends ConsumerWidget {
         Expanded(
           child: _buildStatCard(
             'Avg Calories',
-            '${stats.nutritionSummary.avgCaloriesPerDay.toStringAsFixed(0)}',
+            stats.nutritionSummary.avgCaloriesPerDay.toStringAsFixed(0),
             Icons.local_fire_department_rounded,
             AdminTheme.error,
           ),
@@ -407,7 +407,7 @@ class UserDetailPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -542,7 +542,7 @@ class UserDetailPage extends ConsumerWidget {
             horizontalInterval: maxY / 5,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 strokeWidth: 1,
               );
             },
@@ -603,8 +603,8 @@ class UserDetailPage extends ConsumerWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    color.withOpacity(0.3),
-                    color.withOpacity(0.0),
+                    color.withValues(alpha: 0.3),
+                    color.withValues(alpha: 0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -655,21 +655,24 @@ class UserDetailPage extends ConsumerWidget {
                     title: 'Protein',
                     color: AdminTheme.success,
                     radius: 80,
-                    titleStyle: AdminTheme.titleMedium.copyWith(color: Colors.white),
+                    titleStyle:
+                        AdminTheme.titleMedium.copyWith(color: Colors.white),
                   ),
                   PieChartSectionData(
                     value: summary.totalCarbs.toDouble(),
                     title: 'Carbs',
                     color: AdminTheme.secondary,
                     radius: 80,
-                    titleStyle: AdminTheme.titleMedium.copyWith(color: Colors.white),
+                    titleStyle:
+                        AdminTheme.titleMedium.copyWith(color: Colors.white),
                   ),
                   PieChartSectionData(
                     value: summary.totalFat.toDouble(),
                     title: 'Fat',
                     color: AdminTheme.error,
                     radius: 80,
-                    titleStyle: AdminTheme.titleMedium.copyWith(color: Colors.white),
+                    titleStyle:
+                        AdminTheme.titleMedium.copyWith(color: Colors.white),
                   ),
                 ],
                 sectionsSpace: 2,
@@ -682,13 +685,14 @@ class UserDetailPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLegendItem('Protein', '${summary.totalProtein}g',
-                    AdminTheme.success),
+                _buildLegendItem(
+                    'Protein', '${summary.totalProtein}g', AdminTheme.success),
                 const SizedBox(height: 8),
                 _buildLegendItem(
                     'Carbs', '${summary.totalCarbs}g', AdminTheme.secondary),
                 const SizedBox(height: 8),
-                _buildLegendItem('Fat', '${summary.totalFat}g', AdminTheme.error),
+                _buildLegendItem(
+                    'Fat', '${summary.totalFat}g', AdminTheme.error),
               ],
             ),
           ),
@@ -815,7 +819,7 @@ class UserDetailPage extends ConsumerWidget {
             horizontalInterval: 1,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 strokeWidth: 1,
               );
             },
@@ -840,6 +844,7 @@ class UserDetailPage extends ConsumerWidget {
       ),
     );
   }
+
   Widget _buildRecentMealsList(UserStats stats) {
     if (stats.recentMeals.isEmpty) {
       return Container(
@@ -867,7 +872,7 @@ class UserDetailPage extends ConsumerWidget {
         itemCount: stats.recentMeals.length,
         separatorBuilder: (context, index) => Divider(
           height: 1,
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
         ),
         itemBuilder: (context, index) {
           final meal = stats.recentMeals[index];
@@ -875,9 +880,12 @@ class UserDetailPage extends ConsumerWidget {
           final tokenCount = hasAiData ? meal.aiTokenUsage!['totalTokens'] : 0;
 
           return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             leading: CircleAvatar(
-              backgroundColor: hasAiData ? AdminTheme.primary.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+              backgroundColor: hasAiData
+                  ? AdminTheme.primary.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.05),
               child: Icon(
                 Icons.restaurant,
                 color: hasAiData ? AdminTheme.primary : AdminTheme.textDisabled,
@@ -898,15 +906,17 @@ class UserDetailPage extends ConsumerWidget {
               children: [
                 if (hasAiData)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AdminTheme.accent.withOpacity(0.1),
+                      color: AdminTheme.accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.auto_awesome, size: 12, color: AdminTheme.accent),
+                        const Icon(Icons.auto_awesome,
+                            size: 12, color: AdminTheme.accent),
                         const SizedBox(width: 4),
                         Text(
                           '$tokenCount tokens',

@@ -100,8 +100,7 @@ void main() {
 
   group('컴팩트 화면 렌더 검증 (다크)', () {
     testWidgets('MicrobiomeScreen dark', (t) async {
-      await renderOk(t, const MicrobiomeScreen(),
-          brightness: Brightness.dark);
+      await renderOk(t, const MicrobiomeScreen(), brightness: Brightness.dark);
     });
 
     testWidgets('ReportHubScreen dark', (t) async {

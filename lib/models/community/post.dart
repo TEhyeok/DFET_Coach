@@ -53,7 +53,7 @@ class Post {
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
-  
+
   Post copyWith({
     String? id,
     String? authorId,

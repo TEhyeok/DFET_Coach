@@ -72,7 +72,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // 화면(테마)
                 _buildSectionHeader(context, '화면'),
-                _buildGlassContainer(context: context, child: _buildThemeSelector(context, ref)),
+                _buildGlassContainer(
+                    context: context, child: _buildThemeSelector(context, ref)),
 
                 const SizedBox(height: 30),
 
@@ -211,7 +212,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // 화면(테마)
                 _buildSectionHeader(context, '화면'),
-                _buildGlassContainer(context: context, child: _buildThemeSelector(context, ref)),
+                _buildGlassContainer(
+                    context: context, child: _buildThemeSelector(context, ref)),
 
                 const SizedBox(height: 30),
 
@@ -346,8 +348,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           for (final (m, label, icon) in options) ...[
             Expanded(
               child: GestureDetector(
-                onTap: () =>
-                    ref.read(themeModeProvider.notifier).setTheme(m),
+                onTap: () => ref.read(themeModeProvider.notifier).setTheme(m),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -442,8 +443,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           style: GoogleFonts.outfit(
               color: titleColor ?? context.wellness.textPrimary),
         ),
-        trailing: Icon(Icons.chevron_right,
-            color: context.wellness.textTertiary),
+        trailing:
+            Icon(Icons.chevron_right, color: context.wellness.textTertiary),
         onTap: onTap,
       );
     }
@@ -520,7 +521,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: context.wellness.primary
-                                      .withOpacity(0.2),
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -873,7 +874,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: context.wellness.primary.withOpacity(0.3),
+                      color: context.wellness.primary.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -890,7 +891,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.star_rounded,
@@ -915,7 +916,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           '모든 기능을 제한 없이 이용하세요',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
                       ],

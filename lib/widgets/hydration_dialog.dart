@@ -77,7 +77,9 @@ class _HydrationDialogState extends State<HydrationDialog> {
                           strokeWidth: 12,
                           backgroundColor: context.wellness.border,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            progress >= 1.0 ? AppColors.brandPrimary : AppColors.info,
+                            progress >= 1.0
+                                ? AppColors.brandPrimary
+                                : AppColors.info,
                           ),
                         ),
                       ),

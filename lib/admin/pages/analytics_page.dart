@@ -20,9 +20,11 @@ class AnalyticsPage extends ConsumerWidget {
 
     return analyticsAsync.when(
       data: (stats) => _buildContent(context, stats),
-      loading: () => const Center(child: CircularProgressIndicator(color: AdminTheme.primary)),
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: AdminTheme.primary)),
       error: (error, stack) => Center(
-        child: Text('Failed to load analytics: $error', style: AdminTheme.bodyLarge.copyWith(color: AdminTheme.error)),
+        child: Text('Failed to load analytics: $error',
+            style: AdminTheme.bodyLarge.copyWith(color: AdminTheme.error)),
       ),
     );
   }
@@ -35,7 +37,8 @@ class AnalyticsPage extends ConsumerWidget {
         children: [
           Text('Analytics Overview', style: AdminTheme.displayMedium),
           const SizedBox(height: 8),
-          Text('Deep dive into your app performance.', style: AdminTheme.bodyLarge),
+          Text('Deep dive into your app performance.',
+              style: AdminTheme.bodyLarge),
           const SizedBox(height: 32),
 
           // Charts Grid
@@ -51,7 +54,8 @@ class AnalyticsPage extends ConsumerWidget {
                         child: _buildChartCard(
                           title: 'User Growth',
                           subtitle: 'Cumulative users over last 30 days',
-                          child: _buildLineChart(stats.userGrowth, AdminTheme.primary),
+                          child: _buildLineChart(
+                              stats.userGrowth, AdminTheme.primary),
                         ),
                       ),
                       if (isWide) ...[
@@ -60,7 +64,8 @@ class AnalyticsPage extends ConsumerWidget {
                           child: _buildChartCard(
                             title: 'Daily Active Users (DAU)',
                             subtitle: 'Unique logins per day',
-                            child: _buildBarChart(stats.dau, AdminTheme.success),
+                            child:
+                                _buildBarChart(stats.dau, AdminTheme.success),
                           ),
                         ),
                       ],
@@ -78,7 +83,8 @@ class AnalyticsPage extends ConsumerWidget {
                   _buildChartCard(
                     title: 'Revenue Trends (Mock)',
                     subtitle: 'Estimated revenue based on subscriptions',
-                    child: _buildLineChart(stats.revenue, AdminTheme.accent, isCurved: true, showArea: true),
+                    child: _buildLineChart(stats.revenue, AdminTheme.accent,
+                        isCurved: true, showArea: true),
                   ),
                 ],
               );
@@ -89,7 +95,10 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildChartCard({required String title, required String subtitle, required Widget child}) {
+  Widget _buildChartCard(
+      {required String title,
+      required String subtitle,
+      required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: AdminTheme.glassDecoration(
@@ -109,7 +118,8 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildLineChart(List<FlSpot> spots, Color color, {bool isCurved = true, bool showArea = true}) {
+  Widget _buildLineChart(List<FlSpot> spots, Color color,
+      {bool isCurved = true, bool showArea = true}) {
     if (spots.isEmpty) return const Center(child: Text('No Data'));
 
     double minY = spots.map((e) => e.y).reduce((a, b) => a < b ? a : b);
@@ -123,7 +133,8 @@ class AnalyticsPage extends ConsumerWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: interval,
-          getDrawingHorizontalLine: (value) => FlLine(color: Colors.white.withOpacity(0.05), strokeWidth: 1),
+          getDrawingHorizontalLine: (value) => FlLine(
+              color: Colors.white.withValues(alpha: 0.05), strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
@@ -145,13 +156,16 @@ class AnalyticsPage extends ConsumerWidget {
                 final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(DateFormat('MM/dd').format(date), style: AdminTheme.bodyMedium.copyWith(fontSize: 10)),
+                  child: Text(DateFormat('MM/dd').format(date),
+                      style: AdminTheme.bodyMedium.copyWith(fontSize: 10)),
                 );
               },
             ),
           ),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(show: false),
         lineBarsData: [
@@ -165,7 +179,10 @@ class AnalyticsPage extends ConsumerWidget {
             belowBarData: BarAreaData(
               show: showArea,
               gradient: LinearGradient(
-                colors: [color.withOpacity(0.3), color.withOpacity(0.0)],
+                colors: [
+                  color.withValues(alpha: 0.3),
+                  color.withValues(alpha: 0.0)
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -187,19 +204,24 @@ class AnalyticsPage extends ConsumerWidget {
       BarChartData(
         gridData: FlGridData(show: false),
         titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 // Show every 5th label to avoid crowding
                 if (value.toInt() % 5 != 0) return const SizedBox.shrink();
-                final date = DateTime.fromMillisecondsSinceEpoch(spots[value.toInt()].x.toInt());
+                final date = DateTime.fromMillisecondsSinceEpoch(
+                    spots[value.toInt()].x.toInt());
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(DateFormat('MM/dd').format(date), style: AdminTheme.bodyMedium.copyWith(fontSize: 10)),
+                  child: Text(DateFormat('MM/dd').format(date),
+                      style: AdminTheme.bodyMedium.copyWith(fontSize: 10)),
                 );
               },
             ),
@@ -214,7 +236,8 @@ class AnalyticsPage extends ConsumerWidget {
                 toY: entry.value.y,
                 color: color,
                 width: 12,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(4)),
               ),
             ],
           );

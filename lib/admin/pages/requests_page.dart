@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../models/request_item.dart';
 import '../services/request_service.dart';
 import '../widgets/request_card.dart';
@@ -44,16 +43,20 @@ class RequestsPage extends ConsumerWidget {
         data: (requests) => _buildKanbanBoard(context, requests),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
-          child: Text('Error: $error', style: const TextStyle(color: AdminTheme.error)),
+          child: Text('Error: $error',
+              style: const TextStyle(color: AdminTheme.error)),
         ),
       ),
     );
   }
 
   Widget _buildKanbanBoard(BuildContext context, List<RequestItem> requests) {
-    final newRequests = requests.where((r) => r.status == RequestStatus.newRequest).toList();
-    final inProgressRequests = requests.where((r) => r.status == RequestStatus.inProgress).toList();
-    final completedRequests = requests.where((r) => r.status == RequestStatus.completed).toList();
+    final newRequests =
+        requests.where((r) => r.status == RequestStatus.newRequest).toList();
+    final inProgressRequests =
+        requests.where((r) => r.status == RequestStatus.inProgress).toList();
+    final completedRequests =
+        requests.where((r) => r.status == RequestStatus.completed).toList();
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -63,9 +66,11 @@ class RequestsPage extends ConsumerWidget {
         children: [
           _buildColumn(context, 'New Requests', newRequests, AdminTheme.error),
           const SizedBox(width: 24),
-          _buildColumn(context, 'In Progress', inProgressRequests, AdminTheme.warning),
+          _buildColumn(
+              context, 'In Progress', inProgressRequests, AdminTheme.warning),
           const SizedBox(width: 24),
-          _buildColumn(context, 'Completed', completedRequests, AdminTheme.success),
+          _buildColumn(
+              context, 'Completed', completedRequests, AdminTheme.success),
         ],
       ),
     );
@@ -78,15 +83,19 @@ class RequestsPage extends ConsumerWidget {
     Color color,
   ) {
     final isLight = Theme.of(context).brightness == Brightness.light;
-    
+
     return Container(
       width: 350,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.05),
+        color: isLight
+            ? Colors.white.withValues(alpha: 0.5)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05),
+          color: isLight
+              ? Colors.black.withValues(alpha: 0.05)
+              : Colors.white.withValues(alpha: 0.05),
         ),
       ),
       child: Column(
@@ -105,14 +114,18 @@ class RequestsPage extends ConsumerWidget {
               Text(
                 title,
                 style: AdminTheme.titleMedium.copyWith(
-                  color: isLight ? AdminTheme.textPrimaryLight : AdminTheme.textWhite,
+                  color: isLight
+                      ? AdminTheme.textPrimaryLight
+                      : AdminTheme.textWhite,
                 ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.1),
+                  color: isLight
+                      ? Colors.black.withValues(alpha: 0.05)
+                      : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -120,7 +133,9 @@ class RequestsPage extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isLight ? AdminTheme.textSecondaryLight : AdminTheme.textSecondary,
+                    color: isLight
+                        ? AdminTheme.textSecondaryLight
+                        : AdminTheme.textSecondary,
                   ),
                 ),
               ),
@@ -134,7 +149,9 @@ class RequestsPage extends ConsumerWidget {
               child: Text(
                 'No requests',
                 style: AdminTheme.bodyMedium.copyWith(
-                  color: isLight ? AdminTheme.textDisabledLight : AdminTheme.textDisabled,
+                  color: isLight
+                      ? AdminTheme.textDisabledLight
+                      : AdminTheme.textDisabled,
                 ),
               ),
             )

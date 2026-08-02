@@ -7,7 +7,6 @@ import '../services/admin_service.dart';
 
 import '../../theme/admin_theme.dart';
 
-
 /// 대시보드 통계 Provider
 final dashboardStatsProvider = FutureProvider((ref) async {
   final adminService = AdminService();
@@ -50,7 +49,7 @@ class AdminDashboardPage extends ConsumerWidget {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final todayUsers = stats.recentUsers.where((user) {
-      return user.createdAt != null && user.createdAt!.isAfter(todayStart);
+      return user.createdAt.isAfter(todayStart);
     }).length;
 
     return SingleChildScrollView(
@@ -200,7 +199,7 @@ class AdminDashboardPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -208,7 +207,7 @@ class AdminDashboardPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AdminTheme.success.withOpacity(0.1),
+                  color: AdminTheme.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -248,14 +247,14 @@ class AdminDashboardPage extends ConsumerWidget {
     for (var count in stats.dailyAiTokenUsage.values) {
       if (count > maxTokens) maxTokens = count.toDouble();
     }
-    
+
     // Add 20% padding to the top, minimum 100 if all zero
     final double maxY = maxTokens > 0 ? maxTokens * 1.2 : 100;
-    
+
     // Calculate a nice interval (aim for ~5 grid lines)
     double interval = maxY / 5;
     if (interval == 0) interval = 20;
-    
+
     // Round interval to nice numbers (10, 50, 100, 500, 1000, etc.)
     if (interval > 10) {
       final magnitude = (interval / 10).ceil() * 10;
@@ -287,7 +286,7 @@ class AdminDashboardPage extends ConsumerWidget {
                   horizontalInterval: interval,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       strokeWidth: 1,
                     );
                   },
@@ -314,14 +313,16 @@ class AdminDashboardPage extends ConsumerWidget {
                       showTitles: true,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= 0 && value.toInt() < sortedKeys.length) {
+                        if (value.toInt() >= 0 &&
+                            value.toInt() < sortedKeys.length) {
                           final dateStr = sortedKeys[value.toInt()];
                           final date = DateFormat('yyyy-MM-dd').parse(dateStr);
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               DateFormat('MM/dd').format(date),
-                              style: AdminTheme.bodyMedium.copyWith(fontSize: 10),
+                              style:
+                                  AdminTheme.bodyMedium.copyWith(fontSize: 10),
                             ),
                           );
                         }
@@ -329,8 +330,10 @@ class AdminDashboardPage extends ConsumerWidget {
                       },
                     ),
                   ),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
@@ -355,8 +358,8 @@ class AdminDashboardPage extends ConsumerWidget {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          AdminTheme.accent.withOpacity(0.3),
-                          AdminTheme.accent.withOpacity(0.0),
+                          AdminTheme.accent.withValues(alpha: 0.3),
+                          AdminTheme.accent.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -398,7 +401,8 @@ class AdminDashboardPage extends ConsumerWidget {
                 sections: [
                   PieChartSectionData(
                     value: activeCount.toDouble(),
-                    title: '${((activeCount / stats.totalUsers) * 100).toStringAsFixed(0)}%',
+                    title:
+                        '${((activeCount / stats.totalUsers) * 100).toStringAsFixed(0)}%',
                     color: AdminTheme.primary,
                     radius: 80,
                     titleStyle: AdminTheme.titleLarge,
@@ -430,18 +434,18 @@ class AdminDashboardPage extends ConsumerWidget {
   Widget _buildDailyActiveUsersChart(AdminDashboardStats stats) {
     final now = DateTime.now();
     final last7Days = List.generate(7, (i) {
-      return DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - i));
+      return DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: 6 - i));
     });
 
     final barGroups = last7Days.asMap().entries.map((entry) {
       final day = entry.value;
       final sevenDaysAgo = day.subtract(const Duration(days: 7));
       final activeCount = stats.recentUsers.where((user) {
-        if (user.lastLoginAt == null) return false;
         final loginDay = DateTime(
-          user.lastLoginAt!.year,
-          user.lastLoginAt!.month,
-          user.lastLoginAt!.day,
+          user.lastLoginAt.year,
+          user.lastLoginAt.month,
+          user.lastLoginAt.day,
         );
         return loginDay.isAtSameMomentAs(day) ||
             (loginDay.isAfter(sevenDaysAgo) && loginDay.isBefore(day));
@@ -458,7 +462,7 @@ class AdminDashboardPage extends ConsumerWidget {
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
               toY: stats.totalUsers.toDouble(), // Max possible
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
         ],
@@ -484,14 +488,18 @@ class AdminDashboardPage extends ConsumerWidget {
               BarChartData(
                 gridData: FlGridData(show: false),
                 titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= 0 && value.toInt() < last7Days.length) {
+                        if (value.toInt() >= 0 &&
+                            value.toInt() < last7Days.length) {
                           final day = last7Days[value.toInt()];
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
@@ -516,7 +524,8 @@ class AdminDashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentUsersList(BuildContext context, AdminDashboardStats stats) {
+  Widget _buildRecentUsersList(
+      BuildContext context, AdminDashboardStats stats) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: AdminTheme.glassDecoration(
@@ -551,20 +560,21 @@ class AdminDashboardPage extends ConsumerWidget {
               itemCount: stats.recentUsers.take(5).length,
               separatorBuilder: (context, index) => Divider(
                 height: 24,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
               ),
               itemBuilder: (context, index) {
                 final user = stats.recentUsers[index];
                 final now = DateTime.now();
                 final sevenDaysAgo = now.subtract(const Duration(days: 7));
-                final isActive = user.lastLoginAt != null &&
-                    user.lastLoginAt!.isAfter(sevenDaysAgo);
+                final isActive = user.lastLoginAt.isAfter(sevenDaysAgo);
 
                 return InkWell(
                   onTap: () {
                     context.push(
                       '/admin/users/${user.uid}',
-                      extra: {'userName': user.displayName ?? user.email ?? 'Unknown'},
+                      extra: {
+                        'userName': user.displayName ?? user.email ?? 'Unknown'
+                      },
                     );
                   },
                   child: Row(
@@ -602,24 +612,24 @@ class AdminDashboardPage extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              user.createdAt != null
-                                  ? DateFormat('MMM d, yyyy').format(user.createdAt!)
-                                  : '-',
-                              style: AdminTheme.bodyMedium.copyWith(fontSize: 12),
+                              DateFormat('MMM d, yyyy').format(user.createdAt),
+                              style:
+                                  AdminTheme.bodyMedium.copyWith(fontSize: 12),
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? AdminTheme.success.withOpacity(0.1)
+                              ? AdminTheme.success.withValues(alpha: 0.1)
                               : AdminTheme.surfaceHighlight,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isActive
-                                ? AdminTheme.success.withOpacity(0.3)
+                                ? AdminTheme.success.withValues(alpha: 0.3)
                                 : Colors.transparent,
                           ),
                         ),

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:math' show Point;
-import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../core/utils/app_logger.dart';
@@ -118,7 +117,8 @@ class VideoPoseAnalyzer {
           // Ignore cleanup errors
         }
 
-        AppLogger.debug('[VideoPoseAnalyzer] Frame $i: score=${frameResult.score}');
+        AppLogger.debug(
+            '[VideoPoseAnalyzer] Frame $i: score=${frameResult.score}');
       } catch (e) {
         AppLogger.error('[VideoPoseAnalyzer] Error analyzing frame $i', e);
       }
@@ -144,7 +144,8 @@ class VideoPoseAnalyzer {
       maxFrames,
     );
 
-    AppLogger.info('[VideoPoseAnalyzer] Analysis complete: avg score=$averageScore');
+    AppLogger.info(
+        '[VideoPoseAnalyzer] Analysis complete: avg score=$averageScore');
 
     return VideoAnalysisResult(
       averageScore: averageScore,
@@ -215,8 +216,12 @@ class VideoPoseAnalyzer {
     final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftHip == null || leftKnee == null || leftAnkle == null ||
-        rightHip == null || rightKnee == null || rightAnkle == null) {
+    if (leftHip == null ||
+        leftKnee == null ||
+        leftAnkle == null ||
+        rightHip == null ||
+        rightKnee == null ||
+        rightAnkle == null) {
       return _PoseEvaluation(score: 0, feedback: '하체가 보이지 않습니다');
     }
 
@@ -276,9 +281,14 @@ class VideoPoseAnalyzer {
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
     final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
 
-    if (leftShoulder == null || leftElbow == null || leftWrist == null ||
-        rightShoulder == null || rightElbow == null || rightWrist == null ||
-        leftHip == null || rightHip == null) {
+    if (leftShoulder == null ||
+        leftElbow == null ||
+        leftWrist == null ||
+        rightShoulder == null ||
+        rightElbow == null ||
+        rightWrist == null ||
+        leftHip == null ||
+        rightHip == null) {
       return _PoseEvaluation(score: 0, feedback: '상체가 보이지 않습니다');
     }
 
@@ -336,9 +346,12 @@ class VideoPoseAnalyzer {
     final leftAnkle = pose.landmarks[PoseLandmarkType.leftAnkle];
     final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
 
-    if (leftShoulder == null || rightShoulder == null ||
-        leftHip == null || rightHip == null ||
-        leftAnkle == null || rightAnkle == null) {
+    if (leftShoulder == null ||
+        rightShoulder == null ||
+        leftHip == null ||
+        rightHip == null ||
+        leftAnkle == null ||
+        rightAnkle == null) {
       return _PoseEvaluation(score: 0, feedback: '전신이 보이지 않습니다');
     }
 
@@ -356,7 +369,8 @@ class VideoPoseAnalyzer {
       (leftAnkle.y + rightAnkle.y) / 2,
     );
 
-    final bodyLineAngle = _calculateAngle(shoulderCenter, hipCenter, ankleCenter);
+    final bodyLineAngle =
+        _calculateAngle(shoulderCenter, hipCenter, ankleCenter);
 
     double score = 100.0;
     String feedback = '';
@@ -379,8 +393,8 @@ class VideoPoseAnalyzer {
   }
 
   double _calculateAngle(Point<double> a, Point<double> b, Point<double> c) {
-    final radians = math.atan2(c.y - b.y, c.x - b.x) -
-        math.atan2(a.y - b.y, a.x - b.x);
+    final radians =
+        math.atan2(c.y - b.y, c.x - b.x) - math.atan2(a.y - b.y, a.x - b.x);
     var angle = (radians * 180 / math.pi).abs();
 
     if (angle > 180) {

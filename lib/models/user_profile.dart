@@ -1,15 +1,27 @@
-/// 사용자 케어 유형 (2026 개편: 로그인 단계 분기)
-/// - microbiome: 장내미생물 케어 중심
-/// - fitness: 운동/신체조성 중심
-/// - both: 둘 다
-class UserCareType {
-  static const microbiome = 'microbiome';
-  static const fitness = 'fitness';
-  static const both = 'both';
+enum CareType {
+  microbiome,
+  fitness,
+  both;
 
-  static const all = [microbiome, fitness, both];
+  String get wireValue => name;
 
-  static String label(String? type) {
+  static CareType fromWire(Object? value) {
+    return CareType.values.firstWhere(
+      (type) => type.wireValue == value,
+      orElse: () => CareType.fitness,
+    );
+  }
+}
+
+/// 기존 호출부의 의미를 보존하면서 문자열 대신 [CareType]을 사용한다.
+abstract final class UserCareType {
+  static const microbiome = CareType.microbiome;
+  static const fitness = CareType.fitness;
+  static const both = CareType.both;
+
+  static const all = CareType.values;
+
+  static String label(CareType? type) {
     switch (type) {
       case microbiome:
         return '장내미생물 케어';
@@ -40,7 +52,9 @@ class UserProfile {
   final double? weight;
   final String? activityLevel;
   final String? goal; // Added goal field
-  final String careType; // 2026 개편: 'microbiome' | 'fitness' | 'both'
+  final CareType careType;
+  final int careTypeVersion;
+  final DateTime? careTypeConfirmedAt;
   final bool isOnboardingComplete;
 
   // Subscription Data
@@ -66,6 +80,8 @@ class UserProfile {
     this.activityLevel,
     this.goal,
     this.careType = UserCareType.fitness,
+    this.careTypeVersion = 0,
+    this.careTypeConfirmedAt,
     this.isOnboardingComplete = false,
     this.isPremium = false,
     this.subscriptionExpiryDate,
@@ -97,7 +113,13 @@ class UserProfile {
       weight: (map['weight'] as num?)?.toDouble(),
       activityLevel: map['activityLevel'] as String?,
       goal: map['goal'] as String?,
-      careType: map['careType'] as String? ?? UserCareType.fitness,
+      careType: CareType.fromWire(map['careType']),
+      careTypeVersion: map['careTypeVersion'] as int? ?? 0,
+      careTypeConfirmedAt: map['careTypeConfirmedAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map['careTypeConfirmedAt'] as int,
+            )
+          : null,
       isOnboardingComplete: map['isOnboardingComplete'] as bool? ?? false,
       isPremium: map['isPremium'] as bool? ?? false,
       subscriptionExpiryDate: map['subscriptionExpiryDate'] != null
@@ -124,7 +146,9 @@ class UserProfile {
       'weight': weight,
       'activityLevel': activityLevel,
       'goal': goal,
-      'careType': careType,
+      'careType': careType.wireValue,
+      'careTypeVersion': careTypeVersion,
+      'careTypeConfirmedAt': careTypeConfirmedAt?.millisecondsSinceEpoch,
       'isOnboardingComplete': isOnboardingComplete,
       'isPremium': isPremium,
       'subscriptionExpiryDate': subscriptionExpiryDate?.millisecondsSinceEpoch,
@@ -148,7 +172,9 @@ class UserProfile {
     double? weight,
     String? activityLevel,
     String? goal,
-    String? careType,
+    CareType? careType,
+    int? careTypeVersion,
+    DateTime? careTypeConfirmedAt,
     bool? isOnboardingComplete,
     bool? isPremium,
     DateTime? subscriptionExpiryDate,
@@ -170,6 +196,8 @@ class UserProfile {
       activityLevel: activityLevel ?? this.activityLevel,
       goal: goal ?? this.goal,
       careType: careType ?? this.careType,
+      careTypeVersion: careTypeVersion ?? this.careTypeVersion,
+      careTypeConfirmedAt: careTypeConfirmedAt ?? this.careTypeConfirmedAt,
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
       isPremium: isPremium ?? this.isPremium,
       subscriptionExpiryDate:

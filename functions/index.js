@@ -13,8 +13,29 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const { onRequest } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
+const {
+  createClinicalApiHandler,
+  parseKeyMap,
+} = require('./src/clinical/ingestion');
 
 admin.initializeApp();
+
+const ingestionHmacKeys = defineSecret('INGEST_HMAC_KEYS');
+
+exports.clinicalApi = onRequest(
+  {
+    region: 'asia-northeast3',
+    secrets: [ingestionHmacKeys],
+    timeoutSeconds: 120,
+    memory: '512MiB',
+  },
+  createClinicalApiHandler({
+    admin,
+    getKeyMap: () => parseKeyMap(ingestionHmacKeys.value()),
+  })
+);
 
 /**
  * 관리자 권한 확인 헬퍼 함수
@@ -48,12 +69,6 @@ async function verifyAdmin(context) {
  * await setAdminClaim({ email: 'admin@example.com' });
  */
 exports.setAdminClaim = functions.https.onCall(async (data, context) => {
-  // 초기 관리자 설정을 위해 특정 이메일만 허용 (필요 시 수정)
-  const SUPER_ADMIN_EMAILS = [
-    // 여기에 초기 관리자 이메일을 추가하세요
-    // 예: 'your-email@example.com'
-  ];
-
   if (!context.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
@@ -61,11 +76,8 @@ exports.setAdminClaim = functions.https.onCall(async (data, context) => {
     );
   }
 
-  // 첫 관리자 설정이 아니라면 기존 관리자 권한 확인
   const callerToken = context.auth.token;
-  const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(context.auth.token.email);
-
-  if (!callerToken.admin && !isSuperAdmin) {
+  if (!callerToken.admin) {
     throw new functions.https.HttpsError(
       'permission-denied',
       '관리자 권한이 필요합니다.'
@@ -85,16 +97,28 @@ exports.setAdminClaim = functions.https.onCall(async (data, context) => {
     // 이메일로 사용자 조회
     const user = await admin.auth().getUserByEmail(email);
 
-    // 관리자 Custom Claim 설정
-    await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+    // 다른 역할 claim을 지우지 않고 관리자 권한만 추가한다.
+    await admin.auth().setCustomUserClaims(user.uid, {
+      ...(user.customClaims || {}),
+      admin: true,
+      role: 'admin',
+    });
 
     // Firestore에 관리자 정보 저장 (선택적)
     await admin.firestore().collection('admins').doc(user.uid).set({
       email: user.email,
       displayName: user.displayName || '',
+      role: 'admin',
+      approvalStatus: 'approved',
       grantedAt: admin.firestore.FieldValue.serverTimestamp(),
       grantedBy: context.auth.uid,
     });
+    await admin.firestore().collection('users').doc(user.uid).set({
+      role: 'admin',
+      isAdmin: true,
+      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedBy: context.auth.uid,
+    }, {merge: true});
 
     return {
       success: true,
@@ -126,11 +150,21 @@ exports.removeAdminClaim = functions.https.onCall(async (data, context) => {
     // 이메일로 사용자 조회
     const user = await admin.auth().getUserByEmail(email);
 
-    // 관리자 Custom Claim 제거
-    await admin.auth().setCustomUserClaims(user.uid, { admin: false });
+    // 다른 claim은 유지하고 관리자 관련 claim만 제거한다.
+    const {admin: _admin, role, ...remainingClaims} = user.customClaims || {};
+    await admin.auth().setCustomUserClaims(user.uid, {
+      ...remainingClaims,
+      ...(role && role !== 'admin' ? {role} : {}),
+    });
 
     // Firestore에서 관리자 정보 삭제
     await admin.firestore().collection('admins').doc(user.uid).delete();
+    await admin.firestore().collection('users').doc(user.uid).set({
+      role: 'member',
+      isAdmin: false,
+      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedBy: context.auth.uid,
+    }, {merge: true});
 
     return {
       success: true,
@@ -354,6 +388,12 @@ exports.setTrainerClaim = functions.https.onCall(async (data, context) => {
       },
       { merge: true }
     );
+    await admin.firestore().collection('users').doc(user.uid).set({
+      role: 'trainer',
+      isTrainer: true,
+      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedBy: context.auth.uid,
+    }, {merge: true});
 
     return {
       success: true,
@@ -397,6 +437,12 @@ exports.removeTrainerClaim = functions.https.onCall(async (data, context) => {
       },
       { merge: true }
     );
+    await admin.firestore().collection('users').doc(user.uid).set({
+      role: 'member',
+      isTrainer: false,
+      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedBy: context.auth.uid,
+    }, {merge: true});
 
     return {
       success: true,
@@ -446,12 +492,21 @@ exports.assignMemberToTrainer = functions.https.onCall(async (data, context) => 
         );
       }
 
+      const previousTrainerUid = memberSnap.data().trainerId;
+      if (previousTrainerUid && previousTrainerUid !== trainerUid) {
+        tx.set(db.collection('trainers').doc(previousTrainerUid), {
+          memberIds: admin.firestore.FieldValue.arrayRemove(memberUid),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+
       tx.update(trainerRef, {
         memberIds: admin.firestore.FieldValue.arrayUnion(memberUid),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       tx.update(memberRef, {
         trainerId: trainerUid,
+        assignedTrainerId: trainerUid,
         trainerAssignedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     });
@@ -499,6 +554,7 @@ exports.removeMemberFromTrainer = functions.https.onCall(async (data, context) =
       if (memberSnap.exists && memberSnap.data().trainerId === trainerUid) {
         tx.update(memberRef, {
           trainerId: admin.firestore.FieldValue.delete(),
+          assignedTrainerId: admin.firestore.FieldValue.delete(),
           trainerUnassignedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }

@@ -1,34 +1,35 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper functions
-    function isAuth() {
-      return request.auth != null;
+    function isAdmin() {
+      return request.auth != null && (
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        ('super_admin' in request.auth.token && request.auth.token.super_admin == true)
+      );
     }
+
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Profile Images
-    match /profile_images/{userId} {
-      allow read: if true; // Publicly readable for profile display
+    match /clinical-ingest/{allPaths=**} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /requests/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
       allow write: if isOwner(userId);
     }
 
-    // Community Post Images
     match /posts/{fileName} {
-      allow read: if isAuth();
-      allow write: if isAuth() 
-                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
-                   && request.resource.contentType.matches('image/.*'); // Images only
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        fileName.matches('.*_' + request.auth.uid + '\\.(jpg|jpeg|png|webp)');
     }
-    
-    // Meal Images
-    match /meals/{userId}/{fileName} {
-      allow read: if isOwner(userId);
-      allow write: if isOwner(userId)
-                   && request.resource.size < 5 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

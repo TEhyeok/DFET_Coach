@@ -11,6 +11,7 @@ import 'components/action_recommendation_card.dart';
 import 'components/axis_radar_chart.dart';
 import 'components/cross_insight_card.dart';
 import 'components/integrated_score_card.dart';
+import 'components/progress_efficacy_card.dart';
 
 class InsightDetailScreen extends ConsumerWidget {
   const InsightDetailScreen({super.key, required this.snapshotId});
@@ -24,14 +25,15 @@ class InsightDetailScreen extends ConsumerWidget {
             if (snapshot == null) {
               return const Center(child: Text('스냅샷을 찾을 수 없습니다'));
             }
-            final snapshots = ref.watch(healthSnapshotsProvider).valueOrNull ??
-                const [];
+            final snapshots =
+                ref.watch(healthSnapshotsProvider).valueOrNull ?? const [];
             final currentIndex = snapshots.indexWhere(
               (item) => item.snapshotId == snapshot.snapshotId,
             );
-            final previous = currentIndex >= 0 && currentIndex + 1 < snapshots.length
-                ? snapshots[currentIndex + 1]
-                : null;
+            final previous =
+                currentIndex >= 0 && currentIndex + 1 < snapshots.length
+                    ? snapshots[currentIndex + 1]
+                    : null;
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               children: [
@@ -52,33 +54,47 @@ class InsightDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
+                ProgressEfficacyCard(
+                  current: snapshot,
+                  previous: previous,
+                ),
+                const SizedBox(height: 20),
+                _sectionTitle(context, '현재 4축 균형'),
+                const SizedBox(height: 10),
                 IntegratedScoreCard(snapshot: snapshot),
                 const SizedBox(height: 12),
                 AppCard(
                   padding: const EdgeInsets.fromLTRB(12, 18, 12, 12),
                   child: AxisRadarChart(axes: snapshot.axes),
                 ),
+                if (snapshot.insights.any((item) => item.action != null)) ...[
+                  const SizedBox(height: 20),
+                  _sectionTitle(context, '오늘의 실천'),
+                  const SizedBox(height: 4),
+                  Text(
+                    '부담 없는 한 가지부터 완료해 보세요.',
+                    style: TextStyle(
+                      color: context.wellness.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  for (final insight in snapshot.insights
+                      .where((item) => item.action != null)) ...[
+                    ActionRecommendationCard(insight: insight),
+                    const SizedBox(height: 10),
+                  ],
+                ],
                 if (previous != null) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
                   _SnapshotComparison(current: snapshot, previous: previous),
                 ],
                 if (snapshot.insights.isNotEmpty) ...[
                   const SizedBox(height: 18),
-                  Text(
-                    '축간 인사이트',
-                    style: TextStyle(
-                      color: context.wellness.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  _sectionTitle(context, '데이터에서 발견한 흐름'),
                   const SizedBox(height: 10),
                   for (final insight in snapshot.insights) ...[
                     CrossInsightCard(insight: insight),
-                    if (insight.action != null) ...[
-                      const SizedBox(height: 8),
-                      ActionRecommendationCard(insight: insight),
-                    ],
                     const SizedBox(height: 10),
                   ],
                 ],
@@ -96,6 +112,17 @@ class InsightDetailScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, __) => const Center(child: Text('스냅샷을 불러오지 못했습니다')),
         );
+  }
+
+  Widget _sectionTitle(BuildContext context, String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: context.wellness.textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+      ),
+    );
   }
 }
 
@@ -126,7 +153,8 @@ class _SnapshotComparison extends StatelessWidget {
       final before = previous.axes[entry.key];
       final after = current.axes[entry.key];
       if (before != null && after != null) {
-        comparisons.add((title: '${entry.value} 축', before: before, after: after));
+        comparisons
+            .add((title: '${entry.value} 축', before: before, after: after));
       }
     }
     if (comparisons.isEmpty) return const SizedBox.shrink();
@@ -150,7 +178,8 @@ class _SnapshotComparison extends StatelessWidget {
         for (final comparison in comparisons) ...[
           ComparisonCard(
             title: comparison.title,
-            value: '${comparison.before.toStringAsFixed(1)} → ${comparison.after.toStringAsFixed(1)}',
+            value:
+                '${comparison.before.toStringAsFixed(1)} → ${comparison.after.toStringAsFixed(1)}',
             label: _deltaLabel(comparison.after - comparison.before),
           ),
           const SizedBox(height: 8),

@@ -10,6 +10,8 @@ import '../screens/blood/components/blood_summary_card.dart';
 import '../screens/insights/insight_detail_screen.dart';
 import '../screens/insights/insights_screen.dart';
 import '../screens/insights/components/integrated_score_card.dart';
+import '../screens/insights/components/action_recommendation_card.dart';
+import '../screens/insights/components/progress_efficacy_card.dart';
 import '../screens/microbiome/microbiome_expert_screen.dart';
 import '../screens/microbiome/microbiome_metric_screen.dart';
 import '../screens/microbiome/microbiome_screen.dart';
@@ -362,8 +364,16 @@ class _ClinicalDemoOverview extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
+        ProgressEfficacyCard(
+          current: snapshot,
+          previous: clinicalDemoSnapshots[1],
+          onTap: () => context.push('/insights/${snapshot.snapshotId}'),
+        ),
+        const SizedBox(height: 14),
+        ActionRecommendationCard(insight: snapshot.insights.first),
+        const SizedBox(height: 18),
         Text(
-          '검사 및 통합 요약',
+          '현재 데이터',
           style: TextStyle(
             color: context.wellness.textPrimary,
             fontSize: 19,

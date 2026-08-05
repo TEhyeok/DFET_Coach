@@ -154,69 +154,88 @@ class _DfetAxisGlyphPainter extends CustomPainter {
   }
 
   void _drawMotion(Canvas canvas, Paint trace, Paint active) {
-    final path = Path()
-      ..moveTo(15, 46)
-      ..lineTo(23, 40)
-      ..lineTo(30, 21)
-      ..lineTo(39, 31)
-      ..lineTo(49, 16);
-    canvas.drawPath(path, trace);
-    canvas.drawLine(const Offset(30, 21), const Offset(35, 18), trace);
-    canvas.drawLine(const Offset(39, 31), const Offset(44, 33), trace);
-    canvas.drawLine(const Offset(39, 31), const Offset(49, 16), active);
-    _node(canvas, const Offset(15, 46), trace.color, hollow: true);
-    _node(canvas, const Offset(49, 16), signal);
+    _node(canvas, const Offset(38, 14), signal, hollow: true);
+
+    final body = Path()
+      ..moveTo(35, 20)
+      ..lineTo(30, 31)
+      ..lineTo(38, 39)
+      ..lineTo(48, 34);
+    canvas.drawPath(body, trace);
+    canvas.drawLine(const Offset(32, 25), const Offset(23, 20), trace);
+    canvas.drawLine(const Offset(32, 25), const Offset(43, 28), trace);
+    canvas.drawLine(const Offset(30, 31), const Offset(22, 44), trace);
+    canvas.drawLine(const Offset(22, 44), const Offset(13, 44), trace);
+    canvas.drawLine(const Offset(30, 31), const Offset(38, 39), active);
+    canvas.drawLine(const Offset(38, 39), const Offset(48, 34), active);
+
+    canvas.drawLine(const Offset(12, 25), const Offset(20, 25), trace);
+    canvas.drawLine(const Offset(10, 31), const Offset(18, 31), trace);
+    canvas.drawLine(const Offset(12, 37), const Offset(18, 37), trace);
+    _node(canvas, const Offset(30, 31), trace.color);
   }
 
   void _drawNutrition(Canvas canvas, Paint trace, Paint active) {
-    final path = Path()
-      ..moveTo(15, 17)
-      ..lineTo(24, 17)
-      ..lineTo(24, 35)
-      ..lineTo(32, 47)
-      ..lineTo(40, 35)
-      ..lineTo(40, 17)
-      ..lineTo(49, 17);
-    canvas.drawPath(path, trace);
-    canvas.drawLine(const Offset(24, 27), const Offset(40, 27), active);
-    canvas.drawLine(const Offset(27, 34), const Offset(37, 34), trace);
-    _node(canvas, const Offset(15, 17), trace.color, hollow: true);
-    _node(canvas, const Offset(49, 17), trace.color, hollow: true);
-    _node(canvas, const Offset(32, 47), signal);
+    for (final source in [
+      (const Offset(20, 16), 24.0),
+      (const Offset(32, 12), 25.0),
+      (const Offset(44, 17), 25.0),
+    ]) {
+      _node(canvas, source.$1, trace.color, hollow: true);
+      canvas.drawLine(source.$1 + const Offset(0, 4),
+          Offset(source.$1.dx, source.$2), trace);
+    }
+
+    canvas.drawLine(const Offset(17, 28), const Offset(47, 28), active);
+    final bowl = Path()
+      ..moveTo(15, 31)
+      ..cubicTo(17, 42, 23, 48, 32, 48)
+      ..cubicTo(41, 48, 47, 42, 49, 31);
+    canvas.drawPath(bowl, trace);
+    canvas.drawLine(const Offset(21, 37), const Offset(43, 37), trace);
+    _node(canvas, const Offset(32, 48), signal);
   }
 
   void _drawGut(Canvas canvas, Paint trace, Paint active) {
-    final loop = Path()
-      ..moveTo(16, 32)
-      ..cubicTo(20, 16, 42, 14, 48, 28)
-      ..cubicTo(54, 42, 35, 51, 23, 43)
-      ..cubicTo(17, 39, 14, 35, 16, 32);
-    canvas.drawPath(loop, trace);
-    final inner = Path()
-      ..moveTo(23, 43)
-      ..cubicTo(29, 36, 36, 31, 48, 28);
-    canvas.drawPath(inner, active);
-    _node(canvas, const Offset(16, 32), trace.color, hollow: true);
-    _node(canvas, const Offset(31, 18), trace.color);
-    _node(canvas, const Offset(48, 28), signal);
-    _node(canvas, const Offset(23, 43), trace.color);
+    final field = Paint()
+      ..color = trace.color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawLine(const Offset(20, 21), const Offset(31, 31), field);
+    canvas.drawLine(const Offset(31, 31), const Offset(46, 20), field);
+    canvas.drawLine(const Offset(31, 31), const Offset(20, 44), field);
+    canvas.drawLine(const Offset(31, 31), const Offset(47, 43), active);
+    canvas.drawLine(const Offset(20, 21), const Offset(20, 44), field);
+
+    canvas.drawCircle(const Offset(31, 31), 7, field);
+    canvas.drawCircle(const Offset(20, 21), 4, field);
+    canvas.drawCircle(const Offset(46, 20), 3, field);
+    canvas.drawCircle(const Offset(20, 44), 3, field);
+    canvas.drawCircle(const Offset(47, 43), 5, field);
+    _node(canvas, const Offset(31, 31), trace.color);
+    _node(canvas, const Offset(47, 43), signal);
   }
 
   void _drawBlood(Canvas canvas, Paint trace, Paint active) {
-    final channel = Path()
-      ..moveTo(27, 15)
-      ..lineTo(27, 41)
-      ..lineTo(32, 49)
-      ..lineTo(37, 41)
-      ..lineTo(37, 15);
-    canvas.drawPath(channel, trace);
-    canvas.drawLine(const Offset(27, 30), const Offset(37, 30), active);
-    for (final y in [20.0, 25.0, 35.0, 40.0]) {
-      canvas.drawLine(Offset(21, y), Offset(24, y), trace);
-    }
-    _node(canvas, const Offset(27, 15), trace.color, hollow: true);
-    _node(canvas, const Offset(37, 15), trace.color, hollow: true);
-    _node(canvas, const Offset(32, 49), signal);
+    final drop = Path()
+      ..moveTo(32, 12)
+      ..cubicTo(28, 20, 19, 29, 19, 38)
+      ..cubicTo(19, 47, 25, 51, 32, 51)
+      ..cubicTo(39, 51, 45, 47, 45, 38)
+      ..cubicTo(45, 29, 36, 20, 32, 12);
+    canvas.drawPath(drop, trace);
+
+    final pulse = Path()
+      ..moveTo(14, 36)
+      ..lineTo(23, 36)
+      ..lineTo(27, 29)
+      ..lineTo(32, 43)
+      ..lineTo(37, 33)
+      ..lineTo(41, 36)
+      ..lineTo(50, 36);
+    canvas.drawPath(pulse, active);
+    _node(canvas, const Offset(14, 36), trace.color, hollow: true);
+    _node(canvas, const Offset(50, 36), signal);
   }
 
   void _drawStateTerminal(Canvas canvas, Paint trace) {

@@ -12,11 +12,27 @@ import 'router/app_router.dart';
 import 'state/app_state.dart';
 import 'state/theme_provider.dart';
 import 'core/utils/app_logger.dart';
+import 'demo/clinical_demo_app.dart';
 
 import 'admin/router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+
+  if (clinicalDemoMode) {
+    runApp(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          ...clinicalDemoOverrides,
+        ],
+        child: const ClinicalDemoApp(),
+      ),
+    );
+    return;
+  }
 
   try {
     await Firebase.initializeApp(
@@ -36,8 +52,6 @@ void main() async {
   } catch (e, stackTrace) {
     AppLogger.error('Firebase 초기화 실패', e, stackTrace);
   }
-
-  final prefs = await SharedPreferences.getInstance();
 
   runApp(ProviderScope(
     overrides: [

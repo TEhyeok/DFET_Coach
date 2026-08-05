@@ -7,6 +7,22 @@
 
 ## 빠른 실행 방법
 
+### 통합 케어 결과 화면 시연
+
+장내미생물, 혈액 POCT, 4축 통합 인사이트를 합성 데이터로 함께 확인하려면
+다음 전용 모드를 사용합니다. Firebase 운영 데이터와 인증은 사용하지 않습니다.
+
+```bash
+# 빌드만 수행
+DFET_CLINICAL_DEMO=true ./tool/ios_simulator.sh build
+
+# 부팅된 시뮬레이터에서 실행
+DFET_CLINICAL_DEMO=true ./tool/ios_simulator.sh run "iPhone 17 Pro"
+```
+
+이 모드는 화면 시연과 회귀 테스트 전용입니다. 표시되는 점수, 검사값, 회원 정보는
+모두 합성 데이터이며 임상 판정이나 실제 회원 기록으로 사용할 수 없습니다.
+
 ### 1. 시뮬레이터 미리 부팅 (가장 효과적)
 ```bash
 # 터미널에서 미리 실행

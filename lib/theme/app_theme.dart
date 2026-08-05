@@ -63,47 +63,55 @@ ThemeData appThemeLight() {
 ThemeData appThemeDark() {
   final base = ThemeData.dark(useMaterial3: true);
   final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(
-    bodyColor: AppColorsDark.textBody,
-    displayColor: AppColorsDark.textBody,
+    bodyColor: WellnessColorsDark.textPrimary,
+    displayColor: WellnessColorsDark.textPrimary,
   );
   return base.copyWith(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColorsDark.brandPrimary,
+      seedColor: WellnessColorsDark.primary,
       brightness: Brightness.dark,
-      surface: AppColorsDark.bgCard,
-      primary: AppColorsDark.brandPrimary,
-      onPrimary: Colors.white,
-      secondary: AppColorsDark.accentGold,
-      error: AppColorsDark.danger,
+      surface: WellnessColorsDark.bgCard,
+      primary: WellnessColorsDark.primary,
+      onPrimary: WellnessColorsDark.onPrimary,
+      onSurface: WellnessColorsDark.textPrimary,
+      onSurfaceVariant: WellnessColorsDark.textSecondary,
+      secondary: WellnessColorsDark.accent,
+      error: WellnessColorsDark.danger,
     ),
-    scaffoldBackgroundColor: AppColorsDark.bgApp,
+    scaffoldBackgroundColor: WellnessColorsDark.bgApp,
     cardTheme: CardThemeData(
-      color: AppColorsDark.bgCard,
+      color: WellnessColorsDark.bgCard,
       surfaceTintColor: Colors.transparent,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Radii.xxl),
-        side: const BorderSide(color: AppColorsDark.bgStroke),
+        side: const BorderSide(color: WellnessColorsDark.border),
       ),
       margin: const EdgeInsets.all(0),
     ),
     textTheme: textTheme,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColorsDark.bgApp,
-      foregroundColor: AppColorsDark.textStrong,
+      backgroundColor: WellnessColorsDark.bgApp,
+      foregroundColor: WellnessColorsDark.textPrimary,
       elevation: 0,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColorsDark.bgCard,
-      indicatorColor: AppColorsDark.brandPrimary.withValues(alpha: 0.15),
-      labelTextStyle: WidgetStatePropertyAll(
-        textTheme.labelSmall?.copyWith(color: AppColorsDark.textSubtle),
-      ),
+      backgroundColor: WellnessColorsDark.bgCard,
+      indicatorColor: WellnessColorsDark.primary.withValues(alpha: 0.18),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return textTheme.labelSmall?.copyWith(
+          color: selected
+              ? WellnessColorsDark.primaryDark
+              : WellnessColorsDark.textSecondary,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+        );
+      }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: AppColorsDark.brandPrimary);
+          return const IconThemeData(color: WellnessColorsDark.primaryDark);
         }
-        return const IconThemeData(color: AppColorsDark.textSubtle);
+        return const IconThemeData(color: WellnessColorsDark.textSecondary);
       }),
     ),
   );

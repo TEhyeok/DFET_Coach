@@ -10,6 +10,7 @@ PODS_DIR="$PROJECT_DIR/ios/Pods"
 BACKUP_DIR="$(mktemp -d)"
 MODE="${1:-build}"
 DEVICE_ID="${2:-}"
+CLINICAL_DEMO="${DFET_CLINICAL_DEMO:-false}"
 
 restore_project() {
   if [[ -f "$BACKUP_DIR/pubspec_overrides.yaml" ]]; then
@@ -50,7 +51,8 @@ flutter pub get
 case "$MODE" in
   build)
     flutter build ios --simulator --debug \
-      --dart-define=DFET_IOS_SIMULATOR=true
+      --dart-define=DFET_IOS_SIMULATOR=true \
+      --dart-define=DFET_CLINICAL_DEMO="$CLINICAL_DEMO"
     ;;
   run)
     if [[ -z "$DEVICE_ID" ]]; then
@@ -60,7 +62,9 @@ case "$MODE" in
       echo "사용 가능한 iOS 시뮬레이터가 없습니다." >&2
       exit 1
     fi
-    flutter run -d "$DEVICE_ID" --dart-define=DFET_IOS_SIMULATOR=true
+    flutter run -d "$DEVICE_ID" \
+      --dart-define=DFET_IOS_SIMULATOR=true \
+      --dart-define=DFET_CLINICAL_DEMO="$CLINICAL_DEMO"
     ;;
   settings)
     grep -R "EXCLUDED_ARCHS" ios/Flutter ios/Runner.xcodeproj \

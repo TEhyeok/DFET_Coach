@@ -243,8 +243,8 @@ class WellnessColors {
 
   // Text
   static const textPrimary = Color(0xFF141F3A); // 로고 네이비(거의 검정)
-  static const textSecondary = Color(0xFF5A6680); // 네이비 그레이
-  static const textTertiary = Color(0xFF9AA3B8); // 라이트 네이비 그레이
+  static const textSecondary = Color(0xFF475467); // 본문: 흰 배경 대비 7.7:1
+  static const textTertiary = Color(0xFF5F6B7C); // 보조: 연한 필드 배경 대비 4.6:1
   static const textOnTint = Color(0xFF141F3A);
 
   // Status

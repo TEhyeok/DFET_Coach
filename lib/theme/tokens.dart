@@ -294,7 +294,7 @@ class WellnessColorsDark {
   // Text
   static const textPrimary = Color(0xFFEDF1FA); // 밝은 텍스트
   static const textSecondary = Color(0xFFA6B0CC);
-  static const textTertiary = Color(0xFF6E7AA0);
+  static const textTertiary = Color(0xFF909CBA); // 연한 필드 배경 대비 4.6:1
   static const textOnTint = Color(0xFF141F3A);
 
   // Status

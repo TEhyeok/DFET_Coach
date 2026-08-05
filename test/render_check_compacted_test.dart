@@ -12,6 +12,7 @@ import 'package:dfet_coach/screens/reports.dart';
 import 'package:dfet_coach/screens/microbiome/microbiome_screen.dart';
 import 'package:dfet_coach/state/app_state.dart';
 import 'package:dfet_coach/services/firestore_service.dart';
+import 'package:dfet_coach/theme/app_theme.dart';
 
 /// RENDER CHECK — 컴팩트 개편된 4개 화면이 iPhone 15 Pro 뷰포트에서
 /// RenderFlex/unbounded/assertion 예외 없이 렌더되는지 검증한다.
@@ -56,7 +57,10 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          theme: ThemeData(brightness: brightness),
+          theme: appThemeLight(),
+          darkTheme: appThemeDark(),
+          themeMode:
+              brightness == Brightness.light ? ThemeMode.light : ThemeMode.dark,
           home: Scaffold(body: screen),
         ),
       ),

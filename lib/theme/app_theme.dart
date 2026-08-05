@@ -16,6 +16,8 @@ ThemeData appThemeLight() {
       surface: AppColorsLight.bgCard,
       primary: AppColorsLight.brandPrimary,
       onPrimary: Colors.white,
+      onSurface: WellnessColors.textPrimary,
+      onSurfaceVariant: WellnessColors.textSecondary,
       secondary: AppColorsLight.accentGold,
       error: AppColorsLight.danger,
     ),
@@ -39,9 +41,20 @@ ThemeData appThemeLight() {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColorsLight.bgCard,
       indicatorColor: AppColorsLight.brandPrimary.withValues(alpha: 0.15),
-      labelTextStyle: WidgetStatePropertyAll(
-        textTheme.labelSmall?.copyWith(color: AppColorsLight.textSubtle),
-      ),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return textTheme.labelSmall?.copyWith(
+          color:
+              selected ? WellnessColors.primary : WellnessColors.textTertiary,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+        );
+      }),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: WellnessColors.primary);
+        }
+        return const IconThemeData(color: WellnessColors.textTertiary);
+      }),
     ),
   );
 }

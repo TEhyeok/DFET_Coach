@@ -370,18 +370,24 @@ private struct NativeTrainerHomeView: View {
   }
 
   var body: some View {
-    Group {
-      if #available(iOS 16.0, *) {
-        NavigationSplitView {
-          sidebar
-        } detail: {
-          detail
-        }
+    GeometryReader { geometry in
+      if geometry.size.width < 760 {
+        compactHome
       } else {
-        HStack(spacing: 0) {
-          sidebar.frame(width: 286)
-          Divider()
-          detail
+        Group {
+          if #available(iOS 16.0, *) {
+            NavigationSplitView {
+              sidebar
+            } detail: {
+              detail
+            }
+          } else {
+            HStack(spacing: 0) {
+              sidebar.frame(width: 286)
+              Divider()
+              detail
+            }
+          }
         }
       }
     }
@@ -392,6 +398,94 @@ private struct NativeTrainerHomeView: View {
     } message: {
       Text("\(pendingFeatureTitle)은 다음 단계에서 실제 데이터와 저장 흐름을 연결합니다.")
     }
+  }
+
+  private var compactHome: some View {
+    VStack(spacing: 0) {
+      compactHeader
+      detail
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      compactTabBar
+    }
+    .background(NativeHealthColor.background.ignoresSafeArea())
+  }
+
+  private var compactHeader: some View {
+    HStack(spacing: 10) {
+      NativeDFETLogoMark(size: 32)
+      VStack(alignment: .leading, spacing: 1) {
+        Text("D-FET Trainer")
+          .font(.system(size: 15, weight: .bold, design: .rounded))
+        Text(selectedRoute.title)
+          .font(.system(size: 11, weight: .semibold))
+          .foregroundStyle(Color.white.opacity(0.68))
+      }
+      .foregroundStyle(Color.white)
+
+      Spacer(minLength: 8)
+
+      Button(action: onClose) {
+        Image(systemName: "xmark")
+          .font(.system(size: 13, weight: .bold))
+          .foregroundStyle(Color.white.opacity(0.82))
+          .frame(width: 34, height: 34)
+          .background(Color.white.opacity(0.10), in: Circle())
+      }
+      .buttonStyle(.plain)
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 10)
+    .background(
+      LinearGradient(
+        colors: [NativeHealthColor.sidebarNavy, NativeHealthColor.deepBlue],
+        startPoint: .leading,
+        endPoint: .trailing
+      )
+    )
+  }
+
+  private var compactTabBar: some View {
+    HStack(spacing: 2) {
+      ForEach(compactRoutes) { route in
+        Button {
+          if route == .soap {
+            requestedSoapMode = "SOAP"
+          }
+          selectedRoute = route
+        } label: {
+          VStack(spacing: 4) {
+            Image(systemName: route.symbol)
+              .font(.system(size: 17, weight: .semibold))
+            Text(route.title)
+              .font(.system(size: 9, weight: selectedRoute == route ? .bold : .semibold))
+              .lineLimit(1)
+              .minimumScaleFactor(0.78)
+          }
+          .foregroundStyle(selectedRoute == route ? NativeHealthColor.blue : NativeHealthColor.secondaryText)
+          .frame(maxWidth: .infinity)
+          .frame(height: 54)
+          .background(
+            selectedRoute == route ? NativeHealthColor.blue.opacity(0.10) : Color.clear,
+            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+          )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(route.title)
+      }
+    }
+    .padding(.horizontal, 8)
+    .padding(.top, 6)
+    .background(Color.white)
+    .overlay(
+      Rectangle()
+        .fill(NativeHealthColor.border)
+        .frame(height: 1),
+      alignment: .top
+    )
+  }
+
+  private var compactRoutes: [NativeTrainerRoute] {
+    [.sessionBoard, .members, .soap, .reports, .settings]
   }
 
   private var sidebar: some View {
@@ -763,7 +857,7 @@ private struct NativeTrainerSessionBoardDetail: View {
   }
 
   private var dashboardHeader: some View {
-    HStack(alignment: .center, spacing: 16) {
+    VStack(alignment: .leading, spacing: 12) {
       VStack(alignment: .leading, spacing: 5) {
         Text("홈 대시보드")
           .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -773,12 +867,12 @@ private struct NativeTrainerSessionBoardDetail: View {
           .foregroundStyle(NativeHealthColor.secondaryText)
       }
 
-      Spacer()
-
-      HStack(spacing: 10) {
-        NativeStatusCapsule(text: "오늘 0건", color: NativeHealthColor.blue)
-        NativeStatusCapsule(text: "회원 \(members.count)명", color: NativeHealthColor.purple)
-        NativeStatusCapsule(text: "SOAP 0건", color: NativeHealthColor.green)
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 10) {
+          NativeStatusCapsule(text: "오늘 0건", color: NativeHealthColor.blue)
+          NativeStatusCapsule(text: "회원 \(members.count)명", color: NativeHealthColor.purple)
+          NativeStatusCapsule(text: "SOAP 0건", color: NativeHealthColor.green)
+        }
       }
     }
   }

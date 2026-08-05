@@ -58,7 +58,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('장 축 신호 선택'));
     await tester.pump();
 
-    expect(find.text('SELECTED / DIVERSITY LOOP'), findsOneWidget);
+    expect(find.text('SELECTED / MICROBE FIELD'), findsOneWidget);
     expect(find.bySemanticsLabel('장 축 측정 중 신호'), findsAtLeastNWidgets(1));
     expect(tester.takeException(), isNull);
     semantics.dispose();

@@ -49,7 +49,7 @@ class _DesignLabAtomsScreenState extends State<DesignLabAtomsScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                '아이콘이 아니라 측정 신호입니다. 끊긴 프레임, 교정 눈금, 시작점과 종단 노드가 모든 기능의 공통 문법이 됩니다.',
+                '축의 특징을 먼저 읽고, 측정 상태를 이어서 봅니다. 동작 궤적, 영양 유입, 미생물 군집, 혈액 파형이 기능의 고유 신호가 됩니다.',
                 style: TextStyle(
                   color: colors.textSecondary,
                   fontSize: 13,
@@ -169,7 +169,7 @@ class _DesignLabAtomsScreenState extends State<DesignLabAtomsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'DFET VISUAL INSTRUMENT / REV.01',
+                'DFET VISUAL INSTRUMENT / REV.02',
                 style: TextStyle(
                   color: colors.textTertiary,
                   fontSize: 9,
@@ -610,10 +610,10 @@ String _axisKorean(DfetAxis axis) => switch (axis) {
     };
 
 String _axisEnglish(DfetAxis axis) => switch (axis) {
-      DfetAxis.motion => 'FORCE VECTOR',
-      DfetAxis.nutrition => 'INTAKE CHANNEL',
-      DfetAxis.gut => 'DIVERSITY LOOP',
-      DfetAxis.blood => 'SAMPLE TRACE',
+      DfetAxis.motion => 'MOTION TRACE',
+      DfetAxis.nutrition => 'NUTRIENT INTAKE',
+      DfetAxis.gut => 'MICROBE FIELD',
+      DfetAxis.blood => 'HEMO PULSE',
     };
 
 String _stateCode(DfetSignalState state) => switch (state) {

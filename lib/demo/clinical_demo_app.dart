@@ -24,6 +24,7 @@ import '../theme/tokens.dart';
 import '../widgets/app_card.dart';
 import '../widgets/clinical/gut_health_summary_card.dart';
 import 'clinical_demo_data.dart';
+import 'design_lab_atoms_screen.dart';
 
 const clinicalDemoMode = bool.fromEnvironment(
   'DFET_CLINICAL_DEMO',
@@ -137,6 +138,10 @@ GoRouter _buildRouter() {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/demo/design-lab/atoms',
+        builder: (_, __) => const DesignLabAtomsScreen(),
       ),
       GoRoute(
         path: '/gut/:reportId',
@@ -271,6 +276,13 @@ class _ClinicalDemoShell extends ConsumerWidget {
           ],
         ),
         actions: [
+          TextButton(
+            onPressed: () => context.push('/demo/design-lab/atoms'),
+            child: const Text(
+              'LAB 01',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+            ),
+          ),
           IconButton(
             tooltip: isDark ? '라이트 모드' : '다크 모드',
             onPressed: () =>

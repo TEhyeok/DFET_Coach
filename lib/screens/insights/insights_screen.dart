@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
+import 'components/action_recommendation_card.dart';
 import 'components/health_timeline.dart';
 import 'components/integrated_score_card.dart';
+import 'components/progress_efficacy_card.dart';
 
 class InsightsScreen extends ConsumerWidget {
   const InsightsScreen({super.key});
@@ -33,11 +35,14 @@ class _InsightsHub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final latest = snapshots.first;
+    final previous = snapshots.length > 1 ? snapshots[1] : null;
+    final actions = latest.insights.where((insight) => insight.action != null);
+    final primaryAction = actions.isEmpty ? null : actions.first;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
         Text(
-          '통합 인사이트',
+          '나의 건강 변화',
           style: TextStyle(
             color: context.wellness.textPrimary,
             fontSize: 24,
@@ -46,10 +51,24 @@ class _InsightsHub extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '운동·식단·장·혈액을 동일 기준시점으로 비교합니다.',
+          '좋아진 흐름을 확인하고 오늘 할 수 있는 한 가지를 이어가세요.',
           style: TextStyle(color: context.wellness.textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 16),
+        ProgressEfficacyCard(
+          current: latest,
+          previous: previous,
+          onTap: () => context.push('/insights/${latest.snapshotId}'),
+        ),
+        if (primaryAction != null) ...[
+          const SizedBox(height: 20),
+          _sectionTitle(context, '오늘 이어갈 한 가지'),
+          const SizedBox(height: 10),
+          ActionRecommendationCard(insight: primaryAction),
+        ],
+        const SizedBox(height: 20),
+        _sectionTitle(context, '현재 4축 균형'),
+        const SizedBox(height: 10),
         IntegratedScoreCard(
           snapshot: latest,
           onTap: () => context.push('/insights/${latest.snapshotId}'),
@@ -66,6 +85,17 @@ class _InsightsHub extends StatelessWidget {
         const SizedBox(height: 12),
         HealthTimeline(snapshots: snapshots),
       ],
+    );
+  }
+
+  Widget _sectionTitle(BuildContext context, String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: context.wellness.textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+      ),
     );
   }
 }

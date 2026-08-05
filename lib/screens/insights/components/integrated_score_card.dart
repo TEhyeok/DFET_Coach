@@ -67,6 +67,38 @@ class IntegratedScoreCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 9),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final axis in const [
+                      'fitness',
+                      'diet',
+                      'gut',
+                      'blood',
+                    ])
+                      if (snapshot.axes[axis] != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.wellness.bgSubtle,
+                            borderRadius: WellnessRadius.chip,
+                          ),
+                          child: Text(
+                            '${_axisLabel(axis)} ${snapshot.axes[axis]!.round()}',
+                            style: TextStyle(
+                              color: context.wellness.textSecondary,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                  ],
+                ),
               ],
             ),
           ),

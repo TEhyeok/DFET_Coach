@@ -342,6 +342,10 @@ final clinicalDemoSnapshots = <HealthSnapshot>[
         action: {
           'title': '식이섬유 루틴 유지',
           'description': '통곡물과 채소를 하루 두 끼 이상 유지해 다음 검사와 비교해 보세요.',
+          'duration': '10분 준비',
+          'impact': '식단 · 장',
+          'checkIn': '오늘 저녁',
+          'ctaLabel': '오늘 실천 시작',
         },
       ),
       HealthInsight(
@@ -351,6 +355,10 @@ final clinicalDemoSnapshots = <HealthSnapshot>[
         action: {
           'title': '주 3회 유산소 권장',
           'description': '중강도 유산소 운동을 30분씩 기록하고 혈액 추이와 함께 확인하세요.',
+          'duration': '30분',
+          'impact': '운동 · 혈액',
+          'checkIn': '이번 주 3회',
+          'ctaLabel': '운동 계획에 추가',
         },
       ),
     ],

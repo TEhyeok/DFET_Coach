@@ -5,11 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> pumpClinicalDemo(WidgetTester tester) async {
-  tester.view.physicalSize = const Size(390, 844);
+Future<void> pumpClinicalDemo(
+  WidgetTester tester, {
+  Size size = const Size(390, 844),
+  double textScaleFactor = 1,
+}) async {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
+  tester.platformDispatcher.textScaleFactorTestValue = textScaleFactor;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(
+    tester.platformDispatcher.clearTextScaleFactorTestValue,
+  );
 
   await tester.pumpWidget(
     ProviderScope(
@@ -25,6 +33,9 @@ void main() {
 
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
+  setUp(() {
     SharedPreferences.setMockInitialValues({'theme_mode': 'light'});
   });
 
@@ -33,7 +44,7 @@ void main() {
 
     expect(find.text('D-FET 통합 케어'), findsOneWidget);
     expect(find.text('통합 케어 회원'), findsOneWidget);
-    expect(find.text('4축 통합 건강'), findsOneWidget);
+    expect(find.text('통합 건강 +9.0'), findsOneWidget);
 
     await tester.tap(find.text('장 건강').last);
     await tester.pumpAndSettle();
@@ -47,8 +58,55 @@ void main() {
 
     await tester.tap(find.text('인사이트').last);
     await tester.pumpAndSettle();
-    expect(find.text('통합 인사이트'), findsOneWidget);
+    expect(find.text('나의 건강 변화'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('건강 타임라인'),
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('건강 타임라인'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('이전 대비 변화와 오늘 행동 완료 피드백을 제공한다', (tester) async {
+    await pumpClinicalDemo(tester);
+
+    expect(find.text('통합 건강 +9.0'), findsOneWidget);
+    expect(find.text('4개 축 모두 상승 흐름이에요'), findsOneWidget);
+    expect(find.text('오늘의 한 가지'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('오늘 실천 시작'),
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('오늘 실천 시작'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('오늘의 한 걸음 완료'), findsOneWidget);
+    expect(find.text('완료 취소'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    await pumpClinicalDemo(tester);
+    expect(find.text('오늘의 한 걸음 완료'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('320px와 글자 배율 1.3에서도 효능감 카드가 넘치지 않는다', (tester) async {
+    await pumpClinicalDemo(
+      tester,
+      size: const Size(320, 780),
+      textScaleFactor: 1.3,
+    );
+
+    expect(find.text('통합 건강 +9.0'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('오늘 실천 시작'),
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('오늘 실천 시작'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -96,6 +154,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('인사이트').last);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('4축 통합 건강'),
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('4축 통합 건강'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -105,11 +168,11 @@ void main() {
     );
     expect(find.text('이전 스냅샷 대비'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('축간 인사이트'),
+      find.text('데이터에서 발견한 흐름'),
       260,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('축간 인사이트'), findsOneWidget);
+    expect(find.text('데이터에서 발견한 흐름'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../design_system/d_fet_axis_glyph.dart';
+import '../../design_system/d_fet_axis_icon.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
@@ -36,13 +38,20 @@ class _BloodHub extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
-        Text(
-          '혈액 POCT',
-          style: TextStyle(
-            color: context.wellness.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '혈액 POCT',
+                style: TextStyle(
+                  color: context.wellness.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const DfetAxisAssetIcon(axis: DfetAxis.blood, size: 46),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -81,9 +90,9 @@ class _BloodHub extends StatelessWidget {
           for (final report in reports.skip(1))
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(
-                Icons.bloodtype_outlined,
-                color: context.wellness.primary,
+              leading: const DfetAxisAssetIcon(
+                axis: DfetAxis.blood,
+                size: 34,
               ),
               title: Text(DateFormat('yyyy.MM.dd').format(report.sampledAt)),
               subtitle: Text(
@@ -113,10 +122,10 @@ class _BloodEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.bloodtype_outlined,
+            const DfetAxisAssetIcon(
+              axis: DfetAxis.blood,
               size: 54,
-              color: context.wellness.textTertiary,
+              active: false,
             ),
             const SizedBox(height: 14),
             Text(

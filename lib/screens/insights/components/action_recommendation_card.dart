@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_axis_icon.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -106,17 +108,19 @@ class _ActionRecommendationCardState extends State<ActionRecommendationCard> {
                 ),
               ),
             ],
-            if (!_completed &&
-                [duration, impact, checkIn].any((value) => value != null)) ...[
+            if (impact != null) ...[
               const SizedBox(height: 12),
+              _AxisImpactChip(label: impact),
+            ],
+            if (!_completed &&
+                [duration, checkIn].any((value) => value != null)) ...[
+              const SizedBox(height: 7),
               Wrap(
                 spacing: 7,
                 runSpacing: 7,
                 children: [
                   if (duration != null)
                     _ActionChip(icon: Icons.timer_outlined, label: duration),
-                  if (impact != null)
-                    _ActionChip(icon: Icons.hub_outlined, label: impact),
                   if (checkIn != null)
                     _ActionChip(
                         icon: Icons.event_available_outlined, label: checkIn),
@@ -170,6 +174,49 @@ class _ActionRecommendationCardState extends State<ActionRecommendationCard> {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_storageKey, nextValue);
   }
+}
+
+class _AxisImpactChip extends StatelessWidget {
+  const _AxisImpactChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final axes = _axesForLabel(label);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: context.wellness.bgSubtle,
+        borderRadius: WellnessRadius.chip,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < axes.length; index++) ...[
+            if (index > 0) const SizedBox(width: 3),
+            DfetAxisAssetIcon(axis: axes[index], size: 17),
+          ],
+          if (axes.isNotEmpty) const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: context.wellness.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static List<DfetAxis> _axesForLabel(String label) => [
+        if (label.contains('운동')) DfetAxis.motion,
+        if (label.contains('식단')) DfetAxis.nutrition,
+        if (label.contains('장')) DfetAxis.gut,
+        if (label.contains('혈액')) DfetAxis.blood,
+      ];
 }
 
 class _ActionChip extends StatelessWidget {

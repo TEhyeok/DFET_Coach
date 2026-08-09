@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../design_system/d_fet_axis_glyph.dart';
+import '../design_system/d_fet_axis_icon.dart';
 import '../screens/blood/blood_expert_screen.dart';
 import '../screens/blood/blood_report_screen.dart';
 import '../screens/blood/blood_screen.dart';
@@ -240,8 +242,16 @@ class _ClinicalDemoShell extends ConsumerWidget {
 
   static const destinations = [
     NavigationDestination(icon: Icon(Icons.home_rounded), label: '통합 홈'),
-    NavigationDestination(icon: Icon(Icons.eco_rounded), label: '장 건강'),
-    NavigationDestination(icon: Icon(Icons.bloodtype_rounded), label: '혈액'),
+    NavigationDestination(
+      icon: DfetAxisAssetIcon(axis: DfetAxis.gut, size: 28, active: false),
+      selectedIcon: DfetAxisAssetIcon(axis: DfetAxis.gut, size: 28),
+      label: '장 건강',
+    ),
+    NavigationDestination(
+      icon: DfetAxisAssetIcon(axis: DfetAxis.blood, size: 28, active: false),
+      selectedIcon: DfetAxisAssetIcon(axis: DfetAxis.blood, size: 28),
+      label: '혈액',
+    ),
     NavigationDestination(icon: Icon(Icons.hub_rounded), label: '인사이트'),
   ];
 

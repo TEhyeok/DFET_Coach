@@ -102,6 +102,7 @@ flutter:
     - assets/image/
     - assets/images/
     - assets/images/onboarding/
+    - assets/images/axis_icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

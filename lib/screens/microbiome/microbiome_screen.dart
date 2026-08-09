@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
+import '../../design_system/d_fet_axis_glyph.dart';
+import '../../design_system/d_fet_axis_icon.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../state/user_state.dart';
@@ -65,8 +68,10 @@ class _GutReportHub extends StatelessWidget {
           for (final report in reports.skip(1))
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading:
-                  Icon(Icons.biotech_rounded, color: context.wellness.primary),
+              leading: const DfetAxisAssetIcon(
+                axis: DfetAxis.gut,
+                size: 34,
+              ),
               title: Text(DateFormat('yyyy.MM.dd').format(report.sampledAt)),
               subtitle: Text(report.overall.label),
               trailing: const Icon(Icons.chevron_right_rounded),
@@ -185,7 +190,7 @@ class _GutReportBody extends ConsumerWidget {
             ],
           ),
         ),
-        Icon(Icons.biotech_rounded, color: context.wellness.primary),
+        const DfetAxisAssetIcon(axis: DfetAxis.gut, size: 46),
       ],
     );
   }
@@ -217,8 +222,11 @@ class _ReportEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.biotech_outlined,
-                size: 54, color: context.wellness.textTertiary),
+            const DfetAxisAssetIcon(
+              axis: DfetAxis.gut,
+              size: 54,
+              active: false,
+            ),
             const SizedBox(height: 14),
             Text(message,
                 textAlign: TextAlign.center,

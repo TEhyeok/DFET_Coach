@@ -75,12 +75,13 @@ void main() {
     expect(find.text('4개 축 모두 상승 흐름이에요'), findsOneWidget);
     expect(find.text('오늘의 한 가지'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('오늘 실천 시작'),
-      260,
-      scrollable: find.byType(Scrollable).first,
+    final actionButton = find.text('오늘 실천 시작');
+    await Scrollable.ensureVisible(
+      tester.element(actionButton),
+      alignment: 0.55,
     );
-    await tester.tap(find.text('오늘 실천 시작'));
+    await tester.pumpAndSettle();
+    await tester.tap(actionButton);
     await tester.pumpAndSettle();
 
     expect(find.text('오늘의 한 걸음 완료'), findsOneWidget);

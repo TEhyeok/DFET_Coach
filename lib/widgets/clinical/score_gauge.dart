@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+
+import '../../theme/d_fet_typography.dart';
 import '../../theme/tokens.dart';
 
 class ScoreGauge extends StatelessWidget {
@@ -17,8 +19,8 @@ class ScoreGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textScale = MediaQuery.textScalerOf(context).scale(1);
-    final accessibleHeight = size * 0.72 +
-        (textScale > 1 ? (textScale - 1).clamp(0, 1) * 64 : 0);
+    final accessibleHeight =
+        size * 0.72 + (textScale > 1 ? (textScale - 1).clamp(0, 1) * 64 : 0);
     final color = score == null
         ? context.wellness.textTertiary
         : context.wellness.primary;
@@ -45,10 +47,12 @@ class ScoreGauge extends StatelessWidget {
                 children: [
                   Text(
                     score?.round().toString() ?? '--',
-                    style: TextStyle(
+                    style: DfetTypography.dataStyle(
                       color: context.wellness.textPrimary,
                       fontSize: size * 0.23,
                       fontWeight: FontWeight.w800,
+                      height: 1,
+                      letterSpacing: -0.4,
                     ),
                   ),
                   Text(

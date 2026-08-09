@@ -2,7 +2,7 @@
 
 > 조사일: 2026-08-09  
 > 대상: Flutter 회원 앱, 트레이너 iPad, Next.js 관리자 웹  
-> 상태: 디자인 권고안 — 폰트 파일은 아직 제품에 번들하지 않음
+> 상태: Slice 1 구현 완료 — 공식 파일·OFL 번들 및 Flutter 테마 적용
 
 ## 1. 결론
 
@@ -109,20 +109,20 @@ Flutter의 `FontWeight`는 가장 가까운 Variable 축 값으로 매핑하며,
 - 숫자와 단위를 같은 크기로 쓰지 않는다. 단위는 숫자의 40–55% 크기로 낮춘다.
 - 범위 `12–35 U/L`에는 하이픈 대신 en dash를 사용한다.
 
-## 5. 구현 제안
+## 5. 구현 현황
 
-디자인 승인 후 다음 순서로 적용한다.
+2026-08-09 기준 적용 상태는 다음과 같다.
 
-1. 공식 저장소의 고정 버전에서 파일과 OFL 라이선스를 가져온다.
-2. `assets/fonts/`에 다음 파일을 둔다.
+1. 공식 저장소의 고정 버전에서 파일과 OFL 라이선스를 가져왔다.
+2. `assets/fonts/`에 다음 파일을 번들했다.
    - `SUIT-Variable.ttf`
-   - `WantedSansStdVariable.ttf`
-3. `pubspec.yaml`에 family와 weight 범위를 등록한다.
-4. Material/Cupertino의 기본 TextTheme을 SUIT로 통일한다.
-5. `MetricValue`, `ScoreGauge`, `BiomarkerRow`만 Wanted Sans Std를 사용한다.
-6. `GoogleFonts.outfitTextTheme()` 전역 의존을 제거한다.
-7. 라이트·다크, iOS·Android, 320px·글자 2.0 골든 테스트를 갱신한다.
-8. IPA/APK 용량 전후를 기록한다.
+   - `WantedSansStd-Variable.ttf`
+3. `pubspec.yaml`에 `SUIT`, `WantedSansStd` family를 등록했다.
+4. Material/Cupertino의 기본 TextTheme을 SUIT로 통일했다.
+5. `ScoreGauge`, `BiomarkerRow`, 4축 변화값은 Wanted Sans Std와 고정폭 숫자를 사용한다.
+6. 회원 앱의 `GoogleFonts.outfitTextTheme()` 전역 의존을 제거했다. 관리자 테마의 기존 Google Fonts 사용은 별도 이관 범위로 유지한다.
+7. 라이트·다크 골든과 320px·글자 2.0 overflow/semantics 테스트를 갱신했다.
+8. IPA/APK 용량 전후 측정은 출시 빌드 최적화 단계에서 기록한다.
 
 ## 6. 인수 기준
 
@@ -139,3 +139,5 @@ Flutter의 `FontWeight`는 가장 가까운 Variable 축 값으로 매핑하며,
 - **보류:** Wanted Sans 한글 전체 적용
 - **제외:** Outfit 전역 TextTheme 유지
 - **대안:** 한 가족만 허용해야 하면 SUIT Variable 단독 사용
+
+고정한 원본 버전과 라이선스 경로는 `assets/fonts/README.md`를 기준으로 한다.

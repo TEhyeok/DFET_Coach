@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'd_fet_typography.dart';
 import 'tokens.dart';
 
 /// 라이트 테마 (Admin Web 등에서 사용)
 ThemeData appThemeLight() {
   final base = ThemeData.light(useMaterial3: true);
-  final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(
+  final textTheme = DfetTypography.applyUiFont(
+    base.textTheme,
     bodyColor: AppColorsLight.textBody,
     displayColor: AppColorsLight.textBody,
   );
@@ -62,7 +64,8 @@ ThemeData appThemeLight() {
 /// 다크 테마 (모바일 앱 메인 테마)
 ThemeData appThemeDark() {
   final base = ThemeData.dark(useMaterial3: true);
-  final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(
+  final textTheme = DfetTypography.applyUiFont(
+    base.textTheme,
     bodyColor: WellnessColorsDark.textPrimary,
     displayColor: WellnessColorsDark.textPrimary,
   );

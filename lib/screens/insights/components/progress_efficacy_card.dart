@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../design_system/d_fet_axis_glyph.dart';
-import '../../../design_system/d_fet_axis_icon.dart';
+import '../../../design_system/d_fet_signal_rail.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -141,16 +141,17 @@ class ProgressEfficacyCard extends StatelessWidget {
               ),
             ),
             if (changes.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 7,
-                runSpacing: 7,
-                children: [
+              const SizedBox(height: 14),
+              DfetSignalRail(
+                items: [
                   for (final change in changes)
-                    _AxisDeltaChip(
+                    DfetSignalItem(
                       axis: change.axis,
                       label: change.label,
-                      delta: change.delta,
+                      value:
+                          '${change.delta > 0 ? '+' : ''}${change.delta.toStringAsFixed(0)}',
+                      semanticLabel:
+                          '${change.label} 축, ${change.delta > 0.05 ? '${change.delta.toStringAsFixed(0)}점 상승' : change.delta < -0.05 ? '${change.delta.abs().toStringAsFixed(0)}점 하락' : '변화 없음'}',
                     ),
                 ],
               ),
@@ -210,44 +211,5 @@ class ProgressEfficacyCard extends StatelessWidget {
         ? '통합 점수 비교 준비 중'
         : '통합 점수 변화 ${delta.toStringAsFixed(1)}';
     return '$change, $totalCount개 축 중 $improvedCount개 상승';
-  }
-}
-
-class _AxisDeltaChip extends StatelessWidget {
-  const _AxisDeltaChip({
-    required this.axis,
-    required this.label,
-    required this.delta,
-  });
-
-  final DfetAxis axis;
-  final String label;
-  final double delta;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = DfetAxisPalette.color(context, axis);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: DfetAxisPalette.surface(context, axis),
-        borderRadius: WellnessRadius.chip,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DfetAxisAssetIcon(axis: axis, size: 18),
-          const SizedBox(width: 5),
-          Text(
-            '$label ${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}',
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

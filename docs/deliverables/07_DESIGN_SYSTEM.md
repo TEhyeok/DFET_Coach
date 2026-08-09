@@ -15,6 +15,20 @@
 
 light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `MaterialApp.themeMode`에 그대로 전달해 OS 밝기 변화를 따른다.
 
+## 타이포그래피
+
+앱이 오프라인이어도 iOS와 Android에서 같은 자형을 사용하도록 두 글꼴을 앱 자산으로 고정한다.
+
+| 역할 | 패밀리 | 적용 |
+|---|---|---|
+| UI | `SUIT` | 한글 제목·본문·버튼·탭·설명, Material/Cupertino 기본 테마 |
+| Data | `WantedSansStd` | 점수·변화량·바이오마커 코드·검사값·단위 |
+
+- 데이터 숫자는 `DfetTypography.dataStyle()`을 사용하고 표·비교값에는 `FontFeature.tabularFigures()`를 유지한다.
+- `ScoreGauge`와 `BiomarkerRow`는 Data 패밀리를 사용한다.
+- 원본과 OFL 고지는 `assets/fonts/README.md`와 `assets/fonts/licenses/`에 보존한다.
+- 화면에서 `fontFamily` 문자열을 새로 만들지 않고 `DfetTypography`를 단일 기준으로 사용한다.
+
 ## 임상 컴포넌트
 
 | 컴포넌트 | 사용 | 상태 규칙 |
@@ -37,6 +51,15 @@ light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `Mater
 | `CrossInsightCard` | 축간 관계 | 인과 표현 금지 |
 | `ActionRecommendationCard` | 행동 제안 | 승인 정책 action만 표시 |
 | `HealthTimeline` | 과거 snapshot | 기준시점 순 정렬 |
+| `DfetSignalRail` | 4축 변화·상태 연결 | 축별 심볼·색·수치·semantics, 빈 입력은 숨김 |
+
+## Signal Path 규칙
+
+- 운동·식단·장·혈액은 각각 독립된 축별 색과 전용 자산 아이콘을 유지한다.
+- `DfetSignalRail`은 네 축을 선으로 연결해 하나의 케어 흐름으로 보여준다.
+- 색만으로 상태를 전달하지 않고 축 이름, 변화값, 접근성 문장을 함께 제공한다.
+- 320px 미만에서는 노드가 46px, 380px 미만에서는 52px, 그 이상은 58px를 기본값으로 사용한다.
+- 데이터가 없으면 값을 생성하지 않고 컴포넌트를 숨긴다. 축 데이터가 미완성인 경우 `active: false`와 상태 문구를 전달한다.
 
 ## 사용자 효능감 UX
 
@@ -56,5 +79,6 @@ light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `Mater
 - 글자 배율: 1.0, 1.3, 2.0에서 overflow가 없어야 한다.
 - 긴 식별자·Genus·정책명은 ellipsis 또는 가로 스크롤을 사용한다.
 - 색만으로 상태를 전달하지 않고 label과 아이콘을 함께 둔다.
+- 기본 텍스트 토큰은 `bgRoot`, `bgCard`, `bgSubtle` 각각에서 WCAG AA 4.5:1 이상을 자동 테스트한다.
 - 점수는 참고용/비진단 문구와 정책 버전을 함께 표시한다.
 - 관리자 표는 작은 화면에서 `.table-wrap` 가로 스크롤을 사용한다.

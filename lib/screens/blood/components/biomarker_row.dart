@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/clinical_reports.dart';
+import '../../../theme/d_fet_typography.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/clinical/range_bar.dart';
 
@@ -25,17 +26,20 @@ class BiomarkerRow extends StatelessWidget {
               SizedBox(
                 width: 68,
                 child: Text(marker.code,
-                    style: TextStyle(
+                    style: DfetTypography.dataStyle(
                       color: context.wellness.textPrimary,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     )),
               ),
               Expanded(
                 child: Text(
                   '${_format(marker.value)} ${marker.unit}',
-                  style: TextStyle(
-                      color: context.wellness.textPrimary,
-                      fontWeight: FontWeight.w600),
+                  style: DfetTypography.dataStyle(
+                    color: context.wellness.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Container(

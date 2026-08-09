@@ -42,9 +42,9 @@ void main() {
   testWidgets('통합 케어 데모에서 장·혈액·인사이트 화면을 전환한다', (tester) async {
     await pumpClinicalDemo(tester);
 
-    expect(find.text('D-FET 통합 케어'), findsOneWidget);
-    expect(find.text('통합 케어 회원'), findsOneWidget);
-    expect(find.text('통합 건강 +9.0'), findsOneWidget);
+    expect(find.text('오늘의 신호'), findsOneWidget);
+    expect(find.textContaining('좋아졌어요'), findsOneWidget);
+    expect(find.text('+12'), findsOneWidget);
 
     await tester.tap(find.text('장 건강').last);
     await tester.pumpAndSettle();
@@ -71,11 +71,11 @@ void main() {
   testWidgets('이전 대비 변화와 오늘 행동 완료 피드백을 제공한다', (tester) async {
     await pumpClinicalDemo(tester);
 
-    expect(find.text('통합 건강 +9.0'), findsOneWidget);
-    expect(find.text('4개 축 모두 상승 흐름이에요'), findsOneWidget);
+    expect(find.textContaining('좋아졌어요'), findsOneWidget);
+    expect(find.text('+12'), findsOneWidget);
     expect(find.text('오늘의 한 가지'), findsOneWidget);
 
-    final actionButton = find.text('오늘 실천 시작');
+    final actionButton = find.text('완료 표시');
     await Scrollable.ensureVisible(
       tester.element(actionButton),
       alignment: 0.55,
@@ -94,20 +94,20 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('320px와 글자 배율 1.3에서도 효능감 카드가 넘치지 않는다', (tester) async {
+  testWidgets('320px와 글자 배율 2.0에서도 Today Signal이 넘치지 않는다', (tester) async {
     await pumpClinicalDemo(
       tester,
       size: const Size(320, 780),
-      textScaleFactor: 1.3,
+      textScaleFactor: 2,
     );
 
-    expect(find.text('통합 건강 +9.0'), findsOneWidget);
+    expect(find.textContaining('좋아졌어요'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('오늘 실천 시작'),
+      find.text('완료 표시'),
       220,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('오늘 실천 시작'), findsOneWidget);
+    expect(find.text('완료 표시'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

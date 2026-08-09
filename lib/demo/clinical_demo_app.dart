@@ -8,12 +8,9 @@ import '../screens/blood/blood_expert_screen.dart';
 import '../screens/blood/blood_report_screen.dart';
 import '../screens/blood/blood_screen.dart';
 import '../screens/blood/blood_trends_screen.dart';
-import '../screens/blood/components/blood_summary_card.dart';
+import '../screens/dashboard/today_signal_screen.dart';
 import '../screens/insights/insight_detail_screen.dart';
 import '../screens/insights/insights_screen.dart';
-import '../screens/insights/components/integrated_score_card.dart';
-import '../screens/insights/components/action_recommendation_card.dart';
-import '../screens/insights/components/progress_efficacy_card.dart';
 import '../screens/microbiome/microbiome_expert_screen.dart';
 import '../screens/microbiome/microbiome_metric_screen.dart';
 import '../screens/microbiome/microbiome_screen.dart';
@@ -23,8 +20,6 @@ import '../state/theme_provider.dart';
 import '../state/user_state.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
-import '../widgets/app_card.dart';
-import '../widgets/clinical/gut_health_summary_card.dart';
 import 'clinical_demo_data.dart';
 import 'design_lab_atoms_screen.dart';
 
@@ -258,51 +253,35 @@ class _ClinicalDemoShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isToday = navigationShell.currentIndex == 0;
     return Scaffold(
       backgroundColor: context.wellness.bgRoot,
-      appBar: AppBar(
-        toolbarHeight: 66,
-        backgroundColor: context.wellness.bgRoot,
-        surfaceTintColor: Colors.transparent,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'D-FET 통합 케어',
-              style: TextStyle(
-                color: context.wellness.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
+      appBar: isToday
+          ? null
+          : AppBar(
+              toolbarHeight: 66,
+              backgroundColor: context.wellness.bgRoot,
+              surfaceTintColor: Colors.transparent,
+              title: const Text('D-FET 통합 케어'),
+              actions: [
+                TextButton(
+                  onPressed: () => context.push('/demo/design-lab/atoms'),
+                  child: const Text(
+                    'LAB 01',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+                  ),
+                ),
+                IconButton(
+                  tooltip: isDark ? '라이트 모드' : '다크 모드',
+                  onPressed: () =>
+                      ref.read(themeModeProvider.notifier).toggleTheme(!isDark),
+                  icon: Icon(
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
             ),
-            Text(
-              '합성 데이터 · 운영 DB 미사용',
-              style: TextStyle(
-                color: context.wellness.textSecondary,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.push('/demo/design-lab/atoms'),
-            child: const Text(
-              'LAB 01',
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
-            ),
-          ),
-          IconButton(
-            tooltip: isDark ? '라이트 모드' : '다크 모드',
-            onPressed: () =>
-                ref.read(themeModeProvider.notifier).toggleTheme(!isDark),
-            icon: Icon(
-                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
-          ),
-          const SizedBox(width: 6),
-        ],
-      ),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
@@ -321,146 +300,12 @@ class _ClinicalDemoOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gut = clinicalDemoGutReports.first;
-    final blood = clinicalDemoBloodReports.first;
     final snapshot = clinicalDemoSnapshots.first;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      children: [
-        AppCard(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: context.wellness.primarySubtle,
-                  borderRadius: WellnessRadius.card,
-                ),
-                child: Icon(
-                  Icons.health_and_safety_rounded,
-                  color: context.wellness.primary,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '통합 케어 회원',
-                      style: TextStyle(
-                        color: context.wellness.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '운동 · 식단 · 장내미생물 · 혈액 4축',
-                      style: TextStyle(
-                        color: context.wellness.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: context.wellness.primarySubtle,
-                  borderRadius: WellnessRadius.chip,
-                ),
-                child: Text(
-                  'BOTH',
-                  style: TextStyle(
-                    color: context.wellness.primaryDark,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        ProgressEfficacyCard(
-          current: snapshot,
-          previous: clinicalDemoSnapshots[1],
-          onTap: () => context.push('/insights/${snapshot.snapshotId}'),
-        ),
-        const SizedBox(height: 14),
-        ActionRecommendationCard(insight: snapshot.insights.first),
-        const SizedBox(height: 18),
-        Text(
-          '현재 데이터',
-          style: TextStyle(
-            color: context.wellness.textPrimary,
-            fontSize: 19,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 10),
-        GutHealthSummaryCard(
-          report: gut,
-          onTap: () => context.go('/demo/gut'),
-        ),
-        const SizedBox(height: 10),
-        BloodSummaryCard(
-          report: blood,
-          onTap: () => context.go('/demo/blood'),
-        ),
-        const SizedBox(height: 10),
-        IntegratedScoreCard(
-          snapshot: snapshot,
-          onTap: () => context.push('/insights/${snapshot.snapshotId}'),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          '전문가 리포트',
-          style: TextStyle(
-            color: context.wellness.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 9),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push(
-                  '/gut/${gut.reportId}/expert',
-                ),
-                icon: const Icon(Icons.biotech_rounded),
-                label: const Text('16S 전문가'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push(
-                  '/blood/${blood.reportId}/expert',
-                ),
-                icon: const Icon(Icons.science_rounded),
-                label: const Text('혈액 전문가'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(
-          '화면의 점수와 검사값은 개발·검수용 합성 데이터이며 의료 진단에 사용할 수 없습니다.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: context.wellness.textTertiary,
-            fontSize: 10,
-            height: 1.4,
-          ),
-        ),
-      ],
+    return TodaySignalScreen(
+      current: snapshot,
+      previous: clinicalDemoSnapshots[1],
+      insight: snapshot.insights.first,
+      onOpenInsight: () => context.push('/insights/${snapshot.snapshotId}'),
     );
   }
 }

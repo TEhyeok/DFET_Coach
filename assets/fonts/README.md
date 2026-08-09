@@ -16,3 +16,14 @@
 - License: `licenses/WantedSans-OFL.txt`
 
 Both fonts are pinned to the versions above so the same app build renders the same glyphs offline on iOS and Android.
+
+## Human Signal B typography
+
+- Source: <https://github.com/google/fonts>
+- Commit: `2d85e20401920891efb7cd6272d6339685df2820`
+- `IBM Plex Sans KR`: Korean UI, body, labels (`400`, `500`, `600`, `700`)
+- `Gowun Batang`: Today Signal display headlines (`700`)
+- `IBM Plex Mono`: scores, changes, biomarker codes and units (`600`, `700`)
+- Licenses: `licenses/IBMPlexSansKR-OFL.txt`, `licenses/GowunBatang-OFL.txt`, `licenses/IBMPlexMono-OFL.txt`
+
+These files implement the selected `B · 휴먼 신호` direction and are bundled for identical offline rendering on iOS and Android.

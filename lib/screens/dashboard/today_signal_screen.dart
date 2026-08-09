@@ -334,12 +334,12 @@ class _ChangeHeadline extends StatelessWidget {
               const TextSpan(text: '가 좋아졌어요'),
             ],
           ),
-          style: TextStyle(
+          style: DfetTypography.displayStyle(
             color: context.wellness.textPrimary,
             fontSize: fontSize,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             height: 1.16,
-            letterSpacing: -1.1,
+            letterSpacing: -1.35,
           ),
         ),
       ),
@@ -747,12 +747,12 @@ class _ActionPulsePanelState extends State<_ActionPulsePanel>
                         child: Text(
                           completed ? '오늘 신호를 이었어요' : widget.title,
                           key: ValueKey('title-$completed'),
-                          style: const TextStyle(
+                          style: DfetTypography.displayStyle(
                             color: Colors.white,
                             fontSize: 27,
                             height: 1.18,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.7,
                           ),
                         ),
                       ),

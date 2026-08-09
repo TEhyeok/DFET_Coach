@@ -2,6 +2,7 @@ import 'package:dfet_coach/demo/clinical_demo_data.dart';
 import 'package:dfet_coach/screens/dashboard.dart';
 import 'package:dfet_coach/state/clinical_state.dart';
 import 'package:dfet_coach/theme/app_theme.dart';
+import 'package:dfet_coach/theme/d_fet_typography.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -43,6 +44,8 @@ void main() {
     expect(find.text('오늘의 신호'), findsOneWidget);
     expect(find.textContaining('4개가 좋아졌어요'), findsOneWidget);
     expect(find.text('+12'), findsOneWidget);
+    final headline = tester.widget<Text>(find.textContaining('4개가 좋아졌어요'));
+    expect(headline.style?.fontFamily, DfetTypography.displayFontFamily);
 
     await tester.tap(find.text('운동'));
     await tester.pumpAndSettle();

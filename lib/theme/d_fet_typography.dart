@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 abstract final class DfetTypography {
-  static const uiFontFamily = 'SUIT';
-  static const dataFontFamily = 'WantedSansStd';
+  static const uiFontFamily = 'IBMPlexSansKR';
+  static const displayFontFamily = 'GowunBatang';
+  static const dataFontFamily = 'IBMPlexMono';
 
   static const tabularFigures = <FontFeature>[
     FontFeature.tabularFigures(),
@@ -17,6 +18,23 @@ abstract final class DfetTypography {
       fontFamily: uiFontFamily,
       bodyColor: bodyColor,
       displayColor: displayColor,
+    );
+  }
+
+  static TextStyle displayStyle({
+    required Color color,
+    required double fontSize,
+    FontWeight fontWeight = FontWeight.w700,
+    double? height,
+    double? letterSpacing,
+  }) {
+    return TextStyle(
+      color: color,
+      fontFamily: displayFontFamily,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      height: height,
+      letterSpacing: letterSpacing,
     );
   }
 

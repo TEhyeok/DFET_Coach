@@ -23,6 +23,7 @@ import '../core/utils/app_logger.dart';
 import '../services/coaching_correlation_service.dart';
 import '../state/workout_metadata_state.dart';
 import '../utils/responsive_layout.dart';
+import 'dashboard/today_signal_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -44,6 +45,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final snapshotsState = ref.watch(healthSnapshotsProvider);
+    if (snapshotsState.isLoading) {
+      return ColoredBox(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? context.wellness.bgRoot
+            : const Color(0xFFFBF8F1),
+        child: Center(
+          child: CupertinoActivityIndicator(
+            color: context.wellness.textPrimary,
+          ),
+        ),
+      );
+    }
+
+    final snapshots = snapshotsState.valueOrNull;
+    if (snapshots != null &&
+        snapshots.length > 1 &&
+        snapshots.first.insights.isNotEmpty) {
+      final latest = snapshots.first;
+      return TodaySignalScreen(
+        current: latest,
+        previous: snapshots[1],
+        insight: latest.insights.first,
+        onOpenInsight: () => context.push('/insights/${latest.snapshotId}'),
+        onProfileTap: () => context.go('/home/myPage'),
+      );
+    }
+
     final score = ref.watch(wellnessScoreProvider);
     final totalCalories = ref.watch(totalCaloriesProvider);
     final totalProtein = ref.watch(totalProteinProvider);
@@ -55,8 +84,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final careType = _resolveCareType();
     final featureFlags = ref.watch(featureFlagsProvider).valueOrNull ??
         const AppFeatureFlags.disabled();
-    final showGutHealth =
-        featureFlags.gut &&
+    final showGutHealth = featureFlags.gut &&
         (careType == UserCareType.microbiome || careType == UserCareType.both);
 
     // 할 일 계산

@@ -9,6 +9,7 @@ import '../../design_system/d_fet_axis_glyph.dart';
 import '../../design_system/d_fet_axis_icon.dart';
 import '../../models/clinical_reports.dart';
 import '../../theme/d_fet_typography.dart';
+import '../../theme/motion_tokens.dart';
 import '../../theme/tokens.dart';
 
 class TodaySignalScreen extends StatefulWidget {
@@ -31,17 +32,43 @@ class TodaySignalScreen extends StatefulWidget {
   State<TodaySignalScreen> createState() => _TodaySignalScreenState();
 }
 
-class _TodaySignalScreenState extends State<TodaySignalScreen> {
+class _TodaySignalScreenState extends State<TodaySignalScreen>
+    with SingleTickerProviderStateMixin {
   static const _axisKeys = ['fitness', 'diet', 'gut', 'blood'];
 
+  late final AnimationController _entranceController;
   bool _completed = false;
+  bool? _animationsDisabled;
 
   String get _storageKey => 'clinical_action_completed_${widget.insight.id}';
 
   @override
   void initState() {
     super.initState();
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: DfetMotion.pageEnter,
+    );
     _loadCompleted();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final disabled = MediaQuery.disableAnimationsOf(context);
+    if (_animationsDisabled == disabled) return;
+    _animationsDisabled = disabled;
+    if (disabled) {
+      _entranceController.value = 1;
+    } else {
+      _entranceController.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    super.dispose();
   }
 
   @override
@@ -60,39 +87,74 @@ class _TodaySignalScreenState extends State<TodaySignalScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 22, 24, 34),
           children: [
-            _TodayHeader(
-              asOf: widget.current.asOf,
-              onProfileTap: widget.onProfileTap,
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0,
+              end: 0.28,
+              child: _TodayHeader(
+                asOf: widget.current.asOf,
+                onProfileTap: widget.onProfileTap,
+              ),
             ),
             const SizedBox(height: 38),
-            _ChangeHeadline(
-              improvedCount: improvedCount,
-              totalCount: deltas.length,
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.08,
+              end: 0.4,
+              child: _ChangeHeadline(
+                improvedCount: improvedCount,
+                totalCount: deltas.length,
+              ),
             ),
             const SizedBox(height: 34),
-            _TodayAxisRail(deltas: deltas),
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.18,
+              end: 0.54,
+              child: _TodayAxisRail(deltas: deltas),
+            ),
             const SizedBox(height: 42),
-            _ActionPulsePanel(
-              completed: _completed,
-              title: action['title']?.toString() ?? '오늘의 생활 루틴',
-              duration: action['duration']?.toString() ?? '5분',
-              onToggle: _toggleCompleted,
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.3,
+              end: 0.68,
+              child: _ActionPulsePanel(
+                completed: _completed,
+                title: action['title']?.toString() ?? '오늘의 생활 루틴',
+                duration: action['duration']?.toString() ?? '5분',
+                onToggle: _toggleCompleted,
+              ),
             ),
             const SizedBox(height: 34),
-            const _CheckInProgress(currentDay: 5, totalDays: 7),
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.46,
+              end: 0.78,
+              child: const _CheckInProgress(currentDay: 5, totalDays: 7),
+            ),
             const SizedBox(height: 28),
-            _EvidenceRibbon(
-              body: widget.insight.body,
-              onTap: widget.onOpenInsight,
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.6,
+              end: 0.9,
+              child: _EvidenceRibbon(
+                body: widget.insight.body,
+                onTap: widget.onOpenInsight,
+              ),
             ),
             const SizedBox(height: 14),
-            Text(
-              '생활 기록과 지표 변화의 연관 가능성을 보여주는 비진단 정보입니다.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: context.wellness.textTertiary,
-                fontSize: 10,
-                height: 1.4,
+            _StaggerReveal(
+              animation: _entranceController,
+              begin: 0.7,
+              end: 1,
+              child: Text(
+                '생활 기록과 지표 변화의 연관 가능성을 보여주는 비진단 정보입니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: context.wellness.textTertiary,
+                  fontSize: 10,
+                  height: 1.4,
+                ),
               ),
             ),
           ],
@@ -123,6 +185,38 @@ class _TodaySignalScreenState extends State<TodaySignalScreen> {
     setState(() => _completed = nextValue);
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_storageKey, nextValue);
+  }
+}
+
+class _StaggerReveal extends StatelessWidget {
+  const _StaggerReveal({
+    required this.animation,
+    required this.begin,
+    required this.end,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final double begin;
+  final double end;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Interval(begin, end, curve: DfetMotion.emphasized),
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
   }
 }
 
@@ -253,10 +347,17 @@ class _ChangeHeadline extends StatelessWidget {
   }
 }
 
-class _TodayAxisRail extends StatelessWidget {
+class _TodayAxisRail extends StatefulWidget {
   const _TodayAxisRail({required this.deltas});
 
   final List<double?> deltas;
+
+  @override
+  State<_TodayAxisRail> createState() => _TodayAxisRailState();
+}
+
+class _TodayAxisRailState extends State<_TodayAxisRail> {
+  int? _selectedIndex;
 
   static const _labels = ['운동', '식단', '장', '혈액'];
   static const _axes = [
@@ -266,39 +367,81 @@ class _TodayAxisRail extends StatelessWidget {
     DfetAxis.blood,
   ];
 
+  void _select(int index) {
+    HapticFeedback.selectionClick();
+    setState(() => _selectedIndex = _selectedIndex == index ? null : index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cellWidth = constraints.maxWidth / _axes.length;
         final nodeSize = math.min(78.0, math.max(58.0, cellWidth - 10));
-        return Stack(
+        return Column(
           children: [
-            Positioned(
-              left: cellWidth / 2,
-              right: cellWidth / 2,
-              top: nodeSize / 2 - 5,
-              child: Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D1933),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Stack(
               children: [
-                for (var index = 0; index < _axes.length; index++)
-                  Expanded(
-                    child: _TodayAxisNode(
-                      axis: _axes[index],
-                      label: _labels[index],
-                      delta: deltas[index],
-                      size: nodeSize,
+                Positioned(
+                  left: cellWidth / 2,
+                  right: cellWidth / 2,
+                  top: nodeSize / 2 - 5,
+                  child: Container(
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0D1933),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var index = 0; index < _axes.length; index++)
+                      Expanded(
+                        child: _TodayAxisNode(
+                          axis: _axes[index],
+                          label: _labels[index],
+                          delta: widget.deltas[index],
+                          size: nodeSize,
+                          selected: _selectedIndex == index,
+                          onTap: () => _select(index),
+                        ),
+                      ),
+                  ],
+                ),
               ],
+            ),
+            AnimatedSize(
+              duration: DfetMotion.standard,
+              curve: DfetMotion.emphasized,
+              child: AnimatedSwitcher(
+                duration: DfetMotion.standard,
+                switchInCurve: DfetMotion.emphasized,
+                switchOutCurve: DfetMotion.emphasized,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1,
+                    child: child,
+                  ),
+                ),
+                child: _selectedIndex == null
+                    ? const SizedBox(
+                        key: ValueKey('axis-detail-empty'),
+                        width: double.infinity,
+                      )
+                    : Padding(
+                        key: ValueKey(_selectedIndex),
+                        padding: const EdgeInsets.only(top: 16),
+                        child: _AxisDetail(
+                          axis: _axes[_selectedIndex!],
+                          label: _labels[_selectedIndex!],
+                          delta: widget.deltas[_selectedIndex!],
+                        ),
+                      ),
+              ),
             ),
           ],
         );
@@ -313,12 +456,16 @@ class _TodayAxisNode extends StatelessWidget {
     required this.label,
     required this.delta,
     required this.size,
+    required this.selected,
+    required this.onTap,
   });
 
   final DfetAxis axis;
   final String label;
   final double? delta;
   final double size;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -327,81 +474,159 @@ class _TodayAxisNode extends StatelessWidget {
         ? '확인 필요'
         : '${delta! > 0 ? '+' : ''}${delta!.toStringAsFixed(0)}';
     return Semantics(
+      button: true,
+      selected: selected,
       label:
-          '$label 축, ${delta == null ? '확인 필요' : '${delta!.toStringAsFixed(0)}점 변화'}',
+          '$label 변화 자세히 보기, ${delta == null ? '확인 필요' : '${delta!.toStringAsFixed(0)}점 변화'}',
       excludeSemantics: true,
-      child: Column(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: size,
-                height: size,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? context.wellness.bgCard
-                      : const Color(0xFFFBF8F1),
-                  border: Border.all(
-                    color: const Color(0xFF0D1933),
-                    width: 4,
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: onTap,
+          radius: size * 0.65,
+          child: AnimatedScale(
+            scale: selected ? 1.06 : 1,
+            duration: DfetMotion.quick,
+            curve: DfetMotion.emphasized,
+            child: Column(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedContainer(
+                      duration: DfetMotion.quick,
+                      curve: DfetMotion.emphasized,
+                      width: size,
+                      height: size,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? context.wellness.bgCard
+                            : const Color(0xFFFBF8F1),
+                        border: Border.all(
+                          color: selected ? axisColor : const Color(0xFF0D1933),
+                          width: selected ? 5 : 4,
+                        ),
+                        boxShadow: selected
+                            ? [
+                                BoxShadow(
+                                  color: axisColor.withValues(alpha: 0.25),
+                                  blurRadius: 18,
+                                  spreadRadius: 2,
+                                ),
+                              ]
+                            : const [],
+                      ),
+                      child: DfetAxisAssetIcon(axis: axis, size: size * 0.58),
+                    ),
+                    Positioned(
+                      bottom: -5,
+                      child: AnimatedContainer(
+                        duration: DfetMotion.quick,
+                        width: selected ? 19 : 16,
+                        height: selected ? 19 : 16,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: axisColor,
+                          border: Border.all(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? context.wellness.bgRoot
+                                    : const Color(0xFFFBF8F1),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: DfetAxisAssetIcon(axis: axis, size: size * 0.58),
-              ),
-              Positioned(
-                bottom: -5,
-                child: Container(
-                  width: 16,
-                  height: 16,
+                const SizedBox(height: 14),
+                Container(
+                  width: 1,
+                  height: 14,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: axisColor,
-                    border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? context.wellness.bgRoot
-                          : const Color(0xFFFBF8F1),
-                      width: 3,
+                    border: Border(
+                      left: BorderSide(
+                        color: context.wellness.textTertiary,
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            width: 1,
-            height: 14,
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: context.wellness.textTertiary,
-                  width: 1,
+                const SizedBox(height: 5),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: context.wellness.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DfetTypography.dataStyle(
+                    color: delta == null
+                        ? context.wellness.textSecondary
+                        : axisColor,
+                    fontSize: delta == null ? 11 : 21,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AxisDetail extends StatelessWidget {
+  const _AxisDetail({
+    required this.axis,
+    required this.label,
+    required this.delta,
+  });
+
+  final DfetAxis axis;
+  final String label;
+  final double? delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final axisColor = DfetAxisPalette.color(context, axis);
+    final message = switch (delta) {
+      null => '$label 축은 비교할 기록이 더 필요해요',
+      > 0 => '$label 축은 이전 기록보다 ${delta!.toStringAsFixed(0)}점 좋아졌어요',
+      < 0 => '$label 축은 이전 기록보다 ${delta!.abs().toStringAsFixed(0)}점 낮게 관찰됐어요',
+      _ => '$label 축은 이전 기록과 같은 흐름이에요',
+    };
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: axisColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: axisColor.withValues(alpha: 0.32)),
+      ),
+      child: Row(
+        children: [
+          DfetAxisAssetIcon(axis: axis, size: 24),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: context.wellness.textPrimary,
+                fontSize: 12,
+                height: 1.35,
+                fontWeight: FontWeight.w800,
               ),
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: context.wellness.textPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DfetTypography.dataStyle(
-              color: delta == null ? context.wellness.textSecondary : axisColor,
-              fontSize: delta == null ? 11 : 21,
-              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -410,7 +635,7 @@ class _TodayAxisNode extends StatelessWidget {
   }
 }
 
-class _ActionPulsePanel extends StatelessWidget {
+class _ActionPulsePanel extends StatefulWidget {
   const _ActionPulsePanel({
     required this.completed,
     required this.title,
@@ -424,7 +649,50 @@ class _ActionPulsePanel extends StatelessWidget {
   final VoidCallback onToggle;
 
   @override
+  State<_ActionPulsePanel> createState() => _ActionPulsePanelState();
+}
+
+class _ActionPulsePanelState extends State<_ActionPulsePanel>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: DfetMotion.pulse,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulseController.value = 1;
+    } else if (_pulseController.isDismissed) {
+      _pulseController.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ActionPulsePanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.completed != widget.completed &&
+        !MediaQuery.disableAnimationsOf(context)) {
+      _pulseController.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final completed = widget.completed;
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -434,32 +702,58 @@ class _ActionPulsePanel extends StatelessWidget {
             color: const Color(0xFF0D1933),
             child: Stack(
               children: [
-                const Positioned.fill(
+                Positioned.fill(
                   child: IgnorePointer(
-                      child: CustomPaint(painter: _PulsePainter())),
+                    child: AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) => CustomPaint(
+                        painter: _PulsePainter(_pulseController.value),
+                      ),
+                    ),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(30, 48, 30, 46),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        completed ? '오늘의 한 걸음 완료' : '오늘의 한 가지',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                      AnimatedSwitcher(
+                        duration: DfetMotion.standard,
+                        switchInCurve: DfetMotion.emphasized,
+                        child: Text(
+                          completed ? '오늘의 한 걸음 완료' : '오늘의 한 가지',
+                          key: ValueKey('eyebrow-$completed'),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        completed ? '오늘 신호를 이었어요' : title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 27,
-                          height: 1.18,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                      AnimatedSwitcher(
+                        duration: DfetMotion.standard,
+                        switchInCurve: DfetMotion.emphasized,
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.18),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        ),
+                        child: Text(
+                          completed ? '오늘 신호를 이었어요' : widget.title,
+                          key: ValueKey('title-$completed'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 27,
+                            height: 1.18,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -485,7 +779,7 @@ class _ActionPulsePanel extends StatelessWidget {
                             child: Text.rich(
                               TextSpan(
                                 children: [
-                                  TextSpan(text: '$duration · '),
+                                  TextSpan(text: '${widget.duration} · '),
                                   const TextSpan(
                                     text: '식단',
                                     style: TextStyle(color: Color(0xFFFF8A25)),
@@ -511,36 +805,50 @@ class _ActionPulsePanel extends StatelessWidget {
                         button: true,
                         label: completed ? '오늘 행동 완료 취소' : '오늘 행동 완료 표시',
                         child: InkWell(
-                          onTap: onToggle,
+                          onTap: widget.onToggle,
                           borderRadius: BorderRadius.circular(36),
-                          child: Ink(
+                          child: AnimatedContainer(
+                            duration: DfetMotion.standard,
+                            curve: DfetMotion.emphasized,
                             height: 58,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(36),
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF4D55), Color(0xFFFF675B)],
+                              gradient: LinearGradient(
+                                colors: completed
+                                    ? const [
+                                        Color(0xFF1769E8),
+                                        Color(0xFF8058EF),
+                                      ]
+                                    : const [
+                                        Color(0xFFFF4D55),
+                                        Color(0xFFFF675B),
+                                      ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  completed
-                                      ? Icons.undo_rounded
-                                      : Icons.check_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  completed ? '완료 취소' : '완료 표시',
-                                  style: const TextStyle(
+                            child: AnimatedSwitcher(
+                              duration: DfetMotion.quick,
+                              child: Row(
+                                key: ValueKey('button-$completed'),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    completed
+                                        ? Icons.undo_rounded
+                                        : Icons.check_rounded,
                                     color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
+                                    size: 22,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    completed ? '완료 취소' : '완료 표시',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -555,15 +863,23 @@ class _ActionPulsePanel extends StatelessWidget {
         Positioned(
           right: 2,
           bottom: 74,
-          child: Container(
-            width: 54,
-            height: 54,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFFFF5A57),
+          child: AnimatedScale(
+            scale: completed ? 1.12 : 1,
+            duration: DfetMotion.standard,
+            curve: DfetMotion.emphasized,
+            child: AnimatedContainer(
+              duration: DfetMotion.standard,
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: completed
+                    ? const Color(0xFF8058EF)
+                    : const Color(0xFFFF5A57),
+              ),
+              child: const Icon(Icons.check_rounded,
+                  color: Colors.white, size: 30),
             ),
-            child:
-                const Icon(Icons.check_rounded, color: Colors.white, size: 30),
           ),
         ),
       ],
@@ -602,7 +918,9 @@ class _ActionPanelClipper extends CustomClipper<Path> {
 }
 
 class _PulsePainter extends CustomPainter {
-  const _PulsePainter();
+  const _PulsePainter(this.progress);
+
+  final double progress;
 
   static const _colors = [
     Color(0xFF1B71F2),
@@ -624,7 +942,9 @@ class _PulsePainter extends CustomPainter {
       for (var dash = 0; dash < 8; dash++) {
         canvas.drawArc(
           rect,
-          math.pi * 0.78 + dash * 0.32,
+          math.pi * 0.78 +
+              dash * 0.32 +
+              progress * 0.24 * (ring.isEven ? 1 : -1),
           0.17,
           false,
           paint,
@@ -634,7 +954,8 @@ class _PulsePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _PulsePainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _CheckInProgress extends StatelessWidget {

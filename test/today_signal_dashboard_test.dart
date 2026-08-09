@@ -43,6 +43,10 @@ void main() {
     expect(find.text('오늘의 신호'), findsOneWidget);
     expect(find.textContaining('4개가 좋아졌어요'), findsOneWidget);
     expect(find.text('+12'), findsOneWidget);
+
+    await tester.tap(find.text('운동'));
+    await tester.pumpAndSettle();
+    expect(find.text('운동 축은 이전 기록보다 9점 좋아졌어요'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

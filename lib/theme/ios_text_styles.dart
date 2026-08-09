@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'd_fet_typography.dart';
 import 'tokens.dart';
 
 /// iOS Human Interface Guidelines 타이포그래피 스케일
@@ -6,6 +7,7 @@ import 'tokens.dart';
 class IOSTextStyles {
   // Large Title (iOS 네비게이션 바 큰 제목)
   static const largeTitle = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.37,
@@ -15,6 +17,7 @@ class IOSTextStyles {
 
   // Title 1 (주요 제목)
   static const title1 = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.36,
@@ -24,6 +27,7 @@ class IOSTextStyles {
 
   // Title 2 (부제목)
   static const title2 = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 22,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.35,
@@ -33,6 +37,7 @@ class IOSTextStyles {
 
   // Title 3 (카드 제목)
   static const title3 = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.38,
@@ -42,6 +47,7 @@ class IOSTextStyles {
 
   // Headline (강조 텍스트)
   static const headline = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,
@@ -51,6 +57,7 @@ class IOSTextStyles {
 
   // Body (기본 본문)
   static const body = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
@@ -60,6 +67,7 @@ class IOSTextStyles {
 
   // Callout (리스트 아이템)
   static const callout = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.32,
@@ -69,6 +77,7 @@ class IOSTextStyles {
 
   // Subheadline (보조 텍스트)
   static const subheadline = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 15,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,
@@ -78,6 +87,7 @@ class IOSTextStyles {
 
   // Footnote (작은 설명)
   static const footnote = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 13,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.08,
@@ -87,6 +97,7 @@ class IOSTextStyles {
 
   // Caption 1 (매우 작은 텍스트)
   static const caption1 = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     letterSpacing: 0,
@@ -96,6 +107,7 @@ class IOSTextStyles {
 
   // Caption 2 (가장 작은 텍스트)
   static const caption2 = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 11,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.07,
@@ -107,6 +119,8 @@ class IOSTextStyles {
 
   // 숫자 강조 (KPI 등)
   static const number = TextStyle(
+    fontFamily: DfetTypography.dataFontFamily,
+    fontFeatures: DfetTypography.tabularFigures,
     fontSize: 48,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
@@ -116,6 +130,7 @@ class IOSTextStyles {
 
   // 탭 바 라벨
   static const tabLabel = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 10,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.12,
@@ -125,6 +140,7 @@ class IOSTextStyles {
 
   // 버튼 텍스트
   static const button = TextStyle(
+    fontFamily: DfetTypography.uiFontFamily,
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,

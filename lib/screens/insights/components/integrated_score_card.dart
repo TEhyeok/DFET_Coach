@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_axis_icon.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -85,16 +87,32 @@ class IntegratedScoreCard extends StatelessWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: context.wellness.bgSubtle,
+                            color: DfetAxisPalette.surface(
+                              context,
+                              _axisType(axis),
+                            ),
                             borderRadius: WellnessRadius.chip,
                           ),
-                          child: Text(
-                            '${_axisLabel(axis)} ${snapshot.axes[axis]!.round()}',
-                            style: TextStyle(
-                              color: context.wellness.textSecondary,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DfetAxisAssetIcon(
+                                axis: _axisType(axis),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_axisLabel(axis)} ${snapshot.axes[axis]!.round()}',
+                                style: TextStyle(
+                                  color: DfetAxisPalette.color(
+                                    context,
+                                    _axisType(axis),
+                                  ),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                   ],
@@ -118,5 +136,13 @@ class IntegratedScoreCard extends StatelessWidget {
         'gut' => '장',
         'blood' => '혈액',
         _ => axis,
+      };
+
+  static DfetAxis _axisType(String axis) => switch (axis) {
+        'fitness' => DfetAxis.motion,
+        'diet' => DfetAxis.nutrition,
+        'gut' => DfetAxis.gut,
+        'blood' => DfetAxis.blood,
+        _ => DfetAxis.motion,
       };
 }

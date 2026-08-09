@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_axis_icon.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -22,6 +24,13 @@ class ProgressEfficacyCard extends StatelessWidget {
     'diet': '식단',
     'gut': '장',
     'blood': '혈액',
+  };
+
+  static const _axisTypes = {
+    'fitness': DfetAxis.motion,
+    'diet': DfetAxis.nutrition,
+    'gut': DfetAxis.gut,
+    'blood': DfetAxis.blood,
   };
 
   @override
@@ -139,6 +148,7 @@ class ProgressEfficacyCard extends StatelessWidget {
                 children: [
                   for (final change in changes)
                     _AxisDeltaChip(
+                      axis: change.axis,
                       label: change.label,
                       delta: change.delta,
                     ),
@@ -162,14 +172,18 @@ class ProgressEfficacyCard extends StatelessWidget {
     );
   }
 
-  List<({String label, double delta})> _axisChanges() {
+  List<({DfetAxis axis, String label, double delta})> _axisChanges() {
     if (previous == null) return const [];
-    final changes = <({String label, double delta})>[];
+    final changes = <({DfetAxis axis, String label, double delta})>[];
     for (final entry in _axisLabels.entries) {
       final before = previous!.axes[entry.key];
       final after = current.axes[entry.key];
       if (before != null && after != null) {
-        changes.add((label: entry.value, delta: after - before));
+        changes.add((
+          axis: _axisTypes[entry.key]!,
+          label: entry.value,
+          delta: after - before,
+        ));
       }
     }
     return changes;
@@ -200,33 +214,39 @@ class ProgressEfficacyCard extends StatelessWidget {
 }
 
 class _AxisDeltaChip extends StatelessWidget {
-  const _AxisDeltaChip({required this.label, required this.delta});
+  const _AxisDeltaChip({
+    required this.axis,
+    required this.label,
+    required this.delta,
+  });
 
+  final DfetAxis axis;
   final String label;
   final double delta;
 
   @override
   Widget build(BuildContext context) {
-    final isPositive = delta > 0.05;
-    final isNeutral = delta.abs() <= 0.05;
-    final color = isNeutral
-        ? context.wellness.textSecondary
-        : isPositive
-            ? context.wellness.success
-            : context.wellness.warning;
+    final color = DfetAxisPalette.color(context, axis);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.11),
+        color: DfetAxisPalette.surface(context, axis),
         borderRadius: WellnessRadius.chip,
       ),
-      child: Text(
-        '$label ${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}',
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DfetAxisAssetIcon(axis: axis, size: 18),
+          const SizedBox(width: 5),
+          Text(
+            '$label ${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }

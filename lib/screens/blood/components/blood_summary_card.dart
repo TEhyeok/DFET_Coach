@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_axis_icon.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -26,12 +29,27 @@ class BloodSummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('혈액 생화학 요약',
-                    style: TextStyle(
-                      color: context.wellness.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    )),
+                Row(
+                  children: [
+                    const DfetAxisAssetIcon(
+                      axis: DfetAxis.blood,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        '혈액 생화학 요약',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: context.wellness.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Text('${report.biomarkers.length}/13 항목 수신',
                     style: TextStyle(

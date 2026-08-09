@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../design_system/d_fet_axis_glyph.dart';
+import '../../design_system/d_fet_axis_icon.dart';
 import '../../models/clinical_reports.dart';
 import '../../theme/tokens.dart';
 import '../app_card.dart';
@@ -35,7 +38,11 @@ class GutHealthSummaryCard extends StatelessWidget {
               ),
             ),
             child: report == null
-                ? Icon(Icons.eco_rounded, color: context.wellness.textTertiary)
+                ? const DfetAxisAssetIcon(
+                    axis: DfetAxis.gut,
+                    size: 30,
+                    active: false,
+                  )
                 : Text(
                     report!.overall.score?.round().toString() ?? '--',
                     style: TextStyle(
@@ -50,13 +57,26 @@ class GutHealthSummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  report == null ? '장 건강 리포트 없음' : '오늘의 장 건강',
-                  style: TextStyle(
-                    color: context.wellness.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  children: [
+                    const DfetAxisAssetIcon(
+                      axis: DfetAxis.gut,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        report == null ? '장 건강 리포트 없음' : '오늘의 장 건강',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: context.wellness.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

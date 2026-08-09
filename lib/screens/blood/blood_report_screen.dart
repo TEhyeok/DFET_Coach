@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../design_system/d_fet_axis_glyph.dart';
+import '../../design_system/d_fet_axis_icon.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../state/user_state.dart';
@@ -53,15 +55,22 @@ class _BloodReportBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
-        Text(
-          selectedPanel == null
-              ? '혈액 검사 리포트'
-              : BloodPanelCard.labels[selectedPanel] ?? selectedPanel!,
-          style: TextStyle(
-            color: context.wellness.textPrimary,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                selectedPanel == null
+                    ? '혈액 검사 리포트'
+                    : BloodPanelCard.labels[selectedPanel] ?? selectedPanel!,
+                style: TextStyle(
+                  color: context.wellness.textPrimary,
+                  fontSize: 23,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const DfetAxisAssetIcon(axis: DfetAxis.blood, size: 44),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -122,8 +131,10 @@ class _BloodReportBody extends ConsumerWidget {
         if (canViewExpert)
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading:
-                Icon(Icons.science_outlined, color: context.wellness.primary),
+            leading: const DfetAxisAssetIcon(
+              axis: DfetAxis.blood,
+              size: 30,
+            ),
             title: const Text('전문가용 원본·정규화 데이터'),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.push('/blood/${report.reportId}/expert'),

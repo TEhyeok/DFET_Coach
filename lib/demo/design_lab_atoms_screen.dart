@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../design_system/d_fet_axis_glyph.dart';
+import '../design_system/d_fet_evidence.dart';
 import '../theme/tokens.dart';
 
 class DesignLabAtomsScreen extends StatefulWidget {
@@ -166,6 +167,58 @@ class _DesignLabAtomsScreenState extends State<DesignLabAtomsScreen> {
                     _RuleToken(code: 'C', value: '9', label: 'CORNER'),
                   ],
                 ),
+              ),
+              const SizedBox(height: 24),
+              const _LabSectionLabel(
+                index: '05',
+                title: 'EVIDENCE ATOMS',
+                detail: 'VALUE / SOURCE / POLICY',
+              ),
+              const SizedBox(height: 12),
+              _InstrumentPanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Wrap(
+                      spacing: 22,
+                      runSpacing: 14,
+                      children: [
+                        DfetMetricValue(
+                          value: '82.4',
+                          unit: 'score',
+                          axis: _selectedAxis,
+                        ),
+                        const DfetMetricValue(
+                          pendingLabel: '산정 준비 중',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        DfetEvidenceLabel(label: '검사기관 원본'),
+                        DfetEvidenceLabel(
+                          label: '검토 대기 1건',
+                          tone: DfetEvidenceTone.pending,
+                        ),
+                        DfetEvidenceLabel(
+                          label: '전문가 전용',
+                          tone: DfetEvidenceTone.restricted,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const DfetEvidenceRibbon(
+                source: 'DEMO · NORMALIZED',
+                coverage: '완성도 75%',
+                policyVersion: null,
+                tone: DfetEvidenceTone.pending,
+                detail: '승인된 정책이 없으면 수치는 유지하되 점수와 판정을 생성하지 않습니다.',
               ),
               const SizedBox(height: 16),
               Text(

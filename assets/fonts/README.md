@@ -1,21 +1,25 @@
 # Bundled fonts
 
-## SUIT Variable
+## Initial research assets (inactive)
+
+The following two files are retained to reproduce the typography comparison. They are not registered in the current `pubspec.yaml` and are not used by the app theme.
+
+### SUIT Variable
 
 - Source: <https://github.com/sun-typeface/SUIT>
 - Version: `v2.0.5`
 - Commit: `55118d981336d8fce005eb62888c12c0568ef7b0`
-- Use: Korean UI, headings, body, labels
+- Research use: Korean UI, headings, body, labels
 - License: `licenses/SUIT-OFL.txt`
 
-## Wanted Sans Std Variable
+### Wanted Sans Std Variable
 
 - Source: <https://github.com/wanteddev/wanted-sans>
 - Commit: `02c9b822349c188ada95f9e2d90c2ed18f853235`
-- Use: Latin-only scores, changes, biomarker codes and units
+- Research use: Latin-only scores, changes, biomarker codes and units
 - License: `licenses/WantedSans-OFL.txt`
 
-Both fonts are pinned to the versions above so the same app build renders the same glyphs offline on iOS and Android.
+Both research fonts are pinned so the original comparison can be reproduced.
 
 ## Human Signal B typography
 

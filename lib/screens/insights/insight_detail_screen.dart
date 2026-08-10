@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
@@ -37,21 +38,12 @@ class InsightDetailScreen extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               children: [
-                Text(
-                  '통합 건강 상세',
-                  style: TextStyle(
-                    color: context.wellness.textPrimary,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${DateFormat('yyyy.MM.dd').format(snapshot.asOf)} 기준 · 정책 ${snapshot.policyVersion ?? '미승인'}',
-                  style: TextStyle(
-                    color: context.wellness.textSecondary,
-                    fontSize: 12,
-                  ),
+                DfetReportHeader(
+                  axis: null,
+                  eyebrow: 'INTEGRATED · DETAIL',
+                  title: '통합 건강 상세',
+                  subtitle:
+                      '${DateFormat('yyyy.MM.dd').format(snapshot.asOf)} 기준 · 완성도 ${(snapshot.completeness * 100).round()}%',
                 ),
                 const SizedBox(height: 16),
                 ProgressEfficacyCard(
@@ -98,6 +90,20 @@ class InsightDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 10),
                   ],
                 ],
+                const SizedBox(height: 8),
+                DfetEvidenceRibbon(
+                  source: '4축 HealthSnapshot',
+                  coverage: '완성도 ${(snapshot.completeness * 100).round()}%',
+                  policyVersion: snapshot.policyVersion,
+                  tone: snapshot.missingAxes.isNotEmpty ||
+                          snapshot.policyVersion == null
+                      ? DfetEvidenceTone.pending
+                      : DfetEvidenceTone.neutral,
+                  detail: snapshot.missingAxes.isEmpty
+                      ? '운동·식단·장·혈액 데이터를 같은 기준시점으로 묶었습니다. 축간 관계는 연관 가능성으로만 제공하며 인과관계나 의료 진단을 의미하지 않습니다.'
+                      : '누락 축 ${snapshot.missingAxes.map(_SnapshotComparison.axisLabel).join(', ')}은 임의 보간하지 않았습니다. 정책 버전과 완성도를 함께 저장해 당시 결과를 재현합니다.',
+                ),
+                const SizedBox(height: 14),
                 Text(
                   '인사이트는 인과관계를 확정하지 않으며 건강관리 참고용입니다.',
                   textAlign: TextAlign.center,
@@ -138,6 +144,8 @@ class _SnapshotComparison extends StatelessWidget {
     'gut': '장',
     'blood': '혈액',
   };
+
+  static String axisLabel(String axis) => _labels[axis] ?? axis;
 
   @override
   Widget build(BuildContext context) {

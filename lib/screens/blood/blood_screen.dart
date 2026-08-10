@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../design_system/d_fet_axis_glyph.dart';
 import '../../design_system/d_fet_axis_icon.dart';
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
@@ -38,33 +39,30 @@ class _BloodHub extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '혈액 POCT',
-                style: TextStyle(
-                  color: context.wellness.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            const DfetAxisAssetIcon(axis: DfetAxis.blood, size: 46),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '간·신장·대사·지질 13개 표준 항목',
-          style: TextStyle(
-            color: context.wellness.textSecondary,
-            fontSize: 13,
-          ),
+        const DfetReportHeader(
+          axis: DfetAxis.blood,
+          eyebrow: 'POCT · 13 BIOMARKERS',
+          title: '혈액 생화학 리포트',
+          subtitle: '간·신장·대사·혈당·지질을 표준 코드와 단위로 확인합니다.',
         ),
         const SizedBox(height: 16),
         BloodSummaryCard(
           report: latest,
           onTap: () => context.push('/blood/${latest.reportId}'),
+        ),
+        const SizedBox(height: 12),
+        DfetEvidenceRibbon(
+          source: 'POCT 정규화 파이프라인',
+          coverage: '${latest.biomarkers.length.clamp(0, 13)}/13 항목',
+          policyVersion: latest.policyVersion,
+          tone: latest.reviewCount > 0 ||
+                  latest.biomarkers.length < 13 ||
+                  latest.policyVersion == null
+              ? DfetEvidenceTone.pending
+              : DfetEvidenceTone.neutral,
+          detail: latest.reviewCount > 0
+              ? '지원하지 않는 단위나 불완전한 값 ${latest.reviewCount}개는 자동 추측하지 않고 검토 대기로 분리했습니다. 승인된 값만 패널과 추이에 반영됩니다.'
+              : '13개 표준 검사 항목의 코드와 단위를 검증한 결과입니다. 정상범위와 판정은 표시된 정책 버전에 고정되어 과거 결과를 재현할 수 있습니다.',
         ),
         const SizedBox(height: 12),
         ListTile(

@@ -5,12 +5,12 @@ import 'package:intl/intl.dart';
 
 import '../../design_system/d_fet_axis_glyph.dart';
 import '../../design_system/d_fet_axis_icon.dart';
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../state/user_state.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/clinical/alpha_metric_grid.dart';
-import '../../widgets/clinical/comparison_card.dart';
 import '../../widgets/clinical/composition_bar.dart';
 import '../../widgets/clinical/score_gauge.dart';
 import 'components/microbiome_category_card.dart';
@@ -141,18 +141,24 @@ class _GutReportBody extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        ComparisonCard(
-          title: '분석 정책',
-          value: report.policyVersion ?? '미승인',
-          label: report.overall.label,
-          icon: Icons.verified_user_outlined,
-        ),
-        const SizedBox(height: 8),
         if (canViewExpert) ...[
           _detailLink(context, '베타 다양성 PCoA', 'beta'),
           _detailLink(context, 'UniFrac 상세', 'unifrac'),
           _detailLink(context, '전문가용 통합 상세', 'expert'),
         ],
+        const SizedBox(height: 14),
+        DfetEvidenceRibbon(
+          source: '검사기관 · 16S V3-V4',
+          coverage:
+              '알파 ${report.alpha.length.clamp(0, 4)}/4 · Phylum ${report.phylum.length}종',
+          policyVersion: report.policyVersion,
+          tone: report.alpha.length < 4 || report.policyVersion == null
+              ? DfetEvidenceTone.pending
+              : DfetEvidenceTone.neutral,
+          detail: report.policyVersion == null
+              ? '검사기관이 산출한 16S 분석 수치는 표시하지만, 기관 승인 정책이 없어 점수와 판정은 생성하지 않습니다. 전문가 데이터는 담당 트레이너와 관리자에게만 제공됩니다.'
+              : '검사기관이 산출한 16S 분석 결과를 정규화한 리포트입니다. 사용한 정책 버전을 함께 저장하며, 소비자용 화면에는 원본·전문가 필드를 노출하지 않습니다.',
+        ),
         const SizedBox(height: 14),
         Text(
           '본 리포트는 의료 진단이 아니며, 생활관리 참고용으로만 활용하십시오.',
@@ -169,29 +175,12 @@ class _GutReportBody extends ConsumerWidget {
   }
 
   Widget _header(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('장 건강 리포트',
-                  style: TextStyle(
-                    color: context.wellness.textPrimary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  )),
-              const SizedBox(height: 3),
-              Text(
-                '${DateFormat('yyyy.MM.dd').format(report.sampledAt)} 채취 · 16S rRNA V3-V4',
-                style: TextStyle(
-                    color: context.wellness.textSecondary, fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-        const DfetAxisAssetIcon(axis: DfetAxis.gut, size: 46),
-      ],
+    return DfetReportHeader(
+      axis: DfetAxis.gut,
+      eyebrow: 'MICROBIOME · 16S',
+      title: '장 건강 리포트',
+      subtitle:
+          '${DateFormat('yyyy.MM.dd').format(report.sampledAt)} 채취 · 16S rRNA V3-V4',
     );
   }
 

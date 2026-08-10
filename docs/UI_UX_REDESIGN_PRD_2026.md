@@ -185,9 +185,9 @@
 
 ### 7.4 타이포그래피
 
-- 한글 UI·본문은 `SUIT Variable`을 사용한다.
-- 큰 점수·변화량·영문 바이오마커는 라틴 전용 `Wanted Sans Std Variable`을 사용한다.
-- 원본 TTF 기준 두 파일 합계는 약 1.8MB다.
+- 한글 UI·본문은 `IBM Plex Sans KR`을 사용한다.
+- 변화 헤드라인·오늘 행동·리포트 핵심 제목은 `Gowun Batang Bold`를 제한적으로 사용한다.
+- 큰 점수·변화량·영문 바이오마커는 `IBM Plex Mono`를 사용한다.
 - 큰 수치와 표에는 tabular figures를 적용해 자릿수를 정렬한다.
 - 현재 전역 `Outfit` 적용과 플랫폼별 한글 fallback은 제거한다.
 - 상세 비교와 구현 규칙은 [`FONT_RESEARCH_2026.md`](FONT_RESEARCH_2026.md)를 따른다.
@@ -567,13 +567,13 @@
 
 | 과업지시서 요구 | 구현 | 검증 |
 |---|---|---|
-| Flutter 디자인 토큰 중 타이포그래피 | SUIT UI + Wanted Sans Std 데이터 글꼴을 앱에 번들하고 Material/Cupertino 테마에 연결 | 폰트 자산·테마 위젯 테스트 |
+| Flutter 디자인 토큰 중 타이포그래피 | 초기 SUIT/Wanted 후보 검증 후 B 결정에 따라 IBM Plex Sans KR + Gowun Batang + IBM Plex Mono로 교체 | 폰트 자산·테마 위젯 테스트 |
 | 4축 통합 인사이트 | 축별 자산 아이콘을 연결하는 `DfetSignalRail` 원자 컴포넌트 구현 | 4축 semantics 테스트 |
 | 사용자 효능감 | 홈의 이전 대비 변화 칩을 연결형 Signal Rail로 교체하고 오늘 행동 흐름 유지 | 행동 완료·재실행 상태 테스트 |
 | 라이트·다크·반응형 | 동일 컴포넌트가 테마 토큰을 사용하고 폭에 따라 노드 크기 조절 | 320px·글자 2.0·다크 overflow 검사 |
 | 회귀 자동화 | 의도한 글꼴 변경을 라이트/다크 골든 기준에 반영 | 전체 Flutter 테스트 통과 |
 
-다음 구현 단위는 `EvidenceLabel`과 `MetricValue`를 완성하고 장·혈액 리포트의 정책 버전·데이터 완성도 표현을 하나의 Evidence Ribbon으로 통일하는 작업이다.
+`EvidenceLabel`과 `MetricValue` 후속 단위는 아래 2026-08-10 기록에서 완료했다.
 
 ### 2026-08-09 — Today Signal 화면 재구성
 
@@ -595,3 +595,13 @@
 - 앱의 기본 한글 UI는 `IBM Plex Sans KR`, 변화 헤드라인과 오늘 행동 제목은 `Gowun Batang Bold`, 점수와 검사 수치는 `IBM Plex Mono`를 사용한다.
 - 세 서체는 Google Fonts 저장소의 동일 커밋에 고정하고 OFL 문서와 함께 앱에 번들해 iOS·Android에서 오프라인으로 같은 결과를 낸다.
 - 바탕체는 행동 설명이나 작은 레이블까지 확장하지 않고, 효능감을 전달하는 핵심 문장에만 제한해 임상 정보의 가독성을 유지한다.
+
+### 2026-08-10 — Evidence Report 원자와 리포트 통일
+
+- `DfetEvidenceLabel`은 출처·완성도·정책 상태를 neutral/pending/restricted로 구분하고 색 외에 단말 막대·문구·테두리를 함께 사용한다.
+- `DfetMetricValue`는 IBM Plex Mono의 tabular 숫자, 단위 간격, 미산정 상태를 한 컴포넌트에서 관리한다.
+- `DfetReportHeader`는 장·혈액·통합 화면에 B 타이포그래피와 축별 생성 자산을 같은 위계로 적용한다.
+- `DfetEvidenceRibbon`은 데이터 출처·수신 범위/완성도·정책 버전을 요약하고, 탭하면 검토 대기·누락축 비보간·소비자/전문가 분리 원칙을 펼친다.
+- 장 16S 허브/상세, 혈액 POCT 허브/상세, 4축 인사이트 허브/상세에 공통 원자를 연결했다.
+- 스냅샷이 부족한 운영 홈은 복제 장 카드 대신 과업지시서의 `GutHealthSummaryCard`를 직접 사용하고, 레거시 추천 카드의 문자 이모티콘을 축별 자산으로 교체했다.
+- light/dark, 320px·글자 2.0, 펼침 상호작용과 기존 세부 라우트를 위젯 테스트로 검증했다.

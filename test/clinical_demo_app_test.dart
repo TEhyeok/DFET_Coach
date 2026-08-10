@@ -53,8 +53,8 @@ void main() {
 
     await tester.tap(find.text('혈액').last);
     await tester.pumpAndSettle();
-    expect(find.text('혈액 POCT'), findsOneWidget);
-    expect(find.text('간·신장·대사·지질 13개 표준 항목'), findsOneWidget);
+    expect(find.text('혈액 생화학 리포트'), findsOneWidget);
+    expect(find.textContaining('표준 코드와 단위'), findsOneWidget);
 
     await tester.tap(find.text('인사이트').last);
     await tester.pumpAndSettle();
@@ -116,11 +116,11 @@ void main() {
 
     await tester.tap(find.text('장 건강').last);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('알파 다양성 상세'),
-      260,
-      scrollable: find.byType(Scrollable).first,
+    await Scrollable.ensureVisible(
+      tester.element(find.text('알파 다양성 상세')),
+      alignment: 0.45,
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('알파 다양성 상세'));
     await tester.pumpAndSettle();
     expect(find.text('알파 다양성'), findsAtLeastNWidgets(1));
@@ -129,11 +129,11 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('전문가용 통합 상세'),
-      260,
-      scrollable: find.byType(Scrollable).first,
+    await Scrollable.ensureVisible(
+      tester.element(find.text('전문가용 통합 상세')),
+      alignment: 0.45,
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('전문가용 통합 상세'));
     await tester.pumpAndSettle();
     expect(find.text('전문가 상세 분석'), findsOneWidget);

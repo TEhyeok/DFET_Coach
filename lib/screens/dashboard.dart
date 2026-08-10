@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../state/app_state.dart';
 import '../state/clinical_state.dart';
 import '../models/user_profile.dart';
+import '../design_system/d_fet_axis_glyph.dart';
+import '../design_system/d_fet_axis_icon.dart';
 import '../widgets/app_card.dart';
 import '../widgets/activity_rings.dart';
 import '../theme/tokens.dart';
@@ -19,6 +21,7 @@ import '../widgets/protein_foods_dialog.dart';
 import '../widgets/nutrition_tips_dialog.dart';
 import '../widgets/hydration_dialog.dart';
 import '../widgets/breakfast_menu_dialog.dart';
+import '../widgets/clinical/gut_health_summary_card.dart';
 import '../core/utils/app_logger.dart';
 import '../services/coaching_correlation_service.dart';
 import '../state/workout_metadata_state.dart';
@@ -120,11 +123,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             chromeHeight -
             gutReserve;
         final heroCardHeight =
-            (availableHeight * 0.46).clamp(260.0, 460.0).toDouble();
+            (availableHeight * 0.46).clamp(260.0, 460.0).ceilToDouble();
         final kpiHeight =
-            (availableHeight * 0.18).clamp(110.0, 150.0).toDouble();
+            (availableHeight * 0.18).clamp(110.0, 150.0).ceilToDouble();
         final feedbackHeight =
-            (availableHeight * 0.30).clamp(180.0, 320.0).toDouble();
+            (availableHeight * 0.30).clamp(180.0, 320.0).ceilToDouble();
 
         final heroCard = SizedBox(
           height: heroCardHeight,
@@ -233,7 +236,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   /// 홈 상단 '오늘의 장 건강' 요약 카드 (탭 시 상세로 이동)
   Widget _buildGutHealthCard(BuildContext context) {
-    final w = context.wellness;
     // 최신 장 건강 리포트. 실제 검사 데이터가 없으면 null → '리포트 없음' 빈 상태 노출.
     final report = ref.watch(latestGutReportProvider);
 
@@ -251,108 +253,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
 
-    final reportValue = report.valueOrNull;
-    if (reportValue == null) {
-      // 검사 리포트가 아직 없는 사용자: 가짜 점수 대신 빈 상태 + 검사 유도
-      return AppCard(
-        padding: const EdgeInsets.all(18),
-        onTap: openDetail,
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: w.bgSubtle,
-                border: Border.all(color: w.border, width: 2),
-              ),
-              alignment: Alignment.center,
-              child: Icon(Icons.eco_rounded, size: 26, color: w.textTertiary),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '장 건강 리포트 없음',
-                    style: TextStyle(
-                      color: w.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '검사 진행하기 →',
-                    style: TextStyle(color: w.textSecondary, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: w.textTertiary),
-          ],
-        ),
-      );
-    }
-
-    final score = reportValue.overall.score;
-    final level = reportValue.overall.label;
-
-    return AppCard(
-      padding: const EdgeInsets.all(18),
+    return GutHealthSummaryCard(
+      report: report.valueOrNull,
       onTap: openDetail,
-      child: Row(
-        children: [
-          // 점수 원형 (라임 포인트)
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: w.energy, width: 5),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              score?.round().toString() ?? '--',
-              style: TextStyle(
-                color: w.textPrimary,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.eco_rounded, size: 16, color: w.energy),
-                    const SizedBox(width: 6),
-                    Text(
-                      '오늘의 장 건강',
-                      style: TextStyle(
-                        color: w.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '미생물 다양성 · $level',
-                  style: TextStyle(color: w.textSecondary, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: w.textTertiary),
-        ],
-      ),
     );
   }
 
@@ -413,11 +316,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final hour = DateTime.now().hour;
     String greeting;
     if (hour < 12) {
-      greeting = '☀️ 좋은 아침이에요!';
+      greeting = '좋은 아침이에요';
     } else if (hour < 18) {
-      greeting = '🌤️ 좋은 오후에요!';
+      greeting = '좋은 오후예요';
     } else {
-      greeting = '🌙 편안한 저녁이에요!';
+      greeting = '편안한 저녁이에요';
     }
 
     return ClipRRect(
@@ -609,7 +512,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     // 영양 처방이 있고 기본 타입이 아니면 처방 메시지 우선 표시
     final displayMessage = (nutritionPrescription != null &&
             nutritionPrescription.type != PrescriptionType.standard)
-        ? '🏋️ ${nutritionPrescription.message}'
+        ? nutritionPrescription.message
         : recommendation.message;
 
     final displayTitle = (nutritionPrescription != null &&
@@ -625,7 +528,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           // 헤더: 아이콘 + 타이틀 + 우선순위 배지
           Row(
             children: [
-              Text(recommendation.icon, style: const TextStyle(fontSize: 36)),
+              DfetAxisAssetIcon(
+                axis: _recommendationAxis(recommendation.category),
+                size: 38,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -735,6 +641,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case RecommendationPriority.excellent:
         return '완벽';
     }
+  }
+
+  DfetAxis _recommendationAxis(RecommendationCategory category) {
+    return switch (category) {
+      RecommendationCategory.protein ||
+      RecommendationCategory.calories ||
+      RecommendationCategory.hydration =>
+        DfetAxis.nutrition,
+      RecommendationCategory.exercise => DfetAxis.motion,
+      RecommendationCategory.achievement ||
+      RecommendationCategory.motivation =>
+        DfetAxis.motion,
+      RecommendationCategory.advice => DfetAxis.nutrition,
+      RecommendationCategory.sleep => DfetAxis.motion,
+    };
   }
 
   int _calculateTodos(int calories, int protein, int workoutTime) {

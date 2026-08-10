@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_evidence.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/d_fet_typography.dart';
 import '../../../theme/tokens.dart';
@@ -33,13 +36,11 @@ class BiomarkerRow extends StatelessWidget {
                     )),
               ),
               Expanded(
-                child: Text(
-                  '${_format(marker.value)} ${marker.unit}',
-                  style: DfetTypography.dataStyle(
-                    color: context.wellness.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: DfetMetricValue(
+                  value: _format(marker.value),
+                  unit: marker.unit,
+                  axis: DfetAxis.blood,
+                  compact: true,
                 ),
               ),
               Container(

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../design_system/d_fet_axis_glyph.dart';
+import '../../../design_system/d_fet_evidence.dart';
 import '../../../models/clinical_reports.dart';
 import '../../../theme/tokens.dart';
 import '../../../widgets/app_card.dart';
@@ -62,9 +65,12 @@ class BloodPanelCard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               )),
           const SizedBox(height: 4),
-          Text(summary.score?.round().toString() ?? '산정 준비 중',
-              style: TextStyle(
-                  color: context.wellness.textSecondary, fontSize: 12)),
+          DfetMetricValue(
+            value: summary.score?.round().toString(),
+            unit: '/ 100',
+            axis: DfetAxis.blood,
+            compact: true,
+          ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
             value: summary.completeness,

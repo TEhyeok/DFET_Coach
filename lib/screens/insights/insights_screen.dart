@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
@@ -41,18 +43,12 @@ class _InsightsHub extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
-        Text(
-          '나의 건강 변화',
-          style: TextStyle(
-            color: context.wellness.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '좋아진 흐름을 확인하고 오늘 할 수 있는 한 가지를 이어가세요.',
-          style: TextStyle(color: context.wellness.textSecondary, fontSize: 12),
+        DfetReportHeader(
+          axis: null,
+          eyebrow: 'HEALTH SNAPSHOT · 4 AXES',
+          title: '나의 건강 변화',
+          subtitle:
+              '${DateFormat('yyyy.MM.dd').format(latest.asOf)} 기준 · 좋아진 흐름과 오늘의 한 가지를 확인하세요.',
         ),
         const SizedBox(height: 16),
         ProgressEfficacyCard(
@@ -72,6 +68,18 @@ class _InsightsHub extends StatelessWidget {
         IntegratedScoreCard(
           snapshot: latest,
           onTap: () => context.push('/insights/${latest.snapshotId}'),
+        ),
+        const SizedBox(height: 12),
+        DfetEvidenceRibbon(
+          source: '4축 HealthSnapshot',
+          coverage: '완성도 ${(latest.completeness * 100).round()}%',
+          policyVersion: latest.policyVersion,
+          tone: latest.missingAxes.isNotEmpty || latest.policyVersion == null
+              ? DfetEvidenceTone.pending
+              : DfetEvidenceTone.neutral,
+          detail: latest.missingAxes.isEmpty
+              ? '운동·식단·장·혈액 데이터를 같은 기준시점으로 묶었습니다. 축간 흐름은 연관 가능성으로만 표현하며 인과관계나 의료 진단을 의미하지 않습니다.'
+              : '누락 축 ${latest.missingAxes.map(_axisLabel).join(', ')}은 임의 보간하지 않았습니다. 완성도와 누락 상태를 유지한 채 승인된 정책에서 계산 가능한 정보만 표시합니다.',
         ),
         const SizedBox(height: 20),
         Text(
@@ -98,6 +106,14 @@ class _InsightsHub extends StatelessWidget {
       ),
     );
   }
+
+  static String _axisLabel(String axis) => switch (axis) {
+        'fitness' => '운동',
+        'diet' => '식단',
+        'gut' => '장',
+        'blood' => '혈액',
+        _ => axis,
+      };
 }
 
 class _InsightsEmpty extends StatelessWidget {

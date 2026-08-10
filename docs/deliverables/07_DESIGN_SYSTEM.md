@@ -17,15 +17,17 @@ light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `Mater
 
 ## 타이포그래피
 
-앱이 오프라인이어도 iOS와 Android에서 같은 자형을 사용하도록 두 글꼴을 앱 자산으로 고정한다.
+앱이 오프라인이어도 iOS와 Android에서 같은 자형을 사용하도록 세 글꼴을 앱 자산으로 고정한다. 확정 방향은 `B · Human Signal`이다.
 
 | 역할 | 패밀리 | 적용 |
 |---|---|---|
-| UI | `SUIT` | 한글 제목·본문·버튼·탭·설명, Material/Cupertino 기본 테마 |
-| Data | `WantedSansStd` | 점수·변화량·바이오마커 코드·검사값·단위 |
+| UI | `IBM Plex Sans KR` | 한글 본문·버튼·탭·임상 설명, Material/Cupertino 기본 테마 |
+| Display | `Gowun Batang Bold` | 변화 헤드라인·오늘 행동·리포트 핵심 제목 |
+| Data | `IBM Plex Mono` | 점수·변화량·바이오마커 코드·검사값·단위·기술 레이블 |
 
 - 데이터 숫자는 `DfetTypography.dataStyle()`을 사용하고 표·비교값에는 `FontFeature.tabularFigures()`를 유지한다.
 - `ScoreGauge`와 `BiomarkerRow`는 Data 패밀리를 사용한다.
+- `DfetReportHeader`의 제목은 Display, eyebrow는 Data 패밀리를 사용한다.
 - 원본과 OFL 고지는 `assets/fonts/README.md`와 `assets/fonts/licenses/`에 보존한다.
 - 화면에서 `fontFamily` 문자열을 새로 만들지 않고 `DfetTypography`를 단일 기준으로 사용한다.
 
@@ -52,6 +54,10 @@ light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `Mater
 | `ActionRecommendationCard` | 행동 제안 | 승인 정책 action만 표시 |
 | `HealthTimeline` | 과거 snapshot | 기준시점 순 정렬 |
 | `DfetSignalRail` | 4축 변화·상태 연결 | 축별 심볼·색·수치·semantics, 빈 입력은 숨김 |
+| `DfetReportHeader` | 장·혈액·통합 리포트 제목 | 축 자산, 기준일, 기술 eyebrow를 같은 위계로 표시 |
+| `DfetMetricValue` | 검사값·점수 | 값/단위 tabular 정렬, null이면 `산정 준비 중` |
+| `DfetEvidenceLabel` | 출처·완성도·정책 상태 | neutral/pending/restricted를 색과 형태·문구로 구분 |
+| `DfetEvidenceRibbon` | 리포트 근거 공개 | 출처·범위·정책 요약, 탭해 비진단·검토 원칙 펼침 |
 
 ## Signal Path 규칙
 
@@ -60,6 +66,8 @@ light/dark는 같은 의미 구조를 유지한다. `ThemeMode.system`은 `Mater
 - 색만으로 상태를 전달하지 않고 축 이름, 변화값, 접근성 문장을 함께 제공한다.
 - 320px 미만에서는 노드가 46px, 380px 미만에서는 52px, 그 이상은 58px를 기본값으로 사용한다.
 - 데이터가 없으면 값을 생성하지 않고 컴포넌트를 숨긴다. 축 데이터가 미완성인 경우 `active: false`와 상태 문구를 전달한다.
+- 장·혈액·통합 리포트는 `DfetReportHeader`와 `DfetEvidenceRibbon`을 공통 시작점·종료점으로 사용한다.
+- 근거 리본은 자동으로 펼치지 않으며, 요약을 먼저 읽고 사용자가 요청할 때 세부 처리 원칙을 공개한다.
 
 ## 사용자 효능감 UX
 

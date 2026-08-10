@@ -18,6 +18,8 @@ flutter build ios --no-codesign
 tool/ios_simulator.sh build
 ```
 
+로컬 충돌을 피하기 위해 Firestore와 Storage Emulator는 각각 `127.0.0.1:18080`, `127.0.0.1:19199`를 사용한다. CI와 개발 환경은 같은 `firebase.json` 설정을 사용한다.
+
 ## 테스트 매트릭스
 
 | 계층 | 필수 시나리오 |
@@ -25,7 +27,7 @@ tool/ios_simulator.sh build
 | Functions 단위 | envelope, 날짜 순서, 13종 변환, 미지원 단위, band 경계, 정책 버전, 누락축, HMAC, idempotency 충돌 |
 | Rules | 본인/타회원/담당/비담당/lab/admin, 전문가본, 서버 전용 쓰기, 프로필 승격 차단, Storage |
 | Flutter 모델 | unscored, 부분 혈액, 누락축, 날짜 파싱 |
-| Flutter 위젯 | 320/390/430px, text scale 1.0/1.3/2.0, light/dark, overflow 없음 |
+| Flutter 위젯 | 320/390/430px, text scale 1.0/1.3/2.0, light/dark, Evidence Ribbon 펼침, overflow 없음 |
 | 관리자 계약 | 관리자 envelope가 Functions validator와 일치, HMAC 형식 일치 |
 | E2E staging | 케어유형→가입→재로그인, API/CSV→리포트, 2회 혈액→추이, 검사→snapshot, expert 차단 |
 

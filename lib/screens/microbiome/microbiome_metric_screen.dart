@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../design_system/d_fet_axis_glyph.dart';
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../theme/tokens.dart';
@@ -90,16 +93,66 @@ class MicrobiomeMetricScreen extends ConsumerWidget {
             icon: Icons.account_tree_rounded,
             iconColor: context.wellness.primary,
             children: [
-              Text(
-                  'Weighted  ${report.weightedUnifrac?.toStringAsFixed(4) ?? '--'}'),
-              const SizedBox(height: 10),
-              Text(
-                  'Unweighted  ${report.unweightedUnifrac?.toStringAsFixed(4) ?? '--'}'),
+              Row(
+                children: [
+                  Expanded(
+                    child: _UnifracMetric(
+                      label: 'WEIGHTED',
+                      value: report.weightedUnifrac,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _UnifracMetric(
+                      label: 'UNWEIGHTED',
+                      value: report.unweightedUnifrac,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               GenusAbundanceBar(items: report.genus),
             ],
           ),
       ],
+    );
+  }
+}
+
+class _UnifracMetric extends StatelessWidget {
+  const _UnifracMetric({required this.label, required this.value});
+
+  final String label;
+  final double? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.wellness.bgSubtle,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: context.wellness.textTertiary,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          DfetMetricValue(
+            value: value?.toStringAsFixed(4),
+            axis: DfetAxis.gut,
+            compact: true,
+          ),
+        ],
+      ),
     );
   }
 }

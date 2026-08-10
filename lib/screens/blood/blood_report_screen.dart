@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../design_system/d_fet_axis_glyph.dart';
 import '../../design_system/d_fet_axis_icon.dart';
+import '../../design_system/d_fet_evidence.dart';
 import '../../models/clinical_reports.dart';
 import '../../state/clinical_state.dart';
 import '../../state/user_state.dart';
@@ -55,30 +56,15 @@ class _BloodReportBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                selectedPanel == null
-                    ? '혈액 검사 리포트'
-                    : BloodPanelCard.labels[selectedPanel] ?? selectedPanel!,
-                style: TextStyle(
-                  color: context.wellness.textPrimary,
-                  fontSize: 23,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            const DfetAxisAssetIcon(axis: DfetAxis.blood, size: 44),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${DateFormat('yyyy.MM.dd').format(report.sampledAt)} 검사 · 정책 ${report.policyVersion ?? '미승인'}',
-          style: TextStyle(
-            color: context.wellness.textSecondary,
-            fontSize: 12,
-          ),
+        DfetReportHeader(
+          axis: DfetAxis.blood,
+          eyebrow:
+              selectedPanel == null ? 'POCT · FULL REPORT' : 'POCT · PANEL',
+          title: selectedPanel == null
+              ? '혈액 검사 리포트'
+              : BloodPanelCard.labels[selectedPanel] ?? selectedPanel!,
+          subtitle:
+              '${DateFormat('yyyy.MM.dd').format(report.sampledAt)} 검사 · ${report.biomarkers.length.clamp(0, 13)}/13 항목 수신',
         ),
         const SizedBox(height: 16),
         if (selectedPanel == null) ...[
@@ -139,6 +125,20 @@ class _BloodReportBody extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.push('/blood/${report.reportId}/expert'),
           ),
+        const SizedBox(height: 12),
+        DfetEvidenceRibbon(
+          source: 'POCT 정규화 파이프라인',
+          coverage: '${report.biomarkers.length.clamp(0, 13)}/13 항목',
+          policyVersion: report.policyVersion,
+          tone: report.reviewCount > 0 ||
+                  report.biomarkers.length < 13 ||
+                  report.policyVersion == null
+              ? DfetEvidenceTone.pending
+              : DfetEvidenceTone.neutral,
+          detail: report.reviewCount > 0
+              ? '지원하지 않는 단위나 불완전한 값 ${report.reviewCount}개는 자동 추측하지 않고 검토 대기로 분리했습니다. 승인된 값만 정상범위 판정과 추이에 사용합니다.'
+              : '검사 항목은 표준 코드와 단위로 정규화했습니다. 표시된 정상범위와 점수 정책 버전을 리포트에 고정해 같은 결과를 다시 확인할 수 있습니다.',
+        ),
         const SizedBox(height: 12),
         Text(
           '표시된 정상범위와 평가는 건강관리 참고용이며 의료 진단이 아닙니다.',

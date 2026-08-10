@@ -42,10 +42,9 @@
 
 ![Typography Study](05_typography_comparison.png)
 
-- 실제 SUIT, Wanted Sans, Pretendard Variable TTF로 같은 문장을 렌더링
-- 한글/UI에는 SUIT Variable을 추천
-- 큰 수치·영문 바이오마커에는 260KB 라틴 전용 Wanted Sans Std Variable을 추천
-- 상세 판단은 [`FONT_RESEARCH_2026.md`](../../FONT_RESEARCH_2026.md)에 기록
+- 초기 후보인 SUIT, Wanted Sans, Pretendard Variable TTF로 같은 문장을 렌더링한 비교 자료
+- 이후 사용자 선택 `B · Human Signal`에 따라 IBM Plex Sans KR + Gowun Batang + IBM Plex Mono로 최종 확정
+- 현재 구현과 상세 판단은 [`FONT_RESEARCH_2026.md`](../../FONT_RESEARCH_2026.md)에 기록
 
 ## 생성 방식
 

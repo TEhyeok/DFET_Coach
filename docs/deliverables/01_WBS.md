@@ -14,9 +14,11 @@
 | 2 | 장내미생물 | 16S 정규화, 소비자/전문가 리포트, 화면 | 완료 | API/업로드→리포트→홈 |
 | 3 | 혈액 POCT | 13종 변환, 4패널, 추이, QR/UDI/Lot | 완료 | 완전·부분·오류 단위 처리 |
 | 4 | 4축 인사이트 | snapshot, 정책 버전, 누락축, 타임라인 | 완료 | 재계산·비보간·버전 추적 |
+| 4 | Signal Path 리포트 UX | 축별 헤더, `MetricValue`, 펼침형 Evidence Ribbon | 완료 | light/dark·320px·text 2.0·근거 공개 |
 | 5 | Next.js 관리자 | 사용자·배정·요청·콘텐츠·검사·정책·감사 | 완료 | 역할별 서버 범위 제한 |
 | 5 | staging/prod App Hosting | 별도 프로젝트·백엔드·비밀키 | 운영 게이트 | staging E2E 승인 후 production |
 | 6 | 명세·CI | 본 폴더, Schema, GitHub Actions | 완료 | 코드와 문서 경로 일치 |
+| 6 | 임상 권한 회귀 | Firestore·Storage Emulator 10개 시나리오 | 완료 | 본인/배정/검사자/관리자와 서버 쓰기 분리 |
 | 6 | 임상 승인·UAT·출시 | 승인 정책, 실데이터 정책, 스토어 출시 | 운영 게이트 | 기관 서면 승인과 UAT 서명 |
 
 ## 권장 순차 일정

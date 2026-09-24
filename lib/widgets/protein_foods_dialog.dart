@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
 import '../theme/text_styles.dart';
+import '../design_system/d_fet_axis_glyph.dart';
+import '../design_system/d_fet_axis_icon.dart';
 
 /// 고단백 식품 다이얼로그
 class ProteinFoodsDialog extends StatelessWidget {
@@ -19,7 +21,11 @@ class ProteinFoodsDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text('💪', style: TextStyle(fontSize: 32)),
+                const DfetAxisGlyph(
+                  axis: DfetAxis.nutrition,
+                  signalState: DfetSignalState.live,
+                  size: 42,
+                ),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Text('고단백 식품 가이드', style: AppTextStyles.h2),
@@ -44,7 +50,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                   children: [
                     _buildFoodItem(
                       context,
-                      icon: '🍗',
                       name: '닭가슴살',
                       amount: '100g',
                       protein: 23,
@@ -52,7 +57,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🥚',
                       name: '삶은 달걀',
                       amount: '2개',
                       protein: 12,
@@ -60,7 +64,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🥛',
                       name: '그릭요거트',
                       amount: '1컵 (170g)',
                       protein: 15,
@@ -68,7 +71,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🐟',
                       name: '연어',
                       amount: '100g',
                       protein: 20,
@@ -76,7 +78,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🍖',
                       name: '소고기',
                       amount: '100g',
                       protein: 26,
@@ -84,7 +85,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🥜',
                       name: '아몬드',
                       amount: '28g (한 줌)',
                       protein: 6,
@@ -92,7 +92,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🧀',
                       name: '두부',
                       amount: '1/2모 (150g)',
                       protein: 10,
@@ -100,7 +99,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🥫',
                       name: '참치 캔',
                       amount: '1캔 (100g)',
                       protein: 25,
@@ -108,7 +106,6 @@ class ProteinFoodsDialog extends StatelessWidget {
                     ),
                     _buildFoodItem(
                       context,
-                      icon: '🥤',
                       name: '프로틴 쉐이크',
                       amount: '1스쿱 (30g)',
                       protein: 24,
@@ -123,8 +120,6 @@ class ProteinFoodsDialog extends StatelessWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  // 식사 탭으로 이동 신호
                   Navigator.pop(context, 'add_meal');
                 },
                 child: const Text('식사 기록하러 가기'),
@@ -138,7 +133,6 @@ class ProteinFoodsDialog extends StatelessWidget {
 
   Widget _buildFoodItem(
     BuildContext context, {
-    required String icon,
     required String name,
     required String amount,
     required int protein,
@@ -152,7 +146,19 @@ class ProteinFoodsDialog extends StatelessWidget {
         border: Border.all(color: context.wellness.border),
       ),
       child: ListTile(
-        leading: Text(icon, style: const TextStyle(fontSize: 32)),
+        leading: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: DfetAxisPalette.surface(context, DfetAxis.nutrition),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const DfetAxisAssetIcon(
+            axis: DfetAxis.nutrition,
+            size: 29,
+          ),
+        ),
         title: Text(name, style: AppTextStyles.bodyLarge),
         subtitle: Text(amount, style: AppTextStyles.caption),
         trailing: Column(
@@ -170,8 +176,6 @@ class ProteinFoodsDialog extends StatelessWidget {
           ],
         ),
         onTap: () {
-          Navigator.pop(context);
-          // 해당 식품으로 식사 추가 다이얼로그 열기 신호
           Navigator.pop(context, {
             'action': 'add_meal',
             'food': {

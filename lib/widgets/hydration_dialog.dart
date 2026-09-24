@@ -4,20 +4,28 @@ import '../theme/text_styles.dart';
 
 /// 수분 섭취 기록 다이얼로그
 class HydrationDialog extends StatefulWidget {
-  const HydrationDialog({super.key});
+  const HydrationDialog({super.key, this.initialWaterIntake = 0});
+
+  final int initialWaterIntake;
 
   @override
   State<HydrationDialog> createState() => _HydrationDialogState();
 }
 
 class _HydrationDialogState extends State<HydrationDialog> {
-  int waterIntake = 0; // ml 단위
+  late int waterIntake; // ml 단위
   final int dailyGoal = 2000; // 2L = 2000ml
+
+  @override
+  void initState() {
+    super.initState();
+    waterIntake = widget.initialWaterIntake.clamp(0, 10000);
+  }
 
   void _addWater(int amount) {
     setState(() {
       waterIntake += amount;
-      if (waterIntake > dailyGoal) waterIntake = dailyGoal;
+      if (waterIntake > 10000) waterIntake = 10000;
     });
   }
 
@@ -147,7 +155,6 @@ class _HydrationDialogState extends State<HydrationDialog> {
                   flex: 2,
                   child: FilledButton(
                     onPressed: () {
-                      // TODO: 실제로 수분 섭취 데이터 저장
                       Navigator.pop(context, waterIntake);
                     },
                     child: const Text('저장'),

@@ -1,3 +1,7 @@
+// 픽셀 골든은 macOS 글꼴 렌더링 기준이라 macOS CI job에서만 실행한다(dart_test.yaml).
+@Tags(['golden'])
+library;
+
 import 'package:dfet_coach/models/clinical_reports.dart';
 import 'package:dfet_coach/theme/app_theme.dart';
 import 'package:dfet_coach/widgets/clinical/alpha_metric_grid.dart';

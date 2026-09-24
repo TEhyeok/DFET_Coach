@@ -25,7 +25,7 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
+      - run: flutter test --exclude-tags golden
       - run: flutter build web --release
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
@@ -82,4 +82,5 @@ jobs:
           flutter-version: 3.38.2  # 3.47 전환은 별도 작업(위젯 테스트·deprecation·FlutterFire SPM 정렬)
           cache: true
       - run: flutter pub get
+      - run: flutter test --tags golden
       - run: flutter build ios --release --no-codesign

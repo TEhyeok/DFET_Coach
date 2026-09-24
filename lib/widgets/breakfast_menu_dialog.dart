@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../design_system/d_fet_axis_glyph.dart';
+import '../design_system/d_fet_axis_icon.dart';
 import '../theme/tokens.dart';
 
 class BreakfastMenuDialog extends StatelessWidget {
@@ -12,7 +14,7 @@ class BreakfastMenuDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
         decoration: BoxDecoration(
-          color: PremiumColors.cardBackground,
+          color: context.wellness.bgCard,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: context.wellness.borderSubtle),
           boxShadow: WellnessShadows.card,
@@ -24,14 +26,10 @@ class BreakfastMenuDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: PremiumColors.primary.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.wb_sunny_rounded,
-                      color: PremiumColors.primary, size: 24),
+                const DfetAxisGlyph(
+                  axis: DfetAxis.nutrition,
+                  signalState: DfetSignalState.live,
+                  size: 44,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -60,7 +58,6 @@ class BreakfastMenuDialog extends StatelessWidget {
                   children: [
                     _buildMenuItem(
                       context,
-                      icon: '🥣',
                       title: '오트밀 & 베리',
                       description: '복합 탄수화물과 항산화 성분이 풍부한 완벽한 시작',
                       calories: 350,
@@ -68,7 +65,6 @@ class BreakfastMenuDialog extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       context,
-                      icon: '🥑',
                       title: '아보카도 토스트',
                       description: '통곡물 빵과 건강한 지방의 조화',
                       calories: 420,
@@ -76,7 +72,6 @@ class BreakfastMenuDialog extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       context,
-                      icon: '🥚',
                       title: '스크램블 에그 & 시금치',
                       description: '고단백질과 비타민의 든든한 한 끼',
                       calories: 320,
@@ -84,7 +79,6 @@ class BreakfastMenuDialog extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       context,
-                      icon: '🥛',
                       title: '그릭 요거트 볼',
                       description: '프로바이오틱스와 단백질이 가득',
                       calories: 280,
@@ -125,7 +119,6 @@ class BreakfastMenuDialog extends StatelessWidget {
 
   Widget _buildMenuItem(
     BuildContext context, {
-    required String icon,
     required String title,
     required String description,
     required int calories,
@@ -142,7 +135,19 @@ class BreakfastMenuDialog extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 40)),
+          Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: DfetAxisPalette.surface(context, DfetAxis.nutrition),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const DfetAxisAssetIcon(
+              axis: DfetAxis.nutrition,
+              size: 31,
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

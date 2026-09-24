@@ -26,6 +26,23 @@ class FirestoreService {
   CollectionReference _workoutsCollection(String uid) =>
       _firestore.collection('users').doc(uid).collection('workouts');
 
+  CollectionReference _hydrationCollection(String uid) =>
+      _firestore.collection('users').doc(uid).collection('hydration');
+
+  Future<int> loadHydration(String uid, String date) async {
+    final document = await _hydrationCollection(uid).doc(date).get();
+    final data = document.data() as Map<String, dynamic>?;
+    return (data?['amountMl'] as num?)?.toInt() ?? 0;
+  }
+
+  Future<void> saveHydration(String uid, String date, int amountMl) async {
+    await _hydrationCollection(uid).doc(date).set({
+      'date': date,
+      'amountMl': amountMl.clamp(0, 10000),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   // MEALS CRUD
 
   /// Firestore에서 사용자별 오늘 식단 데이터 로드

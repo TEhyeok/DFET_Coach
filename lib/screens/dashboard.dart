@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../state/app_state.dart';
 import '../state/clinical_state.dart';
 import '../models/user_profile.dart';
+import '../models/meal.dart';
 import '../design_system/d_fet_axis_glyph.dart';
 import '../design_system/d_fet_axis_icon.dart';
 import '../widgets/app_card.dart';
@@ -722,8 +723,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         // 식사 탭으로 이동
         _navigateToTab(1);
       } else if (result is Map && result['action'] == 'add_meal') {
-        // 특정 식품 정보와 함께 식사 탭으로 이동
-        // TODO: 식품 정보를 식사 다이얼로그에 전달하는 로직 추가 가능
+        final rawFood = result['food'];
+        if (rawFood is Map) {
+          final food = Map<String, dynamic>.from(rawFood);
+          final now = DateTime.now();
+          final meal = Meal(
+            id: 'protein-guide-${now.microsecondsSinceEpoch}',
+            time:
+                '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+            name: food['name'] as String? ?? '고단백 식품',
+            calories: (food['calories'] as num?)?.round() ?? 0,
+            protein: (food['protein'] as num?)?.round() ?? 0,
+            date: ref.read(selectedDateStringProvider),
+          );
+          await ref.read(mealsProvider.notifier).addMeal(meal);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${meal.name}을(를) 식단에 추가했어요.')),
+            );
+          }
+        }
         _navigateToTab(1);
       }
     }
@@ -739,16 +758,53 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   /// 수분 섭취 다이얼로그 표시
   Future<void> _showHydrationDialog() async {
+    final uid = ref.read(currentUidProvider);
+    final date = ref.read(selectedDateStringProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
+    final localKey = 'hydration.$date';
+    var initialAmount = prefs.getInt(localKey) ?? 0;
+    if (uid != null && uid != 'guest') {
+      try {
+        initialAmount =
+            await ref.read(firestoreServiceProvider).loadHydration(uid, date);
+      } catch (error, stackTrace) {
+        AppLogger.warning(
+          '[Dashboard] 수분 기록 로드 실패, 로컬 값을 사용합니다',
+          error,
+          stackTrace,
+        );
+      }
+    }
+    if (!mounted) return;
     final waterIntake = await showDialog<int>(
       context: context,
-      builder: (context) => const HydrationDialog(),
+      builder: (context) => HydrationDialog(
+        initialWaterIntake: initialAmount,
+      ),
     );
 
     if (waterIntake != null && mounted) {
-      // TODO: 수분 섭취 데이터를 Firestore에 저장하는 로직 추가
-      // 현재는 다이얼로그에서만 표시하고 실제 저장은 하지 않음
-      // 추후 수분 섭취 추적 기능 구현 시 여기에 저장 로직 추가
-      AppLogger.info('[Dashboard] 수분 섭취 기록: ${waterIntake}ml');
+      await prefs.setInt(localKey, waterIntake);
+      if (uid != null && uid != 'guest') {
+        try {
+          await ref
+              .read(firestoreServiceProvider)
+              .saveHydration(uid, date, waterIntake);
+        } catch (error, stackTrace) {
+          AppLogger.error('[Dashboard] 수분 섭취 저장 실패', error, stackTrace);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('기기에 저장했지만 계정 동기화에 실패했습니다.')),
+          );
+          return;
+        }
+      }
+      AppLogger.info('[Dashboard] 수분 섭취 기록 저장: ${waterIntake}ml');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('수분 ${waterIntake}ml를 저장했습니다.')),
+        );
+      }
     }
   }
 

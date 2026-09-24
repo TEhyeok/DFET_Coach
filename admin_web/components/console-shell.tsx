@@ -8,8 +8,10 @@ import { LogoutButton } from './logout-button';
 
 const nav = [
   { section: '운영', label: '대시보드', href: '/dashboard', icon: '◫' },
+  { section: '운영', label: '운영 분석', href: '/analytics', icon: '⌁' },
   { section: '운영', label: '회원', href: '/users', icon: '◎' },
   { section: '운영', label: '회원 배정', href: '/assignments', icon: '⇄' },
+  { section: '운영', label: '관리자 승인', href: '/admins', icon: '✓' },
   { section: '운영', label: '요청', href: '/requests', icon: '✉' },
   { section: '운영', label: '콘텐츠', href: '/content', icon: '▤' },
   { section: '검사', label: '검사 수집', href: '/clinical/ingestions', icon: '⇧' },

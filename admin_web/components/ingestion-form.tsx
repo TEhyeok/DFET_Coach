@@ -7,6 +7,19 @@ import { KitScanner } from './kit-scanner';
 
 type Kind = 'gut' | 'blood';
 
+type IngestionInitial = {
+  kind?: Kind;
+  memberRef?: string;
+  externalReportId?: string;
+  revision?: number;
+};
+
+function emptyPayload(kind: Kind): string {
+  return kind === 'blood'
+    ? '{\n  "biomarkers": []\n}'
+    : '{\n  "alpha": {},\n  "beta": { "pcoa": [] },\n  "abundance": { "phylum": [], "genus": [] },\n  "unifrac": {}\n}';
+}
+
 function csvToPayload(text: string, kind: Kind): Record<string, unknown> {
   const result = Papa.parse<Record<string, string>>(text, {
     header: true,
@@ -64,16 +77,17 @@ function csvToPayload(text: string, kind: Kind): Record<string, unknown> {
   };
 }
 
-export function IngestionForm() {
-  const [kind, setKind] = useState<Kind>('blood');
-  const [memberRef, setMemberRef] = useState('');
+export function IngestionForm({ initial }: { initial?: IngestionInitial }) {
+  const initialKind = initial?.kind ?? 'blood';
+  const [kind, setKind] = useState<Kind>(initialKind);
+  const [memberRef, setMemberRef] = useState(initial?.memberRef ?? '');
   const [memberRefType, setMemberRefType] = useState<'uid' | 'externalId'>('uid');
-  const [externalId, setExternalId] = useState('');
-  const [revision, setRevision] = useState(1);
+  const [externalId, setExternalId] = useState(initial?.externalReportId ?? '');
+  const [revision, setRevision] = useState(initial?.revision ?? 1);
   const [kit, setKit] = useState('');
   const [lot, setLot] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
-  const [payload, setPayload] = useState('{\n  "biomarkers": []\n}');
+  const [payload, setPayload] = useState(emptyPayload(initialKind));
   const [uploadSource, setUploadSource] = useState<'admin_json' | 'admin_csv'>('admin_json');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -82,11 +96,7 @@ export function IngestionForm() {
 
   function changeKind(value: Kind) {
     setKind(value);
-    setPayload(
-      value === 'blood'
-        ? '{\n  "biomarkers": []\n}'
-        : '{\n  "alpha": {},\n  "beta": { "pcoa": [] },\n  "abundance": { "phylum": [], "genus": [] },\n  "unifrac": {}\n}',
-    );
+    setPayload(emptyPayload(value));
   }
 
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {

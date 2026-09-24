@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-00 |
-| 버전 | v1.0.1 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -42,7 +42,7 @@ D-FET Coach v1을 **바로 개발에 들어갈 수 있는 상태**로 만든 개
 ## 저장소 공개 상태 주의
 
 - `TEhyeok/DFET_Coach`는 **PUBLIC**이다(2026-09-24 확인).
-- 소유자가 공개 범위를 결정하기 전까지(DEC-09, D-MIG01-1) `docs/PRD_V1.md`와 `docs/v1/**`를 이 저장소에 푸시하지 않는다. DF-001 브랜치도 원격에 올리지 않는다.
+- **결정(DEC-09, 2026-09-25): 공개 유지.** 소유자가 PRD·개발 문서의 공개를 결정했다. 공개 전에 PRD에서 특허 제안서 파일명, 외부 공개 뷰어 URL, 로컬 절대경로를 가렸다. 트레이너 UI 보관 브랜치(`archive/trainer-ui-2026-09`)는 원격에 올리지 않는다.
 - 이유: 특허 신규성과 PRD 공개 범위(PRD Q-17, RISK-09), 규제 전략(식약처 G-05a/b 제출 전 표현·범위 노출). 비공개 전환 또는 문서 전용 비공개 저장소 분리를 결정한 뒤 병합한다.
 - `.github/**`, `tool/backlog/**`도 같은 PR(DF-001·DF-002)로 들어가므로 같은 제약을 따른다. `create_github_issues.sh --apply`(DF-902)도 이슈 본문에 카드 전문이 들어가므로 공개 범위 결정 뒤에 실행한다.
 
@@ -180,7 +180,7 @@ S01은 2026-09-28(월)에 시작한다. 상세 계획은 [SPRINT_01](sprints/SPR
 ### 시작 전(09-24~09-27, 연휴 중 소유자 확인)
 
 - [ ] **저장소 공개 범위 결정(D-MIG01-1).** 조사 시점에 `TEhyeok/DFET_Coach`는 PUBLIC이었다. 공개 상태에서 PRD·이 문서군·보관 브랜치를 푸시하면 특허 공개 범위(Q-17) 문제가 생긴다. 권고는 비공개 전환이며, 그 경우 macOS 러너 비용을 03 용량 계획에 반영한다([V1-11 §3.4](11_MIGRATION_RUNBOOK.md#34-실행-절차소유자-s01-1일차-2026-09-28-오전)).
-- [ ] 이 문서의 [결정 기록](#결정-기록) 중 남은 '확인 필요' 항목(DEC-09 저장소 공개 범위)을 확정한다.
+- [x] 이 문서의 [결정 기록](#결정-기록) 중 남은 '확인 필요' 항목(DEC-09 저장소 공개 범위)을 확정한다(2026-09-25, 공개 유지).
 - [ ] 도구 설치 확인: Xcode 16.x, XcodeGen 2.44.1(릴리스 zip, SHA-256 확인. brew 금지), Node 22, Java 21, Flutter stable, firebase-tools, jq, gh([V1-13 §2](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#2-도구와-버전)).
 - [ ] `gh auth refresh -s project,read:project`로 보드 권한을 준비한다(DF-902용).
 - [ ] 스테이징 문서군을 저장소로 옮길 준비: DF-001 브랜치에서 `devdocs/`를 저장소 루트 기준 같은 경로로 복사한다(`docs/v1/**`, `.github/**`, `tool/backlog/**`).
@@ -216,7 +216,7 @@ G-01 증빙, contracts `--check` 초록, trainer-app 워크플로 초록, SOAP �
 | DEC-06 | 마일스톤 목표일은 속도 기반 일정(P0 10-30, P1a 01-08, P1b 01-29, P2 03-26, P3 05-07)을 따른다 | 전제 | 2026-09-24 | [03 §14.2 D-1](03_RELEASE_AND_SPRINT_PLAN.md#14-가정asm과-스파인prd와의-차이), `milestones.json` |
 | DEC-07 | 이슈 데이터는 단계별 파일 대신 단일 `issues.json`(생성물) + `--phase` 옵션 | 전제(도구 설계) | 2026-09-24 | [TL-01 §1](../../tool/backlog/README.md#1-무엇이-있나) |
 | DEC-08 | owner-action·스파이크 점수는 스프린트 약속과 속도(완료 점수)에 포함한다. 소유자 실제 시간은 V1-T05 "소유자 시간" 표에 따로 적는다 | 결정 | 2026-09-24 | 02 §4.3(정본), 01 ASM-01-16, SPRINT_01 약속 18 = 개발 15 + 소유자 3 |
-| DEC-09 | 저장소 공개 범위(D-MIG01-1) | **확인 필요**(S01 1일차 전) | — | [V1-11 §3.4](11_MIGRATION_RUNBOOK.md#34-실행-절차소유자-s01-1일차-2026-09-28-오전), Q-17 |
+| DEC-09 | 저장소 공개 범위(D-MIG01-1): **공개 유지**. PRD_V1(특허 파일명·외부 뷰어 URL·로컬 절대경로 가림)과 docs/v1·이슈 키트를 공개 저장소에 올린다. 트레이너 UI 보관 브랜치는 원격에 푸시하지 않는다 | 결정(소유자 2026-09-25) | 2026-09-25 | [V1-11 §3.4](11_MIGRATION_RUNBOOK.md#34-실행-절차소유자-s01-1일차-2026-09-28-오전), Q-17 |
 | DEC-10 | 에뮬레이터 시드 정본 = `functions/scripts/dev/seed-emulator.js` + `functions/test/fixtures/emulator-seed.v1.json`(변형 `.no-consent.v1.json`, `.consent-fail.v1.json`), 프로젝트 `demo-dfet`, ID `synthTrainerA`·`synthMember0001`·`SYNTHpending00000001` | 결정 | 2026-09-24 | [V1-10 §5.2~§5.4](10_TEST_PLAN.md#5-테스트-데이터픽스처-정책). `tool/emulator/seed.mjs`와 이전 ID 체계는 쓰지 않는다(K-05) |
 | DEC-11 | 02 §8 색인이 의존 정본이며 카드가 더한 의존은 같은/앞선 스프린트일 때만 색인에 넣고, 아니면 카드에 '참고(soft)'로 둔다 | 결정 | 2026-09-24 | [02 §8](02_PRODUCT_BACKLOG.md#8-전체-스토리-색인), `issues.json` 원천 데이터(K-02) |
 | DEC-12 | 트레이너 앱 패키지 둘: `trainer_app/Packages/TrainerCore`(순수, macOS `swift test`)와 `trainer_app/Packages/TrainerKit`(iOS 전용). 픽스처는 `#filePath`로 저장소 루트 `contracts/`를 직접 읽고 복사하지 않으며(픽스처 로더는 `Packages/TrainerCore/Tests`), project.yml에 `optional: true` plist 항목을 두지 않는다(plist는 postBuildScripts 복사) | 결정 | 2026-09-24 | [ADR-001](adr/ADR-001-independent-trainer-app.md), V1-04, K-08 |
@@ -238,8 +238,8 @@ DF-901(MIG-01)에서 채운다. 이식 스토리(DF-039 등)는 이 해시의 �
 | 항목 | 값 | 기록일 |
 |---|---|---|
 | 보관 브랜치 | `archive/trainer-ui-2026-09` | — |
-| tip 커밋 해시 | (DF-901 뒤 기입) | — |
-| main 병합 커밋(A분류) | (DF-901 뒤 기입) | — |
+| tip 커밋 해시 | `82c6ee9b4c95e9622fc1c44111ddc20ee9f68941`(로컬 전용, 공개 저장소라 원격에 푸시하지 않음) | 2026-09-25 |
+| main 병합 커밋(A분류) | 기준 브랜치 `chore/DF-901-mig01-baseline` PR 병합 뒤 기입(rebase 병합이라 해시가 바뀐다) | — |
 | trainer_ios 보존 태그 | `archive/trainer_ios-final`(DF-142, P1a S13) | — |
 
 기입은 소유자가 G-01 증빙(`docs/v1/evidence/G-01.md`)과 함께 한다. PRD 변경 이력에도 같은 해시를 적는다(소유자 편집).
@@ -347,4 +347,5 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 |---|---|---|---|
 | v1.0 | 2026-09-24 | CJH(AI 에이전트 초안, 릴리스 편집) | 최초 작성. 문서 지도, 읽기 순서, S01 체크리스트, 결정 기록, 이식 기준선 자리, AS-DEV-01~13, Q-DEV 색인, 알려진 차이 K-01~K-09. 같은 편집에서 OWNER_ACTIONS_AND_GATES(V1-02-OA), 13 플레이북(V1-13), CODEOWNERS(GH-09), 백로그 도구(TL-01~05, TL-11·12·14)를 추가하고 문서 참조를 단일 `issues.json`·`create_github_issues.sh`·`TrainerCore` 경로에 맞춤 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트, 정합 편집) | 교차 정합성 조정. 소유자 결정(DEC-01~05) 반영, DEC-10~18(R2~R10) 기록, DEC-08 확정(R1), K-01·K-02·K-05 해소, K-10~K-12 추가, AS-DEV-03 확인, 가정·충돌 ID 네임스페이스 규칙 |
+| v1.0.2 | 2026-09-25 | CJH(AI 에이전트, MIG-01 실행) | 이식 기준선 tip 해시 기입, 공개 범위 결정(DEC-09: 공개 유지, PRD·문서 공개, 보관 브랜치 비푸시) 반영은 [G-01 증빙](evidence/G-01.md) |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트, 릴리스 검증) | 릴리스 검증 패스: `issues.json` 재생성·검증기·가짜 gh 테스트 통과, 헤더·링크·스테일 패턴·스토리 정합·용량·개인정보 점검. K-01·K-02·K-05 해소 내용 구체화, K-13~K-15 추가, '저장소 공개 상태 주의' 절 추가. 기계적 수정: S19-S20 작업일 8일·용량 32 반영(01·02·03), 순수 타깃 경로 TrainerCore(12, P1a DF-126), 합성 ID(08, 09, P2_P3), 픽스처 복사 문구(SPRINT_01), TodayListEntry 필드(P1a DF-125), bare ASM 참조(09 ASM-111→ASM-P1a-11, 12·analytics_events.json ASM-140→ASM-P1a-40, build_issues.mjs ASM-17→ASM-01-17), 07 로컬 절대 경로 제거 |

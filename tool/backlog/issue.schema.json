@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/TEhyeok/DFET_Coach/tool/backlog/issue.schema.json",
+  "title": "TL-04 D-FET Coach v1 이슈 항목",
+  "description": "tool/backlog/issues.json의 issues[] 한 항목. validate_backlog.mjs는 required·type·enum만 해석한다.",
+  "type": "object",
+  "required": ["key", "kind", "title", "type", "phase", "points", "labels", "deps", "cardDeps", "trace", "ownerAction", "proposal", "status", "sourceDoc", "body"],
+  "properties": {
+    "key": { "type": "string", "description": "DF-NNN 또는 EP-NN" },
+    "kind": { "type": "string", "enum": ["epic", "story", "chore", "spike", "owner-action"] },
+    "title": { "type": "string", "description": "'[KEY] 동사형 제목'" },
+    "type": { "type": "string", "enum": ["epic", "story", "chore", "spike", "task", "bug", "docs", "test", "migration"] },
+    "epic": { "type": ["string", "null"] },
+    "phase": { "type": "string" },
+    "sprint": { "type": ["string", "null"] },
+    "points": { "type": "integer" },
+    "prio": { "type": ["string", "null"], "enum": ["must", "should", "could", "wont", null] },
+    "area": { "type": ["string", "null"] },
+    "labels": { "type": "array", "items": { "type": "string" } },
+    "milestone": { "type": ["string", "null"] },
+    "deps": { "type": "array", "items": { "type": "string" }, "description": "02 §8 색인 의존(정본)" },
+    "cardDeps": { "type": "array", "items": { "type": "string" }, "description": "카드가 더한 의존(02 §10.3)" },
+    "trace": { "type": "array", "items": { "type": "string" } },
+    "ownerAction": { "type": "boolean" },
+    "proposal": { "type": "boolean" },
+    "status": { "type": "string", "enum": ["adopted", "proposed", "rejected"] },
+    "decisionAt": { "type": "string" },
+    "children": { "type": "array", "items": { "type": "string" } },
+    "sourceDoc": { "type": "string" },
+    "body": { "type": "string" }
+  }
+}

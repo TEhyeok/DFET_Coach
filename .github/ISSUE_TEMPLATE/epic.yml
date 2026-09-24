@@ -1,0 +1,70 @@
+# GH-02 에픽 이슈 폼 (V1-02 제품 백로그 총괄)
+name: "에픽"
+description: "EP-00~EP-23 에픽. 하위 스토리는 본문 체크리스트로 연결한다."
+title: "[EP-NN] "
+labels: ["type/epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        에픽 정의의 정본은 `docs/v1/02_PRODUCT_BACKLOG.md`입니다. 이 이슈는 진행 추적용입니다.
+        단계(phase/*)·영역(area/*) 라벨은 소유자가 붙입니다.
+  - type: input
+    id: key
+    attributes:
+      label: "에픽 키"
+      description: "EP-00~EP-23"
+      placeholder: "EP-10"
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: "단계"
+      multiple: true
+      options:
+        - "P0"
+        - "P1a"
+        - "P1b"
+        - "P2"
+        - "P3"
+        - "V2"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: "목표"
+      description: "에픽이 끝나면 무엇이 가능해지는가(1~3줄)"
+    validations:
+      required: true
+  - type: textarea
+    id: prd
+    attributes:
+      label: "PRD 범위"
+      description: "인용만 한다. 예: F-SOAP-01, F-SOAP-02, F-SOAP-04, §6.4.4, M-01"
+      placeholder: "F-..., AC-..., NFR-..., TR-..., G-..."
+    validations:
+      required: true
+  - type: textarea
+    id: stories
+    attributes:
+      label: "하위 스토리"
+      description: "DF 키 체크리스트. 스토리 이슈 번호를 함께 적는다."
+      value: |
+        - [ ] DF-NNN #
+        - [ ] DF-NNN #
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: "완료 기준"
+      description: "하위 스토리 Done 외에 필요한 것(게이트, 플래그 개방, 단계 종료 검토 항목)"
+    validations:
+      required: true
+  - type: textarea
+    id: gates
+    attributes:
+      label: "관련 게이트·소유자 행동"
+      placeholder: "G-04 (DF-908), G-09 (DF-909) — 플래그 개방만 막음, 코딩 비차단"

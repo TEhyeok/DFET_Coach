@@ -1,0 +1,42 @@
+# GH-04 작업 이슈 폼 (스토리의 하위 작업이 따로 추적될 필요가 있을 때만)
+name: "작업(하위)"
+description: "스토리의 하위 작업. 대부분은 스토리 본문 체크리스트로 충분하다."
+title: "[DF-NNN] 작업: "
+labels: ["type/task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        하위 작업은 부모 스토리의 DF 키를 제목에 그대로 쓴다. 점수는 부모 스토리에 포함되며 따로 매기지 않는다.
+  - type: input
+    id: parent
+    attributes:
+      label: "부모 스토리"
+      placeholder: "DF-116 (#이슈 번호)"
+    validations:
+      required: true
+  - type: textarea
+    id: work
+    attributes:
+      label: "작업 내용"
+      description: "무엇을, 어느 경로에서"
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: "완료 조건"
+      description: "부모 스토리의 어느 수용 기준에 기여하는가"
+      placeholder: "AC-SOAP-01.3의 강제 종료 후 draft 유지 테스트 통과"
+    validations:
+      required: true
+  - type: dropdown
+    id: agent
+    attributes:
+      label: "담당"
+      options:
+        - "claude"
+        - "codex"
+        - "human"
+    validations:
+      required: true

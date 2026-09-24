@@ -1,0 +1,411 @@
+{
+  "docId": "TL-02",
+  "title": "D-FET Coach v1 라벨 정의",
+  "version": "1.0",
+  "updated": "2026-09-24",
+  "canonicalDoc": "docs/v1/02_PRODUCT_BACKLOG.md#3-라벨-체계",
+  "labels": [
+    {
+      "name": "type/epic",
+      "color": "1D76DB",
+      "description": "에픽(EP-NN). 하위 스토리 체크리스트를 가진다",
+      "group": "type"
+    },
+    {
+      "name": "type/story",
+      "color": "1D76DB",
+      "description": "사용자 가치 단위 스토리(DF-NNN)",
+      "group": "type"
+    },
+    {
+      "name": "type/task",
+      "color": "1D76DB",
+      "description": "작업·소유자 행동(owner-action과 함께)",
+      "group": "type"
+    },
+    {
+      "name": "type/bug",
+      "color": "1D76DB",
+      "description": "결함. 합성 데이터로 재현",
+      "group": "type"
+    },
+    {
+      "name": "type/spike",
+      "color": "1D76DB",
+      "description": "시간 상한이 있는 조사(V1-T02)",
+      "group": "type"
+    },
+    {
+      "name": "type/chore",
+      "color": "1D76DB",
+      "description": "도구·CI·정리 작업",
+      "group": "type"
+    },
+    {
+      "name": "type/docs",
+      "color": "1D76DB",
+      "description": "문서 작업",
+      "group": "type"
+    },
+    {
+      "name": "type/test",
+      "color": "1D76DB",
+      "description": "테스트 보강",
+      "group": "type"
+    },
+    {
+      "name": "type/migration",
+      "color": "1D76DB",
+      "description": "MIG-NN 이관 작업",
+      "group": "type"
+    },
+    {
+      "name": "area/trainer-app",
+      "color": "C5DEF5",
+      "description": "trainer_app/ D-FET Trainer iPad 앱",
+      "group": "area"
+    },
+    {
+      "name": "area/member-app",
+      "color": "C5DEF5",
+      "description": "Flutter 회원 앱(lib/, ios/Runner)",
+      "group": "area"
+    },
+    {
+      "name": "area/admin-web",
+      "color": "C5DEF5",
+      "description": "admin_web Next.js 관리자 콘솔",
+      "group": "area"
+    },
+    {
+      "name": "area/functions",
+      "color": "C5DEF5",
+      "description": "Cloud Functions(functions/)",
+      "group": "area"
+    },
+    {
+      "name": "area/rules",
+      "color": "C5DEF5",
+      "description": "firestore.rules·인덱스",
+      "group": "area"
+    },
+    {
+      "name": "area/storage",
+      "color": "C5DEF5",
+      "description": "storage.rules·Storage 경로",
+      "group": "area"
+    },
+    {
+      "name": "area/contracts",
+      "color": "C5DEF5",
+      "description": "contracts/·schemas/ 단일 원본과 생성물",
+      "group": "area"
+    },
+    {
+      "name": "area/bodypath",
+      "color": "C5DEF5",
+      "description": "BodyPath 저장소·BodyPathCore 패키지",
+      "group": "area"
+    },
+    {
+      "name": "area/ci",
+      "color": "C5DEF5",
+      "description": "CI·저장소 도구",
+      "group": "area"
+    },
+    {
+      "name": "area/design",
+      "color": "C5DEF5",
+      "description": "디자인 토큰·공통 컴포넌트",
+      "group": "area"
+    },
+    {
+      "name": "area/privacy",
+      "color": "C5DEF5",
+      "description": "동의·개인정보·감사",
+      "group": "area"
+    },
+    {
+      "name": "area/analytics",
+      "color": "C5DEF5",
+      "description": "분석 이벤트·opsMetrics",
+      "group": "area"
+    },
+    {
+      "name": "area/docs",
+      "color": "C5DEF5",
+      "description": "docs/v1 문서",
+      "group": "area"
+    },
+    {
+      "name": "phase/P0",
+      "color": "5319E7",
+      "description": "P0 정리·기반(DF-001~099)",
+      "group": "phase"
+    },
+    {
+      "name": "phase/P1a",
+      "color": "5319E7",
+      "description": "P1a 알파-기록(DF-100~199)",
+      "group": "phase"
+    },
+    {
+      "name": "phase/P1b",
+      "color": "5319E7",
+      "description": "P1b 알파-평가(DF-200~299)",
+      "group": "phase"
+    },
+    {
+      "name": "phase/P2",
+      "color": "5319E7",
+      "description": "P2 베타(DF-300~379)",
+      "group": "phase"
+    },
+    {
+      "name": "phase/P3",
+      "color": "5319E7",
+      "description": "P3 센터 출시(DF-380~449)",
+      "group": "phase"
+    },
+    {
+      "name": "phase/V2",
+      "color": "5319E7",
+      "description": "V2 보류(DF-500~549). 스프린트 미배정",
+      "group": "phase"
+    },
+    {
+      "name": "prio/must",
+      "color": "FBCA04",
+      "description": "단계 종료 게이트나 PRD 수용 기준에 필요",
+      "group": "prio"
+    },
+    {
+      "name": "prio/should",
+      "color": "FBCA04",
+      "description": "단계 목표에 기여, 속도 부족 시 이월 가능",
+      "group": "prio"
+    },
+    {
+      "name": "prio/could",
+      "color": "FBCA04",
+      "description": "편의·측정 항목. 먼저 이월",
+      "group": "prio"
+    },
+    {
+      "name": "prio/wont",
+      "color": "FBCA04",
+      "description": "v1에서 하지 않음(보류 기록)",
+      "group": "prio"
+    },
+    {
+      "name": "size/XS",
+      "color": "BFD4F2",
+      "description": "1점: 소유자 검토 30분 안",
+      "group": "size"
+    },
+    {
+      "name": "size/S",
+      "color": "BFD4F2",
+      "description": "2점: PR 1개, 검토 1시간 안팎",
+      "group": "size"
+    },
+    {
+      "name": "size/M",
+      "color": "BFD4F2",
+      "description": "3점: PR 1개, 에뮬레이터·시뮬레이터 확인 포함",
+      "group": "size"
+    },
+    {
+      "name": "size/L",
+      "color": "BFD4F2",
+      "description": "5점: 규칙·개인정보 diff 정독이나 실기기 확인 포함",
+      "group": "size"
+    },
+    {
+      "name": "size/XL",
+      "color": "BFD4F2",
+      "description": "8점: 계획 전에 반드시 나눈다",
+      "group": "size"
+    },
+    {
+      "name": "owner-action",
+      "color": "B60205",
+      "description": "소유자만 실행(법률·식약처·IRB·콘솔·스토어·배포·이관·플래그 개방·단계 검토)",
+      "group": "owner"
+    },
+    {
+      "name": "gate/G-01",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-01(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-02",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-02(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-03",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-03(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-04",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-04(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-05a",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-05a(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-05b",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-05b(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-06",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-06(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-07a",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-07a(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-07",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-07(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-08",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-08(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-09",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-09(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "gate/G-10",
+      "color": "D93F0B",
+      "description": "외부·단계 게이트 G-10(PRD §12.2) 증빙 또는 대기",
+      "group": "gate"
+    },
+    {
+      "name": "flag/soapV2",
+      "color": "0E8A16",
+      "description": "soapV2 플래그 뒤 기능(TR-04·TR-05)",
+      "group": "flag"
+    },
+    {
+      "name": "flag/bodyComposition",
+      "color": "0E8A16",
+      "description": "bodyComposition 플래그 뒤 기능(TR-11·TR-12)",
+      "group": "flag"
+    },
+    {
+      "name": "flag/bodyAssessment",
+      "color": "0E8A16",
+      "description": "bodyAssessment 플래그 뒤 기능(TR-07~TR-10)",
+      "group": "flag"
+    },
+    {
+      "name": "flag/memberShare",
+      "color": "0E8A16",
+      "description": "memberShare 플래그 뒤 기능(TR-06, MB-01~MB-05)",
+      "group": "flag"
+    },
+    {
+      "name": "flag/lidarBeta",
+      "color": "0E8A16",
+      "description": "lidarBeta 플래그 뒤 기능(TR-13)",
+      "group": "flag"
+    },
+    {
+      "name": "agent/claude",
+      "color": "EDEDED",
+      "description": "Claude 에이전트 배정",
+      "group": "agent"
+    },
+    {
+      "name": "agent/codex",
+      "color": "EDEDED",
+      "description": "Codex 에이전트 배정",
+      "group": "agent"
+    },
+    {
+      "name": "agent/human",
+      "color": "EDEDED",
+      "description": "소유자 직접 수행(에이전트 배정 금지)",
+      "group": "agent"
+    },
+    {
+      "name": "status/ready",
+      "color": "FEF2C0",
+      "description": "DoR 충족",
+      "group": "status"
+    },
+    {
+      "name": "status/blocked",
+      "color": "FEF2C0",
+      "description": "선행 항목·게이트 대기",
+      "group": "status"
+    },
+    {
+      "name": "status/needs-decision",
+      "color": "FEF2C0",
+      "description": "소유자 결정 대기(추가 제안 채택 여부 등)",
+      "group": "status"
+    },
+    {
+      "name": "freeze-exception",
+      "color": "E99695",
+      "description": "동결 영역(ios/Runner/AppDelegate.swift, trainer_ios/) 예외 수정(MIG-09)",
+      "group": "risk"
+    },
+    {
+      "name": "regulatory",
+      "color": "E99695",
+      "description": "사용자 노출 문구·금지어 영향(부록 C)",
+      "group": "risk"
+    },
+    {
+      "name": "privacy-impact",
+      "color": "E99695",
+      "description": "동의·삭제·감사·내보내기 등 개인정보 영향",
+      "group": "risk"
+    },
+    {
+      "name": "schema-change",
+      "color": "E99695",
+      "description": "docs/firestore_schema.md·schemas/·contracts/ 스키마 변경",
+      "group": "risk"
+    },
+    {
+      "name": "rules-change",
+      "color": "E99695",
+      "description": "firestore.rules·storage.rules·인덱스 변경",
+      "group": "risk"
+    },
+    {
+      "name": "needs-device-test",
+      "color": "E99695",
+      "description": "실기기 확인이 수용 기준에 포함",
+      "group": "risk"
+    }
+  ]
+}

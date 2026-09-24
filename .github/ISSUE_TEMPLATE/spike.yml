@@ -1,0 +1,87 @@
+# GH-06 스파이크 이슈 폼 (V1-T02 스파이크 보고서 템플릿)
+name: "스파이크"
+description: "타임박스가 있는 조사. 결과는 ADR 또는 AS-DEV/Q-DEV로 남기고 시제품 코드는 병합하지 않는다."
+title: "[DF-NNN] 스파이크: "
+labels: ["type/spike"]
+body:
+  - type: input
+    id: key
+    attributes:
+      label: "스토리 키"
+      placeholder: "DF-200"
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: "질문"
+      description: "답이 예/아니오 또는 선택지 하나가 되도록 한 문장"
+    validations:
+      required: true
+  - type: input
+    id: prd
+    attributes:
+      label: "관련 PRD 질문·가정·리스크"
+      placeholder: "Q-18, AS-12, RISK-02"
+    validations:
+      required: true
+  - type: dropdown
+    id: timebox
+    attributes:
+      label: "타임박스(= 점수)"
+      options:
+        - "1점 = 1작업일"
+        - "2점 = 2작업일"
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: "성공 기준"
+      description: "측정 가능한 기준"
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: "방법"
+      description: "환경, 합성 데이터, 절차. 운영 프로젝트 작업은 소유자만."
+    validations:
+      required: true
+  - type: dropdown
+    id: output
+    attributes:
+      label: "산출물"
+      multiple: true
+      options:
+        - "ADR 신규·갱신"
+        - "AS-DEV 등록"
+        - "Q-DEV 등록"
+        - "표·데이터 문서(docs/v1/spikes/)"
+        - "재사용 테스트 하네스"
+    validations:
+      required: true
+  - type: input
+    id: dependents
+    attributes:
+      label: "이 답에 의존하는 스토리"
+      placeholder: "DF-207, DF-208"
+  - type: dropdown
+    id: agent
+    attributes:
+      label: "담당"
+      options:
+        - "claude"
+        - "codex"
+        - "human"
+    validations:
+      required: true
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: "스파이크 규칙"
+      options:
+        - label: "시제품 코드는 spike/DF-NNN-* 브랜치에만 두고 병합하지 않는다"
+          required: true
+        - label: "합성 데이터만 쓰고, 정확도·MDC 수치를 새로 만들지 않는다(측정값은 조건과 함께)"
+          required: true

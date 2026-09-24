@@ -1,0 +1,122 @@
+# GH-05 버그 이슈 폼 (V1-T13 버그 보고 템플릿과 같은 필드)
+name: "버그"
+description: "결함 보고. 재현은 합성 데이터로만. 보안·개인정보 노출은 공개 이슈 대신 비공개 신고."
+title: "[DF-NNN] 버그: "
+labels: ["type/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **실데이터 금지**: 실제 회원 이름·사진·건강 수치·uid·이메일, 서명, 초대 코드 원문, 비밀 값이 들어간 로그·스크린샷을 올리지 마세요.
+        권한 우회·개인정보 노출은 이 폼 대신 저장소의 비공개 보안 신고를 쓰세요.
+        같은 스프린트에 병합한 스토리의 결함이면 새 버그 대신 그 스토리 이슈를 다시 여세요. DF 키는 소유자가 붙입니다.
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "심각도"
+      description: "S1: 유실·알리지 않은 저장 실패·비인가 열람·동의 없는 저장·금지어 회원 노출·유출 / S2: 기능 불가·syncState 오표시·규칙 테스트 실패·크래시 / S3: 우회 가능 / S4: 경미"
+      options:
+        - "S1 치명"
+        - "S2 중대"
+        - "S3 보통"
+        - "S4 경미"
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: "영향 분류"
+      multiple: true
+      options:
+        - "데이터 유실"
+        - "저장 상태 표시 오류(syncState)"
+        - "권한·열람"
+        - "동의"
+        - "규제 문구·금지어"
+        - "개인정보·로그·분석"
+        - "크래시"
+        - "성능"
+        - "접근성"
+        - "기타"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: "영역"
+      options:
+        - "trainer-app"
+        - "member-app"
+        - "admin-web"
+        - "functions"
+        - "rules"
+        - "storage"
+        - "contracts"
+        - "bodypath"
+        - "ci"
+    validations:
+      required: true
+  - type: input
+    id: trace
+    attributes:
+      label: "관련 PRD ID·스토리"
+      placeholder: "C-05, NFR-06, AC-SOAP-01.4, DF-116"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: "환경"
+      value: |
+        - 앱·버전(빌드):
+        - 기기·OS 또는 시뮬레이터:
+        - 백엔드: 에뮬레이터 | 운영(가상 계정)
+        - 커밋 SHA:
+        - 플래그 상태:
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "재현 절차(합성 데이터)"
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "기대 결과(PRD 근거)"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "실제 결과"
+    validations:
+      required: true
+  - type: dropdown
+    id: syncstate
+    attributes:
+      label: "표시된 syncState(해당 시)"
+      options:
+        - "해당 없음"
+        - "localSaved '기기에 저장됨'"
+        - "syncing '동기화 중'"
+        - "synced '동기화됨'"
+        - "syncFailed '동기화 실패'"
+        - "awaitingConsent '동의 확인 대기'"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "증빙"
+      description: "식별 정보를 제거한 로그, 가상 회원 화면 스크린샷, 실패한 테스트 이름"
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: "개인정보 확인"
+      options:
+        - label: "이 보고에 실데이터·비밀·개인정보가 없다"
+          required: true

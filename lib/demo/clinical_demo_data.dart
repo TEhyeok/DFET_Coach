@@ -23,6 +23,7 @@ const _gutAlphaLatest = <String, MetricAssessment>{
     status: 'scored',
     label: '양호',
     referenceRange: ReferenceRange(lower: 2.5, upper: 4.5),
+    referenceMean: 3.08,
   ),
   'simpson': MetricAssessment(
     value: 0.91,
@@ -30,6 +31,7 @@ const _gutAlphaLatest = <String, MetricAssessment>{
     status: 'scored',
     label: '양호',
     referenceRange: ReferenceRange(lower: 0.75, upper: 1),
+    referenceMean: 0.86,
   ),
   'chao1': MetricAssessment(
     value: 327,
@@ -37,6 +39,7 @@ const _gutAlphaLatest = <String, MetricAssessment>{
     status: 'scored',
     label: '적정',
     referenceRange: ReferenceRange(lower: 220, upper: 420),
+    referenceMean: 301,
   ),
   'observedOtus': MetricAssessment(
     value: 268,
@@ -44,6 +47,7 @@ const _gutAlphaLatest = <String, MetricAssessment>{
     status: 'scored',
     label: '적정',
     referenceRange: ReferenceRange(lower: 180, upper: 360),
+    referenceMean: 244,
   ),
 };
 
@@ -108,6 +112,10 @@ final clinicalDemoGutReports = <GutReport>[
     ),
     alpha: _gutAlphaLatest,
     phylum: _phylumLatest,
+    guides: const [
+      '통곡물과 채소를 하루 두 끼 이상 유지해 보세요.',
+      '수면 시간과 식사 시간을 일정하게 기록해 다음 검사와 비교하세요.',
+    ],
   ),
   GutReport(
     reportId: 'gut-demo-20260501',
@@ -376,3 +384,22 @@ final clinicalDemoSnapshots = <HealthSnapshot>[
     insights: const [],
   ),
 ];
+
+final clinicalDemoPartialSnapshot = HealthSnapshot(
+  snapshotId: 'snapshot-demo-partial',
+  userId: clinicalDemoProfile.uid,
+  asOf: DateTime(2026, 8, 4),
+  axes: const {'fitness': 82, 'diet': 74, 'gut': 86},
+  missingAxes: const ['blood'],
+  completeness: 0.75,
+  overallScore: null,
+  label: '산정 준비 중',
+  policyVersion: 'insight-demo-v1',
+  insights: const [
+    HealthInsight(
+      id: 'partial-data',
+      title: '혈액 축 확인 필요',
+      body: '운동·식단·장 데이터는 확인됐지만 혈액 결과가 없어 통합 점수를 만들지 않았습니다.',
+    ),
+  ],
+);

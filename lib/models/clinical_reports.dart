@@ -61,6 +61,7 @@ class MetricAssessment {
   final String status;
   final String label;
   final ReferenceRange? referenceRange;
+  final double? referenceMean;
 
   const MetricAssessment({
     required this.value,
@@ -68,6 +69,7 @@ class MetricAssessment {
     required this.status,
     required this.label,
     this.referenceRange,
+    this.referenceMean,
   });
 
   factory MetricAssessment.fromMap(Object? value) {
@@ -80,6 +82,7 @@ class MetricAssessment {
       referenceRange: map['referenceRange'] == null
           ? null
           : ReferenceRange.fromMap(map['referenceRange']),
+      referenceMean: _nullableDouble(map['referenceMean']),
     );
   }
 }
@@ -135,6 +138,7 @@ class GutReport {
   final ScoreSummary overall;
   final Map<String, MetricAssessment> alpha;
   final List<TaxonAbundance> phylum;
+  final List<String> guides;
 
   const GutReport({
     required this.reportId,
@@ -145,6 +149,7 @@ class GutReport {
     required this.overall,
     required this.alpha,
     required this.phylum,
+    this.guides = const [],
   });
 
   factory GutReport.fromMap(Map<String, dynamic> map, String id) {
@@ -162,6 +167,9 @@ class GutReport {
       ),
       phylum: (composition['phylum'] as List<dynamic>? ?? const [])
           .map(TaxonAbundance.fromMap)
+          .toList(growable: false),
+      guides: (map['guides'] as List<dynamic>? ?? const [])
+          .whereType<String>()
           .toList(growable: false),
     );
   }

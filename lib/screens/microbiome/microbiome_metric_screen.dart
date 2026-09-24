@@ -56,7 +56,10 @@ class MicrobiomeMetricScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(20),
                         children: [
                           if (section == MicrobiomeMetricSection.alpha)
-                            AlphaMetricGrid(metrics: report.alpha)
+                            AlphaMetricGrid(
+                              metrics: report.alpha,
+                              showRanges: true,
+                            )
                           else
                             CompositionBar(
                                 items: report.phylum, maxLegendItems: 12),

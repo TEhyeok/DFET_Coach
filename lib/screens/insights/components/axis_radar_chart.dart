@@ -20,6 +20,59 @@ class AxisRadarChart extends StatelessWidget {
         child: Center(child: Text('표시할 축 데이터가 없습니다')),
       );
     }
+    if (values.any((value) => value == null)) {
+      final missingLabels = <String>[
+        for (var index = 0; index < values.length; index++)
+          if (values[index] == null) axisLabels[index],
+      ];
+      return SizedBox(
+        height: 230,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.radar_rounded,
+                  size: 42,
+                  color: context.wellness.textTertiary,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '레이더 차트 산정 준비 중',
+                  style: TextStyle(
+                    color: context.wellness.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  '누락 축 ${missingLabels.join(', ')}은 0점으로 채우지 않습니다.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.wellness.warning,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '검사 결과가 연결되면 동일 정책 기준으로 4축 균형을 표시합니다.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.wellness.textSecondary,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
       height: 250,
@@ -32,7 +85,7 @@ class AxisRadarChart extends StatelessWidget {
               borderWidth: 2.5,
               entryRadius: 3,
               dataEntries: values
-                  .map((value) => RadarEntry(value: value ?? 0))
+                  .map((value) => RadarEntry(value: value!))
                   .toList(growable: false),
             ),
           ],

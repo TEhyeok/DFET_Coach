@@ -8,18 +8,22 @@ import '../screens/blood/blood_expert_screen.dart';
 import '../screens/blood/blood_report_screen.dart';
 import '../screens/blood/blood_screen.dart';
 import '../screens/blood/blood_trends_screen.dart';
+import '../screens/care_type_settings_screen.dart';
 import '../screens/dashboard/today_signal_screen.dart';
 import '../screens/insights/insight_detail_screen.dart';
 import '../screens/insights/insights_screen.dart';
 import '../screens/microbiome/microbiome_expert_screen.dart';
 import '../screens/microbiome/microbiome_metric_screen.dart';
 import '../screens/microbiome/microbiome_screen.dart';
+import '../screens/report_hub_screen.dart';
+import '../screens/settings_screen.dart';
 import '../services/clinical_repository.dart';
 import '../state/clinical_state.dart';
 import '../state/theme_provider.dart';
 import '../state/user_state.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/clinical/gut_health_summary_card.dart';
 import 'clinical_demo_data.dart';
 import 'design_lab_atoms_screen.dart';
 
@@ -62,6 +66,10 @@ List<Override> get clinicalDemoOverrides => [
         healthSnapshotProvider(snapshot.snapshotId).overrideWith(
           (ref) => Stream.value(snapshot),
         ),
+      healthSnapshotProvider(clinicalDemoPartialSnapshot.snapshotId)
+          .overrideWith(
+        (ref) => Stream.value(clinicalDemoPartialSnapshot),
+      ),
     ];
 
 class ClinicalDemoApp extends ConsumerStatefulWidget {
@@ -139,6 +147,75 @@ GoRouter _buildRouter() {
       GoRoute(
         path: '/demo/design-lab/atoms',
         builder: (_, __) => const DesignLabAtomsScreen(),
+      ),
+      GoRoute(
+        path: '/demo/care-type',
+        builder: (_, __) => _detailScaffold(
+          title: '케어 유형 선택',
+          child: const CareTypeSettingsScreen(requiredConfirmation: true),
+        ),
+      ),
+      GoRoute(
+        path: '/demo/report-hub',
+        builder: (_, __) => _detailScaffold(
+          title: '리포트',
+          child: const ReportHubScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/demo/settings',
+        builder: (_, __) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/demo/dashboard-summary',
+        builder: (_, __) => _detailScaffold(
+          title: '홈 대시보드',
+          child: const _GutSummaryEvidenceScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/demo/gut-empty',
+        builder: (_, __) => ProviderScope(
+          overrides: [
+            gutReportsProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+          ],
+          child: _detailScaffold(
+            title: '장 건강',
+            child: const MicrobiomeScreen(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/demo/blood-empty',
+        builder: (_, __) => ProviderScope(
+          overrides: [
+            bloodReportsProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+          ],
+          child: _detailScaffold(
+            title: '혈액 POCT',
+            child: const BloodScreen(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/demo/insights-partial',
+        builder: (_, __) => ProviderScope(
+          overrides: [
+            healthSnapshotsProvider.overrideWith(
+              (ref) => Stream.value([clinicalDemoPartialSnapshot]),
+            ),
+          ],
+          child: _detailScaffold(
+            title: '통합 인사이트',
+            child: InsightDetailScreen(
+              snapshotId: clinicalDemoPartialSnapshot.snapshotId,
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/gut/:reportId',
@@ -306,6 +383,58 @@ class _ClinicalDemoOverview extends StatelessWidget {
       previous: clinicalDemoSnapshots[1],
       insight: snapshot.insights.first,
       onOpenInsight: () => context.push('/insights/${snapshot.snapshotId}'),
+    );
+  }
+}
+
+class _GutSummaryEvidenceScreen extends ConsumerWidget {
+  const _GutSummaryEvidenceScreen();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reports = ref.watch(gutReportsProvider).valueOrNull ?? const [];
+    final latest = reports.isEmpty ? null : reports.first;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+      children: [
+        Text(
+          '통합 케어 홈',
+          style: TextStyle(
+            color: context.wellness.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '케어유형에 맞는 최신 검사 요약을 홈 상단에서 확인합니다.',
+          style: TextStyle(
+            color: context.wellness.textSecondary,
+            fontSize: 13,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 20),
+        GutHealthSummaryCard(
+          report: latest,
+          onTap: () => context.go('/demo/gut'),
+        ),
+        const SizedBox(height: 18),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: context.wellness.bgSubtle,
+            borderRadius: WellnessRadius.card,
+          ),
+          child: Text(
+            '운동·식단 기록과 장·혈액 검사 결과를 같은 정보 위계로 연결합니다.',
+            style: TextStyle(
+              color: context.wellness.textSecondary,
+              height: 1.45,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

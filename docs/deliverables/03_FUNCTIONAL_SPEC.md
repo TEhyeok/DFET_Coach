@@ -26,6 +26,9 @@
 - 범위: 검사기관이 산출한 16S 결과. FASTQ/QIIME 처리는 제외한다.
 - 필수: Shannon, Simpson, Chao1, Observed OTUs, PCoA, Phylum/Genus, weighted/unweighted UniFrac, metadata.
 - 비율 0~1 구성비는 백분율로 변환하며 총합 100.5% 초과는 거부한다.
+- 기관 승인 정책은 지표별 `referenceMean`과 최대 3개의 생활 `guides`를 포함할 수 있다. 승인된 값만 소비자본에 복사한다.
+- `referenceMean`은 사용자 값과 참조집단 평균을 비교하는 `ComparisonCard`에 사용한다. 값이 없으면 비교 수치를 임의 생성하지 않는다.
+- 생활가이드는 승인 정책이 없거나 목록이 비어 있으면 표시하지 않고, 검사 수치에서 임의 문구를 생성하지 않는다.
 - 소비자본에는 alpha·Phylum·요약만 저장한다.
 - 전문가본에는 정규화 전체와 원문 Storage 경로를 저장한다.
 
@@ -65,6 +68,7 @@
 - 축 키: `fitness`, `diet`, `gut`, `blood`.
 - 검사 보고시점을 기준으로 운동·식단 정책 기간을 조회하고 최신 장·혈액 결과와 결합한다.
 - 누락값은 보간하지 않으며 `missingAxes`, `availableAxes`, `completeness`를 저장한다.
+- 누락 축이 있으면 레이더 차트도 해당 축을 0점으로 그리지 않고 `산정 준비 중`과 누락 축을 명시한다.
 - `minimumAxes` 미만이면 통합 점수를 만들지 않는다.
 - 문구는 인과 대신 연관 가능성(`wording=association`)으로 제한한다.
 

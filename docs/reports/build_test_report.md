@@ -11,13 +11,13 @@
 | 계층 | 명령 | 결과 |
 |---|---|---|
 | Flutter 정적 분석 | `flutter analyze` | 통과, 이슈 0건 |
-| Flutter 전체 테스트 | `flutter test` | 통과, 67개 |
+| Flutter 전체 테스트 | `flutter test` | 통과, 72개 |
 | Functions 문법 | `npm --prefix functions run lint` | 통과 |
-| Functions 단위 | `npm --prefix functions test` | 통과, 14개 |
-| Firestore/Storage Rules | `firebase emulators:exec ... test:rules` | 통과, 10개 |
+| Functions 단위 | `npm --prefix functions test` | 통과, 15개 |
+| Firestore/Storage Rules | `firebase emulators:exec ... test:rules` | 통과, 15개 |
 | 관리자 lint/typecheck | `npm --prefix admin_web run lint`, `typecheck` | 통과 |
 | 관리자 계약 테스트 | `npm --prefix admin_web test` | 통과, 2개 |
-| 관리자 production build | `npm --prefix admin_web run build` | 통과, 12개 정적 페이지 생성 |
+| 관리자 production build | `npm --prefix admin_web run build` | 통과, 운영·임상·설정·API 라우트 생성 |
 | Android | `flutter build apk --debug` | 통과, `build/app/outputs/flutter-apk/app-debug.apk` |
 | iOS Simulator | `tool/ios_simulator.sh build` | 통과, `build/ios/iphonesimulator/Runner.app` |
 
@@ -27,6 +27,8 @@
 - `DfetMetricValue`: 값·단위와 `산정 준비 중` 상태를 IBM Plex Mono로 표시한다.
 - `DfetEvidenceRibbon`: 탭해 비진단·검토·누락 처리 설명을 펼치고 다시 접을 수 있다.
 - 장 16S, 혈액 POCT, 4축 인사이트의 허브·상세가 같은 리포트 헤더와 근거 위계를 사용한다.
+- 승인된 장 정책의 참조집단 평균과 생활가이드만 소비자 리포트에 노출하고, 미승인 시 두 항목을 비활성화한다.
+- 혈액 추이에는 정상범위 밴드를 표시하며, 4축 누락 시 레이더 차트가 누락 축을 0점으로 채우지 않는다.
 - 320px, 글자 배율 2.0에서 새 원자에 RenderFlex/overflow 예외가 없다.
 - 합성 데이터 탐색에서 장 alpha/expert, 혈액 13종, 통합 전후 비교 라우트가 유지된다.
 - OS 동작 줄이기 설정에서 리포트 헤더 진입 모션은 즉시 완료된다.

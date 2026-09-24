@@ -29,6 +29,10 @@ Rules 테스트는 Firebase Emulator가 필요합니다.
 ```bash
 firebase emulators:exec --only firestore,storage --project dfet-rules-test \
   "npm --prefix functions run test:rules"
+
+# 합성 키를 functions/.secret.local에 설정한 뒤 임상 종단검증
+firebase emulators:exec --only functions,firestore,storage --project dfet-e2e \
+  "npm --prefix functions run test:e2e"
 ```
 
 ## iOS Simulator

@@ -7,14 +7,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
-import 'theme/admin_theme.dart';
 import 'router/app_router.dart';
 import 'state/app_state.dart';
 import 'state/theme_provider.dart';
 import 'core/utils/app_logger.dart';
 import 'demo/clinical_demo_app.dart';
-
-import 'admin/router.dart';
+import 'web_admin_handoff.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,25 +67,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     if (kIsWeb) {
-      // 웹(관리자)은 새로운 Admin Router 사용
-      final adminRouter = ref.watch(adminRouterProvider);
-
-      return MaterialApp.router(
-        title: 'D-FET Admin',
-        theme: AdminTheme.lightTheme,
-        darkTheme: AdminTheme.darkTheme,
-        themeMode: themeMode,
-        routerConfig: adminRouter,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('ko', 'KR'),
-          Locale('en', 'US'),
-        ],
-      );
+      return const WebAdminHandoffApp();
     } else {
       final mobileRouter = ref.watch(mobileRouterProvider);
       return MaterialApp.router(

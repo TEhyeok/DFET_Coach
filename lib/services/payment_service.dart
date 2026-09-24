@@ -108,11 +108,13 @@ class PaymentService {
     }
   }
 
-  /// 구매 검증 (서버 사이드 검증 권장, 여기서는 클라이언트 처리)
+  /// 서버 영수증 검증이 연결되기 전에는 권한을 부여하지 않는다.
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
-    // TODO: 실제 프로덕션에서는 백엔드(Firebase Functions)를 통해 영수증 검증을 수행해야 함
-    // 현재는 항상 true 반환
-    return true;
+    AppLogger.warning(
+      '[PaymentService] Server receipt verification is not configured: '
+      '${purchaseDetails.productID}',
+    );
+    return false;
   }
 
   /// 상품 지급 (프리미엄 상태 업데이트)

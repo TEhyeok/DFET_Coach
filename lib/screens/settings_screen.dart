@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/app_state.dart';
 import '../state/theme_provider.dart';
@@ -23,6 +24,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _isDeletingAccount = false;
+
   @override
   Widget build(BuildContext context) {
     final isIOS = !kIsWeb && Platform.isIOS;
@@ -646,14 +649,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (isIOS) {
       showCupertinoDialog(
         context: context,
-        builder: (context) => CupertinoAlertDialog(
+        builder: (dialogContext) => CupertinoAlertDialog(
           title: const Text('계정 연결'),
           content: const Text(
               '계정을 연결하시겠습니까?\n\n현재 게스트 모드의 데이터는\n저장되지 않습니다.\n\n로그인 후 새로운 계정으로\n데이터가 관리됩니다.'),
           actions: [
             CupertinoDialogAction(
                 child: const Text('취소'),
-                onPressed: () => Navigator.pop(context)),
+                onPressed: () => Navigator.pop(dialogContext)),
             CupertinoDialogAction(
               onPressed: () {
                 Navigator.pop(context);
@@ -696,13 +699,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (isIOS) {
       showCupertinoDialog(
         context: context,
-        builder: (context) => CupertinoAlertDialog(
+        builder: (dialogContext) => CupertinoAlertDialog(
           title: const Text('계정 전환'),
           content: const Text('로그아웃 후 다른 계정으로 로그인하시겠습니까?'),
           actions: [
             CupertinoDialogAction(
                 child: const Text('취소'),
-                onPressed: () => Navigator.pop(context)),
+                onPressed: () => Navigator.pop(dialogContext)),
             CupertinoDialogAction(
               isDestructiveAction: true,
               onPressed: () async {
@@ -801,20 +804,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (isIOS) {
       showCupertinoDialog(
         context: context,
-        builder: (context) => CupertinoAlertDialog(
+        builder: (dialogContext) => CupertinoAlertDialog(
           title: const Text('회원탈퇴'),
           content: const Text('정말 탈퇴하시겠습니까?\n\n모든 데이터가 삭제되며 복구할 수 없습니다.'),
           actions: [
             CupertinoDialogAction(
                 child: const Text('취소'),
-                onPressed: () => Navigator.pop(context)),
+                onPressed: () => Navigator.pop(dialogContext)),
             CupertinoDialogAction(
               isDestructiveAction: true,
               onPressed: () async {
-                Navigator.pop(context);
-                // Implement delete logic
+                Navigator.pop(dialogContext);
+                await _deleteAccount(context, ref, isIOS: true);
               },
-              child: const Text('탈퇴하기'),
+              child: Text(_isDeletingAccount ? '처리 중' : '탈퇴하기'),
             ),
           ],
         ),
@@ -822,17 +825,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } else {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('회원탈퇴'),
           content: const Text('정말 탈퇴하시겠습니까?\n\n모든 데이터가 삭제되며 복구할 수 없습니다.'),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('취소')),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context);
-                // Implement delete logic
+                Navigator.pop(dialogContext);
+                await _deleteAccount(context, ref, isIOS: false);
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('탈퇴하기'),
@@ -841,6 +844,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _deleteAccount(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isIOS,
+  }) async {
+    if (_isDeletingAccount) return;
+    setState(() => _isDeletingAccount = true);
+    try {
+      await FirebaseFunctions.instanceFor(region: 'asia-northeast3')
+          .httpsCallable('deleteOwnAccount')
+          .call<void>();
+      await FirebaseAuth.instance.signOut();
+      ref.read(isGuestModeProvider.notifier).state = false;
+      ref.read(isTrainerGuestModeProvider.notifier).state = false;
+    } on FirebaseFunctionsException catch (error) {
+      if (!context.mounted) return;
+      await _showAccountActionError(
+        context,
+        error.message ?? '회원탈퇴 처리 중 오류가 발생했습니다.',
+        isIOS: isIOS,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      await _showAccountActionError(
+        context,
+        '회원탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+        isIOS: isIOS,
+      );
+    } finally {
+      if (mounted) setState(() => _isDeletingAccount = false);
+    }
+  }
+
+  Future<void> _showAccountActionError(
+    BuildContext context,
+    String message, {
+    required bool isIOS,
+  }) {
+    if (isIOS) {
+      return showCupertinoDialog<void>(
+        context: context,
+        builder: (dialogContext) => CupertinoAlertDialog(
+          title: const Text('회원탈퇴 실패'),
+          content: Text(message),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      );
+    }
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('회원탈퇴 실패'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleGuide(BuildContext context) {
@@ -904,7 +975,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '프리미엄 업그레이드',
+                          '프리미엄 멤버십 준비 중',
                           style: GoogleFonts.outfit(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -913,7 +984,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '모든 기능을 제한 없이 이용하세요',
+                          '스토어 상품·서버 영수증 검증 후 제공됩니다',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             color: Colors.white.withValues(alpha: 0.9),
@@ -941,7 +1012,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 child: Text(
-                  'SALE',
+                  '준비 중',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

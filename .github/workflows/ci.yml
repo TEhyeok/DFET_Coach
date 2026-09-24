@@ -51,6 +51,8 @@ jobs:
       - run: jq empty schemas/*.json
       - run: npm install --global firebase-tools
       - run: firebase emulators:exec --only firestore,storage --project dfet-rules-test "npm --prefix functions run test:rules"
+      - run: printf '%s\n' 'INGEST_HMAC_KEYS={"e2e":"e2e-secret"}' > functions/.secret.local
+      - run: firebase emulators:exec --only functions,firestore,storage --project dfet-e2e "npm --prefix functions run test:e2e"
 
   admin-web:
     runs-on: ubuntu-latest

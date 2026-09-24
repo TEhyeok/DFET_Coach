@@ -7,6 +7,7 @@ import '../../screens/workouts.dart';
 import '../../screens/reports.dart';
 import '../../screens/tickets.dart';
 import '../../screens/settings_screen.dart';
+import '../../screens/notification_center_screen.dart';
 import '../../state/app_state.dart';
 import '../../theme/tokens.dart';
 
@@ -67,8 +68,10 @@ class MaterialShell extends ConsumerWidget {
             ),
             tooltip: '알림',
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('알림 기능은 준비 중입니다')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const NotificationCenterPage(),
+                ),
               );
             },
           ),

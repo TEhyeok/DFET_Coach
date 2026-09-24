@@ -25,11 +25,16 @@ class TicketsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
+        onPressed: () async {
+          final created = await Navigator.of(context).push<bool>(
             CupertinoPageRoute(
                 builder: (context) => const CreateRequestScreen()),
           );
+          if (created == true && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('코칭 요청을 접수했습니다.')),
+            );
+          }
         },
         backgroundColor: PremiumColors.primary,
         icon: const Icon(CupertinoIcons.add),
@@ -192,10 +197,12 @@ class TicketsScreen extends ConsumerWidget {
 
     switch (status) {
       case 'newRequest':
+      case 'pending':
         color = Colors.blue;
         label = '대기중';
         break;
       case 'inProgress':
+      case 'in_progress':
         color = Colors.orange;
         label = '진행중';
         break;

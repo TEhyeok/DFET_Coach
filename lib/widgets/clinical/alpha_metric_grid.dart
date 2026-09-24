@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../models/clinical_reports.dart';
 import '../../theme/tokens.dart';
+import 'range_bar.dart';
 
 class AlphaMetricGrid extends StatelessWidget {
-  const AlphaMetricGrid({super.key, required this.metrics});
+  const AlphaMetricGrid({
+    super.key,
+    required this.metrics,
+    this.showRanges = false,
+  });
 
   final Map<String, MetricAssessment> metrics;
+  final bool showRanges;
 
   static const labels = {
     'shannon': 'Shannon',
@@ -20,7 +26,9 @@ class AlphaMetricGrid extends StatelessWidget {
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 520 ? 4 : 2;
         final textScale = MediaQuery.textScalerOf(context).scale(1);
-        final baseRatio = columns == 4 ? 1.15 : 1.4;
+        final baseRatio = showRanges
+            ? (columns == 4 ? 0.82 : 0.96)
+            : (columns == 4 ? 1.15 : 1.4);
         final accessibleRatio =
             baseRatio / (1 + (textScale - 1).clamp(0, 1) * 1.7);
         return GridView.count(
@@ -59,6 +67,15 @@ class AlphaMetricGrid extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: context.wellness.textTertiary, fontSize: 10)),
+                  if (showRanges && metric != null) ...[
+                    const SizedBox(height: 7),
+                    RangeBar(
+                      value: metric.value,
+                      lower: metric.referenceRange?.lower,
+                      upper: metric.referenceRange?.upper,
+                      unit: metric.referenceRange?.unit,
+                    ),
+                  ],
                 ],
               ),
             );

@@ -10,19 +10,27 @@ void main() {
       'reportedAt': '2026-08-02T00:00:00Z',
       'overall': {'score': null, 'status': 'unscored', 'label': '산정 준비 중'},
       'alpha': {
-        'shannon': {'value': 2.4, 'score': null, 'status': 'unscored'},
+        'shannon': {
+          'value': 2.4,
+          'score': null,
+          'status': 'unscored',
+          'referenceMean': 3.1,
+        },
       },
       'composition': {
         'phylum': [
           {'name': 'Firmicutes', 'value': 55},
         ],
       },
+      'guides': ['통곡물과 채소를 하루 두 끼 이상 유지하세요.'],
     }, 'gut-1');
 
     expect(report.overall.isScored, isFalse);
     expect(report.overall.label, '산정 준비 중');
     expect(report.alpha['shannon']?.value, 2.4);
+    expect(report.alpha['shannon']?.referenceMean, 3.1);
     expect(report.phylum.single.value, 55);
+    expect(report.guides, hasLength(1));
   });
 
   test('부분 혈액 보고서의 패널 완성도와 검토 개수를 유지한다', () {
@@ -32,7 +40,13 @@ void main() {
       'reportedAt': 1785628800000,
       'overall': {'score': null, 'status': 'unscored', 'label': '산정 준비 중'},
       'biomarkers': [
-        {'code': 'ALT', 'panel': 'liver', 'value': 24, 'unit': 'U/L', 'status': 'review'},
+        {
+          'code': 'ALT',
+          'panel': 'liver',
+          'value': 24,
+          'unit': 'U/L',
+          'status': 'review'
+        },
       ],
       'panels': {
         'liver': {'score': null, 'status': 'unscored', 'completeness': 0.1667},

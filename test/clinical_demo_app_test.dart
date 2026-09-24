@@ -50,6 +50,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('장 건강 리포트'), findsOneWidget);
     expect(find.text('알파 다양성'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('참조군 비교'),
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('참조군 비교'), findsOneWidget);
+    expect(find.text('생활 가이드'), findsOneWidget);
 
     await tester.tap(find.text('혈액').last);
     await tester.pumpAndSettle();

@@ -28,7 +28,12 @@ class BloodTrendChart extends StatelessWidget {
       return const SizedBox(
           height: 180, child: Center(child: Text('추이를 표시하려면 검사 2회 이상이 필요합니다')));
     }
-    final allValues = values.map((item) => item.marker.value);
+    final referenceRange = values.first.marker.referenceRange;
+    final allValues = <double>[
+      ...values.map((item) => item.marker.value),
+      if (referenceRange?.lower != null) referenceRange!.lower!,
+      if (referenceRange?.upper != null) referenceRange!.upper!,
+    ];
     final minValue = allValues.reduce((a, b) => a < b ? a : b);
     final maxValue = allValues.reduce((a, b) => a > b ? a : b);
     final padding =
@@ -45,12 +50,47 @@ class BloodTrendChart extends StatelessWidget {
             getDrawingHorizontalLine: (_) =>
                 FlLine(color: context.wellness.borderSubtle),
           ),
-          titlesData: const FlTitlesData(
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rangeAnnotations: RangeAnnotations(
+            horizontalRangeAnnotations: [
+              if (referenceRange?.lower != null &&
+                  referenceRange?.upper != null)
+                HorizontalRangeAnnotation(
+                  y1: referenceRange!.lower!,
+                  y2: referenceRange.upper!,
+                  color: context.wellness.energy.withValues(alpha: 0.12),
+                ),
+            ],
+          ),
+          titlesData: FlTitlesData(
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: true, reservedSize: 42)),
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 48,
+                minIncluded: false,
+                maxIncluded: false,
+                getTitlesWidget: (value, meta) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      _axisLabel(value),
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: context.wellness.textTertiary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
           lineBarsData: [
             LineChartBarData(
@@ -62,14 +102,14 @@ class BloodTrendChart extends StatelessWidget {
               color: context.wellness.primary,
               barWidth: 3,
               dotData: const FlDotData(show: true),
-              belowBarData: BarAreaData(
-                show: true,
-                color: context.wellness.primarySubtle,
-              ),
+              belowBarData: BarAreaData(show: false),
             ),
           ],
         ),
       ),
     );
   }
+
+  String _axisLabel(double value) =>
+      value.abs() >= 10 ? value.round().toString() : value.toStringAsFixed(1);
 }

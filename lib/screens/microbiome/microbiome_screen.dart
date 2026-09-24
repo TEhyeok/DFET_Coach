@@ -11,6 +11,7 @@ import '../../state/clinical_state.dart';
 import '../../state/user_state.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/clinical/alpha_metric_grid.dart';
+import '../../widgets/clinical/comparison_card.dart';
 import '../../widgets/clinical/composition_bar.dart';
 import '../../widgets/clinical/score_gauge.dart';
 import 'components/microbiome_category_card.dart';
@@ -124,7 +125,7 @@ class _GutReportBody extends ConsumerWidget {
           icon: Icons.bubble_chart_rounded,
           iconColor: context.wellness.primaryLight,
           children: [
-            AlphaMetricGrid(metrics: report.alpha),
+            AlphaMetricGrid(metrics: report.alpha, showRanges: true),
             const SizedBox(height: 10),
             _detailLink(context, '알파 다양성 상세', 'alpha'),
           ],
@@ -141,6 +142,50 @@ class _GutReportBody extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
+        if (_referenceComparison != null) ...[
+          MicrobiomeCategoryCard(
+            title: '참조군 비교',
+            icon: Icons.compare_arrows_rounded,
+            iconColor: context.wellness.primary,
+            children: [_referenceComparison!],
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (report.guides.isNotEmpty) ...[
+          MicrobiomeCategoryCard(
+            title: '생활 가이드',
+            icon: Icons.checklist_rounded,
+            iconColor: context.wellness.energy,
+            children: [
+              for (final guide in report.guides)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.check_circle_rounded,
+                        size: 18,
+                        color: context.wellness.energy,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          guide,
+                          style: TextStyle(
+                            color: context.wellness.textSecondary,
+                            fontSize: 13,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         if (canViewExpert) ...[
           _detailLink(context, '베타 다양성 PCoA', 'beta'),
           _detailLink(context, 'UniFrac 상세', 'unifrac'),
@@ -181,6 +226,23 @@ class _GutReportBody extends ConsumerWidget {
       title: '장 건강 리포트',
       subtitle:
           '${DateFormat('yyyy.MM.dd').format(report.sampledAt)} 채취 · 16S rRNA V3-V4',
+    );
+  }
+
+  Widget? get _referenceComparison {
+    final metric = report.alpha['shannon'];
+    final mean = metric?.referenceMean;
+    if (metric == null || mean == null) return null;
+    final delta = metric.value - mean;
+    final label = delta.abs() < 0.05
+        ? '참조군과 유사'
+        : delta > 0
+            ? '참조군보다 높음'
+            : '참조군보다 낮음';
+    return ComparisonCard(
+      title: 'Shannon 다양성 · 참조군 평균 ${mean.toStringAsFixed(2)}',
+      value: metric.value.toStringAsFixed(2),
+      label: label,
     );
   }
 

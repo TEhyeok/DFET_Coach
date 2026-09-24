@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const {FieldValue, Timestamp} = require('firebase-admin/firestore');
 const {INGESTION_TYPES} = require('./constants');
 const {normalizeBloodPayload, normalizeGutPayload, round} = require('./normalization');
 const {scoreBloodReport, scoreGutReport} = require('./scoring');
@@ -59,8 +60,8 @@ function ingestionTypeFromPath(path) {
   return INGESTION_TYPES.find((type) => path.endsWith(`/v1/ingestions/${type}`)) || null;
 }
 
-function timestamp(admin, value) {
-  return admin.firestore.Timestamp.fromDate(new Date(value));
+function timestamp(_admin, value) {
+  return Timestamp.fromDate(new Date(value));
 }
 
 function publicKit(kit) {
@@ -138,7 +139,7 @@ async function computeBehaviorAxes({admin, db, userId, policy, asOf}) {
   }
   const windowDays = Number.isInteger(policy.windowDays) ? policy.windowDays : 28;
   const start = new Date(asOf.getTime() - windowDays * 24 * 60 * 60 * 1000);
-  const startTimestamp = admin.firestore.Timestamp.fromDate(start);
+  const startTimestamp = Timestamp.fromDate(start);
   const userRef = db.collection('users').doc(userId);
   const [workouts, meals] = await Promise.all([
     userRef.collection('workouts').where('timestamp', '>=', startTimestamp).get(),
@@ -205,7 +206,7 @@ function buildReportDocuments({admin, type, envelope, normalized, scored, report
     overall: scored.overall,
     status: scored.overall.status,
     kit: publicKit(envelope.kit),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
   };
 
   if (type === 'gut') {
@@ -214,6 +215,7 @@ function buildReportDocuments({admin, type, envelope, normalized, scored, report
         ...common,
         alpha: scored.metrics,
         composition: {phylum: normalized.abundance.phylum},
+        guides: scored.guides,
         summary: {
           score: scored.overall.score,
           label: scored.overall.label,
@@ -261,7 +263,7 @@ async function prepareSnapshot({admin, db, userId, type, reportId, reportScore, 
   const behavior = await computeBehaviorAxes({admin, db, userId, policy, asOf});
   const snapshotId = sha256(`${userId}:${asOf.toISOString()}:${reportId}`).slice(0, 32);
   const snapshot = buildHealthSnapshot({
-    asOf: admin.firestore.Timestamp.fromDate(asOf),
+    asOf: Timestamp.fromDate(asOf),
     axes: {
       fitness: behavior.fitness,
       diet: behavior.diet,
@@ -277,7 +279,7 @@ async function prepareSnapshot({admin, db, userId, type, reportId, reportScore, 
       ...snapshot,
       snapshotId,
       userId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     },
   };
 }
@@ -326,7 +328,7 @@ async function reserveIngestionJob({
         payloadHash,
         jobId,
         reportId,
-        reservedAt: admin.firestore.FieldValue.serverTimestamp(),
+        reservedAt: FieldValue.serverTimestamp(),
       });
     }
     transaction.set(jobRef, {
@@ -340,9 +342,9 @@ async function reserveIngestionJob({
       status: 'processing',
       createdBy: `hmac:${keyId}`,
       ...(!existing.exists
-        ? {createdAt: admin.firestore.FieldValue.serverTimestamp()}
+        ? {createdAt: FieldValue.serverTimestamp()}
         : {}),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     return {duplicate: false};
   });
@@ -429,8 +431,8 @@ async function processIngestion({admin, type, envelope, rawBody, keyId}) {
       userId,
       reportId,
       rawPath,
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      completedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     batch.set(db.collection('auditLogs').doc(), {
       action: `clinical.${type}.ingested`,
@@ -440,8 +442,8 @@ async function processIngestion({admin, type, envelope, rawBody, keyId}) {
       actor: `hmac:${keyId}`,
       target: {userId, reportId, jobId},
       metadata: {source: envelope.source, revision: envelope.revision},
-      occurredAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      occurredAt: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
     await batch.commit();
     return {
@@ -462,7 +464,7 @@ async function processIngestion({admin, type, envelope, rawBody, keyId}) {
       ...(failureStatus === 'review_pending'
         ? {reviewReasons: error.details || []}
         : {}),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     throw error;
   }
@@ -517,7 +519,11 @@ function createClinicalApiHandler({admin, getKeyMap}) {
           error: {code: error.code, message: error.message, details: error.details},
         });
       }
-      console.error('Clinical ingestion failed', {type, code: error.code || 'internal'});
+      console.error('Clinical ingestion failed', {
+        type,
+        code: error.code || 'internal',
+        message: error.message || 'Unknown error',
+      });
       return jsonResponse(res, 500, {error: {code: 'internal'}});
     }
   };

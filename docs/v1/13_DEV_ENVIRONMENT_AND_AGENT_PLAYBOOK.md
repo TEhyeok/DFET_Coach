@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-13 |
-| 버전 | v1.0 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -43,7 +43,7 @@
 | iOS 배포 대상 | trainer_app 17.0(ADR-001), 회원 앱 Runner 15.5 | — | ADR-001, NFR-01 |
 | Node | 22 | functions, admin_web, contracts·lint·backlog 도구 | dfet:.github/workflows/ci.yml:39-41, dfet:functions/package.json `engines.node`, dfet:admin_web/package.json `engines.node` |
 | Java | 21(Firestore·Storage 에뮬레이터 job), 17(flutter job) | 에뮬레이터 | dfet:.github/workflows/ci.yml:44-47, :17-20 |
-| firebase-tools | 최신 전역 설치(CI가 버전 고정 없이 설치) | 에뮬레이터 | dfet:.github/workflows/ci.yml:52, [ASM-13-01](#10-가정asm-13-nn) |
+| firebase-tools | 최신 전역 설치(CI가 버전 고정 없이 설치). **15.x 이상 필수**: 14.x 에뮬레이터는 firebase-functions v7에서 제거된 `functions.config()`를 호출해 functions 로드가 실패한다(2026-09-25 MIG-01 검증에서 14.17.0 실패, 15.31.0 통과) | 에뮬레이터 | dfet:.github/workflows/ci.yml:52, [ASM-13-01](#10-가정asm-13-nn) |
 | Flutter | stable 채널 | 회원 앱 | dfet:.github/workflows/ci.yml:21-24 |
 | jq | 1.6 이상 | `schemas/*.json` 검사, 백로그 스크립트 | dfet:.github/workflows/ci.yml:51 |
 | gh | 최신. 소유자만 `--apply`에 사용 | 백로그 생성 | [TL-01](../../tool/backlog/README.md) |
@@ -197,3 +197,4 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | v1.0 | 2026-09-24 | CJH(AI 에이전트 초안) | 최초 작성. 도구 버전은 dfet CI·package.json에서 확인, 명령·필독 목록은 01·10·ADR과 대조 |
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 시드 정본 확정(R2), XcodeGen zip 설치(R8), 포트 추가 담당 |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: 시드 경로·ID 정본화(R2), XcodeGen zip 고정(R8, ASM-13-04), Auth·Functions 포트 추가를 P0 시드 스토리로 이관 |
+| v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패) |

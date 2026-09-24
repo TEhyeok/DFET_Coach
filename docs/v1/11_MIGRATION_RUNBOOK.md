@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-11 |
-| 버전 | v1.0 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -579,7 +579,7 @@ git log --oneline main..HEAD | wc -l            # 18 + 14 = 32
 작업 트리에 B 변경이 남아 있으므로 **커밋본만 담은 별도 작업 트리**에서 CI와 같은 명령을 돌린다.
 
 ```bash
-git worktree add ../dfet_mig01_verify chore/DF-901-mig01-baseline
+git worktree add --detach ../dfet_mig01_verify chore/DF-901-mig01-baseline   # 현재 작업 트리가 같은 브랜치를 쓰고 있어 --detach 필요(2026-09-25 실행 확인)
 cd ../dfet_mig01_verify
 flutter pub get && flutter analyze && flutter test
 npm ci --prefix functions && npm --prefix functions run lint && npm --prefix functions test
@@ -1647,3 +1647,4 @@ firebase emulators:exec --only firestore,storage --project dfet-e2e \
 |---|---|---|---|
 | v1.0 | 2026-09-24 | 최초 작성. MIG-01 실제 분류(88항목), MIG-02~11 실행 절차와 스크립트 계약 | CJH(에이전트 초안) |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정(정합 패스 2): DF-901 시점(화 12:00), 배포 명령 순서(R7), 픽스처 태그 `$ts`, 이관 에뮬레이터 프로젝트 `dfet-e2e`(§2.2·§14.1·§14.2), §6.2 main :613 행, ASM-11-16 | CJH(에이전트) |
+| v1.0.2 | 2026-09-25 | 5단계 `git worktree add`에 `--detach` 추가(같은 브랜치 이중 체크아웃 불가). 실행 기록은 [G-01 증빙](evidence/G-01.md) | CJH(AI 에이전트, MIG-01 실행) |

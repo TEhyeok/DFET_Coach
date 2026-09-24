@@ -10,6 +10,7 @@ import '../../screens/reports.dart';
 import '../../screens/community/community_screen.dart';
 import '../../screens/microbiome/microbiome_screen.dart';
 import '../../screens/settings_screen.dart';
+import '../../screens/notification_center_screen.dart';
 import '../../models/user_profile.dart';
 import '../../state/app_state.dart';
 import '../../theme/tokens.dart';
@@ -165,16 +166,9 @@ class _IOSShellState extends ConsumerState<IOSShell> {
                         ],
                       ),
                       onPressed: () {
-                        showCupertinoDialog(
-                          context: context,
-                          builder: (context) => CupertinoAlertDialog(
-                            content: const Text('알림 기능은 준비 중입니다'),
-                            actions: [
-                              CupertinoDialogAction(
-                                child: const Text('확인'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ],
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const NotificationCenterPage(),
                           ),
                         );
                       },
@@ -386,16 +380,9 @@ class _IOSShellState extends ConsumerState<IOSShell> {
             ],
           ),
           onPressed: () {
-            showCupertinoDialog(
-              context: context,
-              builder: (context) => CupertinoAlertDialog(
-                content: const Text('알림 기능은 준비 중입니다'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: const Text('확인'),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+            Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (_) => const NotificationCenterPage(),
               ),
             );
           },

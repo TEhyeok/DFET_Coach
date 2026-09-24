@@ -41,9 +41,7 @@ class AdaptiveHomeShell extends StatelessWidget {
         actions: [
           IconButton(
             tooltip: '알림',
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('새 알림이 없습니다')),
-            ),
+            onPressed: () => context.push('/home/notifications'),
             icon: const Icon(Icons.notifications_outlined),
           ),
           IconButton(

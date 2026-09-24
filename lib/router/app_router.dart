@@ -16,10 +16,12 @@ import '../screens/login_screen.dart';
 import '../screens/microbiome/microbiome_expert_screen.dart';
 import '../screens/microbiome/microbiome_metric_screen.dart';
 import '../screens/microbiome/microbiome_screen.dart';
+import '../screens/notification_center_screen.dart';
 import '../screens/profile_setup_screen.dart';
 import '../screens/record_hub_screen.dart';
 import '../screens/report_hub_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/tickets.dart';
 import '../state/app_state.dart';
 import '../state/clinical_state.dart';
 import '../theme/tokens.dart';
@@ -74,8 +76,10 @@ final mobileRouterProvider = Provider<GoRouter>((ref) {
       if (isExpertRoute && !canViewExpert) return '/home/report';
 
       if (featureFlags != null) {
-        final isGutRoute = location == '/home/gut' || location.startsWith('/gut/');
-        final isBloodRoute = location == '/home/blood' || location.startsWith('/blood/');
+        final isGutRoute =
+            location == '/home/gut' || location.startsWith('/gut/');
+        final isBloodRoute =
+            location == '/home/blood' || location.startsWith('/blood/');
         final isInsightRoute =
             location == '/home/insights' || location.startsWith('/insights/');
         if ((isGutRoute && !featureFlags.gut) ||
@@ -167,6 +171,19 @@ final mobileRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         path: '/home/myPage/settings/theme',
         builder: (_, __) => const SettingsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/home/myPage/requests',
+        builder: (_, __) => const _DetailScaffold(
+          title: '코칭 요청',
+          child: TicketsScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/home/notifications',
+        builder: (_, __) => const NotificationCenterPage(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

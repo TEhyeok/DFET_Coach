@@ -105,7 +105,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
         'userName': user.displayName ?? 'Unknown',
         'userPhotoUrl': user.photoURL,
         'type': 'postureCheck',
-        'status': 'newRequest',
+        'status': 'pending',
         'title': _titleController.text,
         'description': _descriptionController.text,
         'attachmentUrls': [downloadUrl],
@@ -115,8 +115,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
       if (mounted) {
         AppLogger.debug('Request submitted, popping screen');
-        Navigator.of(context).pop(); // Go back
-        _showSuccess('요청이 성공적으로 제출되었습니다!');
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       AppLogger.error('Error submitting request', e);
@@ -142,19 +141,12 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     );
   }
 
-  void _showSuccess(String message) {
-    // Using a snackbar-like overlay or just pop with result would be better,
-    // but for now just log or assume user sees the screen change.
-    // Since we popped, we might show this on the previous screen if we returned a result,
-    // but here we just rely on the pop.
-  }
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: PremiumColors.backgroundStart,
+      backgroundColor: context.wellness.bgRoot,
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: PremiumColors.backgroundStart.withValues(alpha: 0.8),
+        backgroundColor: context.wellness.bgRoot.withValues(alpha: 0.92),
         middle: Text('새로운 자세 교정 요청',
             style: TextStyle(color: context.wellness.textPrimary)),
         leading: CupertinoButton(

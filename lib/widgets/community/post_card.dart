@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../models/community/post.dart';
 import '../../state/community_state.dart';
 import '../../theme/tokens.dart';
+import '../../screens/community/post_detail_screen.dart';
+import '../../utils/ios_navigation.dart';
 
 class PostCard extends ConsumerWidget {
   final Post post;
@@ -17,7 +19,7 @@ class PostCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: PremiumColors.cardBackground,
+        color: context.wellness.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.wellness.borderSubtle),
         boxShadow: WellnessShadows.soft,
@@ -112,7 +114,11 @@ class PostCard extends ConsumerWidget {
                 label: '${post.commentCount}',
                 color: context.wellness.textSecondary,
                 onTap: () {
-                  // TODO: Navigate to detail
+                  Navigator.of(context).push(
+                    adaptivePageRoute(
+                      builder: (_) => PostDetailScreen(postId: post.id),
+                    ),
+                  );
                 },
               ),
             ],

@@ -58,7 +58,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PremiumColors.backgroundStart,
+      backgroundColor: context.wellness.bgRoot,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text('새 게시글',

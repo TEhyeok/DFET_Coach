@@ -26,7 +26,8 @@ class Post {
   });
 
   factory Post.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? const {};
+    final created = data['createdAt'];
     return Post(
       id: doc.id,
       authorId: data['authorId'] ?? '',
@@ -36,7 +37,7 @@ class Post {
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
       likeCount: data['likeCount'] ?? 0,
       commentCount: data['commentCount'] ?? 0,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: created is Timestamp ? created.toDate() : DateTime.now(),
       isLikedByMe: false, // Needs separate check
     );
   }

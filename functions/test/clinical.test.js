@@ -189,6 +189,27 @@ test('range bands include their declared boundaries', () => {
   assert.equal(scoreMetric(40.1, definition).status, 'unscored');
 });
 
+test('approved gut policies preserve reference means and approved guides', () => {
+  const definition = {
+    referenceRange: {lower: 1, upper: 5},
+    referenceMean: 3.1,
+    bands: [{min: 0, max: 500, score: 85, status: 'within', label: '범위 내'}],
+  };
+  const scored = scoreGutReport(normalizeGutPayload(gutPayload), {
+    version: 'gut-v1',
+    status: 'approved',
+    metrics: {
+      shannon: definition,
+      simpson: definition,
+      chao1: definition,
+      observedOtus: definition,
+    },
+    guides: ['통곡물과 채소를 하루 두 끼 이상 유지하세요.'],
+  });
+  assert.equal(scored.metrics.shannon.referenceMean, 3.1);
+  assert.deepEqual(scored.guides, ['통곡물과 채소를 하루 두 끼 이상 유지하세요.']);
+});
+
 test('keeps missing insight axes explicit', () => {
   const snapshot = buildHealthSnapshot({
     asOf: new Date('2026-07-02T09:00:00.000Z'),

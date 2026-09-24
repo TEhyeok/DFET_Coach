@@ -60,6 +60,9 @@ function scoreMetric(value, definition) {
     status: band.status || 'review',
     label: band.label || '검토 필요',
     referenceRange: definition.referenceRange || null,
+    ...(Number.isFinite(definition.referenceMean)
+      ? {referenceMean: round(definition.referenceMean)}
+      : {}),
   };
 }
 
@@ -131,6 +134,7 @@ function scoreGutReport(normalized, config) {
   if (!isApprovedGutPolicy(config)) {
     return {
       policyVersion: null,
+      guides: [],
       metrics: Object.fromEntries(
         metricEntries.map(([key, value]) => [key, {value, ...UNSCORED}]),
       ),
@@ -151,6 +155,9 @@ function scoreGutReport(normalized, config) {
   );
   return {
     policyVersion: config.version,
+    guides: Array.isArray(config.guides)
+      ? config.guides.filter((guide) => typeof guide === 'string' && guide.trim()).slice(0, 3)
+      : [],
     metrics,
     overall: overallScore === null
       ? {...UNSCORED}

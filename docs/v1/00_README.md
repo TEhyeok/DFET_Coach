@@ -181,7 +181,7 @@ S01은 2026-09-28(월)에 시작한다. 상세 계획은 [SPRINT_01](sprints/SPR
 
 - [ ] **저장소 공개 범위 결정(D-MIG01-1).** 조사 시점에 `TEhyeok/DFET_Coach`는 PUBLIC이었다. 공개 상태에서 PRD·이 문서군·보관 브랜치를 푸시하면 특허 공개 범위(Q-17) 문제가 생긴다. 권고는 비공개 전환이며, 그 경우 macOS 러너 비용을 03 용량 계획에 반영한다([V1-11 §3.4](11_MIGRATION_RUNBOOK.md#34-실행-절차소유자-s01-1일차-2026-09-28-오전)).
 - [x] 이 문서의 [결정 기록](#결정-기록) 중 남은 '확인 필요' 항목(DEC-09 저장소 공개 범위)을 확정한다(2026-09-25, 공개 유지).
-- [ ] 도구 설치 확인: Xcode 16.x, XcodeGen 2.44.1(릴리스 zip, SHA-256 확인. brew 금지), Node 22, Java 21, Flutter stable, firebase-tools, jq, gh([V1-13 §2](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#2-도구와-버전)).
+- [ ] 도구 설치 확인: Xcode 16.x, XcodeGen 2.44.1(릴리스 zip, SHA-256 확인. brew 금지), Node 22, Java 21, Flutter 3.38.2, firebase-tools 15.x 이상, jq, gh([V1-13 §2](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#2-도구와-버전)).
 - [ ] `gh auth refresh -s project,read:project`로 보드 권한을 준비한다(DF-902용).
 - [ ] 스테이징 문서군을 저장소로 옮길 준비: DF-001 브랜치에서 `devdocs/`를 저장소 루트 기준 같은 경로로 복사한다(`docs/v1/**`, `.github/**`, `tool/backlog/**`).
 
@@ -304,6 +304,7 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | K-13 | 대기 회원 입력 구조체 `PendingMemberDraft`의 필드 선택성이 다르다: V1-06 §8(`sex: Sex`, `birthYear: Int` 필수) vs P1a DF-108(`sex: Sex?`, `birthYear: Int?`). SwiftData 엔티티 `LocalPendingMemberDraft`(V1-05 §12)는 일치한다 | 작업: DF-108 착수 전(S07) PRD F-LINK-01 최소 정보 기준으로 한쪽에 맞춘다 |
 | K-14 | BodyPath 결과 패키지 UTType 식별자 `com.<소유자 계정명>.bodyscan.result-package`(P2_P3 DF-301·DF-320, ASM-P2P3-03)는 BodyPath 실제 `bundleIdPrefix`에서 왔고 소유자 개인 이름 로마자 표기를 포함한다. 공개 저장소 문서·앱 Info.plist에 그대로 노출된다 | 결정: DF-301(S23-S24) 전에 식별자를 조직 접두(예: `kr.co.dfet`)로 바꿀지. 바꾸면 BodyPath 앱의 export 선언도 같이 바꾼다 |
 | K-15 | V1-03 §14.2의 문서 로컬 차이 ID `D-1`~`D-7`이 PRD 결정 ID(D1~D4 등)와 모양이 비슷하다. R10 범위(ASM-NN·C-NN)는 아니어서 두었다 | 작업(낮음): 다음 03 개정 때 `CF-03-NN`으로 바꿀지 |
+| K-16 | Flutter 3.47 전환(기술부채). PR #1 CI에서 최신 stable(3.47)로 돌리자 ① `SizeTransition.axisAlignment` deprecation으로 `flutter analyze` 실패(`lib/screens/dashboard/today_signal_screen.dart:426`, 대체값 `alignment: AlignmentDirectional.topStart`) ② 위젯 테스트 다수 실패(`protein_foods_dialog_test`, `clinical_demo_app_test` 등) ③ iOS SPM 기본 활성화로 FlutterFire 플러그인 버전 혼재 충돌(`firebase_auth` 6.1.0 ↔ `firebase_storage` 13.0.4). 그래서 CI·로컬을 3.38.2로 고정하고 iOS는 CocoaPods로 빌드한다. 전환 시 FlutterFire 전체를 같은 릴리스로 올리고(현재 `firebase_core` 4.2.1, 최신 4.15) SPM 설정을 다시 켠다 | 작업: 백로그 기술부채 후보로 소유자가 스토리 채택(2026-09-25 기록) |
 
 ## 규모 요약
 

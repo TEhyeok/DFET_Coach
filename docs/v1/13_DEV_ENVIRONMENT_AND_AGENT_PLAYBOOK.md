@@ -44,7 +44,7 @@
 | Node | 22 | functions, admin_web, contracts·lint·backlog 도구 | dfet:.github/workflows/ci.yml:39-41, dfet:functions/package.json `engines.node`, dfet:admin_web/package.json `engines.node` |
 | Java | 21(Firestore·Storage 에뮬레이터 job), 17(flutter job) | 에뮬레이터 | dfet:.github/workflows/ci.yml:44-47, :17-20 |
 | firebase-tools | 최신 전역 설치(CI가 버전 고정 없이 설치). **15.x 이상 필수**: 14.x 에뮬레이터는 firebase-functions v7에서 제거된 `functions.config()`를 호출해 functions 로드가 실패한다(2026-09-25 MIG-01 검증에서 14.17.0 실패, 15.31.0 통과) | 에뮬레이터 | dfet:.github/workflows/ci.yml:52, [ASM-13-01](#10-가정asm-13-nn) |
-| Flutter | stable 채널 | 회원 앱 | dfet:.github/workflows/ci.yml:21-24 |
+| Flutter | **3.38.2 고정**(CI `flutter-version: 3.38.2`). 로컬도 같은 버전을 쓴다(`flutter downgrade`/`flutter upgrade`로 맞춤). 3.47 stable에서는 위젯 테스트 실패·deprecation·FlutterFire SPM 충돌이 있어 전환은 별도 작업([V1-00 K-16](00_README.md#알려진-차이와-남은-일)). iOS는 CocoaPods 빌드(`pubspec.yaml`의 `enable-swift-package-manager: false`) | 회원 앱 | dfet:.github/workflows/ci.yml(flutter·ios-no-codesign job) |
 | jq | 1.6 이상 | `schemas/*.json` 검사, 백로그 스크립트 | dfet:.github/workflows/ci.yml:51 |
 | gh | 최신. 소유자만 `--apply`에 사용 | 백로그 생성 | [TL-01](../../tool/backlog/README.md) |
 | shellcheck | 있으면 사용 | `tool/**/*.sh` | P0 DF-002 카드 |
@@ -56,7 +56,7 @@
 ### 3.1 처음 한 번(소유자 Mac)
 
 1. 저장소를 받고 `main`을 기준으로 둔다. v1 작업은 모두 `main`에서 분기한다(AS-DEV-11). `feature/integrated-care-2026`은 DF-901 뒤 삭제된다.
-2. 도구 설치: Xcode 16.x, XcodeGen 2.44.1(GitHub 릴리스 `xcodegen.zip`을 SHA-256 `a2e905fb…1b73`으로 확인해 설치. brew로 설치하지 않는다, [SPRINT_01 ASM-S01-09](sprints/SPRINT_01.md#13-가정asm), [ASM-13-04](#10-가정asm-13-nn)), `brew install jq gh`, Node 22, Java 21, Flutter stable, `npm install --global firebase-tools`.
+2. 도구 설치: Xcode 16.x, XcodeGen 2.44.1(GitHub 릴리스 `xcodegen.zip`을 SHA-256 `a2e905fb…1b73`으로 확인해 설치. brew로 설치하지 않는다, [SPRINT_01 ASM-S01-09](sprints/SPRINT_01.md#13-가정asm), [ASM-13-04](#10-가정asm-13-nn)), `brew install jq gh`, Node 22, Java 21, Flutter 3.38.2, `npm install --global firebase-tools`(15.x 이상).
 3. 의존성: `npm ci --prefix functions`, `npm ci --prefix admin_web`, `flutter pub get`.
 4. **plist 배치(소유자만, ADR-019).** DF-903에서 받은 `GoogleService-Info.plist`를 저장소 밖(예: `~/secure/dfet/trainer/`)에 보관하고, 실기기·운영 연결 빌드가 필요할 때만 `trainer_app/Config/GoogleService-Info.plist`로 복사한다. 이 경로는 `.gitignore` 대상이다(DF-034). 내용은 어디에도 붙여 넣지 않는다. 에이전트 환경에는 plist를 두지 않는다. plist가 없으면 preview 구성으로 빌드된다.
 5. 트레이너 앱 프로젝트 생성: `xcodegen generate --spec trainer_app/project.yml`(DF-008 이후). 생성된 `DFETTrainer.xcodeproj`는 커밋 대상이며 CI가 재생성 diff로 검증한다.
@@ -197,4 +197,4 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | v1.0 | 2026-09-24 | CJH(AI 에이전트 초안) | 최초 작성. 도구 버전은 dfet CI·package.json에서 확인, 명령·필독 목록은 01·10·ADR과 대조 |
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 시드 정본 확정(R2), XcodeGen zip 설치(R8), 포트 추가 담당 |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: 시드 경로·ID 정본화(R2), XcodeGen zip 고정(R8, ASM-13-04), Auth·Functions 포트 추가를 P0 시드 스토리로 이관 |
-| v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패) |
+| v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패). Flutter 3.38.2 고정과 iOS CocoaPods 빌드 명시(PR #1 CI 결과) |

@@ -1,119 +1,118 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
+import '../models/community/community_comment.dart';
 import '../models/community/post.dart';
 
 class CommunityService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  CommunityService({
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+    FirebaseAuth? auth,
+    FirebaseFunctions? functions,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _storage = storage ?? FirebaseStorage.instance,
+        _auth = auth ?? FirebaseAuth.instance,
+        _functions = functions ??
+            FirebaseFunctions.instanceFor(region: 'asia-northeast3');
 
-  // Collection Reference
-  CollectionReference get _postsRef => _firestore.collection('posts');
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+  final FirebaseAuth _auth;
+  final FirebaseFunctions _functions;
 
-  // Create Post
+  CollectionReference<Map<String, dynamic>> get _postsRef =>
+      _firestore.collection('posts');
+
   Future<void> createPost(String content, List<File> images) async {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not logged in');
+    final trimmed = content.trim();
+    if (user == null) throw Exception('로그인이 필요합니다.');
+    if (trimmed.isEmpty) throw Exception('내용을 입력해 주세요.');
+    if (trimmed.length > 2000) throw Exception('게시글은 2,000자까지 입력할 수 있습니다.');
 
-    List<String> imageUrls = [];
-
-    // Upload images
-    for (var image in images) {
-      final ref = _storage.ref().child(
-          'posts/${DateTime.now().millisecondsSinceEpoch}_${user.uid}.jpg');
-      await ref.putFile(image);
-      final url = await ref.getDownloadURL();
-      imageUrls.add(url);
+    final imageUrls = <String>[];
+    for (var index = 0; index < images.length; index++) {
+      final image = images[index];
+      final reference = _storage.ref().child(
+            'posts/${DateTime.now().microsecondsSinceEpoch}_${index}_${user.uid}.jpg',
+          );
+      await reference.putFile(image);
+      imageUrls.add(await reference.getDownloadURL());
     }
 
-    // Save to Firestore
-    final post = Post(
-      id: '', // Will be generated
-      authorId: user.uid,
-      authorName: user.displayName ?? 'Anonymous',
-      authorProfileImage: user.photoURL,
-      content: content,
-      imageUrls: imageUrls,
-      createdAt: DateTime.now(),
-      likeCount: 0,
-      commentCount: 0,
-    );
-
-    await _postsRef.add(post.toMap());
+    await _postsRef.add({
+      'authorId': user.uid,
+      'authorName': user.displayName ?? '사용자',
+      'authorProfileImage': user.photoURL,
+      'content': trimmed,
+      'imageUrls': imageUrls,
+      'likeCount': 0,
+      'commentCount': 0,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
-  // Get Posts (Realtime)
-  // Get Posts (Mock Data for Demo)
   Stream<List<Post>> getPostsStream() {
-    // Return a stream that emits mock data immediately
-    return Stream.value([
-      Post(
-        id: '1',
-        authorId: 'user1',
-        authorName: '김철수',
-        authorProfileImage: null,
-        content: '오늘도 오운완! 등 운동 제대로 먹었네요 🔥',
-        imageUrls: ['assets/images/ounwan_1.png'],
-        likeCount: 12,
-        commentCount: 3,
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-        isLikedByMe: true,
-      ),
-      Post(
-        id: '2',
-        authorId: 'user2',
-        authorName: '이영희',
-        authorProfileImage: null,
-        content: '식단 관리 3일차... 샐러드도 맛있게 먹으면 0칼로리겠죠? 🥗',
-        imageUrls: ['assets/images/meal_1.png'],
-        likeCount: 8,
-        commentCount: 5,
-        createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-        isLikedByMe: false,
-      ),
-      Post(
-        id: '3',
-        authorId: 'user3',
-        authorName: '박지성',
-        authorProfileImage: null,
-        content: '새로 산 러닝화 개시! 가볍고 좋네요 🏃‍♂️',
-        imageUrls: ['assets/images/ounwan_2.png'],
-        likeCount: 25,
-        commentCount: 10,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        isLikedByMe: false,
-      ),
-    ]);
-    /*
     return _postsRef
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => Post.fromFirestore(doc)).toList();
+        .asyncMap((snapshot) async {
+      final uid = _auth.currentUser?.uid;
+      return Future.wait(snapshot.docs.map((document) async {
+        final post = Post.fromFirestore(document);
+        if (uid == null) return post;
+        final like =
+            await document.reference.collection('likes').doc(uid).get();
+        return post.copyWith(isLikedByMe: like.exists);
+      }));
     });
-    */
   }
 
-  // Toggle Like
+  Stream<Post?> getPostStream(String postId) {
+    return _postsRef.doc(postId).snapshots().asyncMap((document) async {
+      if (!document.exists) return null;
+      final post = Post.fromFirestore(document);
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) return post;
+      final like = await document.reference.collection('likes').doc(uid).get();
+      return post.copyWith(isLikedByMe: like.exists);
+    });
+  }
+
+  Stream<List<CommunityComment>> getCommentsStream(String postId) {
+    return _postsRef
+        .doc(postId)
+        .collection('comments')
+        .orderBy('createdAt')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map(CommunityComment.fromFirestore)
+            .toList(growable: false));
+  }
+
   Future<void> toggleLike(String postId) async {
     final user = _auth.currentUser;
-    if (user == null) return;
+    if (user == null) throw Exception('로그인이 필요합니다.');
+    await _functions
+        .httpsCallable('toggleCommunityLike')
+        .call<void>({'postId': postId});
+  }
 
-    final postRef = _postsRef.doc(postId);
-    final likeRef = postRef.collection('likes').doc(user.uid);
+  Future<void> addComment(String postId, String content) async {
+    final user = _auth.currentUser;
+    final trimmed = content.trim();
+    if (user == null) throw Exception('로그인이 필요합니다.');
+    if (trimmed.isEmpty) return;
+    if (trimmed.length > 500) throw Exception('댓글은 500자까지 입력할 수 있습니다.');
 
-    final likeDoc = await likeRef.get();
-
-    if (likeDoc.exists) {
-      // Unlike
-      await likeRef.delete();
-      await postRef.update({'likeCount': FieldValue.increment(-1)});
-    } else {
-      // Like
-      await likeRef.set({'createdAt': FieldValue.serverTimestamp()});
-      await postRef.update({'likeCount': FieldValue.increment(1)});
-    }
+    await _functions.httpsCallable('addCommunityComment').call<void>({
+      'postId': postId,
+      'content': trimmed,
+    });
   }
 }

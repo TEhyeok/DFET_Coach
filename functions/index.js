@@ -11,9 +11,13 @@
  * - removeMemberFromTrainer: 트레이너 담당 회원 배정 해제
  */
 
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { onRequest } = require('firebase-functions/v2/https');
+const {FieldValue} = require('firebase-admin/firestore');
+const {
+  HttpsError,
+  onCall,
+  onRequest,
+} = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const {
   createClinicalApiHandler,
@@ -23,17 +27,38 @@ const {
 admin.initializeApp();
 
 const ingestionHmacKeys = defineSecret('INGEST_HMAC_KEYS');
+const isFunctionsEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
+
+function callable(handler, options = undefined) {
+  const adapted = (request) => handler(request.data, {auth: request.auth});
+  return options ? onCall(options, adapted) : onCall(adapted);
+}
+
+// 기존 구현의 (data, context) 계약을 유지하면서 등록 런타임만 v2로 전환한다.
+const functions = {
+  https: {
+    HttpsError,
+    onCall: (handler) => callable(handler),
+  },
+  region: (region) => ({
+    https: {
+      onCall: (handler) => callable(handler, {region}),
+    },
+  }),
+};
 
 exports.clinicalApi = onRequest(
   {
     region: 'asia-northeast3',
-    secrets: [ingestionHmacKeys],
+    secrets: isFunctionsEmulator ? [] : [ingestionHmacKeys],
     timeoutSeconds: 120,
     memory: '512MiB',
   },
   createClinicalApiHandler({
     admin,
-    getKeyMap: () => parseKeyMap(ingestionHmacKeys.value()),
+    getKeyMap: () => parseKeyMap(
+      process.env.INGEST_HMAC_KEYS || ingestionHmacKeys.value()
+    ),
   })
 );
 
@@ -110,13 +135,13 @@ exports.setAdminClaim = functions.https.onCall(async (data, context) => {
       displayName: user.displayName || '',
       role: 'admin',
       approvalStatus: 'approved',
-      grantedAt: admin.firestore.FieldValue.serverTimestamp(),
+      grantedAt: FieldValue.serverTimestamp(),
       grantedBy: context.auth.uid,
     });
     await admin.firestore().collection('users').doc(user.uid).set({
       role: 'admin',
       isAdmin: true,
-      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedAt: FieldValue.serverTimestamp(),
       roleUpdatedBy: context.auth.uid,
     }, {merge: true});
 
@@ -162,7 +187,7 @@ exports.removeAdminClaim = functions.https.onCall(async (data, context) => {
     await admin.firestore().collection('users').doc(user.uid).set({
       role: 'member',
       isAdmin: false,
-      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedAt: FieldValue.serverTimestamp(),
       roleUpdatedBy: context.auth.uid,
     }, {merge: true});
 
@@ -346,6 +371,154 @@ exports.deleteUserData = functions.https.onCall(async (data, context) => {
 });
 
 /**
+ * 로그인한 회원의 계정과 연결 데이터를 삭제한다.
+ * 클라이언트가 임상 보고서나 서버 전용 문서를 직접 지울 수 없으므로
+ * 최종 삭제는 Admin SDK에서 수행한다.
+ */
+exports.deleteOwnAccount = functions
+  .region('asia-northeast3')
+  .https.onCall(async (_data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        '인증이 필요합니다.'
+      );
+    }
+
+    const uid = context.auth.uid;
+    const db = admin.firestore();
+    const deleteMatches = async (collection, field) => {
+      const snapshot = await db.collection(collection).where(field, '==', uid).get();
+      await Promise.all(snapshot.docs.map((document) => db.recursiveDelete(document.ref)));
+    };
+
+    try {
+      await Promise.all([
+        deleteMatches('requests', 'userId'),
+        deleteMatches('posts', 'authorId'),
+        deleteMatches('soap_notes', 'memberId'),
+        deleteMatches('gutReports', 'userId'),
+        deleteMatches('gutReportExperts', 'userId'),
+        deleteMatches('bloodReports', 'userId'),
+        deleteMatches('bloodReportExperts', 'userId'),
+        deleteMatches('healthSnapshots', 'userId'),
+      ]);
+
+      const trainerAssignments = await db
+        .collection('trainers')
+        .where('memberIds', 'array-contains', uid)
+        .get();
+      const assignmentBatch = db.batch();
+      trainerAssignments.docs.forEach((document) => {
+        assignmentBatch.update(document.ref, {
+          memberIds: FieldValue.arrayRemove(uid),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      });
+      if (!trainerAssignments.empty) await assignmentBatch.commit();
+
+      await db.recursiveDelete(db.collection('users').doc(uid));
+
+      const bucket = admin.storage().bucket();
+      await bucket.deleteFiles({prefix: `requests/${uid}/`}).catch((error) => {
+        console.warn('Failed to delete request media during account deletion', error);
+      });
+      const [postFiles] = await bucket.getFiles({prefix: 'posts/'});
+      await Promise.all(
+        postFiles
+          .filter((file) => file.name.endsWith(`_${uid}.jpg`))
+          .map((file) => file.delete().catch((error) => {
+            console.warn('Failed to delete community media during account deletion', error);
+          }))
+      );
+
+      await admin.auth().deleteUser(uid);
+      return {success: true};
+    } catch (error) {
+      console.error('Error deleting own account data:', error);
+      throw new functions.https.HttpsError(
+        'internal',
+        '회원탈퇴 처리 중 오류가 발생했습니다.'
+      );
+    }
+  });
+
+/**
+ * 좋아요 문서와 카운터를 하나의 트랜잭션으로 변경한다.
+ * 회원 클라이언트에는 카운터 직접 쓰기 권한을 주지 않는다.
+ */
+exports.toggleCommunityLike = functions
+  .region('asia-northeast3')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', '인증이 필요합니다.');
+    }
+    const postId = typeof data?.postId === 'string' ? data.postId.trim() : '';
+    if (!postId || postId.length > 256) {
+      throw new functions.https.HttpsError('invalid-argument', '올바른 게시글 ID가 필요합니다.');
+    }
+
+    const db = admin.firestore();
+    const postRef = db.collection('posts').doc(postId);
+    const likeRef = postRef.collection('likes').doc(context.auth.uid);
+    await db.runTransaction(async (transaction) => {
+      const [post, like] = await Promise.all([
+        transaction.get(postRef),
+        transaction.get(likeRef),
+      ]);
+      if (!post.exists) {
+        throw new functions.https.HttpsError('not-found', '게시글을 찾을 수 없습니다.');
+      }
+      const currentCount = Number(post.data().likeCount || 0);
+      if (like.exists) {
+        transaction.delete(likeRef);
+        transaction.update(postRef, {likeCount: Math.max(0, currentCount - 1)});
+      } else {
+        transaction.set(likeRef, {
+          userId: context.auth.uid,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+        transaction.update(postRef, {likeCount: currentCount + 1});
+      }
+    });
+    return {success: true};
+  });
+
+/** 댓글 생성과 게시글 댓글 수 증가를 원자적으로 처리한다. */
+exports.addCommunityComment = functions
+  .region('asia-northeast3')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', '인증이 필요합니다.');
+    }
+    const postId = typeof data?.postId === 'string' ? data.postId.trim() : '';
+    const content = typeof data?.content === 'string' ? data.content.trim() : '';
+    if (!postId || postId.length > 256 || !content || content.length > 500) {
+      throw new functions.https.HttpsError('invalid-argument', '게시글과 500자 이하의 댓글이 필요합니다.');
+    }
+
+    const db = admin.firestore();
+    const postRef = db.collection('posts').doc(postId);
+    const commentRef = postRef.collection('comments').doc();
+    await db.runTransaction(async (transaction) => {
+      const post = await transaction.get(postRef);
+      if (!post.exists) {
+        throw new functions.https.HttpsError('not-found', '게시글을 찾을 수 없습니다.');
+      }
+      transaction.set(commentRef, {
+        authorId: context.auth.uid,
+        authorName: context.auth.token.name || '사용자',
+        content,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+      transaction.update(postRef, {
+        commentCount: Number(post.data().commentCount || 0) + 1,
+      });
+    });
+    return {success: true, commentId: commentRef.id};
+  });
+
+/**
  * 사용자에게 트레이너 Custom Claim 부여 (관리자 전용)
  *
  * 사용 방법:
@@ -383,7 +556,7 @@ exports.setTrainerClaim = functions.https.onCall(async (data, context) => {
         specialty: specialty || null,
         approvalStatus: 'approved',
         memberIds: [],
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         grantedBy: context.auth.uid,
       },
       { merge: true }
@@ -391,7 +564,7 @@ exports.setTrainerClaim = functions.https.onCall(async (data, context) => {
     await admin.firestore().collection('users').doc(user.uid).set({
       role: 'trainer',
       isTrainer: true,
-      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedAt: FieldValue.serverTimestamp(),
       roleUpdatedBy: context.auth.uid,
     }, {merge: true});
 
@@ -432,7 +605,7 @@ exports.removeTrainerClaim = functions.https.onCall(async (data, context) => {
     await admin.firestore().collection('trainers').doc(user.uid).set(
       {
         approvalStatus: 'revoked',
-        revokedAt: admin.firestore.FieldValue.serverTimestamp(),
+        revokedAt: FieldValue.serverTimestamp(),
         revokedBy: context.auth.uid,
       },
       { merge: true }
@@ -440,7 +613,7 @@ exports.removeTrainerClaim = functions.https.onCall(async (data, context) => {
     await admin.firestore().collection('users').doc(user.uid).set({
       role: 'member',
       isTrainer: false,
-      roleUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      roleUpdatedAt: FieldValue.serverTimestamp(),
       roleUpdatedBy: context.auth.uid,
     }, {merge: true});
 
@@ -495,19 +668,19 @@ exports.assignMemberToTrainer = functions.https.onCall(async (data, context) => 
       const previousTrainerUid = memberSnap.data().trainerId;
       if (previousTrainerUid && previousTrainerUid !== trainerUid) {
         tx.set(db.collection('trainers').doc(previousTrainerUid), {
-          memberIds: admin.firestore.FieldValue.arrayRemove(memberUid),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          memberIds: FieldValue.arrayRemove(memberUid),
+          updatedAt: FieldValue.serverTimestamp(),
         }, { merge: true });
       }
 
       tx.update(trainerRef, {
-        memberIds: admin.firestore.FieldValue.arrayUnion(memberUid),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        memberIds: FieldValue.arrayUnion(memberUid),
+        updatedAt: FieldValue.serverTimestamp(),
       });
       tx.update(memberRef, {
         trainerId: trainerUid,
         assignedTrainerId: trainerUid,
-        trainerAssignedAt: admin.firestore.FieldValue.serverTimestamp(),
+        trainerAssignedAt: FieldValue.serverTimestamp(),
       });
     });
 
@@ -546,16 +719,16 @@ exports.removeMemberFromTrainer = functions.https.onCall(async (data, context) =
       const trainerSnap = await tx.get(trainerRef);
       if (trainerSnap.exists) {
         tx.update(trainerRef, {
-          memberIds: admin.firestore.FieldValue.arrayRemove(memberUid),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          memberIds: FieldValue.arrayRemove(memberUid),
+          updatedAt: FieldValue.serverTimestamp(),
         });
       }
       const memberSnap = await tx.get(memberRef);
       if (memberSnap.exists && memberSnap.data().trainerId === trainerUid) {
         tx.update(memberRef, {
-          trainerId: admin.firestore.FieldValue.delete(),
-          assignedTrainerId: admin.firestore.FieldValue.delete(),
-          trainerUnassignedAt: admin.firestore.FieldValue.serverTimestamp(),
+          trainerId: FieldValue.delete(),
+          assignedTrainerId: FieldValue.delete(),
+          trainerUnassignedAt: FieldValue.serverTimestamp(),
         });
       }
     });

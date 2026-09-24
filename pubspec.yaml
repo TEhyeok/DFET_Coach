@@ -92,6 +92,9 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # iOS는 CocoaPods로 빌드한다(ML Kit 등 SPM 미지원 플러그인, FlutterFire 플러그인 버전 혼재). SPM 전환은 FlutterFire 버전 정렬 뒤 별도 작업.
+  config:
+    enable-swift-package-manager: false
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

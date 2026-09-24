@@ -21,6 +21,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.38.2  # 3.47 전환은 별도 작업(위젯 테스트·deprecation·FlutterFire SPM 정렬)
           cache: true
       - run: flutter pub get
       - run: flutter analyze
@@ -64,6 +65,8 @@ jobs:
           cache: npm
           cache-dependency-path: admin_web/package-lock.json
       - run: npm ci --prefix admin_web
+      # admin_web/test/contracts.test.mjs가 functions/src를 불러오므로 functions 의존성도 설치한다
+      - run: npm ci --prefix functions
       - run: npm --prefix admin_web run lint
       - run: npm --prefix admin_web run typecheck
       - run: npm --prefix admin_web test
@@ -76,6 +79,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.38.2  # 3.47 전환은 별도 작업(위젯 테스트·deprecation·FlutterFire SPM 정렬)
           cache: true
       - run: flutter pub get
       - run: flutter build ios --release --no-codesign

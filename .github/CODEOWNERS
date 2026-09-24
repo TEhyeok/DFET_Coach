@@ -1,0 +1,31 @@
+# GH-09 코드 소유자 (V1-01 '브랜치·커밋·PR 규칙', ADR-014)
+# 1인 팀이라 승인 수는 0으로 두고, 이 파일은 '소유자가 diff를 직접 읽어야 병합하는 경로'를 표시하는 용도다.
+# 소유자 핸들은 @TEhyeok로 가정한다(P0 ASM-P0-24). 다르면 DF-001 PR에서 고친다.
+# 위험 라벨: rules-change, privacy-impact, schema-change, regulatory, freeze-exception
+
+# 기본
+*                                   @TEhyeok
+
+# 보안 규칙·인덱스(rules-change)
+/firestore.rules                    @TEhyeok
+/firestore.indexes.json             @TEhyeok
+/storage.rules                      @TEhyeok
+
+# 개인정보·동의·삭제·요약·접근 키 함수(privacy-impact)
+/functions/src/access/              @TEhyeok
+/functions/src/consent/             @TEhyeok
+/functions/src/privacy/             @TEhyeok
+/functions/src/summaries/           @TEhyeok
+
+# 이관 스크립트(소유자만 운영 실행)
+/functions/scripts/migrations/      @TEhyeok
+
+# 금지어 단일 원본(regulatory)
+/contracts/prohibited-terms.v1.json @TEhyeok
+
+# 동결 영역(freeze-exception, MIG-09)
+/ios/Runner/AppDelegate.swift       @TEhyeok
+/trainer_ios/                       @TEhyeok
+
+# 정본 PRD(에이전트 수정 금지)
+/docs/PRD_V1.md                     @TEhyeok

@@ -1,0 +1,122 @@
+# GH-07 소유자 행동·게이트 이슈 폼 (V1-T07 게이트 증빙 템플릿)
+name: "소유자 행동·게이트"
+description: "DF-900~999. 법률·식약처·IRB·콘솔·스토어·배포·이관 실행·플래그 개방·단계 종료 검토. 소유자만 수행한다."
+title: "[DF-9NN] "
+labels: ["owner-action"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        외부 게이트는 **단계 전환·실데이터 투입·플래그 개방**만 막고, 합성 데이터 코딩은 막지 않습니다(V1-01).
+        저장소에는 증빙의 존재·날짜·파일명만 적고 원본 문서(의견서, 회신, 승인서, 계약서)와 비밀 값은 올리지 않습니다.
+        gate/G-NN 라벨은 소유자가 붙입니다.
+  - type: input
+    id: key
+    attributes:
+      label: "키"
+      placeholder: "DF-908"
+    validations:
+      required: true
+  - type: dropdown
+    id: gate
+    attributes:
+      label: "게이트"
+      options:
+        - "없음"
+        - "G-01 미커밋 정리(MIG-01)"
+        - "G-02 Firebase 등록·실계정 로그인"
+        - "G-03 보안·Storage 규칙 테스트"
+        - "G-04 동의·보존·처리 주체 승인"
+        - "G-05a 식약처 사전 확인 제출"
+        - "G-05b 식약처 결과·규제 자문"
+        - "G-06 자세 재검사 연구"
+        - "G-07a BodyPath 선행"
+        - "G-07 LiDAR 실측 대조"
+        - "G-08 변화 판정 정책 승인"
+        - "G-09 처리방침·리전·국외이전"
+        - "G-10 표시·광고 문구 검수"
+    validations:
+      required: true
+  - type: dropdown
+    id: party
+    attributes:
+      label: "외부 상대"
+      multiple: true
+      options:
+        - "없음(내부)"
+        - "법률 자문"
+        - "규제 자문"
+        - "식약처"
+        - "IRB"
+        - "변리 자문"
+        - "Apple(App Store Connect·TestFlight)"
+        - "Firebase·Google Cloud 콘솔"
+        - "Google Play"
+    validations:
+      required: true
+  - type: textarea
+    id: action
+    attributes:
+      label: "행동"
+      description: "소유자가 할 일을 동사로. 예: 법률 자문 의뢰서 발송(Q-04, Q-05, Q-07, Q-21, Q-24 포함)"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "증빙 목록"
+      description: "PRD §12.2 '증빙' 열에서 이 행동이 채우는 항목. 결과는 docs/v1/evidence/<게이트 ID>.md(예: G-01.md)에 기록."
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: checkboxes
+    id: blocks
+    attributes:
+      label: "이 행동이 끝나야 가능한 것"
+      options:
+        - label: "단계 전환(진입·종료)"
+        - label: "실데이터 투입"
+        - label: "플래그 개방"
+        - label: "운영 배포·이관 적용"
+        - label: "에이전트 브랜치 개방(G-01만 해당)"
+  - type: dropdown
+    id: coding
+    attributes:
+      label: "코딩 차단 여부"
+      description: "원칙은 '아니오'. 예외는 DF-901(G-01) 하나다."
+      options:
+        - "아니오(합성 데이터 개발 계속)"
+        - "예(DF-901 G-01 기준선)"
+    validations:
+      required: true
+  - type: input
+    id: sprint
+    attributes:
+      label: "목표 스프린트"
+      placeholder: "S01"
+    validations:
+      required: true
+  - type: dropdown
+    id: points
+    attributes:
+      label: "점수"
+      description: "0 = 반나절 미만, 1 = 반나절 이상. 외부 대기 시간은 점수에 넣지 않는다."
+      options:
+        - "0"
+        - "1"
+    validations:
+      required: true
+  - type: input
+    id: deps
+    attributes:
+      label: "선행"
+      placeholder: "DF-908, DF-924"
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: "기록 원칙"
+      options:
+        - label: "이 이슈와 게이트 기록에 원본 문서·비밀 값·개인정보를 올리지 않는다"
+          required: true

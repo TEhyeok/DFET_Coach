@@ -1,0 +1,364 @@
+{
+  "docId": "V1-12-D2",
+  "title": "분석 이벤트 레지스트리(허용 목록)",
+  "contractTarget": "contracts/analytics-events.v1.json",
+  "registryVersion": "1.0.0",
+  "status": "ready",
+  "updated": "2026-09-24",
+  "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#5-분석-이벤트-카탈로그",
+  "prdRefs": ["§5.3", "§5.4", "§5.5", "NFR-10", "NFR-11", "AS-19", "G-09", "F-PRIV-06.3"],
+  "naming": {
+    "eventName": "^[a-z][a-z0-9_]{2,39}$ (snake_case, 40자 이하, <대상>_<동작 과거형>)",
+    "propertyKey": "^[a-z][a-z0-9_]{1,39}$",
+    "maxPropertiesPerEvent": 10,
+    "stringValueMaxLength": 100,
+    "reservedPrefixes": ["firebase_", "google_", "ga_"],
+    "lint": "이벤트명·속성 키·enum 값은 forbidden_terms.json identifier 규칙과 공통 세트를 통과해야 한다"
+  },
+  "globalRules": ["레지스트리에 없는 이벤트·속성은 보낼 수 없다. TrainerAnalytics는 생성된 enum으로만 track한다(ADR-015)", "문자열 속성은 enum·band·pattern 중 하나여야 한다. 자유 문자열 타입은 없다", "setUserID·사용자 속성(user property)을 쓰지 않는다", "시간은 elapsed_band로만 보낸다. 시각·날짜·기간 원값을 보내지 않는다", "동의 변경·공유 사실의 정본은 auditLogs·opsMetrics다. 분석 이벤트는 서버 응답 뒤의 보조 신호다(V1-06 §11.1)", "G-09 공개 전에는 DebugSink만 쓴다(네트워크 전송 없음, os.Logger debug·Dart debugPrint)"],
+  "sinks": {
+    "trainer": {
+      "beforeG09": "DebugSink(os.Logger subsystem kr.co.dfet.trainer, category analytics, privacy .public은 이벤트명·enum 값에만)",
+      "afterG09": "FirebaseAnalyticsSink(FirebaseData 타깃)",
+      "story": "DF-126"
+    },
+    "member": {"beforeG09": "DebugAnalyticsSink(debugPrint, 릴리스 빌드 무동작)", "afterG09": "firebase_analytics 의존성 추가는 소유자 결정(Q-DEV-12-02)", "story": "DF-306, DF-316"}
+  },
+  "sdkSettingsAfterG09": {
+    "FIREBASE_ANALYTICS_COLLECTION_ENABLED": "Info.plist false 기본. 로그인 후 원격 플래그 없이 앱 설정 코드에서 true(ASM-12-10)",
+    "GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS": false,
+    "GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED": false,
+    "FirebaseAutomaticScreenReportingEnabled": false,
+    "AdSupport·AppTrackingTransparency": "링크하지 않음",
+    "GA4 데이터 보존": "2개월",
+    "Google 신호": "끔",
+    "BigQuery 내보내기": "쓰지 않음(M-02는 클라이언트 파생 속성으로 계산)"
+  },
+  "bands": {
+    "elapsed_band": {
+      "unit": "second",
+      "intervalRule": "[lower, upper)",
+      "labels": ["0-3s", "3-5s", "5-7s", "7-10s", "10-15s", "15-20s", "20-30s", "30-60s", "60-120s", "120-180s", "180-300s", "300-600s", "600s+"],
+      "edges": [0, 3, 5, 7, 10, 15, 20, 30, 60, 120, 180, 300, 600],
+      "representative": {
+        "0-3s": 1.5,
+        "3-5s": 4,
+        "5-7s": 6,
+        "7-10s": 8.5,
+        "10-15s": 12.5,
+        "15-20s": 17.5,
+        "20-30s": 25,
+        "30-60s": 45,
+        "60-120s": 90,
+        "120-180s": 150,
+        "180-300s": 240,
+        "300-600s": 450,
+        "600s+": 900
+      },
+      "note": "경계 10·30·60·120·180초가 M-01·M-11·M-04a·M-04b·M-08 목표와 일치하도록 잡았다. 600s+의 대표값 900초는 평균 계산용 상한 가정(ASM-12-04)"
+    },
+    "auto_ref_count_band": {"labels": ["0", "1-2", "3-5", "6+"], "of": "objective.refs 개수(확정 시점)"},
+    "retake_count_band": {"labels": ["0", "1", "2", "3+"], "of": "한 촬영 흐름의 재촬영 횟수 합"},
+    "manual_adjust_count_band": {"labels": ["0", "1-3", "4-6", "7+"], "of": "보정 시작부터 확정까지 랜드마크 이동·지정 조작 수"},
+    "count_band": {
+      "labels": ["0", "1-3", "4-6", "7-9", "10-12", "13+"],
+      "of": "트레이너가 보고한 하루 세션 수",
+      "representative": {"0": 0, "1-3": 2, "4-6": 5, "7-9": 8, "10-12": 11, "13+": 14}
+    },
+    "rows_count_band": {"labels": ["1", "2-3", "4-6", "7+"], "of": "한 번 저장한 둘레 행 수(부위×측면)"}
+  },
+  "forbiddenPropertyKeys": ["uid", "user_id", "member_uid", "member_id", "pending_member_id", "trainer_id", "trainer_uid", "note_id", "record_id", "summary_id", "assessment_id", "scan_id", "email", "phone", "name", "display_name", "birth_year", "sex", "invite_code", "code", "value", "weight", "weight_kg", "height", "body_fat", "bmi", "nrs", "pain", "pain_nrs", "pain_regions", "region", "region_code", "angle", "cva", "metric_code", "metric_value", "delta", "mdc", "side", "change_status", "reason_code", "policy_version", "judgement", "consent_type", "consent", "consent_types", "note", "memo", "quick_note", "text", "reason", "reason_text", "comment", "message", "body", "title", "chief_complaint", "path", "ink_path", "photo_path", "storage_path", "url", "file", "file_name", "device_serial", "idfa", "idfv"],
+  "forbiddenKeyPatterns": [
+    {
+      "pattern": "(^|_)(uid|email|phone|name|path|url|memo|text|value|nrs|pain|region|consent|code)$",
+      "why": "식별자·연락처·경로·자유 텍스트·건강 값·동의 유형(NFR-10)"
+    },
+    {
+      "pattern": "(^|_)(id)$",
+      "why": "식별자. 예외: session_id(무작위, 회원 비연결)",
+      "exceptions": ["session_id"]
+    },
+    {
+      "pattern": "(status|reason)$",
+      "why": "판정 결과·사유 원문. 예외: 없음(reason_category는 접미가 category)",
+      "exceptions": []
+    }
+  ],
+  "forbiddenValueRules": ["숫자 속성은 views_count처럼 레지스트리에 min·max가 있는 개수만 허용한다. 건강 값(체중·각도·NRS·둘레 등)은 어떤 형태로도 보내지 않는다", "enum 값에 metricCode·regionCode·consentType·changeStatus·reasonCode 어휘를 쓰지 않는다", "pattern 속성은 session_id(UUIDv4)와 engine_version뿐이다"],
+  "events": [
+    {
+      "event": "trainer_live_saved",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "Live 세션(session_id)에서 '기록 완료'(tr04.recordComplete)를 처음 탭하고 해당 draft의 localSaved가 확인된 직후 1회. 같은 session_id의 두 번째 이후 탭은 보내지 않는다",
+      "properties": {
+        "session_id": {
+          "type": "pattern",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "desc": "TR-04 진입(또는 촬영 흐름 시작) 때 새로 만든 UUIDv4. 회원·노트 ID와 연결하지 않고 저장하지 않는다(메모리 보관, 앱 종료 시 폐기)",
+          "required": true
+        },
+        "input_method": {
+          "type": "enum",
+          "values": ["text", "ink", "nrs", "mixed", "none"],
+          "required": true,
+          "desc": "text=한 줄 입력만, ink=필기만, nrs=NRS만, mixed=둘 이상, none=빈 기록(ASM-12-05)"
+        },
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "TR-04 화면 표시(onAppear) → localSaved 확인"},
+        "offline": {"type": "bool", "required": true, "desc": "탭 시점 네트워크 불가 여부"},
+        "end_relation": {"type": "enum", "values": ["notEnded", "within30s", "after30s"], "required": true, "desc": "세션 종료 이벤트 대비 시점. notEnded=종료 전 저장(ASM-12-02)"}
+      },
+      "metrics": ["M-01", "M-01b", "M-02", "M-G5"],
+      "stories": ["DF-126", "DF-116"],
+      "prdRefs": ["§5.5", "F-SOAP-01.12", "AC-SOAP-01.10"]
+    },
+    {
+      "event": "trainer_session_ended",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "Live 세션이 끝난 첫 시점 1회: '세션 종료' 탭(endTap), TR-04 화면을 벗어남(leftLive), 다른 회원 Live 시작(nextMember) 중 먼저 일어난 것. 앱 백그라운드 전환은 종료로 보지 않는다(ASM-12-02)",
+      "properties": {
+        "session_id": {
+          "type": "pattern",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "desc": "TR-04 진입(또는 촬영 흐름 시작) 때 새로 만든 UUIDv4. 회원·노트 ID와 연결하지 않고 저장하지 않는다(메모리 보관, 앱 종료 시 폐기)",
+          "required": true
+        },
+        "source": {"type": "enum", "values": ["endTap", "leftLive", "nextMember"], "required": true},
+        "saved_before_end": {"type": "bool", "required": true, "desc": "종료 시점까지 trainer_live_saved를 보냈는지"}
+      },
+      "metrics": ["M-02"],
+      "stories": ["DF-126", "DF-116"],
+      "prdRefs": ["§5.3 M-02", "§5.5"]
+    },
+    {
+      "event": "daily_session_count_reported",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "TR-01 '보고'(tr01.sessionCount.submit) 탭. 기기 현지 날짜당 1회(다시 보고하면 마지막 값만 전송하고 이전 전송은 취소할 수 없으므로 UI에서 하루 1회로 막는다)",
+      "properties": {
+        "count_band": {"type": "band", "band": "count_band", "required": true}
+      },
+      "metrics": ["M-02(보조 분모)", "M-G5(보조)"],
+      "stories": ["DF-125"],
+      "prdRefs": ["§5.3 M-02", "TR-01"]
+    },
+    {
+      "event": "soap_review_finalized",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "Review '확정' 성공(온라인 즉시 확정 또는 오프라인 '확정 대기' 로컬 잠금) 직후 1회. 서버 거부로 잠금이 풀렸다가 다시 확정하면 다시 1회",
+      "properties": {
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "그 노트의 Review 첫 진입 → 확정 탭(P1a 카드 ASM-P1a-40과 같음)"},
+        "auto_ref_count_band": {"type": "band", "band": "auto_ref_count_band", "required": true, "desc": "P1a는 항상 '0'"},
+        "queued": {"type": "bool", "required": true, "desc": "오프라인 확정 대기 여부"}
+      },
+      "metrics": ["M-11", "M-G5"],
+      "stories": ["DF-122", "DF-217"],
+      "prdRefs": ["§5.5", "§6.4.4"]
+    },
+    {
+      "event": "soap_addendum_created",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "addendum 로컬 저장 성공 직후",
+      "properties": {
+        "reason_category": {"type": "enum", "values": ["trainerCorrection", "subjectRectificationRequest"], "required": true, "desc": "V1-06 AddendumReason. 사유 원문은 보내지 않는다"}
+      },
+      "metrics": ["보조"],
+      "stories": ["DF-123"],
+      "prdRefs": ["§5.5", "F-SOAP-04.4"]
+    },
+    {
+      "event": "posture_capture_started",
+      "app": "trainer",
+      "phase": "P1b",
+      "trigger": "TR-07 게이트(동의 ②③, 스테이션, 체크리스트 제외) 통과 후 카메라 미리보기가 처음 표시될 때",
+      "properties": {
+        "session_id": {"type": "pattern", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", "desc": "촬영 흐름마다 새 UUIDv4", "required": true}
+      },
+      "metrics": ["M-04a"],
+      "stories": ["DF-204"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "posture_capture_done",
+      "app": "trainer",
+      "phase": "P1b",
+      "trigger": "정면과 측면 사진이 모두 로컬 저장된 순간 1회",
+      "properties": {
+        "session_id": {
+          "type": "pattern",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "desc": "TR-04 진입(또는 촬영 흐름 시작) 때 새로 만든 UUIDv4. 회원·노트 ID와 연결하지 않고 저장하지 않는다(메모리 보관, 앱 종료 시 폐기)",
+          "required": true
+        },
+        "views_count": {"type": "int", "min": 2, "max": 3, "required": true},
+        "retake_count_band": {"type": "band", "band": "retake_count_band", "required": true},
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "posture_capture_started 시점 → 두 장 저장"}
+      },
+      "metrics": ["M-04a", "M-G5"],
+      "stories": ["DF-204"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "posture_landmarks_confirmed",
+      "app": "trainer",
+      "phase": "P1b",
+      "trigger": "체형평가 confirmed가 로컬에 저장된 직후 1회",
+      "properties": {
+        "manual_adjust_count_band": {"type": "band", "band": "manual_adjust_count_band", "required": true},
+        "engine_version": {
+          "type": "pattern",
+          "pattern": "^appleVision2D-[0-9]{2}(\\.[0-9]{1,2}){0,2}$",
+          "required": true,
+          "desc": "landmarkEngine.name-OS 버전(예 appleVision2D-17.4). 개인 식별 정보 아님"
+        },
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "TR-08 보정 시작 → confirmed 저장"}
+      },
+      "metrics": ["M-04b", "M-G5"],
+      "stories": ["DF-208", "DF-209"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "bodycomp_record_saved",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "신체조성 기록(정정 새 기록 포함) localSaved 직후 1회",
+      "properties": {
+        "source": {"type": "enum", "values": ["manualEntry"], "required": true, "desc": "v1 고정. V2에서 inbodyApi는 서버 수집이라 이 이벤트를 쓰지 않는다"},
+        "has_report_photo": {"type": "bool", "required": true},
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": false, "desc": "TR-11 시트 표시 → 저장. M-G5용 추가 속성(ASM-12-08)"}
+      },
+      "metrics": ["보조", "M-G5"],
+      "stories": ["DF-127", "DF-128"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "circumference_saved",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "TR-12 저장 성공(localSaved) 직후 1회",
+      "properties": {
+        "rows_count_band": {"type": "band", "band": "rows_count_band", "required": true},
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "TR-12 시트 표시 → 저장"}
+      },
+      "metrics": ["M-G5"],
+      "stories": ["DF-129"],
+      "prdRefs": ["§5.4 M-G5"],
+      "proposed": true,
+      "proposalNote": "§5.5 초안에는 없다. M-G5가 TR-12 시간을 요구해 추가(ASM-12-08)"
+    },
+    {
+      "event": "change_status_rendered",
+      "app": "both",
+      "phase": "P1b",
+      "trigger": "변화 상태 칸(배지·'산정 준비 중'·판정 불가)을 가진 화면이 나타날 때 화면당 1회. 판정 결과·지표는 보내지 않는다",
+      "properties": {
+        "surface": {"type": "enum", "values": ["trainer", "member"], "required": true}
+      },
+      "metrics": ["노출 빈도"],
+      "stories": ["DF-210", "DF-215", "DF-316"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "member_summary_shared",
+      "app": "trainer",
+      "phase": "P2",
+      "trigger": "createMemberSummary 성공 응답 뒤 1회(V1-06 §11.1)",
+      "properties": {
+        "source_type": {"type": "enum", "values": ["soapNote", "bodyReport"], "required": true},
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": false, "desc": "TR-06 표시 → 공유 성공(ASM-12-08)"}
+      },
+      "metrics": ["보조", "M-G5"],
+      "stories": ["DF-311", "DF-313"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "member_summary_revoked",
+      "app": "trainer",
+      "phase": "P2",
+      "trigger": "revokeMemberSummary 성공 응답 뒤 1회",
+      "properties": {
+        "source_type": {"type": "enum", "values": ["soapNote", "bodyReport"], "required": true}
+      },
+      "metrics": ["보조"],
+      "stories": ["DF-310", "DF-311"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "onboarding_consent_completed",
+      "app": "trainer",
+      "phase": "P1a",
+      "trigger": "TR-14에서 ①②③ 서명 캡처가 끝나 recordConsent 성공 또는 오프라인 로컬 캡처 저장 직후 1회. 동의 유형·선택 결과는 보내지 않는다",
+      "properties": {
+        "elapsed_band": {"type": "band", "band": "elapsed_band", "required": true, "desc": "대기 회원: 등록 화면 표시 → 서명 캡처. 가입 회원: TR-14 동의 단계 표시 → 서명 캡처"},
+        "channel": {"type": "enum", "values": ["trainerDeviceInPerson", "memberApp"], "required": true, "desc": "v1 트레이너 앱은 trainerDeviceInPerson만. memberApp은 P2 MB-06 예약"}
+      },
+      "metrics": ["M-08"],
+      "stories": ["DF-110"],
+      "prdRefs": ["§5.5", "M-08"]
+    },
+    {
+      "event": "invite_code_redeemed",
+      "app": "member",
+      "phase": "P2",
+      "trigger": "redeemInviteCode 응답 뒤 1회",
+      "properties": {
+        "result": {
+          "type": "enum",
+          "values": ["success", "expired", "reused", "invalid"],
+          "required": true,
+          "desc": "서버가 실패 사유를 invite.invalidOrExpired 하나로 묶으므로 회원 앱은 success·invalid만 보낸다. expired·reused는 예약(V1-06 §11.1)"
+        }
+      },
+      "metrics": ["보조(M-10은 서버 집계)"],
+      "stories": ["DF-306"],
+      "prdRefs": ["§5.5"]
+    },
+    {
+      "event": "save_failure_shown",
+      "app": "trainer",
+      "phase": "P0",
+      "trigger": "항목이 syncFailed로 바뀌어 배지가 처음 화면에 그려질 때 retry_result=notYet으로 1회. 사용자가 재시도한 뒤 결과가 나오면 succeeded 또는 failedAgain으로 1회 더",
+      "properties": {
+        "entity_type": {
+          "type": "enum",
+          "values": ["soapNote", "inkRevision", "addendum", "consentCapture", "pendingMember", "bodyComposition", "reportPhoto", "circumference", "postureAssessment", "posturePhoto", "bodyScan"],
+          "required": true
+        },
+        "retry_result": {"type": "enum", "values": ["notYet", "succeeded", "failedAgain"], "required": true}
+      },
+      "metrics": ["M-G3"],
+      "stories": ["DF-015", "DF-018", "DF-107"],
+      "prdRefs": ["§5.5", "M-G3", "C-05"]
+    }
+  ],
+  "customDimensions": ["auto_ref_count_band", "channel", "count_band", "elapsed_band", "end_relation", "engine_version", "entity_type", "has_report_photo", "input_method", "manual_adjust_count_band", "offline", "queued", "reason_category", "result", "retake_count_band", "retry_result", "rows_count_band", "saved_before_end", "source", "source_type", "surface"],
+  "customMetrics": ["views_count"],
+  "customDimensionsNote": "GA4 이벤트 범위 맞춤 측정기준으로 등록(한도 50). session_id는 등록하지 않는다(고유값 폭증·재식별 방지)",
+  "serverSignals": [
+    {
+      "name": "memberSummaries.firstViewedAt",
+      "kind": "Firestore 서버 필드",
+      "metrics": ["M-06", "M-07"],
+      "status": "제안(V1-06 ASM-06-04, Q-DEV-04)",
+      "note": "PRD §5.3의 'member_summary_viewed 서버 기록'. 분석 이벤트가 아니다"
+    },
+    {
+      "name": "opsMetrics/{isoWeek}",
+      "kind": "주간 서버 집계",
+      "metrics": ["M-03", "M-05", "M-06", "M-07", "M-09", "M-10"],
+      "status": "V1-06 §6.10"
+    },
+    {
+      "name": "auditLogs",
+      "kind": "감사 기록",
+      "metrics": ["M-G2 보조"],
+      "status": "V1-05 §11.5"
+    }
+  ],
+  "changeLog": [
+    {"version": "v1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "R10: serverSignals memberSummaries.firstViewedAt 상태의 가정 ID를 V1-06 네임스페이스(ASM-06-04)로 교정"}
+  ]
+}

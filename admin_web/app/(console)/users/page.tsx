@@ -20,9 +20,10 @@ export default async function UsersPage() {
         <tbody>{docs.map((doc) => {
           const data = doc.data();
           const role = data.role ?? (data.isAdmin ? 'admin' : data.isTrainer ? 'trainer' : 'member');
-          return <tr key={doc.id}><td><strong>{String(data.displayName ?? '이름 없음')}</strong><br /><span className="mono">{String(data.email ?? doc.id)}</span></td><td>{String(data.careType ?? 'fitness')}</td><td className="mono">{String(data.trainerId ?? data.assignedTrainerId ?? '—')}</td><td>{formatDate(data.createdAt)}</td><td>{actor.role === 'admin' ? <RoleEditor uid={doc.id} role={String(role)} /> : String(role)}</td></tr>;
+          return <tr key={doc.id}><td><Link className="record-link" href={`/users/${doc.id}`}><strong>{String(data.displayName ?? '이름 없음')}</strong><br /><span className="mono">{String(data.email ?? doc.id)}</span></Link></td><td>{String(data.careType ?? 'fitness')}</td><td className="mono">{String(data.trainerId ?? data.assignedTrainerId ?? '—')}</td><td>{formatDate(data.createdAt)}</td><td>{actor.role === 'admin' ? <RoleEditor uid={doc.id} role={String(role)} /> : String(role)}</td></tr>;
         })}</tbody>
       </table></div>
     </>
   );
 }
+import Link from 'next/link';

@@ -5,7 +5,12 @@ import { useState } from 'react';
 
 export function RequestStatusEditor({ id, status }: { id: string; status: string }) {
   const router = useRouter();
-  const [value, setValue] = useState(status);
+  const normalized = status === 'newRequest'
+    ? 'pending'
+    : status === 'inProgress'
+      ? 'in_progress'
+      : status;
+  const [value, setValue] = useState(normalized);
   return (
     <select
       className="select"

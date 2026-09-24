@@ -139,21 +139,33 @@ service cloud.firestore {
       // Anyone authenticated can read posts
       allow read: if isAuth();
       // Authenticated users can create posts
-      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid;
-      // Only author or admin can update/delete
-      allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow create: if isAuth() &&
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.content is string &&
+        request.resource.data.content.size() > 0 &&
+        request.resource.data.content.size() <= 2000 &&
+        request.resource.data.likeCount == 0 &&
+        request.resource.data.commentCount == 0;
+      // 카운터는 Cloud Functions만 변경하며, 작성자는 본문과 이미지만 편집한다.
+      allow update: if isAdmin() || (
+        isAuth() &&
+        resource.data.authorId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'content', 'imageUrls'
+        ])
+      );
+      allow delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
       
       // Likes subcollection
       match /likes/{userId} {
         allow read: if isAuth();
-        allow write: if isOwner(userId);
+        allow write: if false;
       }
       
       // Comments subcollection
       match /comments/{commentId} {
         allow read: if isAuth();
-        allow create: if isAuth() && request.resource.data.authorId == request.auth.uid;
-        allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+        allow write: if false;
       }
     }
 

@@ -48,6 +48,10 @@ beforeEach(async () => {
       setDoc(doc(db, 'ingestionJobs/job1'), {status: 'completed'}),
       setDoc(doc(db, 'clinicalReportKeys/key1'), {reportId: 'gut1'}),
       setDoc(doc(db, 'appConfig/features'), {gut: true, blood: true, insights: true}),
+      setDoc(doc(db, 'posts/post1'), {
+        authorId: 'member1', content: '건강 기록', imageUrls: [], likeCount: 0,
+        commentCount: 0, createdAt: 1,
+      }),
     ]);
     await uploadBytes(
       ref(context.storage(), 'clinical-ingest/gut/raw.json'),
@@ -141,6 +145,23 @@ describe('profile privilege boundaries', () => {
   test('authenticated users can read feature flags', async () => {
     await assertSucceeds(getDoc(doc(dbFor('member1'), 'appConfig/features')));
     await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'appConfig/features')));
+  });
+});
+
+describe('community integrity boundaries', () => {
+  test('members cannot forge counters or write server-owned reactions', async () => {
+    const member = dbFor('member1');
+    await assertFails(updateDoc(doc(member, 'posts/post1'), {likeCount: 99}));
+    await assertFails(setDoc(doc(member, 'posts/post1/likes/member1'), {createdAt: 1}));
+    await assertFails(setDoc(doc(member, 'posts/post1/comments/comment1'), {
+      authorId: 'member1', content: '조작 댓글', createdAt: 1,
+    }));
+  });
+
+  test('post author can edit content but cannot change ownership', async () => {
+    const owner = dbFor('member1');
+    await assertSucceeds(updateDoc(doc(owner, 'posts/post1'), {content: '수정된 기록'}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {authorId: 'member2'}));
   });
 });
 

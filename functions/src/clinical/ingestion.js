@@ -2,6 +2,7 @@
 
 const crypto = require('node:crypto');
 const {FieldValue, Timestamp} = require('firebase-admin/firestore');
+const {appBucket} = require('../shared/storage');
 const {INGESTION_TYPES} = require('./constants');
 const {normalizeBloodPayload, normalizeGutPayload, round} = require('./normalization');
 const {scoreBloodReport, scoreGutReport} = require('./scoring');
@@ -386,7 +387,7 @@ async function processIngestion({admin, type, envelope, rawBody, keyId}) {
       ? scoreGutReport(normalized, config)
       : scoreBloodReport(normalized, config);
     const rawPath = `clinical-ingest/${type}/${jobId}/payload.json`;
-    await admin.storage().bucket().file(rawPath).save(rawBody, {
+    await appBucket(admin).file(rawPath).save(rawBody, {
       contentType: 'application/json',
       resumable: false,
       metadata: {

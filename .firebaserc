@@ -1,0 +1,47 @@
+{
+  "targets": {
+    "dfetmanage": {
+      "storage": {
+        "seoul": [
+          "dfetmanage-seoul"
+        ]
+      }
+    },
+    "dfet-rules-test": {
+      "storage": {
+        "seoul": [
+          "dfet-rules-test",
+          "dfet-rules-test.appspot.com",
+          "dfet-rules-test.firebasestorage.app"
+        ]
+      }
+    },
+    "dfet-e2e": {
+      "storage": {
+        "seoul": [
+          "dfet-e2e",
+          "dfet-e2e.appspot.com",
+          "dfet-e2e.firebasestorage.app"
+        ]
+      }
+    },
+    "dfet-migrations": {
+      "storage": {
+        "seoul": [
+          "dfet-migrations",
+          "dfet-migrations.appspot.com",
+          "dfet-migrations.firebasestorage.app"
+        ]
+      }
+    },
+    "demo-dfet": {
+      "storage": {
+        "seoul": [
+          "demo-dfet",
+          "demo-dfet.appspot.com",
+          "demo-dfet.firebasestorage.app"
+        ]
+      }
+    }
+  }
+}

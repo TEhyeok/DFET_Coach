@@ -1,0 +1,54 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "config.missing.body" : {
+      "comment" : "Configuration-missing screen body (DF-008 placeholder; DF-017 owns final copy).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 빌드에는 앱 연결 설정이 들어 있지 않습니다. 관리자에게 문의해 주세요."
+          }
+        }
+      }
+    },
+    "config.missing.title" : {
+      "comment" : "Configuration-missing screen title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 설정이 필요합니다"
+          }
+        }
+      }
+    },
+    "root.placeholder.subtitle" : {
+      "comment" : "Placeholder root subtitle until AppShell (DF-017).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면을 준비하고 있습니다."
+          }
+        }
+      }
+    },
+    "root.placeholder.title" : {
+      "comment" : "Placeholder root title (app name).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D-FET Trainer"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

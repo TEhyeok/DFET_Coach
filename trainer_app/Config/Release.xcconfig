@@ -1,0 +1,3 @@
+// D-FET Trainer - Release configuration (V1-04 §19.2).
+// No secrets here. Release ignores --preview-* / --use-emulator and uses App Attest for App Check.
+// Without GoogleService-Info.plist the app shows the configuration-missing screen (AC-DF-008.4).

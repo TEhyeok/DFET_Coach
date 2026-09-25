@@ -1,0 +1,72 @@
+{
+  "_fixture": {
+    "id": "soap_v2/forward_compat_unknown_code",
+    "description": "카탈로그에 없는 metricCode(futureMetricX) 행 1개와 카탈로그에 있는 mmtGrade 행 1개. 모르는 행은 원문 보존·해석 불가 표시",
+    "writer": "synthetic",
+    "prdRefs": [
+      "F-SOAP-06.2",
+      "AC-SOAP-06.2",
+      "§9.3"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 2,
+      "uninterpretable": 1
+    }
+  },
+  "path": "soap_notes/fx-note-v2-005",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": "fx-member-001",
+    "memberId": "fx-member-001",
+    "pendingMemberId": null,
+    "sessionDate": {
+      "$ts": "2026-10-02T01:00:00Z"
+    },
+    "status": "draft",
+    "quickNote": "가상 회원 A, 새 버전 앱에서 기록한 지표가 섞인 노트",
+    "objective": {
+      "metrics": [
+        {
+          "metricCode": "futureMetricX",
+          "value": 3.5,
+          "unit": "point",
+          "side": "none",
+          "sourceGrade": "trainerObserved",
+          "note": "미래 버전 지표(합성)"
+        },
+        {
+          "metricCode": "mmtGrade",
+          "value": {
+            "$int": 3
+          },
+          "unit": "grade",
+          "side": "left",
+          "sourceGrade": "trainerObserved",
+          "muscleGroup": "hipAbductors"
+        }
+      ],
+      "refs": {
+        "postureAssessmentIds": [],
+        "bodyCompositionRecordIds": [],
+        "circumferenceMeasurementIds": [],
+        "bodyScanIds": []
+      },
+      "snapshots": []
+    },
+    "plan": {
+      "nextSession": "",
+      "homeExercise": ""
+    },
+    "legalNature": "coachingRecord",
+    "isSharedWithMember": false,
+    "createdAt": {
+      "$ts": "2026-10-02T01:00:04Z"
+    },
+    "updatedAt": {
+      "$ts": "2026-10-02T01:20:00Z"
+    }
+  }
+}

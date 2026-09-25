@@ -138,11 +138,11 @@ docs-and-backlog CI job(DF-001)이 위 네 명령을 실행한다. DF-002는 `ci
 | 단계 | 내용 | 수용 기준 |
 |---|---|---|
 | 0a | `node --test tool/backlog/test/*.test.mjs`(Node 22는 디렉터리 인자를 펼치지 않아 glob으로 부른다) | AC-DF-002.3·.4, TC-DF002-03 |
-| 0b | `shellcheck tool/backlog/*.sh tool/backlog/test/*.sh`. 설치돼 있지 않으면 `skip`을 출력한다(ubuntu 러너에는 기본 설치) | AC-DF-002.5, TC-DF002-05 |
+| 0b | `shellcheck tool/backlog/*.sh tool/backlog/test/*.sh`. 설치돼 있지 않으면 로컬에서는 `skip`을 출력하고, `CI=true`면 실패한다(러너 이미지가 바뀌어도 조용히 빠지지 않게) | AC-DF-002.5, TC-DF002-05 |
 | 1 | 가짜 gh를 PATH 맨 앞에 두고 `create_backlog.sh`를 인자 없이, 그리고 `--dry-run --offline`으로 실행. gh 호출 0건(변경 호출 0건 포함), 끝 줄 `== plan: labels 67, milestones 9, issues 230` | AC-DF-002.1, TC-DF002-01·05 |
 | 2 | 기존 이슈 `#1 [DF-001]`을 심고 `create_backlog.sh --apply --repo TEhyeok/DFET_Coach`(P0 + 소유자 행동, 제안 제외)를 두 번 실행. DF-001 `issue create` 0건, 다른 키는 첫 실행에 한 번씩(100건), 두 번째 0건, 실행마다 `issue list --state all --limit 3000 --json number,title` 1회, `--search` 0건, 마일스톤 9개 | AC-DF-002.2, TC-DF002-02 |
 | 3 | 에픽 하위 항목·의존 링크의 #번호 치환(기존 DF-001은 `#1`), 다음 단계 추가 뒤 기존 에픽 목록 갱신 | — |
-| 4·5 | 검증기(`PRD` 환경 변수, 기본 `docs/PRD_V1.md`), `build_issues.mjs --check` | AC-DF-002.3 |
+| 4·5 | 검증기(`PRD` 환경 변수, 기본 `docs/PRD_V1.md`. PRD가 없으면 로컬은 skip, `CI=true`면 실패), `build_issues.mjs --check` | AC-DF-002.3 |
 
 `test/validate_backlog.test.mjs`는 실제 `issues.json`을 임시 폴더에 같은 이름으로 복사해 한 곳만 바꾼 뒤 검증기가 exit 1과 `issues.json: <KEY> <메시지>`를 내는지 본다: 없는 trace(`F-SOAP-99`와 PRD 접두 14종), 범위 양 끝, 없는 §, 중복 키, 없는 라벨·마일스톤·에픽·의존 대상, `deps`·`cardDeps` 순환, 스키마 required·type·enum.
 
@@ -166,8 +166,8 @@ node tool/backlog/brief.mjs DF-005 --agent claude --slug soap-fixtures   # 배�
 | 5 인터페이스 계약 | 카드 '구현 노트' 원문 |
 | 6 수용 기준 | 카드 '수용 기준'과 '테스트' 원문(바꿔 쓰지 않는다) |
 | 7 구현 메모 | 카드 '배경·맥락', '비고·가정', 'DoR' |
-| 8 검증 명령 | area별 기본 명령(01 영역별 DoD, 13 §4) + 수정 경로별 명령 + 스프린트 문서·카드의 인라인 명령. `--apply`, `firebase deploy`, gh 쓰기, 자리 표시자(`<…>`, `DF-NNN`)가 든 명령은 넣지 않는다 |
-| 9 브랜치·커밋 | 브랜치는 스프린트 문서 → `--slug` → 제목의 영문 낱말 순. 커밋 type은 이슈 type, scope는 area. footer `Refs`·`Trace` |
+| 8 검증 명령 | area별 기본 명령(01 영역별 DoD, 13 §4) + 수정 경로별 명령 + 스프린트 문서·카드의 인라인 명령. `--apply`, `firebase deploy`, gh 쓰기, 자리 표시자(`<…>`, `DF-NNN`)가 든 명령은 넣지 않는다. 수용 기준·테스트 중 '소유자가' 실행하는 줄의 명령, 에뮬레이터(`firebase emulators:exec`, `--emulator`) 밖의 `functions/scripts/(migrations\|research)/`, `$GITHUB_*`를 쓰는 CI 전용 줄, `--check` 없는 `tool/contracts/generate.mjs`, cwd 기준 `test/` 경로, 실행 파일 뒤에 공백·인자가 없는 낱말(`node:test`, `swift-snapshot-testing`, 맨 `flutter`)도 뺀다 |
+| 9 브랜치·커밋 | 브랜치는 스프린트 문서 → `--slug` → 제목의 영문 낱말 순. 에이전트는 `--agent` → (`--sprint`를 줬으면) 스프린트 문서 레인·브랜치 → `agent/` 라벨 순. 스프린트 문서와 라벨이 다르면 stderr에 경고한다(예: DF-005, 문서는 Claude 레인 C, 라벨은 `agent/codex`). 커밋 type은 이슈 type, scope는 area. footer `Refs`·`Trace` |
 
 - 종료 코드: 0 성공, 1 대상 아님(없는 키, 소유자 행동·`agent/human`만 있는 항목, 에이전트 라벨 없음 → `--agent`로 지정, 카드 없음), 2 사용법 오류.
 - 카드 안 상대 링크는 `https://github.com/TEhyeok/DFET_Coach/blob/main/...` 절대 링크로 바꾼다(이슈 코멘트에서 상대 링크가 깨진다). `build_issues.mjs`와 같은 규칙이다.
@@ -195,5 +195,5 @@ node tool/backlog/brief.mjs DF-005 --agent claude --slug soap-fixtures   # 배�
 
 | 버전 | 날짜 | 요약 |
 |---|---|---|
-| v1.1.0 | 2026-09-25 | DF-002: TL-13 `brief.mjs`(작업 지시서 생성기)와 §6a 추가. `test/run.sh`가 node:test·shellcheck와 AC-DF-002.1·.2 시나리오(인자 없는 dry-run, 기존 `[DF-001]` 이슈를 둔 두 번 apply)를 그대로 돌리도록 §6 갱신. dry-run 끝에 계획 요약 줄 |
+| v1.1.0 | 2026-09-25 | DF-002: TL-13 `brief.mjs`(작업 지시서 생성기)와 §6a 추가. `test/run.sh`가 node:test·shellcheck와 AC-DF-002.1·.2 시나리오(인자 없는 dry-run, 기존 `[DF-001]` 이슈를 둔 두 번 apply)를 그대로 돌리도록 §6 갱신. dry-run 끝에 계획 요약 줄. 검토 반영: §8 검증 명령에서 소유자 실행·운영 데이터 스크립트·비명령 낱말을 빼고, 스프린트 문서와 에이전트 라벨 불일치를 경고하며, `run.sh`가 CI에서 shellcheck·PRD 누락 시 실패 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: §2 의존 설명을 R3에 맞춤(카드가 더한 같은/앞선 스프린트 의존은 색인 반영, `cardDeps`는 제안 키 의존만, 스프린트 역전 의존은 카드 참고(soft)) |

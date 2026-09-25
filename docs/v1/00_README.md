@@ -239,7 +239,7 @@ DF-901(MIG-01)에서 채운다. 이식 스토리(DF-039 등)는 이 해시의 �
 |---|---|---|
 | 보관 브랜치 | `archive/trainer-ui-2026-09` | — |
 | tip 커밋 해시 | `82c6ee9b4c95e9622fc1c44111ddc20ee9f68941`(로컬 전용, 공개 저장소라 원격에 푸시하지 않음) | 2026-09-25 |
-| main 병합 커밋(A분류) | 기준 브랜치 `chore/DF-901-mig01-baseline` PR 병합 뒤 기입(rebase 병합이라 해시가 바뀐다) | — |
+| main 병합 커밋(A분류) | `6b50fbf`([PR #1](https://github.com/TEhyeok/DFET_Coach/pull/1) rebase 병합, `3ef5b79..6b50fbf` 37개 커밋) | 2026-09-25 |
 | trainer_ios 보존 태그 | `archive/trainer_ios-final`(DF-142, P1a S13) | — |
 
 기입은 소유자가 G-01 증빙(`docs/v1/evidence/G-01.md`)과 함께 한다. PRD 변경 이력에도 같은 해시를 적는다(소유자 편집).

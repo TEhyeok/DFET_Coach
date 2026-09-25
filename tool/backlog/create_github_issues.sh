@@ -100,6 +100,8 @@ CREATED="$TMP/created.txt"  # keys created in this run
 : > "$MAP"; : > "$CREATED"
 
 mode="DRY-RUN(네트워크 호출 없음)"; [ "$APPLY" -eq 1 ] && mode="APPLY"
+PLAN_LABELS="-"; PLAN_MILESTONES="-"; PLAN_ISSUES="-"   # dry-run 끝 요약(AC-DF-002.1). 건너뛴 단계는 '-'
+
 echo "== create_github_issues.sh  mode=$mode  repo=$REPO  steps=$ONLY"
 
 # gh 래퍼: dry-run에서는 절대 실행하지 않는다.
@@ -176,6 +178,7 @@ render_body() {
 # ---------- labels ----------
 if step_on labels; then
   n=$(jq '.labels|length' "$LABELS_FILE")
+  PLAN_LABELS="$n"
   echo "-- labels: $n (gh label create --force, idempotent)"
   jq -r '.labels[] | [.name, .color, .description] | join("\u001f")' "$LABELS_FILE" |
   while IFS=$'\x1f' read -r name color desc; do
@@ -190,7 +193,8 @@ fi
 
 # ---------- milestones ----------
 if step_on milestones; then
-  echo "-- milestones"
+  PLAN_MILESTONES=$(jq --argjson skip "$SKIP_TRACKING" '[.milestones[] | select($skip == 0 or (.trackingOnly|not))] | length' "$MILESTONES_FILE")
+  echo "-- milestones: $PLAN_MILESTONES (create when the title is missing, update due date/description)"
   EXIST_MS="$TMP/ms.tsv"; : > "$EXIST_MS"
   if [ "$APPLY" -eq 1 ]; then
     gh api --paginate "repos/$REPO/milestones?state=all&per_page=100" \
@@ -349,6 +353,7 @@ if step_on issues; then
     echo "   result: created $created, skipped(existing) $skipped"
   else
     echo "   plan: $created issues would be created unless a title with the same [KEY] already exists (checked only with --apply)"
+    PLAN_ISSUES="$created"
   fi
 fi
 
@@ -388,4 +393,7 @@ if step_on relink && ! step_on issues; then
   fi
 fi
 
+if [ "$APPLY" -ne 1 ]; then
+  echo "== plan: labels $PLAN_LABELS, milestones $PLAN_MILESTONES, issues $PLAN_ISSUES (dry-run: gh was not called)"
+fi
 echo "== done ($mode)"

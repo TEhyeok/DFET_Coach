@@ -50,6 +50,81 @@ service cloud.firestore {
         memberId in get(/databases/$(database)/documents/trainers/$(request.auth.uid)).data.memberIds;
     }
 
+    // ===== D-FET v1 공통 헬퍼 (V1-05 §7.2, PRD §9.4, DF-020) =====
+
+    // MIG-03 스위치(DF-100). MIG-03 적용 PR에서 false로 바꾸고 v1 분기를 지운다. 되돌리지 않는다(R-21, MIG-11).
+    // 이 줄은 V1-11 §13.2 롤백 절차의 sed와 DF-022 스위치 사본 테스트가 그대로 찾는다. 한 줄 형식을 유지한다.
+    function legacyV1WritesOpen() { return true; } // @mig03-switch  DF-100에서 false로 바꾸고 v1 분기 삭제
+
+    function incoming() { return request.resource.data; }
+
+    // 읽기: 파생 접근 키. get()을 쓰지 않아 where trainerId == uid 목록 쿼리를 증명할 수 있다.
+    function isAccessTrainer(data) {
+      return isTrainer() && data.get('trainerId', null) == request.auth.uid;
+    }
+
+    // 대기 회원 생성자이고 status == 'pending'
+    function isPendingOwner(pendingMemberId) {
+      let path = /databases/$(database)/documents/pendingMembers/$(pendingMemberId);
+      return isTrainer() && exists(path)
+        && get(path).data.trainerId == request.auth.uid
+        && get(path).data.status == 'pending';
+    }
+
+    function memberKeyOf(data) {
+      return data.get('memberUid', null) != null ? data.memberUid : data.pendingMemberId;
+    }
+
+    // create 전용: 회원 키가 정확히 하나(PRD §9.3 '정확히 하나')
+    function exactlyOneMemberKey(data) {
+      let hasUid = data.get('memberUid', null) is string;
+      let hasPending = data.get('pendingMemberId', null) is string;
+      return (hasUid && !hasPending) || (!hasUid && hasPending);
+    }
+
+    // 쓰기: 현재 담당(uid) 또는 대기 회원 생성자
+    function canWriteFor(data) {
+      return data.get('memberUid', null) != null
+        ? isAssignedTrainer(data.memberUid)
+        : (data.get('pendingMemberId', null) != null && isPendingOwner(data.pendingMemberId));
+    }
+
+    // 상태 문서가 없으면 get 오류 → 거부(의도)
+    function hasConsent(memberKey, type) {
+      return get(/databases/$(database)/documents/memberConsentStates/$(memberKey))
+        .data.get(type, {}).get('granted', false) == true;
+    }
+
+    function featureOn(key) {
+      return get(/databases/$(database)/documents/appConfig/features).data.get(key, false) == true;
+    }
+
+    function isServerTime(field) { return request.resource.data[field] == request.time; }
+
+    // 측정 시각 상한: request.time + 5분(제안값, PRD §9.1, ASM-P0-19)
+    function measuredAtOk(ts) {
+      return ts is timestamp && ts <= request.time + duration.value(5, 'm');
+    }
+
+    function strMax(v, n) { return v is string && v.size() <= n; }
+    function strRange(v, lo, hi) { return v is string && v.size() >= lo && v.size() <= hi; }
+    // 선택 키는 없거나 null이면 통과한다(코덱이 null을 쓰는 키가 있다: contracts/fixtures/soap_v2).
+    function optStrMax(m, key, n) { return m.get(key, null) == null || strMax(m[key], n); }
+    function optListMax(m, key, n) { return m.get(key, null) == null || (m[key] is list && m[key].size() <= n); }
+
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // create 공통: 원 기록 컬렉션
+    function rawRecordCreateBase(schemaVersion) {
+      return isTrainer()
+        && incoming().schemaVersion == schemaVersion
+        && incoming().trainerId == request.auth.uid
+        && incoming().legalNature == 'coachingRecord'
+        && exactlyOneMemberKey(incoming())
+        && isServerTime('createdAt')
+        && isServerTime('updatedAt');
+    }
+
     // --- Admins Collection (New) ---
     match /admins/{userId} {
       // 본인은 승인 대기 요청만 생성할 수 있다. 승인은 서버/기존 관리자만 수행한다.
@@ -109,29 +184,175 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // --- SOAP Notes Collection ---
-    // 트레이너가 작성. 회원은 자신에게 공유된 것만 읽기 가능.
+    // --- SOAP Notes (v2, V1-05 §5·§7.3, PRD §9.3·§9.4, DF-020) ---
+    // 읽기는 파생 접근 키(trainerId)만. 회원·관리자 클라이언트 읽기는 없다(R-10, R-23).
+    // 회원 대체 경로는 P2 memberSummaries, 관리자는 admin_web 서버(Admin SDK)다.
+    // v1 레거시 문서(schemaVersion 없음)는 legacyV1WritesOpen()이 true인 동안만 현행 의미로 쓸 수 있다(ASM-P0-18).
     match /soap_notes/{noteId} {
-      allow read: if isAuth() && (
-        resource.data.trainerId == request.auth.uid ||
-        (resource.data.memberId == request.auth.uid &&
-         resource.data.isSharedWithMember == true) ||
-        isAdmin()
-      );
-      // 생성: 호출자가 트레이너이고, 작성자(trainerId)가 본인이며, 담당 회원이어야 함
-      allow create: if isTrainer() &&
-        request.resource.data.trainerId == request.auth.uid &&
-        isAssignedTrainer(request.resource.data.memberId);
-      // 수정: 본인 트레이너 또는 관리자. 단 trainerId는 변경 불가
-      allow update: if isAdmin() || (
-        isTrainer() &&
-        resource.data.trainerId == request.auth.uid &&
-        request.resource.data.trainerId == resource.data.trainerId
-      );
-      // 삭제: 본인 트레이너 또는 관리자
-      allow delete: if isAdmin() || (
-        isTrainer() && resource.data.trainerId == request.auth.uid
-      );
+
+      function isV2(data) { return data.get('schemaVersion', 1) == 2; }
+
+      function soapCreateKeys() {
+        return ['schemaVersion', 'trainerId', 'authorUid', 'memberUid', 'pendingMemberId',
+                'memberId', 'isSharedWithMember', 'sessionDate', 'status', 'quickNote',
+                'inkPath', 'inkRevision', 'subjective', 'objective', 'exerciseAssessment',
+                'plan', 'memberNote', 'legalNature', 'createdAt', 'updatedAt'];
+      }
+      function soapEditableKeys() {
+        return ['sessionDate', 'quickNote', 'inkPath', 'inkRevision', 'subjective',
+                'objective', 'exerciseAssessment', 'plan', 'memberNote',
+                'status', 'finalizedAt', 'updatedAt'];
+      }
+
+      function validSubjective(s) {
+        return s is map
+          && s.keys().hasOnly(['chiefComplaint', 'painNrs', 'painRegions'])
+          && optStrMax(s, 'chiefComplaint', 2000)
+          && (s.get('painNrs', null) == null
+              || (s.painNrs is int && s.painNrs >= 0 && s.painNrs <= 10))
+          && optListMax(s, 'painRegions', 64);
+      }
+      function validRefs(r) {
+        return r is map
+          && r.keys().hasOnly(['postureAssessmentIds', 'bodyCompositionRecordIds',
+                               'circumferenceMeasurementIds', 'bodyScanIds'])
+          && optListMax(r, 'postureAssessmentIds', 20)
+          && optListMax(r, 'bodyCompositionRecordIds', 20)
+          && optListMax(r, 'circumferenceMeasurementIds', 20)
+          && optListMax(r, 'bodyScanIds', 20);
+      }
+      function validObjective(o) {
+        return o is map
+          && o.keys().hasOnly(['metrics', 'refs', 'snapshots'])
+          && optListMax(o, 'metrics', 60)
+          && optListMax(o, 'snapshots', 60)
+          && (o.get('refs', null) == null || validRefs(o.refs));
+      }
+      function validAssessment(a) {
+        return a is map
+          && a.keys().hasOnly(['summary', 'observations'])
+          && optStrMax(a, 'summary', 4000)
+          && optListMax(a, 'observations', 20);
+      }
+      function validPlan(p) {
+        return p is map
+          && p.keys().hasOnly(['nextSession', 'homeExercise'])
+          && optStrMax(p, 'nextSession', 2000)
+          && optStrMax(p, 'homeExercise', 2000);
+      }
+      function validInk(d) {
+        return d.get('inkPath', null) == null
+          || (d.inkPath is string
+              && d.inkPath.matches('soapInk/' + noteId + '/[0-9]+[.]drawing')
+              && d.get('inkRevision', null) is int
+              && d.inkRevision >= 1);
+      }
+      function validSoapContent(d) {
+        return measuredAtOk(d.sessionDate)
+          && d.status in ['draft', 'finalized']
+          && optStrMax(d, 'quickNote', 1000)
+          && optStrMax(d, 'memberNote', 200)
+          && validInk(d)
+          && (d.get('subjective', null) == null || validSubjective(d.subjective))
+          && (d.get('objective', null) == null || validObjective(d.objective))
+          && (d.get('exerciseAssessment', null) == null || validAssessment(d.exerciseAssessment))
+          && (d.get('plan', null) == null || validPlan(d.plan));
+      }
+      // 확정 최소 요건 PRD §6.4.4 #2~#4 (ASM-05-17). #1(회원 식별)은 create에서 확인했다.
+      function nonBlank(v) { return v is string && v.trim().size() > 0; }
+      function meetsFinalizeMinimum(d) {
+        return d.sessionDate is timestamp
+          && (nonBlank(d.get('quickNote', null))
+              || (d.get('subjective', null) is map
+                  && nonBlank(d.subjective.get('chiefComplaint', null))))
+          && d.get('plan', null) is map
+          && nonBlank(d.plan.get('nextSession', null));
+      }
+
+      allow read: if isAccessTrainer(resource.data);
+
+      // 문서 조회 수: trainers 또는 pendingMembers, memberConsentStates, appConfig/features = 최대 3
+      allow create: if (
+          rawRecordCreateBase(2)
+          && !noteId.matches('native_.*')                                   // R-24
+          && incoming().keys().hasOnly(soapCreateKeys())                    // diagnosis 등 거부(R-04)
+          && incoming().keys().hasAll(['schemaVersion', 'trainerId', 'authorUid', 'sessionDate',
+                                       'status', 'legalNature', 'createdAt', 'updatedAt'])
+          && incoming().authorUid == request.auth.uid
+          && incoming().status == 'draft'
+          && incoming().get('isSharedWithMember', false) == false
+          && (incoming().get('memberId', null) == null
+              || incoming().memberId == incoming().get('memberUid', null))
+          && validSoapContent(incoming())
+          && canWriteFor(incoming())                                        // R-02
+          && hasConsent(memberKeyOf(incoming()), 'healthData')              // 동의 ②
+          && featureOn('soapV2')
+        ) || (
+          // v1 레거시(MIG-03 적용 전까지만). 기존 create 의미 유지
+          legacyV1WritesOpen()
+          && !('schemaVersion' in incoming())
+          && isTrainer()
+          && incoming().trainerId == request.auth.uid
+          && isAssignedTrainer(incoming().get('memberId', null))
+        );
+
+      allow update: if (
+          isV2(resource.data)
+          && isAccessTrainer(resource.data)
+          && canWriteFor(resource.data)
+          && resource.data.status == 'draft'                                // R-08
+          && changed().hasOnly(soapEditableKeys())                          // R-03, R-04
+          && isServerTime('updatedAt')
+          && validSoapContent(incoming())
+          && (incoming().status == 'draft'
+              ? !('finalizedAt' in changed())
+              : (isServerTime('finalizedAt') && meetsFinalizeMinimum(incoming())))
+          && hasConsent(memberKeyOf(resource.data), 'healthData')
+        ) || (
+          // v1 레거시. 기존 update 의미에서 관리자 경로만 뺐다
+          legacyV1WritesOpen()
+          && !isV2(resource.data)
+          && !('schemaVersion' in incoming())
+          && isTrainer()
+          && resource.data.trainerId == request.auth.uid
+          && incoming().trainerId == resource.data.trainerId
+        );
+
+      allow delete: if (
+          isV2(resource.data)
+          && isAccessTrainer(resource.data)
+          && canWriteFor(resource.data)
+          && resource.data.status == 'draft'
+        ) || (
+          // v1 레거시. 기존 delete 의미에서 관리자 경로만 뺐다(ASM-P0-18)
+          legacyV1WritesOpen()
+          && !isV2(resource.data)
+          && isTrainer()
+          && resource.data.trainerId == request.auth.uid
+        );
+
+      // --- addenda (확정 뒤 추가·정정, append-only) ---
+      match /addenda/{addendumId} {
+        function parent() {
+          return get(/databases/$(database)/documents/soap_notes/$(noteId)).data;
+        }
+        allow read: if isAccessTrainer(parent());
+        allow create: if isTrainer()
+          && isV2(parent())
+          && parent().status == 'finalized'
+          && isAccessTrainer(parent())
+          && canWriteFor(parent())
+          && incoming().keys().hasOnly(['authorUid', 'createdAt', 'reason', 'text',
+                                        'changedFields', 'previousValues'])
+          && incoming().keys().hasAll(['authorUid', 'createdAt', 'reason', 'text'])
+          && incoming().authorUid == request.auth.uid
+          && isServerTime('createdAt')
+          && strRange(incoming().reason, 1, 500)
+          && strMax(incoming().text, 4000)
+          && optListMax(incoming(), 'changedFields', 20)
+          && (incoming().get('previousValues', null) == null || incoming().previousValues is map);
+        allow update, delete: if false;                                    // R-09
+      }
     }
 
     // --- Community (Posts) ---

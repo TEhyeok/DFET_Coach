@@ -24,8 +24,12 @@ final class AppShellUITests: XCTestCase {
     XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10))
 
     XCUIDevice.shared.orientation = .portrait
-    XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10), "selection lost after portrait")
-    XCTAssertFalse(element("tr02.root", in: app).exists)
+    // CI may pick a smaller iPad (scripts/ci_pick_ipad.sh), where portrait can hide the sidebar and content columns.
+    // Then only the detail column is in the tree; the landscape check below still proves the selection survived.
+    if !element("tr15.root", in: app).waitForExistence(timeout: 10) {
+      XCTAssertFalse(element("nav.settings", in: app).exists, "content column is shown but not TR-15: selection lost")
+    }
+    XCTAssertFalse(element("tr02.root", in: app).exists, "selection reset to TR-02 after portrait")
 
     XCUIDevice.shared.orientation = .landscapeLeft
     XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10), "selection lost after landscape")
@@ -79,6 +83,37 @@ final class AppShellUITests: XCTestCase {
     XCTAssertLessThanOrEqual(row.frame.maxX, windowMinX + 375.5)
     row.tap()
     XCTAssertTrue(element("tr03.root", in: app).waitForExistence(timeout: 10))
+  }
+
+  /// TC-DF017-06 (NFR-12, V1-07 §3.3): a size-class change (Split View / Slide Over resize) keeps the screen.
+  /// `--preview-resizable` toggles the 375pt compact simulation at runtime without rebuilding the shell.
+  @MainActor
+  func testSizeClassChangeKeepsSelection_TC_DF017_06() throws {
+    let app = launch(["--preview-members", "--preview-width=375", "--preview-resizable"])
+    let toggle = element("preview.toggleWidth", in: app)
+    XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+
+    // Regular -> compact on TR-15 (reviewer example 1).
+    toggle.tap()  // wide
+    element("nav.settings", in: app).tap()
+    XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10))
+    toggle.tap()  // narrow
+    XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10), "TR-15 lost when narrowing")
+    XCTAssertFalse(element("nav.members", in: app).exists, "compact shows the root list instead of TR-15")
+    toggle.tap()  // wide
+    XCTAssertTrue(element("tr15.root", in: app).waitForExistence(timeout: 10), "TR-15 lost when widening")
+
+    // Compact -> regular on TR-03 (reviewer example 2).
+    toggle.tap()  // narrow, on TR-15
+    app.navigationBars.buttons.firstMatch.tap()  // back to the root list
+    element("nav.members", in: app).tap()
+    openFirstMember(in: app)
+    toggle.tap()  // wide
+    XCTAssertTrue(element("tr03.root", in: app).waitForExistence(timeout: 10), "TR-03 lost when widening")
+    XCTAssertTrue(element("tr02.root", in: app).exists, "sidebar selection is not TR-02")
+    toggle.tap()  // narrow
+    XCTAssertTrue(element("tr03.root", in: app).waitForExistence(timeout: 10), "TR-03 lost when narrowing again")
+    attachScreenshot(app, name: "TC-DF017-06 TR-03 after regular -> compact")
   }
 
   // MARK: Helpers

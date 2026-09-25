@@ -14,29 +14,16 @@ enum LaunchMode: Equatable {
   case misconfigured(reason: String)
 }
 
-/// Resolves the launch mode once at startup. Pure so it can be tested table-style (TC-DF008-05).
-struct LaunchConfiguration: Equatable {
+/// Launch-mode rules, resolved once at startup. Pure so they can be tested table-style (TC-DF008-05).
+/// The app's single launch path is `AppEnvironment.resolveAtLaunch(arguments:processEnvironment:bootstrap:)`, which
+/// applies `effectiveArguments`, `isDebugBuild` and `resolve(arguments:isDebug:plistPresent:)` in that order; the
+/// plist check is `plistPresent(in:)` inside `AppBootstrap.firebase(bundle:)`.
+enum LaunchConfiguration {
   static let previewPrefix = "--preview-"
   static let useEmulatorFlag = "--use-emulator"
   static let emulatorHostPrefix = "--emulator-host="
   static let defaultEmulatorHost = "127.0.0.1"
   static let missingPlistReason = "missingPlist"
-
-  let mode: LaunchMode
-
-  /// Reads the real process arguments and checks whether `GoogleService-Info.plist` was copied into the
-  /// bundle by the "Copy Firebase config if present" build phase. Never reads the plist's values.
-  static func resolve(arguments: [String], bundle: Bundle) -> LaunchConfiguration {
-    resolve(arguments: arguments, bundle: bundle, environment: ProcessInfo.processInfo.environment)
-  }
-
-  /// Same as `resolve(arguments:bundle:)` with an injectable environment so tests can exercise the bundle
-  /// lookup without the XCTest guard.
-  static func resolve(arguments: [String], bundle: Bundle, environment: [String: String]) -> LaunchConfiguration {
-    let arguments = effectiveArguments(arguments, isDebug: isDebugBuild, environment: environment)
-    return LaunchConfiguration(
-      mode: resolve(arguments: arguments, isDebug: isDebugBuild, plistPresent: plistPresent(in: bundle)))
-  }
 
   /// `true` only in DEBUG builds. Release code paths never parse `--preview-*` or `--use-emulator`.
   static var isDebugBuild: Bool {

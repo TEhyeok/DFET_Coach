@@ -90,6 +90,21 @@ final class AppEnvironmentTests: XCTestCase {
     XCTAssertNil(PreviewEnvironment(arguments: ["--preview-width=0"]).simulatedWidth)
   }
 
+  /// A mistyped scenario is reported, never silently run as `empty`; modifiers alone are not unknown.
+  func testUnknownPreviewArgumentsAreReported() {
+    XCTAssertEqual(PreviewEnvironment(arguments: ["--preview-member", "--preview-flags=soapV2"]).unknownArguments,
+                   ["--preview-member"])
+    XCTAssertEqual(PreviewEnvironment(arguments: ["--preview-widht=375", "--preview-members"]).unknownArguments,
+                   ["--preview-widht=375"])
+    let valid = PreviewEnvironment(arguments: [
+      "--preview-members", "--preview-flags=soapV2", "--preview-width=375", "--preview-landscape",
+      "--preview-resizable", "--preview-unit-test-host", "--use-emulator",
+    ])
+    XCTAssertEqual(valid.unknownArguments, [])
+    XCTAssertTrue(valid.isResizable)
+    XCTAssertEqual(valid.scenario, .members)
+  }
+
   func testLiveMembersAreNotConnectedBeforeDF013() {
     let environment = AppEnvironment.resolve(arguments: [], isDebug: false,
                                              bootstrap: AppBootstrap(plistPresent: true) { _ in })

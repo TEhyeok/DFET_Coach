@@ -3,14 +3,19 @@ import TrainerDomain
 
 /// AppShell (PRD §8.1, V1-07 §3.2): sidebar | content | detail. A compact size class (iPad 1/3 Split View,
 /// Slide Over) switches to a NavigationStack. Entry points are filtered by `FlagGate` before any route or button
-/// exists (AC-IA-02). Selection lives in `@State` here, so rotation and window resizing keep it (NFR-12).
+/// exists (AC-IA-02).
+///
+/// State survives layout changes (NFR-12, V1-07 §3.3): rotation keeps the same view tree, and a size-class change
+/// (Split View, Slide Over or Stage Manager resize) converts `navigation` to `stackPath` and back through
+/// `ShellNavigation`, so the user stays on the same TR screen.
 struct RootSplitView: View {
   let flags: FeatureFlags
   let members: MemberListState
 
   @Environment(\.horizontalSizeClass) private var sizeClass
-  @State private var selection: TrainerRoute?
-  @State private var detail: TrainerRoute?
+  /// Regular layout state. While compact, `stackPath` is the live state and this is rebuilt when widening.
+  @State private var navigation: ShellNavigation
+  /// Compact layout state. Rebuilt from `navigation` when narrowing.
   @State private var stackPath: [TrainerRoute] = []
   @State private var columnVisibility: NavigationSplitViewVisibility = .all
   @State private var comingSoonEntry: EntryPoint?
@@ -18,15 +23,24 @@ struct RootSplitView: View {
   init(flags: FeatureFlags, members: MemberListState) {
     self.flags = flags
     self.members = members
-    _selection = State(initialValue: TrainerRoute.initial(flags: flags))
+    _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
   }
+
+  private var isCompact: Bool { sizeClass == .compact }
 
   var body: some View {
     Group {
-      if sizeClass == .compact {
+      if isCompact {
         stack
       } else {
         split
+      }
+    }
+    .onChange(of: isCompact) { _, nowCompact in
+      if nowCompact {
+        stackPath = navigation.stackPath
+      } else {
+        navigation = navigation.restoring(stackPath: stackPath)
       }
     }
     .sheet(item: $comingSoonEntry) { _ in
@@ -52,7 +66,7 @@ struct RootSplitView: View {
 
   private var split: some View {
     NavigationSplitView(columnVisibility: $columnVisibility) {
-      List(selection: $selection) {
+      List(selection: sidebarSelection) {
         ForEach(sidebarEntries) { entry in
           if case let .route(route) = entry.destination {
             NavigationLink(value: route) { sidebarLabel(entry) }
@@ -62,17 +76,21 @@ struct RootSplitView: View {
       }
       .navigationTitle(String(localized: "app.title"))
     } content: {
-      content(for: selection ?? .members)
+      content(for: navigation.selection ?? .members)
     } detail: {
       DetailColumn {
-        if case let .memberDetail(uid) = detail {
+        if case let .memberDetail(uid) = navigation.detail {
           memberDetail(uid: uid)
         } else {
           Color.clear.accessibilityIdentifier("app.detail.empty")
         }
       }
     }
-    .onChange(of: selection) { _, _ in detail = nil }
+  }
+
+  /// Sidebar taps go through `ShellNavigation.select(_:)`, which closes the detail when the route changes.
+  private var sidebarSelection: Binding<TrainerRoute?> {
+    Binding(get: { navigation.selection }, set: { navigation.select($0) })
   }
 
   // MARK: Compact width: NavigationStack
@@ -132,10 +150,10 @@ struct RootSplitView: View {
     case .notConnected:
       ComingSoonView()
     case let .loaded(rows):
-      if sizeClass == .compact {
+      if isCompact {
         List(rows) { memberRow($0) }  // links push onto the stack path
       } else {
-        List(rows, selection: $detail) { memberRow($0) }  // links select the detail column
+        List(rows, selection: $navigation.detail) { memberRow($0) }  // links select the detail column
       }
     case .empty:
       Text(String(localized: "tr02.empty"))

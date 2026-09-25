@@ -15,7 +15,7 @@ assembly, flag-gated entry points); screens arrive with later stories.
 | `Config/{Debug,Release}.xcconfig` | Build configuration, no secrets | `GoogleService-Info.plist` goes here locally, untracked |
 | `Packages/TrainerCore` | Pure Swift: TrainerContracts, TrainerDomain, PostureMath, SyncEngine, TrainerAnalytics | iOS 17 + macOS 14, `swift test` on macOS. No UIKit/SwiftUI/SwiftData/Firebase imports |
 | `Packages/TrainerKit` | iOS-only: LocalStore, FirebaseData, PostureVision, DesignSystem, 11 Feature* targets | Firebase SDK is declared here and linked **only** by `FirebaseData` |
-| `AppTests/` | Host-less unit tests for pure App code (`LaunchConfiguration`, `AppEnvironment`, `FlagGate`, `TrainerRoute`, `LayoutMode`) | Sources listed one by one in `project.yml` |
+| `AppTests/` | Host-less unit tests for pure App code (`LaunchConfiguration`, `AppEnvironment`, `FlagGate`, `TrainerRoute`, `LayoutMode`, `ShellNavigation`) | Sources listed one by one in `project.yml` |
 | `UITests/` | XCUITest (`--preview-*` launches) | |
 | `IntegrationTests/` | Emulator integration tests (DF-107) | Placeholder only; CI skips it |
 | `scripts/ci_pick_ipad.sh` | Prints one available iPad simulator UDID (creates one if none exists) | |
@@ -55,6 +55,9 @@ The same steps run in `.github/workflows/trainer-app.yml` (job `trainer-app`), w
 | Debug / Release | none | present | `production` |
 
 Rows are checked top to bottom. Release builds ignore `--preview-*`, `--use-emulator` and `--emulator-host=`.
+The app resolves this once through `AppEnvironment.resolveAtLaunch(arguments:processEnvironment:bootstrap:)`
+(process arguments + XCTest guard, build configuration, plist presence from `AppBootstrap.firebase(bundle:)`); the
+unit tests call the same function.
 App Check: DEBUG uses `AppCheckDebugProviderFactory`, Release uses App Attest
 (`FirebaseBootstrap.configure(_:)` in FirebaseData). Emulator mode never uses the bundled plist or the App Check
 exchange endpoint, so it cannot reach the production project even when a plist is present locally.
@@ -63,11 +66,12 @@ exchange endpoint, so it cannot reach the production project even when a plist i
 
 | File | Role |
 |---|---|
-| `AppEnvironment.swift` | `AppEnvironment.resolve(arguments:isDebug:bootstrap:)` -> `.live` (FirebaseData, flags fixed to `.allOff` until P1a), `.preview` (DEBUG only, in-memory synthetic data) or `.misconfigured` (no Firebase call). Firebase is configured through the injected `AppBootstrap` for `.live` only |
+| `AppEnvironment.swift` | `AppEnvironment.resolveAtLaunch(...)` / `resolve(arguments:isDebug:bootstrap:)` -> `.live` (FirebaseData, flags fixed to `.allOff` until P1a), `.preview` (DEBUG only, in-memory synthetic data) or `.misconfigured` (no Firebase call). Firebase is configured through the injected `AppBootstrap` for `.live` only |
 | `TrainerRoute.swift` | `today` (TR-01), `members` (TR-02), `memberDetail(uid:)` (TR-03), `settings` (TR-15). No schedule/program/alerts (AS-21) |
 | `FlagGate.swift` | `EntryPoint` list and the pure `FlagGate.isEntryVisible(_:flags:)` table (AC-IA-02). Gated entries without a screen open `common.comingSoon` |
 | `LayoutMode.swift` | `LayoutMode.for(width:)`: detail width < 1120pt is `.compact` (ASM-P0-22) |
 | `RootSplitView.swift` | NavigationSplitView (sidebar, content, detail); a compact size class switches to a NavigationStack |
+| `ShellNavigation.swift` | Layout-independent place (sidebar selection + detail) and its mapping to/from the stack path, so a size-class change keeps the screen (NFR-12) |
 
 `FeatureFlags` (8 keys, `.allOff`) lives in `TrainerCore/TrainerDomain/FeatureFlags.swift`; DF-027 swaps its key
 constants for the generated `FeatureFlagKey`.
@@ -75,7 +79,8 @@ constants for the generated `FeatureFlagKey`.
 ## Preview arguments (DEBUG only)
 
 Every argument below is ignored in Release. Any `--preview-*` argument means preview mode (no Firebase, synthetic
-`SYN-*` data only). The first known scenario name wins; without one the scenario is `empty`.
+`SYN-*` data only). The first known scenario name wins; without one the scenario is `empty`. An unknown
+`--preview-<name>` (for example the typo `--preview-member`) shows `preview.unknownArgument` instead of the shell.
 
 | Argument | Effect |
 |---|---|
@@ -87,6 +92,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-landscape` | Requests landscape orientation (ported from `trainer_ios`) |
 | `--preview-flags=<k1,k2>` | Local flag override for client entry points only (ADR-010 §3-6); unknown keys are ignored |
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |
+| `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06) |
 
 ## GoogleService-Info.plist rules (ADR-019)
 

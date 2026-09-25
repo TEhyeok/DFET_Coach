@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-13 |
-| 버전 | v1.0.2 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -149,7 +149,7 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 
 정본은 [01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계)다. 요지:
 
-- **Git·GitHub:** `main` 직접 푸시, 병합, 자동 병합, 태그 생성, 이슈 생성, 라벨·마일스톤·Projects·저장소 설정 변경을 하지 않는다. `tool/backlog/create_github_issues.sh --apply`를 실행하지 않는다(dry-run만).
+- **Git·GitHub:** `main` 직접 푸시, 자기 PR 병합, 자동 병합, 태그 생성, 이슈 생성, 라벨·마일스톤·Projects·저장소 설정 변경을 하지 않는다. `tool/backlog/create_github_issues.sh --apply`를 실행하지 않는다(dry-run만). 스프린트 PR의 병합은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)을 확인한 병합 담당 AI만 rebase로 한다([01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계) '병합' 행).
 - **파일:** 지시서의 수정 허용 경로 밖, `docs/PRD_V1.md`(수정 제안만), 동결 경로(`trainer_ios/`, `ios/Runner/AppDelegate.swift`, freeze-exception 지시서가 있을 때만 예외)를 고치지 않는다.
 - **비밀:** `.env*`, `functions/.secret.local`, `GoogleService-Info.plist` 값, 서명 인증서, API 키, 서비스 계정 키를 열거나 출력하거나 커밋하지 않는다. CI 시크릿 이름(값 아님): `TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64`([ADR-019](adr/ADR-019-config-and-secrets.md)), 서명 인증서·App Store Connect API 키(DF-922·DF-139), BodyPath 읽기 자격(DF-923). 초대 코드 HMAC 키는 Secret Manager에 둔다.
 - **데이터:** 운영 Firestore·Storage, `output/`, `tmp/`, 내보내기 파일, 회원 데이터를 열지 않는다. 테스트·픽스처·스크린숏은 합성 가상 회원만 쓴다([V1-10 §5.1](10_TEST_PLAN.md#51-금지-데이터와-허용-데이터)).
@@ -198,3 +198,4 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 시드 정본 확정(R2), XcodeGen zip 설치(R8), 포트 추가 담당 |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: 시드 경로·ID 정본화(R2), XcodeGen zip 고정(R8, ASM-13-04), Auth·Functions 포트 추가를 P0 시드 스토리로 이관 |
 | v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패). Flutter 3.38.2 고정과 iOS CocoaPods 빌드 명시(PR #1 CI 결과) |
+| v1.1 | 2026-09-25 | CJH(AI 에이전트) | §7 Git 금지 행동을 DEC-20(병합 담당 AI의 rebase 병합, 구현 에이전트의 자기 PR 병합 금지)에 맞춤 |

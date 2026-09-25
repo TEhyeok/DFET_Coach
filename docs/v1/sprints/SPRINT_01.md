@@ -3,7 +3,7 @@
 | 항목 | 값 |
 |---|---|
 | 문서 ID | V1-03-S01 |
-| 버전 | v1.0.1 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -396,6 +396,8 @@ Trace: PRD §0.3, §13.4. 정본은 [P0 DF-001 카드](../backlog/P0.md#df-001)�
 
 `ci.yml`에 추가할 부분(001-3). 기존 네 job은 건드리지 않는다.
 
+> 아래는 계획 시점 초안이다. DF-001 구현 뒤에는 [10_TEST_PLAN §19.3](../10_TEST_PLAN.md#193-ciyml-개정-초안)(v1.1.0)이 정본이다. 차이: `github.*` 값을 env로 넘김, 두 job에 `permissions: contents: read`, `docs-and-backlog`의 `if`가 `changes-ci` 실패 때도 실행, `docs` 경로 조건에 `.github/ISSUE_TEMPLATE/`·`pull_request_template.md`·`CODEOWNERS`·`AGENTS.md`·`CLAUDE.md`와 lint 테스트 추가, 이슈 폼 구조 테스트(`tool/lint/test/issue-forms.test.mjs`) 단계, DF-002의 `build_issues.mjs --check`·`create_backlog.sh --dry-run --offline` 조건부 단계.
+
 ```yaml
   changes-ci:                  # DF-001. DF-031(S05)이 migrations 출력을 더한다
     runs-on: ubuntu-latest
@@ -688,3 +690,4 @@ S02 준비(10-06 화 오전 계획 회의 전까지):
 | v1.0(검토 반영) | 2026-09-24 | 필수 체크 워크플로 `paths` 제거(changes-* job), §7.4 DF-008을 TrainerCore·TrainerKit·postBuildScripts·XcodeGen zip으로 재작성, ci.yml 직렬 순서, DF-005 픽스처 규약 정렬, 구 가정 번호 51~61 → ASM-S01-01~12 | — | 없음 |
 | v1.0(정합 패스 2) | 2026-09-24 | §7.2를 V1-05 §13 링크로 축소(R5), 속도 포함 규칙 기록(R1, ASM-S01-13) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: §7.2·§7.3·§8.1의 contracts 값을 V1-05 §13 정본(`excludedMetricCodes`, `confirmed`, enum 33개)으로 맞추고 ASM-S01-13(R1) 추가 | — | 없음 |
+| v1.0.2 | 2026-09-25 | §7.5 ci.yml 초안 위에 10_TEST_PLAN §19.3(v1.1.0)이 정본이라는 안내와 구현 차이를 적음 | #105 | 없음 |

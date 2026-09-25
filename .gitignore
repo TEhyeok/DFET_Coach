@@ -56,6 +56,8 @@ functions/.secret.local
 .env
 .env.*
 !admin_web/.env.example
+# 트레이너 앱 Firebase 구성: 소유자만 로컬 배치, CI는 시크릿 주입(ADR-019, DF-034). trainer_app/.gitignore와 이중 보호
+trainer_app/Config/GoogleService-Info.plist
 
 # === Firebase / Cloud Functions ===
 functions/node_modules/

@@ -4,7 +4,7 @@
 //
 // 사용법:
 //   node tool/lint/doc-headers.mjs [--links] [경로 ...]     (경로 기본값: docs/v1)
-// 종료 코드: 0 통과, 1 위반, 2 사용법 오류
+// 종료 코드: 0 통과, 1 위반(검사할 .md 파일이 0개인 경우 포함), 2 사용법 오류
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -28,6 +28,8 @@ const SEPARATOR_ROW = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
 const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 // [text](dest "title") / ![alt](dest). dest는 <...> 또는 공백 없는 문자열(괄호 한 단계 허용).
 const LINK = /!?\[(?:[^[\]]|\[[^[\]]*\])*\]\(\s*(<[^>\n]*>|[^\s()]*(?:\([^\s()]*\)[^\s()]*)*)(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)/g;
+// 참조 정의 [label]: dest "title". 각주 정의 [^n]: 는 링크가 아니다.
+const REF_DEF = /^ {0,3}\[(?!\^)(?:[^[\]]|\\.)+\]:\s*(<[^>\n]*>|\S+)/;
 const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
 /** 경로(파일 또는 폴더) 아래의 .md 파일을 정렬해 돌려준다. */
@@ -97,7 +99,7 @@ function blankInlineCode(line) {
   return line.replace(/(`+)[\s\S]*?(?<!`)\1(?!`)/g, (m) => ' '.repeat(m.length));
 }
 
-/** 코드 블록·인라인 코드를 뺀 본문에서 링크 대상 [{line, target}]을 뽑는다. */
+/** 코드 블록·인라인 코드를 뺀 본문에서 링크 대상 [{line, target}]을 뽑는다(인라인 링크와 참조 정의). */
 export function extractLinks(text) {
   const links = [];
   let fence = null;
@@ -108,7 +110,10 @@ export function extractLinks(text) {
       return;
     }
     if (m) { fence = m[1]; return; }
-    for (const lm of blankInlineCode(raw).matchAll(LINK)) {
+    const line = blankInlineCode(raw);
+    const def = line.match(REF_DEF);
+    if (def) links.push({ line: idx + 1, target: def[1].replace(/^<|>$/g, '') });
+    for (const lm of line.matchAll(LINK)) {
       links.push({ line: idx + 1, target: lm[1].replace(/^<|>$/g, '') });
     }
   });
@@ -156,6 +161,11 @@ function main(argv) {
     if (!existsSync(t)) { console.error(`경로 없음: ${t}\n${usage}`); return 2; }
   }
   const { files, errors } = lint(targets, { links });
+  if (files.length === 0) {
+    // 폴더 이름이 바뀌거나 비면 CI가 조용히 통과하지 않게 한다
+    console.error(`FAIL: 검사할 .md 파일이 없다: ${targets.join(', ')}`);
+    return 1;
+  }
   for (const e of errors) console.error(`${e.file}:${e.line}: ${e.message}`);
   const scope = links ? '헤더 표준 + 상대 링크' : '헤더 표준';
   if (errors.length > 0) {

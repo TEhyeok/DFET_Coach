@@ -158,6 +158,31 @@ test('링크 추출은 코드 블록·인라인 코드를 건너뛰고 외부 UR
   ]);
 });
 
+test('참조 정의 [label]: dest도 링크로 검사하고 각주 정의는 건너뛴다', () => {
+  const text = ['[a]: a.md "제목"', '   [b]: <b c.md>', '[^1]: 각주 본문', '[w]: https://example.com', '`[x]: x.md`'].join('\n');
+  assert.deepEqual(
+    extractLinks(text).map((l) => `${l.line}:${l.target}`),
+    ['1:a.md', '2:b c.md', '4:https://example.com'],
+  );
+  assert.deepEqual(
+    checkLinks(path.join(fixtures, 'x.md'), text, { repoRoot }).map((e) => `${e.line}:${e.message}`),
+    ['1:깨진 상대 링크: a.md', '2:깨진 상대 링크: b c.md'],
+  );
+});
+
+test('검사할 .md 파일이 0개면 종료 코드 1(폴더 이름 변경·비움이 조용히 통과하지 않게)', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'doc-headers-empty-'));
+  try {
+    writeFileSync(path.join(dir, 'note.txt'), 'x');
+    const r = run(dir);
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /검사할 \.md 파일이 없다/);
+    assert.equal(run('--links', dir).status, 1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('알 수 없는 옵션·없는 경로는 종료 코드 2', () => {
   assert.equal(run('--bogus').status, 2);
   assert.equal(run('no/such/dir').status, 2);

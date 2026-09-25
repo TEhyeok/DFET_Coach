@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dfet.co.kr/schemas/posture-assessment.schema.json",
+  "title": "postureAssessments/{assessmentId} document",
+  "description": "PRD §9.2 postureAssessments 표와 V1-05 §4.6을 옮긴 JSON Schema(DF-006). Firestore 네이티브 타입이 아니라 교차 클라이언트 중립 표기({\"$ts\"}·{\"$serverTimestamp\"} 태그, contracts/fixtures/README.md 규약 2번)를 검증한다. 랜드마크 좌표는 EXIF 방향을 적용한 원본 기준 0–1 정규화 좌표다. 상태 전이·동의 조건은 규칙(DF-021)이 맡는다.",
+  "type": "object",
+  "required": [
+    "trainerId",
+    "authorUid",
+    "capturedAt",
+    "protocolVersion",
+    "stationProfileId",
+    "landmarkEngine",
+    "device",
+    "captureConditions",
+    "views",
+    "status",
+    "isBaseline",
+    "legalNature",
+    "schemaVersion",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "memberUid": { "$ref": "#/$defs/nullableId" },
+    "pendingMemberId": { "$ref": "#/$defs/nullableId" },
+    "trainerId": { "description": "파생 접근 키(담당 해제 시 null).", "$ref": "#/$defs/nullableId" },
+    "authorUid": { "$ref": "#/$defs/id" },
+    "capturedAt": { "description": "셔터 시각.", "$ref": "#/$defs/ts" },
+    "protocolVersion": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "stationProfileId": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "landmarkEngine": {
+      "description": "Q-18, ADR-008.",
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "appleVision2D" },
+        "version": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "device": {
+      "type": "object",
+      "required": ["model", "osVersion"],
+      "properties": {
+        "model": { "type": "string", "minLength": 1 },
+        "osVersion": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "captureConditions": {
+      "description": "조건 일치(PRD §7.4).",
+      "type": "object",
+      "required": [
+        "clothing",
+        "barefoot",
+        "markersPlaced",
+        "verbalConsentCheck",
+        "cameraHeightCm",
+        "cameraDistanceM",
+        "levelDeg",
+        "pitchDeg"
+      ],
+      "properties": {
+        "clothing": { "description": "vocab clothing(초안, ASM-05-04)이라 형식만 검사한다.", "$ref": "#/$defs/code" },
+        "barefoot": { "type": "boolean" },
+        "markersPlaced": { "type": "boolean" },
+        "verbalConsentCheck": { "type": "boolean" },
+        "cameraHeightCm": { "type": "number" },
+        "cameraDistanceM": { "type": "number" },
+        "levelDeg": { "type": "number" },
+        "pitchDeg": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "views": {
+      "type": "array",
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/view" }
+    },
+    "metrics": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/metric" }
+    },
+    "status": { "$ref": "#/$defs/postureStatus" },
+    "isBaseline": { "type": "boolean" },
+    "supersedesId": { "$ref": "#/$defs/nullableId" },
+    "retestGroupId": { "description": "있으면 동의 ⑤ 필수(규칙).", "$ref": "#/$defs/nullableId" },
+    "legalNature": { "const": "coachingRecord" },
+    "schemaVersion": { "const": 1 },
+    "createdAt": { "$ref": "#/$defs/ts" },
+    "updatedAt": { "$ref": "#/$defs/ts" }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "회원 키: memberUid와 pendingMemberId 중 하나 이상이 문자열이다(PRD §9.1 공통 규약).",
+      "anyOf": [
+        { "required": ["memberUid"], "properties": { "memberUid": { "type": "string" } } },
+        { "required": ["pendingMemberId"], "properties": { "pendingMemberId": { "type": "string" } } }
+      ]
+    },
+    {
+      "description": "confirmed 문서는 metrics가 1개 이상이다(PRD §9.2 '○(draft)/●(confirmed)').",
+      "if": { "required": ["status"], "properties": { "status": { "const": "confirmed" } } },
+      "then": { "required": ["metrics"], "properties": { "metrics": { "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "ts": {
+      "description": "픽스처 규약 2번. {\"$ts\": ISO 8601(Z 또는 오프셋)} 또는 쓰기 페이로드의 서버 시각 자리 {\"$serverTimestamp\": true}.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["$ts"],
+          "properties": {
+            "$ts": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["$serverTimestamp"],
+          "properties": { "$serverTimestamp": { "const": true } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "id": {
+      "description": "Firestore 문서 ID 또는 Auth uid. 빈 문자열과 '/'는 쓸 수 없다.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^/]+$"
+    },
+    "nullableId": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }]
+    },
+    "code": {
+      "description": "영문 camelCase 코드(PRD §9.1 '키 표기').",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "maxLength": 64
+    },
+    "metricCode": {
+      "description": "형식만 검사한다. 카탈로그 소속(craniovertebralAngle 등 posture 계열)은 도메인 테스트가 본다.",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "maxLength": 64
+    },
+    "postureStatus": { "enum": ["draft", "confirmed", "voided"] },
+    "postureView": { "enum": ["front", "sagittalLeft", "sagittalRight"] },
+    "side": { "enum": ["none", "left", "right", "bilateral"] },
+    "landmarkCode": {
+      "enum": [
+        "tragusLeft",
+        "tragusRight",
+        "c7",
+        "earLeft",
+        "earRight",
+        "acromionLeft",
+        "acromionRight",
+        "asisLeft",
+        "asisRight"
+      ]
+    },
+    "unitCoordinate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "view": {
+      "description": "views[] 원소(PRD §9.2). maskedThumbPath는 V1-05 ASM-05-05 추가 필드다.",
+      "type": "object",
+      "required": ["view", "photoPath", "thumbPath", "imageRotationDeg", "landmarks"],
+      "properties": {
+        "view": { "$ref": "#/$defs/postureView" },
+        "photoPath": {
+          "description": "동의 ③ 철회 시 null.",
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^postureAssessments/[^/]+/(front|sagittalLeft|sagittalRight)\\.(jpg|heic)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "thumbPath": {
+          "oneOf": [
+            { "type": "string", "pattern": "^postureAssessments/[^/]+/(front|sagittalLeft|sagittalRight)_thumb\\.jpg$" },
+            { "type": "null" }
+          ]
+        },
+        "maskedThumbPath": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^postureAssessments/[^/]+/(front|sagittalLeft|sagittalRight)_masked_thumb\\.jpg$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "imageRotationDeg": { "description": "수평 보정 회전각(반시계 양수). 원 좌표는 보정 전 값.", "type": "number" },
+        "landmarks": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/landmark" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "landmark": {
+      "type": "object",
+      "required": ["code", "x", "y", "origin", "confirmed"],
+      "properties": {
+        "code": { "$ref": "#/$defs/landmarkCode" },
+        "x": { "$ref": "#/$defs/unitCoordinate" },
+        "y": { "$ref": "#/$defs/unitCoordinate" },
+        "origin": { "enum": ["auto", "manual"] },
+        "confirmed": { "type": "boolean" },
+        "suggested": {
+          "description": "자동 제안을 옮기면 원 위치를 보존한다.",
+          "type": "object",
+          "required": ["x", "y", "confidence"],
+          "properties": {
+            "x": { "$ref": "#/$defs/unitCoordinate" },
+            "y": { "$ref": "#/$defs/unitCoordinate" },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "metric": {
+      "description": "metrics[] 원소(PRD §9.2).",
+      "type": "object",
+      "required": ["metricCode", "value", "unit", "side", "sourceGrade"],
+      "properties": {
+        "metricCode": { "$ref": "#/$defs/metricCode" },
+        "value": { "type": "number" },
+        "unit": { "const": "deg" },
+        "side": { "$ref": "#/$defs/side" },
+        "sourceGrade": { "enum": ["photoManual", "photoAuto"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

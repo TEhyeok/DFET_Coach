@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dfet.co.kr/schemas/member-summary.schema.json",
+  "title": "memberSummaries/{summaryId} document",
+  "description": "PRD §9.2 memberSummaries 표(소비자본, 서버 작성)와 V1-05 §4.10을 옮긴 JSON Schema(DF-006). Firestore 네이티브 타입이 아니라 교차 클라이언트 중립 표기({\"$ts\"}·{\"$serverTimestamp\"} 태그, contracts/fixtures/README.md 규약 2번)를 검증한다. sharedByUid·sharedByDisplayName·firstViewedAt은 V1-05 ASM-05-34·35·36 추가 필드다. 금지어·쉬운 한국어 검사는 문구 린트가 맡는다.",
+  "type": "object",
+  "required": [
+    "memberUid",
+    "trainerId",
+    "sharedByUid",
+    "sourceType",
+    "sourceIds",
+    "title",
+    "body",
+    "highlights",
+    "nextPlan",
+    "policyVersion",
+    "status",
+    "sharedAt",
+    "schemaVersion"
+  ],
+  "properties": {
+    "memberUid": { "description": "회원 쿼리 키.", "$ref": "#/$defs/id" },
+    "trainerId": { "description": "공유 트레이너(재정렬 대상).", "$ref": "#/$defs/nullableId" },
+    "sharedByUid": { "description": "서버 전용(S), 불변. 공유를 실행한 트레이너(ASM-05-34).", "$ref": "#/$defs/id" },
+    "sharedByDisplayName": {
+      "description": "서버 전용(S). 공유 시점 트레이너 표시명 스냅샷, 해제 시 null(ASM-05-35).",
+      "oneOf": [{ "type": "string", "maxLength": 40 }, { "type": "null" }]
+    },
+    "sourceType": { "enum": ["soapNote", "bodyReport"] },
+    "sourceIds": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/id" } },
+    "title": { "type": "string", "maxLength": 100 },
+    "body": { "type": "string", "maxLength": 8000 },
+    "highlights": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/highlight" } },
+    "sharedPhotoPaths": {
+      "description": "bodyReport이고 동의 ③과 트레이너 토글일 때만. 썸네일 경로만(원본 사진 금지, ASM-05-09).",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "pattern": "^postureAssessments/[^/]+/(front|sagittalLeft|sagittalRight)_(masked_)?thumb\\.jpg$"
+      }
+    },
+    "nextPlan": { "type": "string", "maxLength": 1000 },
+    "policyVersion": { "description": "null이면 회원 앱은 배지 없이 하단 설명.", "type": ["string", "null"] },
+    "status": { "$ref": "#/$defs/summaryStatus" },
+    "sharedAt": { "$ref": "#/$defs/ts" },
+    "revokedAt": { "oneOf": [{ "$ref": "#/$defs/ts" }, { "type": "null" }] },
+    "firstViewedAt": {
+      "description": "서버 전용(S). 회원이 처음 연 서버 시각(ASM-05-36).",
+      "oneOf": [{ "$ref": "#/$defs/ts" }, { "type": "null" }]
+    },
+    "schemaVersion": { "const": 1 }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "해제(묘비) 문서는 revokedAt을 갖고 내용 필드를 비운다(F-LINK-05.3, ASM-05-10·35).",
+      "if": { "required": ["status"], "properties": { "status": { "const": "revoked" } } },
+      "then": {
+        "required": ["revokedAt"],
+        "properties": {
+          "revokedAt": { "$ref": "#/$defs/ts" },
+          "title": { "const": "" },
+          "body": { "const": "" },
+          "highlights": { "maxItems": 0 },
+          "sharedPhotoPaths": { "maxItems": 0 },
+          "nextPlan": { "const": "" },
+          "sharedByDisplayName": { "type": "null" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ts": {
+      "description": "픽스처 규약 2번. {\"$ts\": ISO 8601(Z 또는 오프셋)} 또는 쓰기 페이로드의 서버 시각 자리 {\"$serverTimestamp\": true}.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["$ts"],
+          "properties": {
+            "$ts": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["$serverTimestamp"],
+          "properties": { "$serverTimestamp": { "const": true } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "id": {
+      "description": "Firestore 문서 ID 또는 Auth uid. 빈 문자열과 '/'는 쓸 수 없다.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^/]+$"
+    },
+    "nullableId": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }]
+    },
+    "code": {
+      "description": "영문 camelCase 코드(PRD §9.1 '키 표기').",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "maxLength": 64
+    },
+    "summaryStatus": { "enum": ["shared", "revoked"] },
+    "side": { "enum": ["none", "left", "right", "bilateral"] },
+    "sourceGrade": {
+      "enum": [
+        "tape",
+        "device",
+        "photoManual",
+        "photoAuto",
+        "observedSection",
+        "modelEstimate",
+        "aiAppearance",
+        "selfReport",
+        "trainerObserved",
+        "derived"
+      ]
+    },
+    "changeStatus": {
+      "enum": ["meaningfulImprovement", "withinError", "meaningfulDecline", "indeterminate", "pendingPolicy"]
+    },
+    "reasonCode": {
+      "enum": [
+        "conditionMismatch",
+        "deviceChanged",
+        "protocolChanged",
+        "noMdc",
+        "noComparison",
+        "referenceMetric",
+        "betaMetric"
+      ]
+    },
+    "mdcSource": { "enum": ["literature", "inHouse"] },
+    "highlight": {
+      "description": "highlights[] 원소(PRD §7.8·§9.2). painNrs, photoAuto, observedSection은 회원 요약에서 제외한다(PRD §9.2, V1-05 §4.10).",
+      "type": "object",
+      "required": [
+        "refId",
+        "metricCode",
+        "value",
+        "unit",
+        "side",
+        "sourceGrade",
+        "measuredAt",
+        "changeStatus",
+        "reasonCode",
+        "mdcSource",
+        "mdc",
+        "seriesKey",
+        "comparedTo"
+      ],
+      "properties": {
+        "refId": { "$ref": "#/$defs/id" },
+        "metricCode": {
+          "allOf": [
+            { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$", "maxLength": 64 },
+            { "not": { "const": "painNrs" } }
+          ]
+        },
+        "value": { "type": "number" },
+        "unit": { "$ref": "#/$defs/code" },
+        "side": { "$ref": "#/$defs/side" },
+        "sourceGrade": {
+          "allOf": [{ "$ref": "#/$defs/sourceGrade" }, { "not": { "enum": ["photoAuto", "observedSection"] } }]
+        },
+        "measuredAt": { "$ref": "#/$defs/ts" },
+        "changeStatus": {
+          "description": "회원 배지 비대상이면 null(PRD §7.6).",
+          "oneOf": [{ "$ref": "#/$defs/changeStatus" }, { "type": "null" }]
+        },
+        "reasonCode": { "oneOf": [{ "$ref": "#/$defs/reasonCode" }, { "type": "null" }] },
+        "mdcSource": { "oneOf": [{ "$ref": "#/$defs/mdcSource" }, { "type": "null" }] },
+        "mdc": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["value", "source", "reference"],
+              "properties": {
+                "value": { "type": "number" },
+                "source": { "$ref": "#/$defs/mdcSource" },
+                "reference": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            { "type": "null" }
+          ]
+        },
+        "seriesKey": {
+          "description": "metricCode+sourceGrade+side+conditionKey 해시(09_ALGORITHMS_SPEC).",
+          "type": "string",
+          "minLength": 1
+        },
+        "comparedTo": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["refId", "measuredAt", "value"],
+              "properties": {
+                "refId": { "$ref": "#/$defs/id" },
+                "measuredAt": { "$ref": "#/$defs/ts" },
+                "value": { "type": "number" }
+              },
+              "additionalProperties": false
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

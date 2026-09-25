@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dfet.co.kr/schemas/body-composition-record.schema.json",
+  "title": "bodyCompositionRecords/{recordId} document",
+  "description": "PRD §9.2 bodyCompositionRecords 표와 V1-05 §4.7을 옮긴 JSON Schema(DF-006). Firestore 네이티브 타입이 아니라 교차 클라이언트 중립 표기({\"$ts\"}·{\"$serverTimestamp\"} 태그, contracts/fixtures/README.md 규약 2번)를 검증한다. v2 InBody API 수집 필드(source=inbodyApi, externalId, idempotencyKey, rawPath)를 처음부터 가진다(F-BC-04.1, AC-BC-04.1은 v1에서 필드 존재만 검증). values 범위는 contracts/metric-catalog.v1.json range와 같다.",
+  "type": "object",
+  "required": [
+    "trainerId",
+    "enteredBy",
+    "source",
+    "sourceGrade",
+    "deviceModel",
+    "measuredAt",
+    "fasting",
+    "timeOfDayBand",
+    "values",
+    "status",
+    "legalNature",
+    "schemaVersion",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "memberUid": { "$ref": "#/$defs/nullableId" },
+    "pendingMemberId": { "$ref": "#/$defs/nullableId" },
+    "trainerId": { "description": "파생 접근 키(담당 해제 시 null).", "$ref": "#/$defs/nullableId" },
+    "enteredBy": { "description": "입력자(불변).", "$ref": "#/$defs/id" },
+    "source": {
+      "description": "클라이언트는 manualEntry만 쓴다(규칙). inbodyApi는 v2·서버 전용, healthKit은 v2(F-BC-05).",
+      "$ref": "#/$defs/bodyCompositionSource"
+    },
+    "sourceGrade": { "description": "values의 등급.", "const": "device" },
+    "deviceModel": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "measuredAt": { "$ref": "#/$defs/ts" },
+    "fasting": { "$ref": "#/$defs/fasting" },
+    "timeOfDayBand": { "$ref": "#/$defs/timeOfDayBand" },
+    "values": {
+      "description": "측정하지 않은 키는 두지 않는다(0 금지). 1개 이상. bmi는 여기 두지 않고 derived에 둔다. segmentalLeanMassKg·phaseAngleDeg는 v2(API 수집)에서 이 스키마를 개정해 받는다(F-BC-04.3).",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "weightKg": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "bodyFatPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "bodyFatMassKg": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "skeletalMuscleMassKg": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 },
+        "visceralFatLevel": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 },
+        "totalBodyWaterL": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 }
+      },
+      "additionalProperties": false
+    },
+    "derived": {
+      "description": "키가 트레이너 입력일 때만 계산한 BMI(F-BC-01.3).",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["bmi", "heightCmUsed", "heightMeasuredAt", "sourceGrade"],
+          "properties": {
+            "bmi": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 },
+            "heightCmUsed": { "type": "number", "minimum": 100, "maximum": 250 },
+            "heightMeasuredAt": { "$ref": "#/$defs/ts" },
+            "sourceGrade": { "const": "derived" }
+          },
+          "additionalProperties": false
+        },
+        { "type": "null" }
+      ]
+    },
+    "reportPhotoPath": {
+      "description": "결과지(PRD §9.5). 회원 공유에서 항상 제외.",
+      "oneOf": [
+        { "type": "string", "pattern": "^bodyCompositionRecords/[^/]+/report\\.(jpg|heic)$" },
+        { "type": "null" }
+      ]
+    },
+    "externalId": {
+      "description": "v2 서버 전용(S). InBody 결과 ID. 클라이언트 쓰기 화이트리스트에 없다(F-BC-04.1).",
+      "$comment": "v2 server-only field (F-BC-04.1).",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "idempotencyKey": {
+      "description": "v2 서버 전용(S). 같은 키로 두 번 써도 문서는 1건(AC-BC-04.1). 클라이언트 쓰기 화이트리스트에 없다.",
+      "$comment": "v2 server-only field (F-BC-04.1, AC-BC-04.1).",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "rawPath": {
+      "description": "v2 서버 전용(S). 수집 원문 경로 clinical-ingest/bodycomp/{jobId}/payload.json. 클라이언트 쓰기 화이트리스트에 없다.",
+      "$comment": "v2 server-only field (F-BC-04.1).",
+      "oneOf": [
+        { "type": "string", "pattern": "^clinical-ingest/bodycomp/[^/]+/payload\\.json$" },
+        { "type": "null" }
+      ]
+    },
+    "status": { "$ref": "#/$defs/measurementStatus" },
+    "voidedAt": { "$ref": "#/$defs/ts" },
+    "voidReason": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "legalNature": { "const": "coachingRecord" },
+    "schemaVersion": { "const": 1 },
+    "createdAt": { "$ref": "#/$defs/ts" },
+    "updatedAt": { "description": "PRD §9.1 공통 규약(V1-05 ASM-05-06).", "$ref": "#/$defs/ts" }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "회원 키: memberUid와 pendingMemberId 중 하나 이상이 문자열이다(PRD §9.1 공통 규약).",
+      "anyOf": [
+        { "required": ["memberUid"], "properties": { "memberUid": { "type": "string" } } },
+        { "required": ["pendingMemberId"], "properties": { "pendingMemberId": { "type": "string" } } }
+      ]
+    },
+    {
+      "description": "voided 문서는 voidedAt과 voidReason을 가진다(덮어쓰기 없는 정정, F-BC-03.5).",
+      "if": { "required": ["status"], "properties": { "status": { "const": "voided" } } },
+      "then": { "required": ["voidedAt", "voidReason"] }
+    }
+  ],
+  "$defs": {
+    "ts": {
+      "description": "픽스처 규약 2번. {\"$ts\": ISO 8601(Z 또는 오프셋)} 또는 쓰기 페이로드의 서버 시각 자리 {\"$serverTimestamp\": true}.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["$ts"],
+          "properties": {
+            "$ts": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["$serverTimestamp"],
+          "properties": { "$serverTimestamp": { "const": true } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "id": {
+      "description": "Firestore 문서 ID 또는 Auth uid. 빈 문자열과 '/'는 쓸 수 없다.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^/]+$"
+    },
+    "nullableId": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }]
+    },
+    "bodyCompositionSource": { "enum": ["manualEntry", "inbodyApi", "healthKit"] },
+    "fasting": { "enum": ["yes", "no", "unknown"] },
+    "timeOfDayBand": { "enum": ["morning", "midday", "evening"] },
+    "measurementStatus": { "enum": ["active", "voided"] }
+  }
+}

@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-05 |
-| 버전 | v1.0.1 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1378,6 +1378,13 @@ MIG-03 이관 문서(레거시 원문 보존)
 - 레거시 update 분기는 기존 규칙(dfet:firestore.rules:151-155)에서 관리자 경로만 뺀 것이다. MIG-03 스위치 뒤에는 v1 문서가 이관돼 모두 v2가 되고, 남은 v1 문서(`member-` seed 등, MIG-07)는 쓰기 불가 상태로 남는다.
 - 이관 스크립트는 Admin SDK라 규칙을 거치지 않는다.
 - `featureOn('soapV2')`는 create에만 건다. 플래그를 꺼도 이미 저장된 draft의 편집·확정은 막지 않는다(PRD §6.0.2 '이미 저장된 기록의 트레이너 열람은 막지 않는다'를 draft 완결까지 확장, ASM-05-21).
+- **null과 키 생략(DF-020).** 클라이언트는 값이 없는 선택 키를 null로 보내지 말고 **키를 생략하는 것을 원칙으로 한다.** 규칙에서 `.size()`·`.trim()` 같은 메서드를 null에 부르면 평가 오류로 거부되기 때문이다. 다만 이미 병합된 코덱과 교차 픽스처(`contracts/fixtures/soap_v2`)는 `memberUid`·`pendingMemberId`·`subjective.painNrs`에 null을 쓰므로, 규칙은 선택 키의 null을 '없음'과 같이 취급한다(`optStrMax`·`optListMax`·`m.get(k, null) == null` 분기). 새 규칙을 쓸 때도 null에 메서드를 바로 부르지 않고 이 헬퍼를 거친다. `painNrs`의 null은 '미입력'이라는 뜻이 있으므로(AC-SOAP-01.7) 생략과 null 모두 허용한다.
+- **DF-020 구현과 이 초안의 차이.** `firestore.rules`가 정본이다.
+  - `legacyV1WritesOpen()`은 `soap_notes` 블록 안이 아니라 최상위 헬퍼 자리에 **한 줄**(`function legacyV1WritesOpen() { return true; } // @mig03-switch …`)로 둔다. V1-11 §13.2 롤백 `sed`와 DF-022 스위치 사본 테스트가 이 줄을 그대로 찾는다.
+  - 측정 시각 헬퍼 이름은 카드 AC-DF-020.1의 `measuredAtOk(ts)`다. 이 문서의 `notFuture(ts)`는 같은 뜻이며, DF-021은 `measuredAtOk`를 쓴다.
+  - v1 레거시 **delete** 분기(`legacyV1WritesOpen() && !isV2(resource.data) && isTrainer() && resource.data.trainerId == request.auth.uid`)를 유지한다(ASM-P0-18: MIG-03 전까지 v1 create·update·delete 현행 의미 유지. 동결 앱이 `deleteSoapNote`를 호출한다).
+  - §7.2의 `existing()`·`numIn`·`numPosMax`·`identityUnchanged`는 아직 쓰는 규칙이 없어(컴파일러 '미사용 함수' 경고) DF-020에 넣지 않았다. 처음 쓰는 스토리(DF-021)가 추가한다.
+  - 쓰기 1건의 문서 조회 수는 create 최대 3건(`trainers` 또는 `pendingMembers`, `memberConsentStates`, `appConfig/features`), update 최대 2건, addendum create 최대 2건(부모 `soap_notes`, `trainers` 또는 `pendingMembers`)이다.
 
 ### 7.4 `pendingMembers`
 
@@ -2902,3 +2909,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0(검토 반영) | 2026-09-24 | §13 contracts·vocab 단일 명세, §12 로컬 SwiftData 단일 스키마, memberSummaries 서버 필드 3개·markSummaryViewed, §10.2 인덱스 소유 | — | §9.2 보완 제안(sharedByUid 등) |
 | v1.0(정합 패스 2) | 2026-09-24 | 시드 경로·ID 정본화(R2), 규칙 테스트 파일 배치, 기대 결과 경로 `soap_legacy/expected_v2/`, consentRecords.capturedAt, sync.reason 키, MIG-08 ① 배포 순서, 배포 명령(R7), 충돌 ID CF-05-NN(R10) | — | §9.2 consentRecords 필드 추가 제안 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 리드 결정 R2·R4·R5·R7·R10 반영, 결정 ASM-05-43~ASM-05-45 기록 | — | 없음(위 행의 §9.2 제안과 같음) |
+| v1.0.2 | 2026-09-25 | §7.3에 null·키 생략 원칙과 DF-020 구현 차이(스위치 줄 위치, `measuredAtOk` 이름, v1 delete 분기, 미사용 헬퍼 이월, 문서 조회 수) 기록 | DF-020 | 없음 |

@@ -14,6 +14,27 @@ const SWIFT_ESCAPE = new Set([
   'true', 'try', 'none', 'some', 'any',
 ]);
 
+// Static members the Swift enums already declare. A case with one of these names is an invalid
+// redeclaration (`vocabStatus` only exists on vocab enums).
+const SWIFT_ENUM_MEMBERS = ['allCases'];
+const SWIFT_VOCAB_ENUM_MEMBERS = ['vocabStatus'];
+
+// Values of one enum whose Swift case name clashes with another case or a generated member.
+export function swiftIdentCollisions(values, { vocab = false } = {}) {
+  const members = vocab ? [...SWIFT_ENUM_MEMBERS, ...SWIFT_VOCAB_ENUM_MEMBERS] : SWIFT_ENUM_MEMBERS;
+  const seen = new Map(members.map((m) => [m, null]));
+  const found = [];
+  values.forEach((value, index) => {
+    if (seen.has(value)) {
+      const other = seen.get(value);
+      found.push({ index, value, ident: value, other: other === null ? `generated member ${value}` : values[other] });
+    } else {
+      seen.set(value, index);
+    }
+  });
+  return found;
+}
+
 export function swiftCase(value) {
   return SWIFT_ESCAPE.has(value) ? `\`${value}\`` : value;
 }

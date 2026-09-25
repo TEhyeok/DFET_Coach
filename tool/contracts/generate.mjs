@@ -23,8 +23,8 @@ import Ajv2020Module from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 
 import { METRIC_FIELD_ENUMS, RESERVED_TYPE_NAMES, typeName } from './emitters/common.mjs';
-import { SWIFT_DIR, swiftEmitters } from './emitters/swift.mjs';
-import { DART_DIR, dartEmitters } from './emitters/dart.mjs';
+import { SWIFT_DIR, swiftEmitters, swiftIdentCollisions } from './emitters/swift.mjs';
+import { DART_DIR, dartEmitters, dartIdentCollisions } from './emitters/dart.mjs';
 import { FUNCTIONS_DIR, functionsEmitters } from './emitters/functions.mjs';
 import { ADMIN_WEB_DIR, adminWebEmitters } from './emitters/adminWeb.mjs';
 
@@ -133,6 +133,19 @@ export function schemaErrors(validate, input) {
   return [...new Set(errs.map((e) => formatAjvError(input.file, e)))];
 }
 
+// Generated identifiers must stay unique per enum after each language's escaping.
+// `pointer(index)` gives the JSON pointer of the value at that index.
+function identifierErrors(values, pointer, { vocab }) {
+  const errors = [];
+  for (const c of dartIdentCollisions(values)) {
+    errors.push(`${pointer(c.index)}: Dart identifier ${c.ident} for "${c.value}" collides with "${c.other}"`);
+  }
+  for (const c of swiftIdentCollisions(values, { vocab })) {
+    errors.push(`${pointer(c.index)}: Swift case ${c.ident} for "${c.value}" collides with ${c.other.startsWith('generated') ? c.other : `"${c.other}"`}`);
+  }
+  return errors;
+}
+
 export function crossCheckErrors(loaded) {
   const errors = [];
   const vocab = loaded.vocab?.doc;
@@ -150,6 +163,7 @@ export function crossCheckErrors(loaded) {
         if (extra.length) errors.push(`${v}#/enums/${key}/labelsKo: labels for unknown values ${extra.join(', ')}`);
         if (missing.length) errors.push(`${v}#/enums/${key}/labelsKo: missing labels for ${missing.join(', ')}`);
       }
+      errors.push(...identifierErrors(entry.values, (i) => `${v}#/enums/${key}/values/${i}`, { vocab: true }));
     }
     const typeNames = new Map();
     for (const key of Object.keys(vocab.enums)) {
@@ -173,6 +187,7 @@ export function crossCheckErrors(loaded) {
     const c = `contracts/${loaded.metricCatalog.file}`;
     const firstIndex = new Map();
     const codes = new Set(catalog.metrics.map((m) => m.metricCode));
+    errors.push(...identifierErrors(catalog.metrics.map((m) => m.metricCode), (i) => `${c}#/metrics/${i}/metricCode`, { vocab: false }));
     catalog.metrics.forEach((m, i) => {
       const at = `${c}#/metrics/${i}`;
       if (firstIndex.has(m.metricCode)) {
@@ -211,6 +226,8 @@ export function crossCheckErrors(loaded) {
       }
       if (m.range && m.range.min > m.range.max) {
         errors.push(`${at}/range: min ${m.range.min} is greater than max ${m.range.max}`);
+      } else if (m.range && (m.range.appMin < m.range.min || m.range.appMin > m.range.max)) {
+        errors.push(`${at}/range/appMin: ${m.range.appMin} is outside [${m.range.min}, ${m.range.max}]`);
       }
     });
   }
@@ -335,14 +352,20 @@ export function run({ root = DEFAULT_ROOT, check = false, out = console.log, err
   return 0;
 }
 
+class UsageError extends Error {}
+
 function parseArgs(argv) {
   const opts = { check: false, root: DEFAULT_ROOT };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--check') opts.check = true;
-    else if (a === '--root') opts.root = path.resolve(argv[++i] ?? '');
+    else if (a === '--root') {
+      const dir = argv[++i];
+      if (dir === undefined || dir === '' || dir.startsWith('--')) throw new UsageError('--root needs a directory');
+      opts.root = path.resolve(dir);
+    }
     else if (a === '-h' || a === '--help') opts.help = true;
-    else throw new Error(`unknown argument ${a}`);
+    else throw new UsageError(`unknown argument ${a}`);
   }
   return opts;
 }
@@ -358,7 +381,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       code = run(opts);
     }
   } catch (e) {
-    console.error(`contracts: ${e.stack ?? e}`);
+    if (e instanceof UsageError) console.error(`contracts: ${e.message}\nusage: node tool/contracts/generate.mjs [--check] [--root <dir>]`);
+    else console.error(`contracts: ${e.stack ?? e}`);
     code = 2;
   }
   process.exitCode = code;

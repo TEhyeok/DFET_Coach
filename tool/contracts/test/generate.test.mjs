@@ -284,3 +284,11 @@ test('unknown arguments exit 2', () => {
   assert.equal(r.code, 2);
   assert.match(r.stderr, /unknown argument --chek/);
 });
+
+test('--root without a directory exits 2 instead of using the current directory', () => {
+  for (const args of [['--root'], ['--root', ''], ['--root', '--check']]) {
+    const r = runCli(args);
+    assert.equal(r.code, 2, JSON.stringify(args));
+    assert.match(r.stderr, /--root needs a directory/);
+  }
+});

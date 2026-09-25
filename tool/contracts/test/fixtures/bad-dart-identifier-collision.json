@@ -1,0 +1,19 @@
+{
+  "description": "escaped Dart identifiers must stay unique within an enum (name -> nameValue)",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "add",
+      "path": "/enums/scale/values/-",
+      "value": "nameValue"
+    },
+    {
+      "op": "add",
+      "path": "/enums/scale/values/-",
+      "value": "name"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums/scale/values/3: Dart identifier nameValue for \"name\" collides with \"nameValue\""
+  ]
+}

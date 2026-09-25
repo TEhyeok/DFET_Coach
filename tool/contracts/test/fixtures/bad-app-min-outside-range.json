@@ -1,0 +1,14 @@
+{
+  "description": "range.appMin must lie within [min, max]",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/metrics/4/range/appMin",
+      "value": 601
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/4/range/appMin: 601 is outside [0, 600]"
+  ]
+}

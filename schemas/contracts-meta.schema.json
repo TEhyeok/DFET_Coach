@@ -37,6 +37,27 @@
       "type": "string",
       "pattern": "^[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
     },
+    "conditionKeyToken": {
+      "description": "metrics[].conditionKeys token: the V1-05 §13.1 조건 키 토큰 table. algorithmVersion is in that table but is not a catalog key (ASM-05-42), so it is left out.",
+      "enum": [
+        "protocolVersion",
+        "protocolId",
+        "view",
+        "captureConditions.clothing",
+        "stationProfile",
+        "device.model",
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand",
+        "sourceGrade",
+        "side",
+        "joint",
+        "motion",
+        "activeOrPassive",
+        "muscleGroup",
+        "nrsScale"
+      ]
+    },
     "storyId": {
       "type": "string",
       "pattern": "^DF-[0-9]{3}$"
@@ -118,7 +139,7 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/conditionKey" }
+          "items": { "$ref": "#/$defs/conditionKeyToken" }
         },
         "availability": { "$ref": "#/$defs/identifier" },
         "judgeAs": {
@@ -200,6 +221,36 @@
             "regionCode"
           ],
           "propertyNames": { "$ref": "#/$defs/identifier" },
+          "$comment": "properties: enums marked ● in the V1-05 §13.2 table must carry labelsKo (27 enums).",
+          "properties": {
+            "sourceGrade": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "reliabilityTier": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "changeStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "reasonCode": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "mdcSource": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "side": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "syncState": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "unit": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "consentType": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "consentAction": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "consentChannel": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "soapStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "postureStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "measurementStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "pendingMemberStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "summaryStatus": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "postureView": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "clothing": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "fasting": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "timeOfDayBand": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "circumferenceProtocolId": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "landmarkCode": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "activeOrPassive": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "joint": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "motion": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "muscleGroup": { "$ref": "#/$defs/enum", "required": ["labelsKo"] },
+            "regionCode": { "$ref": "#/$defs/enum", "required": ["labelsKo"] }
+          },
           "additionalProperties": { "$ref": "#/$defs/enum" }
         },
         "jointMotionPairs": { "$ref": "#/$defs/jointMotionPairs" }

@@ -1,0 +1,13 @@
+{
+  "description": "an enum marked ● in the V1-05 §13.2 table must carry labelsKo",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "remove",
+      "path": "/enums/unit/labelsKo"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums/unit: must have required property 'labelsKo'"
+  ]
+}

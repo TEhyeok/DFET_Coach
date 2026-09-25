@@ -19,6 +19,20 @@ export function dartIdent(value) {
   return DART_ESCAPE.has(value) ? `${value}Value` : value;
 }
 
+// Values of one enum whose Dart identifier equals an earlier value's identifier after escaping
+// (`name` -> `nameValue` next to a real `nameValue`). The generator rejects these before rendering,
+// because the output would not compile.
+export function dartIdentCollisions(values) {
+  const seen = new Map();
+  const found = [];
+  values.forEach((value, index) => {
+    const ident = dartIdent(value);
+    if (seen.has(ident)) found.push({ index, value, ident, other: values[seen.get(ident)] });
+    else seen.set(ident, index);
+  });
+  return found;
+}
+
 const str = (s) => sqString(s, { escapeDollar: true });
 
 function enumDecl(name, doc, values, extra = []) {

@@ -7,7 +7,9 @@
 // Encoding has two targets:
 // - [CodecTarget.firestore]: Firestore types, limited to the client write whitelist
 //   (V1-05 §7.3 soapCreateKeys + finalizedAt, nested hasOnly maps). Server-only fields
-//   (memberSummaryId, migratedFrom, legacy) and unknown top-level keys are left out.
+//   (memberSummaryId, migratedFrom, legacy), unknown top-level keys and unknown nested keys
+//   are left out. A known key whose value could not be read is written back unchanged, and
+//   list elements (metrics rows, snapshots) are never dropped.
 // - [CodecTarget.fixture]: the cross-client fixture notation (P0 DF-005 fixture contract,
 //   rule 2: `$ts`, `$serverTimestamp`, `$int`, `$bytes` for legacy bytes). Everything that
 //   was read is written back, so decode -> encode is identical (AC-DF-007.1).
@@ -108,6 +110,13 @@ abstract final class SoapNoteV2Codec {
   }
 
   /// Encodes [note] for [target].
+  ///
+  /// The [CodecTarget.firestore] output is a create payload, or an `update()` /
+  /// `set(..., SetOptions(merge: true))` payload. It is not a full-document replace: it
+  /// leaves out server-only and unknown top-level keys, so `set()` without merge on a stored
+  /// document that has `memberSummaryId`, `migratedFrom` or `legacy` would delete them. Those
+  /// keys then appear in `affectedKeys()` and the rules reject the write (V1-05 §7.3), so
+  /// the mistake fails safely, but do not rely on it.
   static Map<String, Object?> toMap(
     SoapNoteV2 note, {
     CodecTarget target = CodecTarget.firestore,
@@ -172,14 +181,33 @@ abstract final class SoapNoteV2Codec {
             s.painNrs!.value == null ? null : w.integer(s.painNrs!.value!),
       if (s.painRegions != null) 'painRegions': [...s.painRegions!],
     };
-    w.addNestedExtra(out, s.extra);
+    w.addNestedExtra(out, s.extra, _subjectiveKeys);
     return out;
   }
+
+  // Nested key allowlists: the rules' `keys().hasOnly(...)` lists (V1-05 §7.3).
+  static const Set<String> _subjectiveKeys = {
+    'chiefComplaint',
+    'painNrs',
+    'painRegions',
+  };
+  static const Set<String> _objectiveKeys = {'metrics', 'refs', 'snapshots'};
+  static const Set<String> _refsKeys = {
+    'postureAssessmentIds',
+    'bodyCompositionRecordIds',
+    'circumferenceMeasurementIds',
+    'bodyScanIds',
+  };
+  static const Set<String> _exerciseAssessmentKeys = {
+    'summary',
+    'observations'
+  };
+  static const Set<String> _planKeys = {'nextSession', 'homeExercise'};
 
   static SoapObjective _objective(_MapReader r) => SoapObjective(
         metrics: r.list('metrics', _metric),
         refs: r.object('refs', _refs),
-        snapshots: r.list('snapshots', _snapshotOrNull),
+        snapshots: r.list('snapshots', _snapshot),
         extra: r.finish(),
       );
 
@@ -191,7 +219,7 @@ abstract final class SoapNoteV2Codec {
       if (o.snapshots != null)
         'snapshots': [for (final s in o.snapshots!) _encodeSnapshot(s, w)],
     };
-    w.addNestedExtra(out, o.extra);
+    w.addNestedExtra(out, o.extra, _objectiveKeys);
     return out;
   }
 
@@ -209,9 +237,10 @@ abstract final class SoapNoteV2Codec {
   };
 
   /// A row is parsed only when every known key reads cleanly; otherwise the whole row is
-  /// kept as [UnparsedSoapMetric] (F-SOAP-06.2).
-  static SoapMetricV2? _metric(Object? element) {
-    if (element is! Map) return null;
+  /// kept as [UnparsedSoapMetric] (F-SOAP-06.2). An element that is not a map is kept as
+  /// an [UnparsedSoapMetric] as well, so no row is ever dropped.
+  static SoapMetricV2 _metric(Object? element) {
+    if (element is! Map) return SoapMetricV2.unparsed(_copyValue(element));
     final raw = _copyMap(element);
     final metricCode = _wireEnum(raw['metricCode'], MetricCode.fromWire);
     final unit = _wireEnum(raw['unit'], MetricUnit.fromWire);
@@ -312,12 +341,15 @@ abstract final class SoapNoteV2Codec {
         'circumferenceMeasurementIds': [...refs.circumferenceMeasurementIds!],
       if (refs.bodyScanIds != null) 'bodyScanIds': [...refs.bodyScanIds!],
     };
-    w.addNestedExtra(out, refs.extra);
+    w.addNestedExtra(out, refs.extra, _refsKeys);
     return out;
   }
 
-  static ObjectiveSnapshot? _snapshotOrNull(Object? element) {
-    if (element is! Map) return null;
+  /// A snapshot element that is not a map is kept in place as [ObjectiveSnapshot.element].
+  static ObjectiveSnapshot _snapshot(Object? element) {
+    if (element is! Map) {
+      return ObjectiveSnapshot(element: Present(_copyValue(element)));
+    }
     final r = _MapReader(element);
     final metricCode = r.enumValue('metricCode', MetricCode.fromWire);
     return ObjectiveSnapshot(
@@ -337,7 +369,8 @@ abstract final class SoapNoteV2Codec {
     );
   }
 
-  static Map<String, Object?> _encodeSnapshot(ObjectiveSnapshot s, _Writer w) {
+  static Object? _encodeSnapshot(ObjectiveSnapshot s, _Writer w) {
+    if (s.element case final element?) return w.raw(element.value);
     final out = <String, Object?>{
       if (s.refId != null) 'refId': s.refId,
       if (s.metricCode != null) 'metricCode': s.metricCode!.wire,
@@ -375,7 +408,7 @@ abstract final class SoapNoteV2Codec {
       if (a.summary != null) 'summary': a.summary,
       if (a.observations != null) 'observations': [...a.observations!],
     };
-    w.addNestedExtra(out, a.extra);
+    w.addNestedExtra(out, a.extra, _exerciseAssessmentKeys);
     return out;
   }
 
@@ -390,7 +423,7 @@ abstract final class SoapNoteV2Codec {
       if (p.nextSession != null) 'nextSession': p.nextSession,
       if (p.homeExercise != null) 'homeExercise': p.homeExercise,
     };
-    w.addNestedExtra(out, p.extra);
+    w.addNestedExtra(out, p.extra, _planKeys);
     return out;
   }
 }
@@ -513,18 +546,13 @@ class _MapReader {
     return _keep(key, v);
   }
 
-  /// A list whose every element [parse] accepts; otherwise the whole list goes to extra.
-  List<T>? list<T>(String key, T? Function(Object? element) parse) {
+  /// A list read element by element. [parse] keeps every element (unreadable ones in a
+  /// raw form), so the list keeps its length. A value that is not a list goes to extra.
+  List<T>? list<T>(String key, T Function(Object? element) parse) {
     final v = _take(key);
     if (identical(v, _absent)) return null;
     if (v is! List) return _keep(key, v);
-    final out = <T>[];
-    for (final element in v) {
-      final parsed = parse(element);
-      if (parsed == null) return _keep(key, v);
-      out.add(parsed);
-    }
-    return List.unmodifiable(out);
+    return List.unmodifiable([for (final element in v) parse(element)]);
   }
 
   T? object<T>(String key, T Function(_MapReader r) parse) {
@@ -626,10 +654,19 @@ class _Writer {
     }
   }
 
-  /// Nested maps in the rules use `keys().hasOnly(...)`, so their extras are written to
-  /// fixtures only.
-  void addNestedExtra(Map<String, Object?> out, Map<String, Object?> extra) {
-    if (_fixture) addExtra(out, extra);
+  /// Nested maps in the rules use `keys().hasOnly([allowed])`. The Firestore target
+  /// leaves out extras outside [allowed] (unknown nested keys) and writes back known keys
+  /// whose value could not be read, unchanged: Firestore replaces a nested map as a whole,
+  /// so dropping them would delete stored data. Fixtures get every extra.
+  void addNestedExtra(
+    Map<String, Object?> out,
+    Map<String, Object?> extra,
+    Set<String> allowed,
+  ) {
+    addExtra(out, {
+      for (final e in extra.entries)
+        if (_fixture || allowed.contains(e.key)) e.key: e.value,
+    });
   }
 }
 

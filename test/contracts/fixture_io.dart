@@ -8,7 +8,8 @@
 //   {"$bytes": "<base64>"}      -> Blob
 //   {"$int": n}                 -> int
 //   bare number                 -> double
-// Any other `$` key fails (V1-10 §6.1).
+// Any other `$` key fails (V1-10 §6.1). Outside `data` (`_fixture`, `path`) no `$` key is
+// allowed at all (contracts/fixtures/README.md §5).
 //
 // Record mode: DFET_RECORD_FIXTURES=1 writes record-mode outputs in the fixture format
 // (JSON.stringify(doc, null, 2) + "\n", contracts/fixtures/README.md §5).
@@ -38,6 +39,8 @@ class FixtureFile {
       throw FormatException(
           '${file.path}: envelope keys $keys, expected $_envelopeKeys');
     }
+    _rejectDollarKeys(doc['_fixture'], '${file.path}: _fixture');
+    _rejectDollarKeys(doc['path'], '${file.path}: path');
     return FixtureFile._(file, doc);
   }
 
@@ -67,6 +70,23 @@ class FixtureFile {
   /// `data` with tags turned into Firestore types (the codec's input).
   Map<String, dynamic> get data =>
       decodeTags(taggedData) as Map<String, dynamic>;
+}
+
+/// Throws on any map key starting with `$` in [json] (tags are allowed only in `data`).
+void _rejectDollarKeys(Object? json, String at) {
+  if (json is Map) {
+    for (final e in json.entries) {
+      if ('${e.key}'.startsWith(r'$')) {
+        throw FormatException(
+            '$at: key ${e.key} outside data (\$ tags are allowed only in data)');
+      }
+      _rejectDollarKeys(e.value, '$at/${e.key}');
+    }
+  } else if (json is List) {
+    for (var i = 0; i < json.length; i++) {
+      _rejectDollarKeys(json[i], '$at/$i');
+    }
+  }
 }
 
 /// Every `*.json` directly under `contracts/fixtures/<group>/`, sorted by name.
@@ -166,7 +186,10 @@ Timestamp parseFixtureTimestamp(String value, [String at = r'$ts']) {
 /// - Numbers compare by value (45 == 45.0, |a - b| < 1e-9). `{"$int": 4}` is a map, so it
 ///   only equals `{"$int": 4}`, never a bare 4.
 /// - `$ts` values compare as instants (a Firestore Timestamp has no offset).
-/// - Strings compare exactly. The codec does not change strings, so no NFC step is needed.
+/// - Strings compare exactly, without the NFC step of V1-10 §6.1: Dart has no built-in NFC
+///   and this PR adds no dependency. The codec never changes strings, so an exact compare
+///   can only fail falsely, never pass falsely. DF-009 (Swift) should use the same rule
+///   until V1-10 §6.1 is aligned (PR #116 'Doc follow-ups').
 List<String> structuralDiff(Object? actual, Object? expected,
     [String at = 'data']) {
   final out = <String>[];

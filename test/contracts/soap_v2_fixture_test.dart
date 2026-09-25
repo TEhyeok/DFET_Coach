@@ -4,6 +4,9 @@
 // Record mode (commit the output):
 //   DFET_RECORD_FIXTURES=1 flutter test test/contracts/soap_v2_fixture_test.dart
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dfet_coach/models/soap_note_v2.dart';
 import 'package:dfet_coach/models/soap_note_v2_codec.dart';
@@ -293,6 +296,78 @@ void main() {
           'futureStatus');
     });
 
+    test(
+        'a non-map metrics element is an unparsed row; the Firestore target keeps every row',
+        () {
+      final f = fixture('draft_rom_mmt_pain');
+      final stored = [..._metricRows(f.data), '가상 문자열 행', null];
+      final data = _withMetrics(f.data, stored);
+      final note = SoapNoteV2Codec.fromMap(data);
+
+      expect(note.metrics, hasLength(4), reason: 'no row is dropped');
+      expect(note.metrics.take(2).every((m) => m is ParsedSoapMetric), isTrue);
+      expect(note.metrics[2], const SoapMetricV2.unparsed('가상 문자열 행'));
+      expect(note.metrics[3], const SoapMetricV2.unparsed(null));
+      expect((note.metrics[2] as UnparsedSoapMetric).isMapRow, isFalse);
+      expect((note.metrics[2] as UnparsedSoapMetric).metricCodeWire, isNull);
+      expect(note.uninterpretableMetricCount, 2);
+      expect(note.objective!.extra, isEmpty);
+
+      final firestore = note.toMap()['objective'] as Map;
+      expect(firestore['metrics'], stored);
+      final fx = note.toMap(target: CodecTarget.fixture);
+      expect(SoapNoteV2Codec.fromMap(decodeTags(fx) as Map<String, dynamic>),
+          note);
+    });
+
+    test('a non-map snapshot element is kept in place for both targets', () {
+      final data =
+          decodeTags(fixture('refs_snapshots_pending_policy').taggedData)
+              as Map<String, dynamic>;
+      final objective = data['objective'] as Map<String, dynamic>;
+      final snapshots = objective['snapshots'] as List;
+      final first = snapshots.first;
+      objective['snapshots'] = [first, 7.5, null];
+
+      final note = SoapNoteV2Codec.fromMap(data);
+      final read = note.objective!.snapshots!;
+      expect(read, hasLength(3));
+      expect(read[0].isReadable, isTrue);
+      expect(read[1].element, const Present<Object>(7.5));
+      expect(read[2].element, const Present<Object>(null));
+      expect(read[2].isReadable, isFalse);
+      expect(note.objective!.extra, isEmpty);
+
+      final out = (note.toMap()['objective'] as Map)['snapshots'] as List;
+      expect(out, hasLength(3));
+      expect(out.sublist(1), [7.5, null]);
+      final fx = note.toMap(target: CodecTarget.fixture);
+      expect(SoapNoteV2Codec.fromMap(decodeTags(fx) as Map<String, dynamic>),
+          note);
+    });
+
+    test(
+        'known nested keys with unreadable values are written to Firestore unchanged',
+        () {
+      final data = decodeTags(fixture('draft_rom_mmt_pain').taggedData)
+          as Map<String, dynamic>;
+      (data['subjective'] as Map)['painRegions'] = ['shoulderRight', 3.0];
+      (data['objective'] as Map)['refs'] = 'not-a-map';
+      (data['plan'] as Map)['homeExercise'] = 12.0;
+      final note = SoapNoteV2Codec.fromMap(data);
+      expect(note.subjective!.painRegions, isNull);
+      expect(note.subjective!.extra, {
+        'painRegions': ['shoulderRight', 3.0],
+      });
+
+      final firestore = note.toMap();
+      expect((firestore['subjective'] as Map)['painRegions'],
+          ['shoulderRight', 3.0]);
+      expect((firestore['objective'] as Map)['refs'], 'not-a-map');
+      expect((firestore['objective'] as Map)['metrics'], hasLength(2));
+      expect((firestore['plan'] as Map)['homeExercise'], 12.0);
+    });
+
     test('a v1 document is not decoded as v2', () {
       final legacy = loadFixtureGroup('soap_legacy').first;
       expect(SoapNoteV2Codec.isV2(legacy.data), isFalse);
@@ -394,6 +469,25 @@ void main() {
     });
   });
 
+  group('fixture loader', () {
+    test(r'a $ key outside data fails (contracts/fixtures/README.md §5)', () {
+      final dir = Directory.systemTemp.createTempSync('df007_fixture_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final file = File('${dir.path}/bad.json')
+        ..writeAsStringSync(jsonEncode({
+          '_fixture': {
+            'id': 'soap_v2/bad',
+            'expect': {
+              r'$int': 1,
+            },
+          },
+          'path': 'soap_notes/fx',
+          'data': <String, Object?>{},
+        }));
+      expect(() => FixtureFile.load(file), throwsFormatException);
+    });
+  });
+
   group('record mode (DF-007): flutter_written_* are the current Dart output',
       () {
     for (final base in recordedBases) {
@@ -464,6 +558,7 @@ const String _recordHint =
     'Run DFET_RECORD_FIXTURES=1 flutter test test/contracts/soap_v2_fixture_test.dart and commit the output.';
 
 List<Map<dynamic, dynamic>> _metricRows(Map<dynamic, dynamic> data) {
+  // Map rows only; tests with non-map rows read `objective.metrics` directly.
   final objective = data['objective'] as Map?;
   return [
     for (final row in (objective?['metrics'] as List?) ?? const []) row as Map
@@ -471,7 +566,7 @@ List<Map<dynamic, dynamic>> _metricRows(Map<dynamic, dynamic> data) {
 }
 
 Map<String, dynamic> _withMetrics(
-    Map<String, dynamic> data, List<Map<String, Object?>> rows) {
+    Map<String, dynamic> data, List<Object?> rows) {
   final objective = Map<String, dynamic>.from(data['objective'] as Map)
     ..['metrics'] = rows;
   return {...data, 'objective': objective};

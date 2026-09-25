@@ -1408,9 +1408,11 @@ permissions:
   contents: read
 
 jobs:
-  changes-ci:
+  changes-ci:                 # DF-001(docs). DF-031(S05)이 migrations 출력을 더한다
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       migrations: ${{ steps.diff.outputs.migrations }}
       docs: ${{ steps.diff.outputs.docs }}
@@ -1420,20 +1422,22 @@ jobs:
           fetch-depth: 0
       - id: diff
         shell: bash
+        env:                      # github.* 값은 스크립트에 직접 끼우지 않고 env로 넘긴다
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-          fi
-          if ! files=$(git diff --name-only "$base" "${{ github.sha }}" 2>/dev/null); then
+          if [ "$EVENT_NAME" = "pull_request" ]; then base="$PR_BASE"; else base="$PUSH_BEFORE"; fi
+          # 기준 커밋을 못 찾으면(새 브랜치 첫 push 등) 안전하게 실행한다
+          if ! files=$(git diff --name-only "$base" "$HEAD_SHA" 2>/dev/null); then
             echo "migrations=true" >> "$GITHUB_OUTPUT"
             echo "docs=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           has() { if printf '%s\n' "$files" | grep -Eq "$1"; then echo true; else echo false; fi; }
           echo "migrations=$(has '^(functions/scripts/migrations/|functions/test/migrations/|contracts/fixtures/soap_legacy)')" >> "$GITHUB_OUTPUT"
-          echo "docs=$(has '^(docs/|tool/backlog/|tool/lint/(doc-headers|test/doc-headers|test/fixtures/)|AGENTS\.md$|CLAUDE\.md$|\.github/workflows/ci\.yml$)')" >> "$GITHUB_OUTPUT"
+          echo "docs=$(has '^(docs/|tool/backlog/|tool/lint/(doc-headers|test/doc-headers|test/issue-forms|test/fixtures/)|\.github/ISSUE_TEMPLATE/|\.github/pull_request_template\.md$|\.github/CODEOWNERS$|AGENTS\.md$|CLAUDE\.md$|\.github/workflows/ci\.yml$)')" >> "$GITHUB_OUTPUT"
 
   flutter:                    # 기존 단계 유지(dfet:.github/workflows/ci.yml:13-33)
     runs-on: ubuntu-latest
@@ -1573,17 +1577,20 @@ jobs:
       - run: npm install --global firebase-tools
       - run: firebase emulators:exec --only firestore,storage --project dfet-e2e "npm --prefix functions run test:migrations"
 
-  docs-and-backlog:           # DF-001, DF-002
+  docs-and-backlog:           # DF-001, DF-002. 필수 체크 이름. 경로 밖이면 건너뜀 = 통과(ASM-10-14)
     needs: changes-ci
-    if: needs.changes-ci.outputs.docs == 'true'
+    # changes-ci가 실패하면 건너뛰지 않고 실행한다(필수 체크가 검사 없이 통과되지 않게)
+    if: ${{ !cancelled() && (needs.changes-ci.result != 'success' || needs.changes-ci.outputs.docs == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: node --test tool/lint/test/doc-headers.test.mjs
+      - run: node --test tool/lint/test/doc-headers.test.mjs tool/lint/test/issue-forms.test.mjs
       - run: node tool/lint/doc-headers.mjs --links docs/v1     # 헤더 표준 + 상대 링크(AC-DF-001.1, .5)
       - run: node tool/backlog/build_issues.mjs --check          # issues.json 드리프트(TL-01 §6)
       - run: node tool/backlog/validate_backlog.mjs --prd docs/PRD_V1.md
@@ -1994,4 +2001,4 @@ ID는 이 문서 한정이다. PRD로 올릴 때는 PRD §13.4에 따라 AS-34 �
 | v1.0 | 2026-09-24 | 최초 작성(개발 착수 기준) | — | 없음(CF-10-07 줄 번호는 PRD 개정 때 반영 제안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 `swift test`·픽스처 로더 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2, §3.1·§6.1·§19.4) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 순수 타깃 5개·TrainerCore 테스트 경로(R4), 시드 담당·ID(R2), 픽스처 봉투·레거시 파일 이름을 P0 규약으로, 기대 결과 경로 `soap_legacy/expected_v2/`, XcodeGen zip(R8), docs-and-backlog 명령(TL-01 §6), static-guards 파일명(DF-011), 충돌 ID CF-10-NN(R10), ASM-10-24~26 추가 | — | 없음 |
-| v1.1.0 | 2026-09-25 | §19.3 `changes-ci`의 `docs` 경로 조건에 `tool/lint/test/`의 doc-headers 테스트·픽스처, `AGENTS.md`·`CLAUDE.md`, `.github/workflows/ci.yml`을 더하고(SPRINT_01 §7.5), `docs-and-backlog`의 린트 명령을 `--links docs/v1`로 적음(P0 DF-001 카드 AC-DF-001.5). DF-001 구현과 맞춤 | DF-001 | 없음 |
+| v1.1.0 | 2026-09-25 | §19.3을 DF-001 구현과 맞춤. `changes-ci`의 `docs` 경로 조건에 `tool/lint/test/`의 doc-headers·issue-forms 테스트와 픽스처, `.github/ISSUE_TEMPLATE/`·`pull_request_template.md`·`CODEOWNERS`, `AGENTS.md`·`CLAUDE.md`, `.github/workflows/ci.yml`을 더함(SPRINT_01 §7.5). `github.*` 값은 env로 넘기고 두 job에 `permissions: contents: read`를 둠. `docs-and-backlog`의 `if`를 `!cancelled() && (changes-ci 실패 또는 docs == 'true')`로 바꿔 `changes-ci` 실패 때 검사 없이 통과하지 않게 함. 린트 명령은 `--links docs/v1`(P0 DF-001 카드 AC-DF-001.5), 테스트 단계에 이슈 폼 구조 테스트 추가(AC-DF-001.4) | #105 | 없음 |

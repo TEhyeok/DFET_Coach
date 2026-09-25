@@ -49,13 +49,14 @@ The same steps run in `.github/workflows/trainer-app.yml` (job `trainer-app`), w
 | Build | Arguments | GoogleService-Info.plist | Mode |
 |---|---|---|---|
 | Debug | `--preview-<scenario>` (e.g. `--preview-empty`) | not needed | `preview`: Firebase is never configured |
-| Debug | `--use-emulator` [`--emulator-host=<ip>`] | required | `emulator` (default host 127.0.0.1, project `demo-dfet`) |
+| Debug | `--use-emulator` [`--emulator-host=<ip>`] | not needed, never read | `emulator` (default host 127.0.0.1): synthetic options, project `demo-dfet`, local App Check provider |
 | Debug / Release | none | missing | `misconfigured`: configuration-missing screen, never preview data |
 | Debug / Release | none | present | `production` |
 
-Release builds ignore `--preview-*`, `--use-emulator` and `--emulator-host=`.
+Rows are checked top to bottom. Release builds ignore `--preview-*`, `--use-emulator` and `--emulator-host=`.
 App Check: DEBUG uses `AppCheckDebugProviderFactory`, Release uses App Attest
-(`FirebaseBootstrap.configure(_:)` in FirebaseData).
+(`FirebaseBootstrap.configure(_:)` in FirebaseData). Emulator mode never uses the bundled plist or the App Check
+exchange endpoint, so it cannot reach the production project even when a plist is present locally.
 
 ## GoogleService-Info.plist rules (ADR-019)
 

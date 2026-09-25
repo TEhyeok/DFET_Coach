@@ -773,8 +773,9 @@
     "lib/contracts/generated/**",
     "functions/src/shared/generated/**",
     "admin_web/lib/generated/**",
-    "build/**",
+    "**/build/**",
     "**/.build/**",
+    "**/DerivedData/**",
     "**/Pods/**",
     "**/node_modules/**"
   ],

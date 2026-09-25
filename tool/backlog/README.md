@@ -3,12 +3,12 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | TL-01 |
-| 버전 | v1.0.1 |
+| 버전 | v1.1.0 |
 | 상태 | 개발 착수 기준(Ready) |
-| 작성일 | 2026-09-24 |
+| 작성일 | 2026-09-24(개정 2026-09-25) |
 | 소유자 | CJH |
 | 근거 PRD 절 | §0.5 ID 체계, §12.1 단계 |
-| 관련 에픽·스토리 | EP-01 / DF-002(도구 검증), DF-902(소유자 실행) |
+| 관련 에픽·스토리 | EP-01 / DF-002(도구 검증·작업 지시서 생성기), DF-902(소유자 실행) |
 | 변경 규칙 | [문서 변경](../../docs/v1/01_AGILE_WORKING_AGREEMENT.md#문서-변경) |
 
 ## 목차
@@ -19,6 +19,7 @@
 - [4. 옵션](#4-옵션)
 - [5. 멱등성과 안전장치](#5-멱등성과-안전장치)
 - [6. 테스트와 CI](#6-테스트와-ci)
+- [6a. 작업 지시서 생성기(brief.mjs)](#6a-작업-지시서-생성기briefmjs)
 - [7. 백로그를 바꿀 때](#7-백로그를-바꿀-때)
 - [8. 문제 해결](#8-문제-해결)
 - [변경 이력](#변경-이력)
@@ -35,8 +36,10 @@
 | TL-11 | `create_github_issues.sh` | gh CLI로 라벨·마일스톤·보드 필드·이슈를 만든다. 기본 dry-run |
 | TL-11 | `create_backlog.sh` | 호환 진입점. 문서에 적힌 이름을 유지하려고 두며 `create_github_issues.sh`를 그대로 부른다 |
 | TL-12 | `validate_backlog.mjs` | 스키마·키·라벨·마일스톤·의존 순환·PRD trace·카드/색인/스프린트 교차 검사 |
+| TL-13 | `brief.mjs` | 카드와 `issues.json`에서 AI 에이전트 작업 지시서(V1-T08)를 만든다(ASM-01-17). 파일만 읽는다 |
 | TL-14 | `build_issues.mjs` | 색인·카드에서 `issues.json`을 만든다. `--check`는 드리프트 검사 |
-| — | `test/fake-gh.sh`, `test/run.sh` | 네트워크 없는 가짜 gh 시나리오 테스트 |
+| — | `test/fake-gh.sh`, `test/run.sh` | 네트워크 없는 가짜 gh 시나리오 테스트. node:test와 shellcheck도 여기서 돈다 |
+| — | `test/validate_backlog.test.mjs`, `test/brief.test.mjs` | 검증기 검출 테스트(TC-DF002-03), 지시서 생성기 테스트(node:test) |
 
 기술 스파인은 이슈 데이터를 단계별 파일(`issues/P0.json` 등 TL-05~TL-10)로 나누도록 제안했다. 단일 파일 `issues.json`과 `--phase`·`--owner-actions` 선택 옵션으로 바꿨다. 한 파일이어야 생성기 하나로 드리프트를 막을 수 있고, 단계별 생성은 옵션으로 같은 결과를 낸다.
 
@@ -124,11 +127,51 @@ bash tool/backlog/create_github_issues.sh --apply --only issues --phase P1a --ex
 ```bash
 node tool/backlog/build_issues.mjs --check                       # issues.json 드리프트
 node tool/backlog/validate_backlog.mjs --prd docs/PRD_V1.md       # 검증기
-bash tool/backlog/test/run.sh                                     # 가짜 gh 시나리오(PRD=docs/PRD_V1.md 주면 검증기도)
+bash tool/backlog/test/run.sh                                     # node:test + shellcheck + 가짜 gh 시나리오 + 검증기
 bash tool/backlog/create_backlog.sh --dry-run --offline > /dev/null
 ```
 
-`test/run.sh`가 확인하는 것: dry-run의 gh 호출 0건(AC-DF-002.1), `--apply` 두 번 연속 시 두 번째 생성 0건과 `--search` 0건(AC-DF-002.2), 마일스톤 9개, 에픽·의존 링크의 #번호 치환, 다음 단계 추가 뒤 기존 에픽 목록 갱신. docs-and-backlog CI job(DF-001)이 위 네 명령을 실행한다. `shellcheck`가 있으면 `shellcheck tool/backlog/*.sh tool/backlog/test/*.sh`도 돌린다(스테이징 환경에는 shellcheck가 없어 실행하지 못했다).
+docs-and-backlog CI job(DF-001)이 위 네 명령을 실행한다. DF-002는 `ci.yml`을 고치지 않는다(SPRINT_01 §7.6 002-4). P0 DF-002 카드 AC-DF-002.5의 `node --test tool/backlog/test/`와 `shellcheck`는 `test/run.sh` 안에서 돈다.
+
+`test/run.sh`가 확인하는 것:
+
+| 단계 | 내용 | 수용 기준 |
+|---|---|---|
+| 0a | `node --test tool/backlog/test/*.test.mjs`(Node 22는 디렉터리 인자를 펼치지 않아 glob으로 부른다) | AC-DF-002.3·.4, TC-DF002-03 |
+| 0b | `shellcheck tool/backlog/*.sh tool/backlog/test/*.sh`. 설치돼 있지 않으면 `skip`을 출력한다(ubuntu 러너에는 기본 설치) | AC-DF-002.5, TC-DF002-05 |
+| 1 | 가짜 gh를 PATH 맨 앞에 두고 `create_backlog.sh`를 인자 없이, 그리고 `--dry-run --offline`으로 실행. gh 호출 0건(변경 호출 0건 포함), 끝 줄 `== plan: labels 67, milestones 9, issues 230` | AC-DF-002.1, TC-DF002-01·05 |
+| 2 | 기존 이슈 `#1 [DF-001]`을 심고 `create_backlog.sh --apply --repo TEhyeok/DFET_Coach`(P0 + 소유자 행동, 제안 제외)를 두 번 실행. DF-001 `issue create` 0건, 다른 키는 첫 실행에 한 번씩(100건), 두 번째 0건, 실행마다 `issue list --state all --limit 3000 --json number,title` 1회, `--search` 0건, 마일스톤 9개 | AC-DF-002.2, TC-DF002-02 |
+| 3 | 에픽 하위 항목·의존 링크의 #번호 치환(기존 DF-001은 `#1`), 다음 단계 추가 뒤 기존 에픽 목록 갱신 | — |
+| 4·5 | 검증기(`PRD` 환경 변수, 기본 `docs/PRD_V1.md`), `build_issues.mjs --check` | AC-DF-002.3 |
+
+`test/validate_backlog.test.mjs`는 실제 `issues.json`을 임시 폴더에 같은 이름으로 복사해 한 곳만 바꾼 뒤 검증기가 exit 1과 `issues.json: <KEY> <메시지>`를 내는지 본다: 없는 trace(`F-SOAP-99`와 PRD 접두 14종), 범위 양 끝, 없는 §, 중복 키, 없는 라벨·마일스톤·에픽·의존 대상, `deps`·`cardDeps` 순환, 스키마 required·type·enum.
+
+## 6a. 작업 지시서 생성기(brief.mjs)
+
+[V1-T08](../../docs/v1/templates/AGENT_BRIEF.md) '사용법'과 [01 작업 지시서 규칙](../../docs/v1/01_AGILE_WORKING_AGREEMENT.md#작업-지시서-규칙)의 생성기다(ASM-01-17, 00_README K-04). 카드(`docs/v1/backlog/*.md`), `issues.json`, 스프린트 문서(`docs/v1/sprints/SPRINT_NN.md`)만 읽고 표준 출력으로 Markdown을 낸다. gh·git·네트워크를 쓰지 않는다.
+
+```bash
+node tool/backlog/brief.mjs DF-011 > brief.md                  # 목요일 다듬기
+node tool/backlog/brief.mjs DF-011 --sprint S03 > brief.md     # 월요일 계획: 같은 스프린트의 다른 에이전트 작업을 4절에 덧붙인다
+node tool/backlog/brief.mjs DF-005 --agent claude --slug soap-fixtures   # 배정 에이전트·브랜치 이름을 바꿀 때
+```
+
+| 절 | 원천 |
+|---|---|
+| 0·10·11 | 고정문(V1-T08 템플릿) |
+| 1 목표 | 카드 '사용자 스토리' |
+| 2 추적 | `issues.json`의 key·epic·phase·sprint·points·prio·`flag/` 라벨·trace, 카드 안 ADR 언급 |
+| 3 컨텍스트 팩 | 카드 링크, 01 DoD(area별), 13 §7, 13 §6 area별 필독, trace의 PRD §, 스프린트 문서 '필독' |
+| 4 작업 범위 | 스프린트 문서의 수정 허용·금지 경로(§8 지시서 표 → §8.4 요약 표 → §5 레인 표 순), 카드 '에이전트 브리프'. `--sprint`면 같은 스프린트의 다른 `agent/claude`·`agent/codex` 스토리와 그 경로 |
+| 5 인터페이스 계약 | 카드 '구현 노트' 원문 |
+| 6 수용 기준 | 카드 '수용 기준'과 '테스트' 원문(바꿔 쓰지 않는다) |
+| 7 구현 메모 | 카드 '배경·맥락', '비고·가정', 'DoR' |
+| 8 검증 명령 | area별 기본 명령(01 영역별 DoD, 13 §4) + 수정 경로별 명령 + 스프린트 문서·카드의 인라인 명령. `--apply`, `firebase deploy`, gh 쓰기, 자리 표시자(`<…>`, `DF-NNN`)가 든 명령은 넣지 않는다 |
+| 9 브랜치·커밋 | 브랜치는 스프린트 문서 → `--slug` → 제목의 영문 낱말 순. 커밋 type은 이슈 type, scope는 area. footer `Refs`·`Trace` |
+
+- 종료 코드: 0 성공, 1 대상 아님(없는 키, 소유자 행동·`agent/human`만 있는 항목, 에이전트 라벨 없음 → `--agent`로 지정, 카드 없음), 2 사용법 오류.
+- 카드 안 상대 링크는 `https://github.com/TEhyeok/DFET_Coach/blob/main/...` 절대 링크로 바꾼다(이슈 코멘트에서 상대 링크가 깨진다). `build_issues.mjs`와 같은 규칙이다.
+- 지시서를 이슈 코멘트로 붙이는 일은 소유자가 한다(01 다듬기 3번). 생성기는 GitHub에 쓰지 않는다.
 
 ## 7. 백로그를 바꿀 때
 
@@ -152,4 +195,5 @@ bash tool/backlog/create_backlog.sh --dry-run --offline > /dev/null
 
 | 버전 | 날짜 | 요약 |
 |---|---|---|
+| v1.1.0 | 2026-09-25 | DF-002: TL-13 `brief.mjs`(작업 지시서 생성기)와 §6a 추가. `test/run.sh`가 node:test·shellcheck와 AC-DF-002.1·.2 시나리오(인자 없는 dry-run, 기존 `[DF-001]` 이슈를 둔 두 번 apply)를 그대로 돌리도록 §6 갱신. dry-run 끝에 계획 요약 줄 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: §2 의존 설명을 R3에 맞춤(카드가 더한 같은/앞선 스프린트 의존은 색인 반영, `cardDeps`는 제안 키 의존만, 스프린트 역전 의존은 카드 참고(soft)) |

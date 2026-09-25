@@ -242,6 +242,15 @@ beforeEach(async () => {
       setDoc(doc(db, 'insightPolicyVersions/fx-policy-draft'), {
         kind: 'bodyChange', version: 'fx-2', status: 'draft', active: false,
       }),
+      setDoc(doc(db, 'insightPolicyVersions/fx-policy-unapproved-active'), {
+        kind: 'bodyChange', version: 'fx-3', status: 'draft', active: true,
+      }),
+      setDoc(doc(db, 'insightPolicyVersions/fx-policy-inactive'), {
+        kind: 'bodyChange', version: 'fx-4', status: 'approved', active: false,
+      }),
+      setDoc(doc(db, 'insightPolicyVersions/fx-policy-other-kind'), {
+        kind: 'integrated', version: 'fx-5', status: 'approved', active: true,
+      }),
       setDoc(doc(db, 'memberSummaries/fx-summary-001'), {
         memberUid: M1, trainerId: T_A, sourceType: 'soapNote', status: 'shared',
       }),
@@ -397,6 +406,12 @@ describe('AC-DF-021.2 postureAssessments', () => {
     await assertSucceeds(updateDoc(ref, {status: 'voided', updatedAt: serverTimestamp()}));
   });
 
+  test('AC-DF-021.2 confirmed document cannot go back to draft', async () => {
+    await assertFails(updateDoc(doc(trainerDb(), 'postureAssessments/fx-posture-confirmed'), {
+      status: 'draft', updatedAt: serverTimestamp(),
+    }));
+  });
+
   test('AC-DF-021.2 voided update is denied', async () => {
     await assertFails(updateDoc(doc(trainerDb(), 'postureAssessments/fx-posture-voided'), {
       isBaseline: true, updatedAt: serverTimestamp(),
@@ -540,6 +555,10 @@ describe('AC-DF-021.4 circumferenceMeasurements', () => {
   test('AC-DF-021.4 active→voided is allowed, value edit and delete are denied', async () => {
     const ref = doc(trainerDb(), 'circumferenceMeasurements/fx-circ-001');
     await assertFails(updateDoc(ref, {valueCm: 80, updatedAt: serverTimestamp()}));
+    await assertFails(updateDoc(ref, {
+      status: 'voided', voidedAt: serverTimestamp(), voidReason: '잘못 잰 값', valueCm: 80,
+      updatedAt: serverTimestamp(),
+    }));
     await assertFails(deleteDoc(ref));
     await assertSucceeds(updateDoc(ref, {
       status: 'voided', voidedAt: serverTimestamp(), voidReason: '잘못 잰 값', updatedAt: serverTimestamp(),
@@ -646,7 +665,9 @@ describe('AC-DF-021.7 read rules', () => {
     await assertSucceeds(getDocs(query(collection(db, 'insightPolicyVersions'),
       where('kind', '==', 'bodyChange'), where('status', '==', 'approved'), where('active', '==', true))));
     await assertSucceeds(getDoc(doc(adminDb(), 'insightPolicyVersions/fx-policy-draft')));
-    await assertFails(getDoc(doc(db, 'insightPolicyVersions/fx-policy-draft')));
+    for (const id of ['fx-policy-draft', 'fx-policy-unapproved-active', 'fx-policy-inactive', 'fx-policy-other-kind']) {
+      await assertFails(getDoc(doc(db, `insightPolicyVersions/${id}`)));
+    }
     await assertFails(getDoc(doc(dbFor(M1), 'insightPolicyVersions/fx-policy-active')));
   });
 

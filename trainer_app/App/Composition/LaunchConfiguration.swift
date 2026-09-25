@@ -4,7 +4,8 @@ import Foundation
 enum LaunchMode: Equatable {
   /// Release default and Debug with a bundled GoogleService-Info.plist. Talks to the production project.
   case production
-  /// DEBUG + `--use-emulator` (optional `--emulator-host=<ip>`, default 127.0.0.1). Needs the plist.
+  /// DEBUG + `--use-emulator` (optional `--emulator-host=<ip>`, default 127.0.0.1). Project `demo-dfet`
+  /// from synthetic options; the plist is neither needed nor read.
   case emulator(host: String)
   /// DEBUG + `--preview-<scenario>`. Firebase is never configured; in-memory synthetic data only.
   case preview(scenario: String)
@@ -26,13 +27,19 @@ struct LaunchConfiguration: Equatable {
   /// Reads the real process arguments and checks whether `GoogleService-Info.plist` was copied into the
   /// bundle by the "Copy Firebase config if present" build phase. Never reads the plist's values.
   static func resolve(arguments: [String], bundle: Bundle) -> LaunchConfiguration {
+    resolve(arguments: arguments, bundle: bundle, environment: ProcessInfo.processInfo.environment)
+  }
+
+  /// Same as `resolve(arguments:bundle:)` with an injectable environment so tests can exercise the bundle
+  /// lookup without the XCTest guard.
+  static func resolve(arguments: [String], bundle: Bundle, environment: [String: String]) -> LaunchConfiguration {
     #if DEBUG
     let isDebug = true
     #else
     let isDebug = false
     #endif
     var arguments = arguments
-    if isDebug, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+    if isDebug, environment["XCTestConfigurationFilePath"] != nil {
       // Hosted XCTest bundles must never configure Firebase against a real project.
       arguments.append(previewPrefix + "unit-test-host")
     }
@@ -40,10 +47,10 @@ struct LaunchConfiguration: Equatable {
     return LaunchConfiguration(mode: resolve(arguments: arguments, isDebug: isDebug, plistPresent: plistPresent))
   }
 
-  /// Decision order:
+  /// Decision order (P0 DF-008 card):
   /// 1. DEBUG + `--preview-<scenario>` → `.preview` (plist not needed).
-  /// 2. No plist → `.misconfigured("missingPlist")` (Debug and Release alike; V1-04 §19.2).
-  /// 3. DEBUG + `--use-emulator` → `.emulator(host:)`.
+  /// 2. DEBUG + `--use-emulator` → `.emulator(host:)` (plist not needed; FirebaseData uses `demo-dfet`).
+  /// 3. No plist → `.misconfigured("missingPlist")` (Debug and Release alike).
   /// 4. Otherwise `.production`.
   /// Release builds ignore `--preview-*`, `--use-emulator` and `--emulator-host=`.
   static func resolve(arguments: [String], isDebug: Bool, plistPresent: Bool) -> LaunchMode {
@@ -53,15 +60,15 @@ struct LaunchConfiguration: Equatable {
         return .preview(scenario: scenario)
       }
     }
-    guard plistPresent else {
-      return .misconfigured(reason: missingPlistReason)
-    }
     if isDebug, arguments.contains(useEmulatorFlag) {
       let host = arguments
         .first(where: { $0.hasPrefix(emulatorHostPrefix) })
         .map { String($0.dropFirst(emulatorHostPrefix.count)) }
         .flatMap { $0.isEmpty ? nil : $0 }
       return .emulator(host: host ?? defaultEmulatorHost)
+    }
+    guard plistPresent else {
+      return .misconfigured(reason: missingPlistReason)
     }
     return .production
   }

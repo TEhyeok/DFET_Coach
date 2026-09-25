@@ -25,10 +25,12 @@ final class LaunchConfigurationTests: XCTestCase {
          expected: .emulator(host: "127.0.0.1")),
     Case(name: "debug emulator custom host", arguments: ["--use-emulator", "--emulator-host=192.168.0.10"],
          isDebug: true, plistPresent: true, expected: .emulator(host: "192.168.0.10")),
-    Case(name: "debug emulator without plist -> misconfigured", arguments: ["--use-emulator"], isDebug: true,
-         plistPresent: false, expected: .misconfigured(reason: "missingPlist")),
+    Case(name: "debug emulator without plist (demo-dfet, plist not read)", arguments: ["--use-emulator"],
+         isDebug: true, plistPresent: false, expected: .emulator(host: "127.0.0.1")),
     Case(name: "release ignores emulator", arguments: ["--use-emulator", "--emulator-host=10.0.0.2"], isDebug: false,
          plistPresent: true, expected: .production),
+    Case(name: "release ignores emulator (no plist) -> misconfigured", arguments: ["--use-emulator"], isDebug: false,
+         plistPresent: false, expected: .misconfigured(reason: "missingPlist")),
     Case(name: "release without plist -> misconfigured", arguments: [], isDebug: false, plistPresent: false,
          expected: .misconfigured(reason: "missingPlist")),
     Case(name: "debug without plist -> misconfigured (no silent preview)", arguments: [], isDebug: true,
@@ -46,14 +48,17 @@ final class LaunchConfigurationTests: XCTestCase {
     }
   }
 
-  func testBundleWithoutPlistResolvesToMisconfiguredOrPreview() {
-    // The test bundle never contains GoogleService-Info.plist.
-    let resolved = LaunchConfiguration.resolve(arguments: [], bundle: Bundle(for: Self.self))
-    switch resolved.mode {
-    case .misconfigured(reason: "missingPlist"), .preview:
-      break
-    default:
-      XCTFail("unexpected mode \(resolved.mode)")
-    }
+  /// Exercises the real `bundle.url(forResource:)` lookup: the test bundle never contains the plist.
+  func testBundleWithoutPlistResolvesToMisconfigured() {
+    let resolved = LaunchConfiguration.resolve(arguments: [], bundle: Bundle(for: Self.self), environment: [:])
+    XCTAssertEqual(resolved.mode, .misconfigured(reason: "missingPlist"))
+  }
+
+  func testXCTestHostIsForcedIntoPreview() {
+    #if DEBUG
+    let resolved = LaunchConfiguration.resolve(
+      arguments: [], bundle: Bundle(for: Self.self), environment: ["XCTestConfigurationFilePath": "/tmp/x"])
+    XCTAssertEqual(resolved.mode, .preview(scenario: "unit-test-host"))
+    #endif
   }
 }

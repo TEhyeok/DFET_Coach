@@ -470,11 +470,11 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S15 (2027-01-04~01-08) |
+| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22), 최소 조각만). 원래 계획: S15 (2027-01-04~01-08) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/contracts` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `schema-change` |
+| Labels | `type/story` `area/trainer-app` `area/contracts` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `schema-change` `scope/mvp` |
 | Depends on | DF-014, DF-915 |
 | PRD refs | F-ASM-01.2, F-ASM-01.3, AC-ASM-01.2(체크리스트), AC-ASM-01.3(기록 필드), §7.4, §9.2 `captureConditions`·`stationProfileId`, TR-07, TR-15 |
 
@@ -545,6 +545,21 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
 
 **에이전트 브리프**
 `contracts/posture-protocol.v1.json`과 생성기 변경을 첫 커밋으로 올리고 `generate.mjs --check`가 통과하는지 먼저 본다. 그다음 `ShutterGate`·`CaptureConditionsBuilder` 단위 테스트, 마지막에 화면을 만든다. 카메라·모션(DF-204)과 Firestore 저장(DF-206)은 건드리지 않는다. 프로토콜 수치를 코드에 하드코딩하지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S10(원래 계획 S15). 상태: 할 일. 카드 전체가 아니라 **최소 조각**(기본 스테이션 하나와 촬영 조건 기록)이다. 같은 스프린트의 DF-204보다 먼저 병합한다
+- 왜 필요한가: `postureAssessments`는 `protocolVersion`(1~32자), `stationProfileId`(1~64자), `captureConditions`(키 8개)가 필수다([V1-05 §4.6](../05_DATA_MODEL_AND_RULES.md), 규칙 `validPostureBody`). DF-204 `AssessmentStore.createDraft(member:stationProfile:captureConditions:)`, DF-206 Outbox #1 create, DF-216 카메라 높이·거리 허용 범위(`PostureProtocolV1`)가 이 카드의 산출물을 쓴다. 없으면 체형 문서가 규칙에서 거부된다
+- 지금 만든다:
+  1. `contracts/posture-protocol.v1.json`: 구현 노트의 값 그대로(`"status": "draft-until-DF-915"`, DEC-21 ⑤ 초안 값)와 `tool/contracts/generate.mjs` 생성·`--check`. Swift `PostureProtocolV1`은 필수다. 생성기가 대상마다 같은 규칙으로 만들면 Dart·JS 생성물도 함께 두되 쓰는 곳(DF-216 Dart, DF-224)은 MVP 뒤다
+  2. LocalStore `StationProfile`(V1-05 §12 필드). DF-014 스키마에 없으면 `VersionedSchema` 다음 버전과 경량 이관을 더한다
+  3. `StationProfileStore.ensureDefault(trainerUid:)`: 프로필이 없으면 **기본 프로필 하나**를 만들고, 있으면 그대로 돌려준다(멱등, 앱 재시작 뒤에도 같은 문서). 기본값: `id = "default-v1"`(= 문서 `stationProfileId`), `name` = 문구 키 `tr07.station.default`('기본 스테이션(프로토콜 v1 초안)'), `cameraHeightCm = 100`, `cameraDistanceM = 3.0`(초안 범위 90~110cm·2.5~3.5m의 가운데), `protocolVersion = PostureProtocolV1.protocolVersion`(`"posture-v1"`). TR-07 진입 때 부르고 `lastUsedAt`을 갱신한다. 값은 생성물에서 계산하고 코드 상수로 두지 않는다
+  4. TR-07 상단 한 줄 `tr07.station.defaultSummary`('기본 스테이션 · 카메라 높이 {height}cm · 거리 {distance}m'): 트레이너가 카메라를 이 값에 맞춰 둔다. 편집 버튼은 없다
+  5. **복장 선택 한 줄**(`fitted`·`regular`·`unknown`, 미리 선택 없음, 회차마다 새로 고름. 문구 키 `tr07.checklist.clothing`과 선택지 3개). 체크리스트 네 항목 가운데 이것만 MVP에 넣는다. 복장은 §7.4 비교 키라 `unknown`만 쓰면 체형 기록끼리 모두 비교 불가가 되고(DF-216 AC-DF-216.2) TR-09 기준선 비교(AC-DF-210.5)와 TR-10 체형 추이(DF-215)가 점마다 끊긴다
+  6. `CaptureConditionsBuilder.build(profile:clothing:)`(MVP 형태): `clothing`은 고른 값, `cameraHeightCm`·`cameraDistanceM`는 기본 프로필 값, `barefoot`·`markersPlaced`·`verbalConsentCheck`는 **`false`**(체크리스트가 없어 확인하지 않았다는 뜻. `true`로 쓰지 않는다). `levelDeg`·`pitchDeg`는 DF-204가 셔터 시점에 채운다. `ShutterGate`는 복장 미선택이면 `canShoot == false`(사유 `clothingNotSelected`)이고, 수평 조건은 DF-204가 더한다
+  7. 테스트: `StationProfileTests`(`ensureDefault` 멱등·컨테이너 재적재 뒤 유지), `CaptureConditionsBuilderTests`(키가 규칙 `hasOnly` 목록 안, 세 불리언 `false`, `protocolVersion`이 생성물 값, 높이·거리가 생성물 범위 안), `ShutterGateTests`(복장 미선택 차단, 새 draft에서 복장 선택 초기화), contracts `--check`
+- MVP 뒤로 미룬다: TR-15 스테이션 프로필 목록·편집·범위 검사(AC-DF-203.1), 여러 프로필 가운데 선택과 '스테이션 프로필 등록' 빈 상태(AC-DF-203.2. MVP에서는 기본 프로필이 늘 있어 빈 상태가 나오지 않는다), 체크리스트의 맨발·머리카락·귀·마커·회원 확인 세 토글과 그 셔터 차단(AC-DF-203.3의 나머지, [V1-09](../09_ALGORITHMS_SPEC.md)의 '셔터 시점에 모두 true'), AC-DF-203.4의 세 불리언 `true` 기록, 체크리스트 문구 린트(AC-DF-203.5 중 복장 문구 외). 실회원 전에는 체크리스트 전체가 필요하다
+- MVP에서 기다리지 않는 의존: DF-915(소유자 수치 확정). DEC-21 ⑤대로 초안 값으로 진행하고, 확정되면 같은 PR에서 `status`를 지운다. 확정 범위가 초안과 달라 기본 프로필 값이 바뀌면 기본 ID를 `default-v2`로 올려 새 프로필을 만든다(기기에 이미 있는 `default-v1`과 그 ID로 기록된 문서의 뜻은 바뀌지 않는다)
 
 ---
 
@@ -636,7 +651,7 @@ public protocol LandmarkSuggester: Sendable {
 | Epic | EP-15 O 자동 불러오기·비교·추이 |
 | Type | story |
 | Phase | P1b |
-| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S15 (2027-01-04~01-08) |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S15 (2027-01-04~01-08) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | contracts |
@@ -734,7 +749,7 @@ public enum SeriesSegmenter {
 
 ### MVP 범위(DEC-22)
 
-- MVP 스프린트: S10(원래 계획 S15). 상태: 할 일
+- MVP 스프린트: S11(원래 계획 S15). 상태: 할 일. S10에서 옮겼다: 같은 S10에 DF-203 MVP 조각이 들어오며 약속 한도(18)를 넘지 않게 하고, 허용 범위 생성물(`PostureProtocolV1`, DF-203)이 먼저 병합되게 한다
 - 왜 필요한가: 흐름 4: conditionKey 비교와 seriesBreak 분할(추이 차트의 끊김 규칙)
 - 지금 만든다: Swift 구현과 공통 벡터 테스트
 - MVP 뒤로 미룬다: Dart 구현(회원 앱, P2)
@@ -824,8 +839,12 @@ public enum SeriesSegmenter {
 - MVP 스프린트: S10(원래 계획 S15). 상태: 할 일
 - 왜 필요한가: 흐름 3: TR-07 정면·측면 촬영
 - 지금 만든다: 정면·측면 두 장 촬영, 인물·조명 검출, 동의 ②③ 게이트. 시뮬레이터에는 카메라가 없으므로 DEBUG·시뮬레이터에서 사진 가져오기(PhotosPicker) 입력을 둔다. roll·pitch 게이트는 센서가 있을 때만 켠다
-- MVP 뒤로 미룬다: 스테이션 프로필·회차 체크리스트(DF-203)
-- MVP에서 기다리지 않는 의존: DF-203: DEC-21에 따라 촬영 프로토콜 v1 초안 값을 기본값으로 쓴다(소유자 확정 DF-915는 MVP 뒤)
+- 동의 게이트(AC-DF-204.1)는 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다: `canCapturePosture`가 false면 진입 차단, ②③이 로컬 캡처만 있으면 '동의 확인 대기'
+- 스테이션·촬영 조건은 DF-203 MVP 조각(같은 S10, 먼저 병합)을 쓴다: TR-07 진입 때 `StationProfileStore.ensureDefault`로 기본 프로필(`stationProfileId = "default-v1"`)을 받아 `createDraft(member:stationProfile:captureConditions:)`에 넘기고, `captureConditions`는 `CaptureConditionsBuilder.build(profile:clothing:)` 결과에 셔터 시점 `levelDeg`·`pitchDeg`를 더한다(AC-DF-204.5). `CaptureGateView`의 '스테이션 없음' 상태는 MVP에서 나오지 않는다(기본 프로필이 늘 있다). AC-DF-204.2의 'Given 체크리스트 완료'는 MVP에서 'Given 복장 선택 완료'로 읽고, AC-DF-204.8에서 유지할 것은 사진과 복장 선택이다
+- 센서가 없는 시뮬레이터 가져오기 경로에서는 수평 값을 읽을 수 없다. 이때 `levelDeg`·`pitchDeg`는 `0`으로 채우지 말고 `captureConditions`에서 뺀다(규칙은 `hasOnly`라 키가 없어도 통과한다). 값을 지어내지 않는다
+- `landmarkEngine`은 DF-207(S11)이 채운다. S10에는 로컬 draft의 `landmarkEngineJSON`이 비어 있어도 되며, 원격 create(DF-206, S11)는 DF-207 병합 뒤라 필수 필드가 채워진다
+- MVP 뒤로 미룬다: 스테이션 편집·선택 UI와 회차 체크리스트 나머지 세 토글(DF-203 MVP 절)
+- MVP에서 기다리지 않는 의존: DF-915(촬영 프로토콜 소유자 확정). DEC-21에 따라 v1 초안 값을 쓴다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-204.7(`posture_capture_started`·`posture_capture_done`)과 `TrainerAnalyticsTests/PostureCaptureEventsTests.swift`는 만들지 않는다
 
 ---
@@ -1413,6 +1432,8 @@ public struct AssessmentSummary: Sendable {
 - 지금 만든다: 카드 전체 범위에서 아래 두 AC만 뺀다
 - MVP 뒤로 미룬다: AC-DF-209.10(확정 시 머리 상자 가림본, DF-205 `FaceMasker` 연기와 같다). AC-DF-209.8(`posture_landmarks_confirmed`)과 `TrainerAnalyticsTests/PostureConfirmEventTests.swift`(분석 이벤트 AC는 MVP 뒤, DF-126·DF-033)
 - `PhotoRebaser`(새 버전 사진)는 로컬 파일만 쓴다: 로컬 원본 → 캐시. 둘 다 없으면 원격에서 받지 않고 '사진 없음'으로 새 draft를 만들어 다시 찍게 한다. `StoragePhotoFetcher`(DF-227·DF-214, MVP 밖)는 만들지 않는다. 한 기기·한 트레이너 MVP에서는 원본이 기기에 있다
+- 새 버전(AC-DF-209.4)은 A의 `stationProfileId`(MVP 기본 `default-v1`, DF-203 MVP 절)와 `captureConditions`(복장 선택, 세 불리언 `false`, 수평 값이 없으면 없는 그대로)를 바꾸지 않고 복사한다. 확정 조건(AC-DF-209.1)은 체크리스트 값을 보지 않는다
+- 재검사(DF-212)는 MVP 뒤다. MVP의 체형 문서는 `retestGroupId = null`이고 복사 값도 null이다. `history`의 '재검사 첫 기록만' 필터와 `BaselinePolicy`의 재검사 묶음 규칙은 null이면 영향이 없으므로 null 경로만 테스트한다
 
 ---
 
@@ -1476,7 +1497,8 @@ public struct AssessmentSummary: Sendable {
 
 - MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
 - 왜 필요한가: 흐름 3: TR-09 결과 화면과 편위 표('산정 준비 중')
-- 지금 만든다: 카드 전체 범위(분석 이벤트 제외)
+- 지금 만든다: 카드 전체 범위(분석 이벤트 제외)에서 아래 두 메뉴만 뺀다. 상태 표시, 오버레이, 편위 표, 기준선 표시, '수정(새 버전)'(DF-209)은 만든다
+- MVP 뒤로 미룬다: '재검사 모드'(DF-212: `retestGroupId` 태깅, 동의 ⑤·연구 동의서 게이트)와 사진 메뉴(DF-211: 회원 요청에 따른 사진 한 장 삭제). 두 메뉴는 버튼·빈 슬롯·'추후 추가 예정' 화면도 두지 않는다(진입점 없음). 구현 노트의 화면 목록에서 이 둘을 뺀다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): `change_status_rendered{surface:"trainer"}` 전송은 만들지 않는다
 
 ---
@@ -2110,4 +2132,4 @@ public enum ObjectiveSourceError: Error, Equatable { case permissionDenied, unav
 | v1.0 | 2026-09-24 | 최초 작성. 스파인 P1b 스토리 24개 카드화, 추가 제안 DF-227과 충돌 8건(G-P1b-1~8), 가정 ASM-P1b-01~41 | CJH(에이전트 초안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 경로(PostureMath, TrainerDomain/Series)와 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2) | CJH(AI 에이전트, 릴리스 편집) |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 경로 규칙 TrainerCore·TrainerKit(R4), 대기 회원 시드 ID·시드 스크립트 정본(R2), DF-209 경계 문제 기록(G-P1b-9, ASM-P1b-43), 리드 결정 기록(ASM-P1b-44), 덱 키 DoR(§4, K-11), 가정 ID 참조(R10) | CJH(AI 에이전트, 정합 편집) |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: 체형 사진 파이프라인 MVP 절 정리(DF-205 FaceMasker만 연기·일반 썸네일 유지, DF-206 뷰당 두 파일·`maskedThumbPath=null`, DF-209 AC-DF-209.10 제외·PhotoRebaser 로컬만, DF-225 로컬 썸네일만), 분석 이벤트 AC는 MVP 뒤(DF-204·DF-206·DF-208·DF-209·DF-210·DF-215), DF-200·DF-207 Vision 대비책(시뮬레이터 실패 시 iPhone 하네스·수동 지정), 파일 머리 DEC-22 범위 안내. | CJH(AI 에이전트) |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: 체형 사진 파이프라인 MVP 절 정리(DF-205 FaceMasker만 연기·일반 썸네일 유지, DF-206 뷰당 두 파일·`maskedThumbPath=null`, DF-209 AC-DF-209.10 제외·PhotoRebaser 로컬만, DF-225 로컬 썸네일만), 분석 이벤트 AC는 MVP 뒤(DF-204·DF-206·DF-208·DF-209·DF-210·DF-215), DF-200·DF-207 Vision 대비책(시뮬레이터 실패 시 iPhone 하네스·수동 지정), 파일 머리 DEC-22 범위 안내. 리뷰 반영 3: DF-203 최소 조각을 `scope/mvp`(S10)로 넣고 MVP 절 추가(프로토콜 생성물, 기본 스테이션 `default-v1` 자동 생성, 복장 선택, 세 불리언 `false`), DF-204 MVP 절(기본 스테이션·복장, 시뮬레이터 수평 값 생략, `landmarkEngine`은 DF-207), DF-209(스테이션·조건 복사, `retestGroupId` null), DF-210(재검사 모드·사진 메뉴 제외), DF-216 S10→S11. | CJH(AI 에이전트) |

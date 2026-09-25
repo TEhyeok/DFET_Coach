@@ -231,5 +231,25 @@ test('issues.json keeps deferred items out of MVP sprints (DEC-22)', () => {
     }
   }
   assert.equal(doc.totals.bySprint.S05.points, 17);
-  assert.equal(doc.totals.byScope.mvp.count, 65);
+  assert.equal(doc.totals.byScope.mvp.count, 67);
+  assert.equal(doc.totals.byScope.mvp.points, 191);
+});
+
+test('MVP minimal slices DF-111 (S06) and DF-203 (S10) are in scope, DF-216 moved to S11, and loads stay within 18 (DEC-22 review 3)', () => {
+  const doc = JSON.parse(readFileSync(join(root, 'tool/backlog/issues.json'), 'utf8'));
+  const byKey = new Map(doc.issues.map((i) => [i.key, i]));
+  for (const [k, sprint] of [['DF-111', 'S06'], ['DF-203', 'S10'], ['DF-216', 'S11']]) {
+    const i = byKey.get(k);
+    assert.ok(i.labels.includes('scope/mvp'), `${k}: scope/mvp`);
+    assert.equal(i.sprint, sprint, `${k}: sprint`);
+    assert.equal(i.plannedSprint, undefined, `${k}: no plannedSprint`);
+  }
+  for (const s of ['S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12']) assert.ok(doc.totals.bySprint[s].points <= 18, `${s}: ${doc.totals.bySprint[s].points} > 18`);
+  assert.equal(doc.totals.bySprint.S06.points, 18);
+  assert.equal(doc.totals.bySprint.S11.points, 17);
+  // 최소 조각은 카드 MVP 절에 미루는 부분을 적는다
+  assert.match(brief('DF-111').out, /MVP 뒤로 미룬다: ④⑤ 계산/);
+  const b203 = brief('DF-203').out;
+  assert.match(b203, /`id = "default-v1"`/);
+  assert.match(b203, /\*\*복장 선택 한 줄\*\*/);
 });

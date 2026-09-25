@@ -889,7 +889,8 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
 - 왜 필요한가: 테스트 회원 등록 때 동의 ①②③을 기록하는 화면
 - 지금 만든다: 대기 회원 등록 직후 동의 유형별 선택(①②③)과 recordConsent 호출, 결과 상태 칩
-- MVP 뒤로 미룬다: 서명 패드, 가입(uid) 회원 흐름, 동의 문서 전문 표시의 법률 문구(G-04 뒤)
+- MVP 뒤로 미룬다: 서명 패드, 가입(uid) 회원 흐름, 동의 문서 전문 표시의 법률 문구(G-04 뒤), 재동의 배너(AC-DF-110.6 `needsReconsent`, `tr14.consent.revised`)
+- 결과 상태 칩은 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다. `ConsentState` 타입은 DF-111이 먼저 만들었으므로 다시 만들지 않고, `FirestoreConsentService.observeState`를 DF-111의 `ConsentStateSource` 프로토콜 구현으로 둔다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-110.7(`onboarding_consent_completed`)과 TC-110-09는 만들지 않는다. `AnalyticsClient` 호출도 넣지 않는다
 
 ---
@@ -901,11 +902,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-08 동의·개인정보 핵심 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S09 (2026-11-23~11-27) |
+| Sprint | S06(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22), 최소 조각만). 원래 계획: S09 (2026-11-23~11-27) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/M` `privacy-impact` `needs-device-test` |
+| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/M` `privacy-impact` `needs-device-test` `agent/claude` `scope/mvp` |
 | Depends on | DF-110, DF-015 |
 | PRD refs | F-PRIV-03.7, AC-PRIV-03.3, NFR-05, NFR-04, AS-32, §6.0.3 `awaitingConsent`, §4.6 '오프라인 세션' |
 
@@ -954,6 +955,19 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-110(S08)·DF-015(S07)·DF-014(S06) [x] R4 [x] R5 [x] R6 `TrainerDomain/Consent/EffectiveConsent.swift`, `SyncEngine/EffectiveConsentResolver.swift`, `App/AppShell/RetentionOnActivate.swift`, IT 1파일 [x] R7 privacy-impact [x] R8 시드 변형(retired 문서) [ ] R9 [x] R10 needs-device-test
 
 **에이전트 브리프** — DF-014·DF-015 카드에서 이미 구현된 게이트와 파기를 먼저 확인하고 새로 만들지 않는다. `EffectiveConsentResolver` 표 테스트부터 쓰고, 활성화 훅과 `AwaitingConsentIT`를 붙인다. Feature 화면은 가드 결과를 읽기만 하게 한다. 같은 스프린트의 DF-117·DF-118(FeatureSOAP·DesignSystem) 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S06(원래 계획 S09). 상태: 할 일. 카드 전체가 아니라 **최소 조각**(유효 동의 타입과 계산기, 동의 ①②③만)이다
+- 왜 필요한가: MVP 카드의 동의 표시·가드가 모두 `EffectiveConsent`를 읽는다: DF-113 TR-02 동의 칩(AC-DF-113.2), DF-110 결과 칩, DF-127 저장 버튼(AC-DF-127.4), DF-128 결과지 사진 첨부(AC-DF-128.4), DF-129 입력(AC-DF-129.10), DF-204 촬영 진입(AC-DF-204.1), DF-208·DF-210 '사진 동의 없음'. 이 타입이 없으면 카드마다 `memberConsentStates`를 따로 읽게 되어 AC-DF-111.7(가드는 한 곳만 읽는다)을 어긴다
+- 지금 만든다:
+  - `TrainerDomain/Consent/EffectiveConsent.swift`: 카드 구현 노트의 `EffectiveConsentValue { granted, awaitingConsent, missing, rejected }`와 `EffectiveConsent`. MVP에서 값을 계산하는 유형은 ①②③(`required`·`healthData`·`bodyImaging`)뿐이다. ④⑤(`sharing`·`research`)는 받지 않으므로 항상 `.missing`이다. 화면이 쓰는 파생 값: `coreGranted`(①②③ 모두 `granted`), `canAttachPhoto`(②가 서버에서 `granted`. AC-DF-111.2 조건 함수, DF-128이 씀), `canCapturePosture`(②③ 모두 서버에서 `granted`, DF-204가 씀), `chipState`(TR-02·TR-03 칩: '동의 ①②③' / '동의 필요' / '동의 확인 대기')
+  - `TrainerDomain/Consent/ConsentState.swift`: `memberConsentStates/{memberKey}` 스냅샷 값 타입(①②③의 `granted`·`documentVersion`만 읽는다, V1-05 §4.12). S07 DF-110이 이 타입을 다시 만들지 않고 쓴다
+  - `SyncEngine/EffectiveConsentResolver.swift`: 순수 함수 `resolve(server: ConsentState?, captures: [LocalConsentCapture]) -> EffectiveConsent`(TC-111-06 표: 서버 granted/없음 × 로컬 캡처 없음/`pending`/`failed`)와 회원별 `AsyncStream<EffectiveConsent>`. 서버 상태는 프로토콜 `ConsentStateSource.observe(member:) -> AsyncStream<ConsentState?>`로 주입받는다. S06에는 가짜 공급자로 테스트하고, S07 DF-110의 `FirestoreConsentService.observeState`가 이 프로토콜을 구현해 연결한다. 로컬 캡처는 DF-014 `LocalConsentCapture`(`captureState`)를 LocalStore에서 관찰한다
+  - 테스트: TC-111-06(①②③ 표), ④⑤가 항상 `.missing`인 단위 1건, 파생 값(`coreGranted`·`canAttachPhoto`·`canCapturePosture`·`chipState`) 표 단위 테스트. AC-DF-111.6(로컬 캡처만 있으면 칩 '동의 확인 대기')은 DF-113 칩 스냅샷에서, AC-DF-111.7은 MVP 카드(DF-110·113·127·128·129·204) 코드 검토에서 확인한다
+- MVP 뒤로 미룬다: ④⑤ 계산, 동의 거부 뒤 '다시 받기' UX(AC-DF-111.3, `consent.rejected.retake`. MVP에서 `rejected`는 칩에 '동의 필요'로 보인다), 철회(DF-112)와 재동의·재확인 UX(AC-DF-110.6 '재동의 필요', F-PRIV-03.8), 앱 활성화 시 `LocalRetention.purge` 호출과 TR-01 안내(AC-DF-111.4, `RetentionOnActivate`. TR-01은 MVP에서 숨긴다, DF-017 MVP 절), 오프라인 등록·동의·기록 순서 통합 시나리오(AC-DF-111.1·111.5, `AwaitingConsentIT`, TC-111-07 실기기). Outbox `dependsOn` 연결 자체는 DF-110 구현 노트대로 DF-110이 만든다
+- MVP에서 기다리지 않는 의존: DF-110(S07). 서버 상태를 `ConsentStateSource` 프로토콜로 받으므로 S06에 먼저 만들 수 있다. DF-015는 같은 S06이다(이 조각은 SyncEngine의 `awaitingConsent` 차단 로직을 쓰지 않고 캡처 상태만 읽는다)
+- 분석 이벤트 없음
 
 ---
 
@@ -1085,8 +1099,9 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 ### MVP 범위(DEC-22)
 
 - MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
-- 왜 필요한가: TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가)
-- 지금 만든다: 카드 전체 범위
+- 왜 필요한가: TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가). MVP 앱의 첫 화면이다(DF-017 MVP 절)
+- 지금 만든다: 카드 전체 범위. 단 AC-DF-113.2 동의 칩은 MVP에서 **3상태**('동의 ①②③' / '동의 필요' / '동의 확인 대기')이고 DF-111 MVP 조각(S06)의 `EffectiveConsent.chipState`만 읽는다. 회원별 `memberConsentStates` 리스너는 DF-110 `FirestoreConsentService`가 `ConsentStateSource`로 공급하며, 이 화면이 Firestore를 따로 읽지 않는다. TC-113-02는 3상태 스냅샷이다
+- MVP 뒤로 미룬다: '재동의 필요' 칩(`consent.state.revisedPending`, DF-110 AC-DF-110.6 재동의가 MVP 뒤), 행의 '오늘에 추가'(DF-125)
 
 ---
 
@@ -2048,7 +2063,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 - MVP 스프린트: S09(원래 계획 S11). 상태: 할 일
 - 왜 필요한가: 흐름 2: TR-11 신체조성 수기 입력
-- 지금 만든다: 카드 전체 범위(분석 이벤트 AC 제외)
+- 지금 만든다: 카드 전체 범위(분석 이벤트 AC 제외). AC-DF-127.4의 동의 판단(② 없음 → 저장 비활성, `awaitingConsent` → 로컬 저장만)은 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-127.10(`bodycomp_record_saved`)과 TC-127-11은 만들지 않는다
 
 ---
@@ -2118,7 +2133,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 - MVP 스프린트: S09(원래 계획 S11). 상태: 할 일
 - 왜 필요한가: 흐름 2: 결과지 사진 첨부·정정·기기 변경 경고
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위. AC-DF-128.4(`awaitingConsent`면 사진 첨부 비활성)는 DF-111 MVP 조각(S06)의 `EffectiveConsent.canAttachPhoto`를 쓴다(새로 만들지 않는다)
 
 ---
 
@@ -2193,7 +2208,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 - MVP 스프린트: S10(원래 계획 S12). 상태: 할 일
 - 왜 필요한가: 흐름 2: TR-12 줄자 둘레 반복 입력
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위. AC-DF-129.10(② 없음 → 입력 비활성)은 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다
 
 ---
 
@@ -3170,4 +3185,4 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | v1.0(검토 반영) | 2026-09-24 | 시드 경로·ID·에뮬레이터 포트를 V1-10과 통일(§5.4, DF-107, AC-DF-107.7), 문구 키를 덱 이름으로 정리하고 덱 추가 요청 표 신설(§5.3), DF-116 진입점을 TR-03 셸(DF-113)로 바꾸고 입력 한도 규칙 확정(AC-DF-116.4·116.8), DF-114·DF-127·DF-129 진입점 기준 추가, 누락 의존 보강(DF-109·114·116·127), ASM-P1a-48~50, CF-20~22 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 이슈 JSON 참조를 `tool/backlog/issues.json`으로, 순수 타깃 경로를 `Packages/TrainerCore`로 고침(LocalStore는 TrainerKit) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: Outbox kind·LocalPendingMemberDraft·FilterPreference(R5), DF-114 인덱스 2개, syncRecordAccessKeysCore 호출, MIG-08 ①을 DF-100으로, 경로 표(R4), CF-18·19·20·22 갱신, 가정 ID 참조(R10), ASM-P1a-51 | — | 없음 |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: MVP 스토리 17건에 `agent/` 라벨(DF-109 codex, 나머지 claude), 분석 이벤트 AC는 MVP 뒤(DF-110·DF-116·DF-122·DF-123·DF-127 MVP 절), 파일 머리 DEC-22 범위 안내. 리뷰 반영 2: AC-DF-104.9·TC-104-09(트레이너 앱 서울 버킷 `StorageFactory`·`StorageBucket.seoul`, 에뮬레이터는 기본 버킷), DF-104·DF-114·DF-120·DF-109·DF-130 MVP 절 보강(DF-114 라우트 자리와 재배포, DF-120 NRS·부위 빈 슬롯, DF-109 서명 필수 검증 실회원 전 복원, DF-130 둘레 추이는 DF-215). | #113 | 없음 |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: MVP 스토리 17건에 `agent/` 라벨(DF-109 codex, 나머지 claude), 분석 이벤트 AC는 MVP 뒤(DF-110·DF-116·DF-122·DF-123·DF-127 MVP 절), 파일 머리 DEC-22 범위 안내. 리뷰 반영 2: AC-DF-104.9·TC-104-09(트레이너 앱 서울 버킷 `StorageFactory`·`StorageBucket.seoul`, 에뮬레이터는 기본 버킷), DF-104·DF-114·DF-120·DF-109·DF-130 MVP 절 보강(DF-114 라우트 자리와 재배포, DF-120 NRS·부위 빈 슬롯, DF-109 서명 필수 검증 실회원 전 복원, DF-130 둘레 추이는 DF-215). 리뷰 반영 3: DF-111 최소 조각을 `scope/mvp`(S06, `agent/claude`)로 넣고 MVP 절 추가(`EffectiveConsent`·`ConsentState`·`EffectiveConsentResolver`, ①②③만, `ConsentStateSource` 주입), DF-110·DF-113·DF-127·DF-128·DF-129 MVP 절이 이 조각을 읽도록(DF-113 칩 3상태, '재동의 필요'와 DF-110 AC-DF-110.6은 MVP 뒤). | #113 | 없음 |

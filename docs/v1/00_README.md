@@ -3,12 +3,12 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-00 |
-| 버전 | v1.0.2 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
 | 근거 PRD 절 | [PRD_V1](../PRD_V1.md) 전체. 특히 §0.3 문서 관계, §0.5 ID 체계, §12 단계·게이트, §13 열린 질문·가정 |
-| 관련 에픽·스토리 | EP-00~EP-23 / DF-001(문서 병합), DF-002·DF-902(백로그 생성), DF-901(이식 기준선), DF-913(Q-09 결정) |
+| 관련 에픽·스토리 | EP-00~EP-23 / DF-001(문서 병합), DF-002·DF-902(백로그 생성), DF-901(이식 기준선), DF-913(Q-09 결정), DF-930(동결 선언), DF-942·DF-043(서울 리전 전환, DEC-19) |
 | 변경 규칙 | [문서 변경](01_AGILE_WORKING_AGREEMENT.md#문서-변경) |
 
 ## 목차
@@ -75,12 +75,12 @@ D-FET Coach v1을 **바로 개발에 들어갈 수 있는 상태**로 만든 개
 | V1-00 | [00_README.md](00_README.md) | 이 안내. 읽기 순서, 문서 지도, S01 체크리스트, 결정 기록, 이식 기준선, AS-DEV·Q-DEV | 324 |
 | V1-01 | [01_AGILE_WORKING_AGREEMENT.md](01_AGILE_WORKING_AGREEMENT.md) | 1인 PO·개발 + AI 에이전트 작업 합의: 역할, 스프린트 리듬·달력, DoR·DoD, 추정·WIP, 브랜치·커밋·PR, 에이전트 작업 흐름, 게이트 편입, 동결 예외, Projects, 문서 변경 | 744 |
 | V1-02 | [02_PRODUCT_BACKLOG.md](02_PRODUCT_BACKLOG.md) | 백로그 총괄: 에픽 24개, 전체 스토리 색인(키·점수·스프린트·의존의 정본), PRD 추적 매트릭스, 임계 경로 | 1,573 |
-| V1-02-P0 | [backlog/P0.md](backlog/P0.md) | P0 정리·기반 스토리 카드(DF-001~042) | 4,271 |
+| V1-02-P0 | [backlog/P0.md](backlog/P0.md) | P0 정리·기반 스토리 카드(DF-001~043) | 4,271 |
 | V1-02-P1a | [backlog/P1a.md](backlog/P1a.md) | P1a 알파-기록 카드(DF-100~144) | 3,042 |
 | V1-02-P1b | [backlog/P1b.md](backlog/P1b.md) | P1b 알파-평가 카드(DF-200~227) | 2,014 |
 | V1-02-P2P3 | [backlog/P2_P3.md](backlog/P2_P3.md) | P2 베타·P3 센터 출시 카드(DF-300~391) | 3,068 |
 | V1-02-V2 | [backlog/V2.md](backlog/V2.md) | V2 보류 항목과 재검토 조건(DF-500~508) | 452 |
-| V1-02-OA | [backlog/OWNER_ACTIONS_AND_GATES.md](backlog/OWNER_ACTIONS_AND_GATES.md) | 소유자 행동·외부 게이트 카드(DF-901~941), 게이트 카탈로그 | 1,162 |
+| V1-02-OA | [backlog/OWNER_ACTIONS_AND_GATES.md](backlog/OWNER_ACTIONS_AND_GATES.md) | 소유자 행동·외부 게이트 카드(DF-901~942), 게이트 카탈로그 | 1,162 |
 | V1-03 | [03_RELEASE_AND_SPRINT_PLAN.md](03_RELEASE_AND_SPRINT_PLAN.md) | 달력·용량, 단계 로드맵, 게이트 타임라인, 스프린트별 계획, 주경로, 플래그 개방, 릴리스 열차, 버퍼·재계획·롤백 | 447 |
 | V1-03-S01 | [sprints/SPRINT_01.md](sprints/SPRINT_01.md) | 스프린트 01 계획(레인 배정, 일자별 계획, 작업 분해, 첫 작업 지시서, 데모·위험) | 735 |
 | V1-04 | [04_ARCHITECTURE.md](04_ARCHITECTURE.md) | 구성도, 저장소 배치, TrainerCore·TrainerKit 모듈과 의존, 이식 대응, 데이터 흐름, 로컬 우선 저장, 인증·권한, 환경, NFR 대응, ADR 색인 | 1,275 |
@@ -183,6 +183,7 @@ S01은 2026-09-28(월)에 시작한다. 상세 계획은 [SPRINT_01](sprints/SPR
 - [x] 이 문서의 [결정 기록](#결정-기록) 중 남은 '확인 필요' 항목(DEC-09 저장소 공개 범위)을 확정한다(2026-09-25, 공개 유지).
 - [ ] 도구 설치 확인: Xcode 16.x, XcodeGen 2.44.1(릴리스 zip, SHA-256 확인. brew 금지), Node 22, Java 21, Flutter 3.38.2, firebase-tools 15.x 이상, jq, gh([V1-13 §2](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#2-도구와-버전)).
 - [ ] `gh auth refresh -s project,read:project`로 보드 권한을 준비한다(DF-902용).
+- [ ] **운영 데이터 리전 = 서울(DEC-19).** DF-942(소유자, S01 화): 테스트 데이터만 있는 `nam5` `(default)`를 지우고 `asia-northeast3`에 다시 만들고, 서울 Storage 버킷을 만들어 연결한다. 코드 쪽 버킷 명시는 DF-043(S02). 실데이터와 첫 규칙 배포(DF-038 프로브, DF-931)는 이 둘 뒤에만 한다.
 - [ ] 스테이징 문서군을 저장소로 옮길 준비: DF-001 브랜치에서 `devdocs/`를 저장소 루트 기준 같은 경로로 복사한다(`docs/v1/**`, `.github/**`, `tool/backlog/**`).
 
 ### 1일차(09-28 월)
@@ -193,14 +194,14 @@ S01은 2026-09-28(월)에 시작한다. 상세 계획은 [SPRINT_01](sprints/SPR
 
 ### 주중
 
-- [ ] 화: DF-901 PR·CI 4 job·병합, main 보호 규칙. DF-001·DF-003 병합. DF-908 법률 의뢰서 초안.
-- [ ] 수: DF-903 Firebase 앱 등록·App Attest, DF-904 Q-22 확인, DF-930 동결 선언, 16:00 게이트 점검.
+- [ ] 화: DF-901 PR·CI 4 job·병합, main 보호 규칙. DF-001·DF-003 병합. DF-942 운영 DB·Storage 서울 전환(DEC-19). DF-908 법률 의뢰서는 소유자 보류(2026-09-25): S03 발송 계획, 최신 10-30.
+- [ ] 수: DF-903 Firebase 앱 등록·App Attest, DF-904 Q-22 확인, 16:00 게이트 점검. DF-930 동결 선언은 2026-09-25 [G-01 증빙](evidence/G-01.md#동결-선언)에 기록했다.
 - [ ] 목: DF-002·DF-004 병합, DF-913 Q-09 결정(이 문서 [결정 기록](#결정-기록)에 기록).
-- [ ] 금: DF-008·DF-005 병합, DF-908 발송(최신 10-08), DF-902 백로그 생성([TL-01 §3](../../tool/backlog/README.md#3-소유자-실행-순서)), 필수 체크 추가, 15:00 데모·15:20 회고.
+- [ ] 금: DF-008·DF-005 병합, DF-902 백로그 생성([TL-01 §3](../../tool/backlog/README.md#3-소유자-실행-순서)), 필수 체크 추가, 15:00 데모·15:20 회고.
 
 ### S01 완료 기준(요지)
 
-G-01 증빙, contracts `--check` 초록, trainer-app 워크플로 초록, SOAP 픽스처, docs/v1 병합과 헤더 린트, 백로그 생성, 소유자 행동 5건 기록([SPRINT_01 §2](sprints/SPRINT_01.md#2-스프린트-목표와-성공-기준)).
+G-01 증빙, contracts `--check` 초록, trainer-app 워크플로 초록, SOAP 픽스처, docs/v1 병합과 헤더 린트, 백로그 생성, 소유자 행동 5건 기록(DF-908 대신 DF-942)([SPRINT_01 §2](sprints/SPRINT_01.md#2-스프린트-목표와-성공-기준)).
 
 ## 결정 기록
 
@@ -226,10 +227,12 @@ G-01 증빙, contracts `--check` 초록, trainer-app 워크플로 초록, SOAP �
 | DEC-16 | XcodeGen은 2.44.1 릴리스 zip(SHA-256 확인)으로 설치하고 brew를 쓰지 않는다 | 결정 | 2026-09-24 | [V1-13 §2](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#2-도구와-버전), SPRINT_01 ASM-S01-09 |
 | DEC-17 | 추가 제안(`status/needs-decision`)은 채택 전까지 스프린트 합계에서 뺀다 | 결정 | 2026-09-24 | [02 §8.8.2](02_PRODUCT_BACKLOG.md#882-채택-시-적재-영향미리-계산), K-03 |
 | DEC-18 | 문서별 가정 ID는 `ASM-<문서>-NN`(ASM-01-NN, ASM-06-NN, ASM-P2P3-NN, ASM-V2-NN 등), 문서 로컬 충돌 ID는 PRD C-01~C-06과 겹치지 않게 `CF-<문서>-NN`(또는 이미 쓰는 X-NN·CF-NN·C-07~09-NN) | 결정 | 2026-09-24 | [ID 체계와 헤더 표준 요약](#id-체계와-헤더-표준-요약) |
+| DEC-19 | 운영 데이터 리전 = **서울 `asia-northeast3`**. 운영 Firestore `(default)`(현재 `nam5` 미국 멀티 리전)에는 테스트 데이터만 있으므로 소유자가 지우고 같은 ID `(default)`를 `asia-northeast3`에 다시 만든다(소유자 승인 운영 작업, 에이전트는 하지 않는다: DF-942). Storage 기본 버킷은 위치를 바꿀 수 없으므로 서울 버킷을 새로 만들어 Firebase에 연결하고, 앱·admin_web·Functions·`firebase.json`이 그 버킷을 명시하게 한다(DF-043). 미사용 Enterprise DB 2개(`asia-east1`)의 유지·삭제는 소유자 결정으로 남긴다 | 결정(소유자 2026-09-25) | 2026-09-25 | K-17 해소. PRD Q-08의 답(Firestore·Storage 서울, Auth·분석 SDK는 AS-19대로 국외 전제)이며 PRD 반영은 소유자가 직접 한다. Firestore 트리거 리전(P0 ASM-P0-10, ADR-017 `FIRESTORE_TRIGGER_REGION`, Q-DEV-04-01) = `asia-northeast3`. 실데이터와 첫 규칙 배포(DF-038 프로브, DF-931)는 DF-942·DF-043 뒤 |
+| DEC-20 | 스프린트 PR은 **CI 필수 체크가 초록이고 적대적 리뷰가 승인하면 AI가 rebase 병합한다**(소유자 위임 2026-09-25). 구현 에이전트는 자기 PR을 병합하지 않는다. 운영 배포, `create_github_issues.sh --apply`, 이관 `--apply`, PRD 수정, D1~D4 변경은 계속 소유자만 한다 | 결정(소유자 2026-09-25) | 2026-09-25 | [01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계), 01 PR 규칙·DoD D12. ADR-014(스쿼시)·PR 템플릿·AGENTS.md·CLAUDE.md 문구와의 차이는 K-18 |
 | Q-09 | 2026 과업지시서와의 관계 | 미결(DF-913, S01 목). 결정 전 기본값: 자체 제품 로드맵, 과업 산출물 양식 미적용 | — | PRD §13.3. PRD 반영은 소유자가 직접 |
 | Q-10 | 트레이너 앱 디자인 토큰 | 미결(DF-914, S06). 기본값: 중립 회색 + 브랜드 블루, 초록은 저장·완료 상태 전용 | — | PRD §8.5 |
 | Q-22 | 트레이너 앱 번들의 iPhone 배포 이력 | 미결(DF-904, S01 수). 기본값: iPad 전용(`TARGETED_DEVICE_FAMILY "2"`) | — | ADR-001, 03 T-07 |
-| Q-24 | 코칭 기록 최대 보유기간 N | 미결(DF-908 법률 자문). 결정 없이는 G-04 미통과 | — | PRD Q-24, DF-133은 N 미설정 시 파기 분기 비활성 |
+| Q-24 | 코칭 기록 최대 보유기간 N | 미결(DF-908 법률 자문, 소유자 보류 2026-09-25: S03 발송 계획, 최신 10-30). 결정 없이는 G-04 미통과 | — | PRD Q-24, DF-133은 N 미설정 시 파기 분기 비활성 |
 
 ## 이식 기준선
 
@@ -276,7 +279,7 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | Q-DEV-04 | `markSummaryViewed`와 `firstViewedAt`(M-06·M-07 서버 기록)을 승인하는가 | 미구현, M-06·M-07은 null | P2 진입 | [06 §14.3](06_API_SPEC.md), 추가 제안 DF-335 |
 | Q-DEV-05 | 동의 상태 문서가 없는 레거시 회원 기록의 트레이너 열람을 언제 끊는가 | 끊지 않음(06 ASM-06-31) | G-04 | [06 §14.3](06_API_SPEC.md) |
 | Q-DEV-06 | 트레이너 계정 탈퇴·정리 절차 | 자기 삭제 거부(06 ASM-06-16) | P3 진입 | [06 §14.3](06_API_SPEC.md) |
-| Q-DEV-04-01·02 | 트리거 리전, 공용 iPad 다중 트레이너 | 04 표 참조 | Q-08·G-09 | [04](04_ARCHITECTURE.md) |
+| Q-DEV-04-01·02 | 트리거 리전, 공용 iPad 다중 트레이너 | 04 표 참조. 트리거 리전(04-01)은 DEC-19로 `asia-northeast3`(DF-942 뒤) | Q-08·G-09 | [04](04_ARCHITECTURE.md) |
 | Q-DEV-08-01~05 | 회원 앱 분석 SDK, 재확인 기한 경과, 열람 결과 전달, 기존 금지어 정리, P3 역할 claim | 08 표 참조 | S04~P3 | [08](08_MEMBER_APP_AND_ADMIN_SPEC.md) |
 | Q-DEV-11-01~03 | 위생 처리 v1 문서 파기, freeze-exception CI 강제, 적용일 공지 채널 | 11 표 참조 | DF-924 등 | [11](11_MIGRATION_RUNBOOK.md) |
 | Q-DEV-12-01~06 | M-02 해석, 회원 앱 분석 SDK, M-G2 대조 스크립트, B.8 문장 추가, 4축 부정문 고지, 공유 알림 경로 | 12 표 참조 | S04~P3 | [12](12_COPY_ANALYTICS_AND_LINT.md) |
@@ -305,7 +308,8 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | K-14 | BodyPath 결과 패키지 UTType 식별자 `com.<소유자 계정명>.bodyscan.result-package`(P2_P3 DF-301·DF-320, ASM-P2P3-03)는 BodyPath 실제 `bundleIdPrefix`에서 왔고 소유자 개인 이름 로마자 표기를 포함한다. 공개 저장소 문서·앱 Info.plist에 그대로 노출된다 | 결정: DF-301(S23-S24) 전에 식별자를 조직 접두(예: `kr.co.dfet`)로 바꿀지. 바꾸면 BodyPath 앱의 export 선언도 같이 바꾼다 |
 | K-15 | V1-03 §14.2의 문서 로컬 차이 ID `D-1`~`D-7`이 PRD 결정 ID(D1~D4 등)와 모양이 비슷하다. R10 범위(ASM-NN·C-NN)는 아니어서 두었다 | 작업(낮음): 다음 03 개정 때 `CF-03-NN`으로 바꿀지 |
 | K-16 | Flutter 3.47 전환(기술부채). PR #1 CI에서 최신 stable(3.47)로 돌리자 ① `SizeTransition.axisAlignment` deprecation으로 `flutter analyze` 실패(`lib/screens/dashboard/today_signal_screen.dart:426`, 대체값 `alignment: AlignmentDirectional.topStart`) ② 위젯 테스트 다수 실패(`protein_foods_dialog_test`, `clinical_demo_app_test` 등) ③ iOS SPM 기본 활성화로 FlutterFire 플러그인 버전 혼재 충돌(`firebase_auth` 6.1.0 ↔ `firebase_storage` 13.0.4). 그래서 CI·로컬을 3.38.2로 고정하고 iOS는 CocoaPods로 빌드한다. 전환 시 FlutterFire 전체를 같은 릴리스로 올리고(현재 `firebase_core` 4.2.1, 최신 4.15) SPM 설정을 다시 켠다 | 작업: 백로그 기술부채 후보로 소유자가 스토리 채택(2026-09-25 기록) |
-| K-17 | 운영 Firebase 상태(2026-09-25 읽기 전용 조회, [G-01 후속 1](evidence/G-01.md#후속-조치)): 코드가 쓰는 Firestore `(default)` 위치가 `nam5`(미국)이고, Firestore·Storage 운영 규칙이 전부 거부다. 미사용 Enterprise DB 2개(`asia-east1`)가 있다. PRD Q-08의 리전 답이 '미국'으로 확정됐다 | 결정: ① 실사용 여부 확인 뒤 규칙 첫 배포 시점(G-03 통과 후) ② 국외이전 고지(G-09)로 갈지, 아시아 리전 새 DB로 옮길지 ③ 미사용 DB 정리 |
+| K-17 | 운영 Firebase 상태(2026-09-25 읽기 전용 조회, [G-01 후속 1](evidence/G-01.md#후속-조치)): 코드가 쓰는 Firestore `(default)` 위치가 `nam5`(미국)이고, Firestore·Storage 운영 규칙이 전부 거부다. 미사용 Enterprise DB 2개(`asia-east1`)가 있다 | 결정(DEC-19, 2026-09-25): ① 운영 `(default)`에는 테스트 데이터만 있다(실사용 없음). 규칙 첫 배포는 계획대로 G-03 뒤(DF-038 프로브 S03, DF-931 S08) ② 국외이전 고지 대신 서울 리전으로 옮긴다: DF-942(소유자, S01)가 `(default)` 재생성·서울 버킷을, DF-043(S02)이 버킷 명시를 맡는다. Auth·분석 SDK의 국외 처리 고지(G-09, AS-19)는 그대로 필요하다 ③ **남은 소유자 결정**: 미사용 `asia-east1` Enterprise DB 2개의 유지·삭제(비용), 기존 미국 기본 버킷의 테스트 파일 정리. 후속 작업: 운영 DB가 비게 되므로 MIG-02 실사(DF-907, S04)와 MIG-03~07 적용(DF-924, S09)의 운영 대상 범위를 S04 계획 전에 다시 본다 |
+| K-18 | DEC-20(AI rebase 병합)이 기존 문구와 다르다: ADR-014 '병합은 스쿼시', PR 템플릿 머리말('에이전트는 draft로 열고, 병합은 소유자만 스쿼시로 한다')과 '병합 전 확인(소유자)' 절, `AGENTS.md`·`CLAUDE.md` v1 절('main 직접 푸시·병합' 금지), 02 §2.1 '스쿼시 제목', V1-11 스위치 PR `gh pr merge --squash`, SPRINT_01 ASM-S01-07('이후 PR은 스쿼시') | 작업: 01·V1-13 §7·SPRINT_01은 이 PR(2026-09-25)에서 맞췄다. ADR-014를 대체하는 새 ADR(병합 방식·병합 주체)과 PR 템플릿·AGENTS.md·CLAUDE.md·02 §2.1·V1-11 문구 정리는 후속 문서 PR(구현 에이전트의 자기 PR 병합 금지는 그대로라 AGENTS.md·CLAUDE.md의 금지 문구는 틀리지 않는다) |
 
 ## 규모 요약
 
@@ -314,8 +318,8 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | 구분 | 건수 | 점수 |
 |---|---|---|
 | 에픽 | 24 | — |
-| 채택 항목 전체 | 190(story 131, chore 16, spike 4, owner-action 39) | 462 |
-| P0 | 53 | 104 |
+| 채택 항목 전체 | 192(story 131, chore 17, spike 4, owner-action 40) | 464 |
+| P0 | 55 | 106 |
 | P1a | 48 | 124 |
 | P1b | 27 | 79 |
 | P2 | 41 | 116 |
@@ -323,7 +327,7 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | V2(미추정) | 6 | 0 |
 | 추가 제안(채택 대기) | 16 | 20 |
 
-마일스톤 배정(채택 항목): P0 45건 83점(S01~S05), P1a 56건 145점(S06~S15, P0 키 8건 포함), P1b 27건 79점(S14~S18), P2 41건 116점, P3 15건 39점, V2 6건. 스프린트는 S01~S18이 1주 단위이고 S19 이후는 2~3주 묶음 창(잠정)이다.
+마일스톤 배정(채택 항목): P0 47건 85점(S01~S05), P1a 56건 145점(S06~S15, P0 키 8건 포함), P1b 27건 79점(S14~S18), P2 41건 116점, P3 15건 39점, V2 6건. 스프린트는 S01~S18이 1주 단위이고 S19 이후는 2~3주 묶음 창(잠정)이다.
 
 ## 용어 빠른 참조
 
@@ -351,3 +355,4 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | v1.0.1(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트, 정합 편집) | 교차 정합성 조정. 소유자 결정(DEC-01~05) 반영, DEC-10~18(R2~R10) 기록, DEC-08 확정(R1), K-01·K-02·K-05 해소, K-10~K-12 추가, AS-DEV-03 확인, 가정·충돌 ID 네임스페이스 규칙 |
 | v1.0.2 | 2026-09-25 | CJH(AI 에이전트, MIG-01 실행) | 이식 기준선 tip 해시 기입, 공개 범위 결정(DEC-09: 공개 유지, PRD·문서 공개, 보관 브랜치 비푸시) 반영은 [G-01 증빙](evidence/G-01.md) |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트, 릴리스 검증) | 릴리스 검증 패스: `issues.json` 재생성·검증기·가짜 gh 테스트 통과, 헤더·링크·스테일 패턴·스토리 정합·용량·개인정보 점검. K-01·K-02·K-05 해소 내용 구체화, K-13~K-15 추가, '저장소 공개 상태 주의' 절 추가. 기계적 수정: S19-S20 작업일 8일·용량 32 반영(01·02·03), 순수 타깃 경로 TrainerCore(12, P1a DF-126), 합성 ID(08, 09, P2_P3), 픽스처 복사 문구(SPRINT_01), TodayListEntry 필드(P1a DF-125), bare ASM 참조(09 ASM-111→ASM-P1a-11, 12·analytics_events.json ASM-140→ASM-P1a-40, build_issues.mjs ASM-17→ASM-01-17), 07 로컬 절대 경로 제거 |
+| v1.1 | 2026-09-25 | CJH(AI 에이전트, 소유자 결정 기록) | 소유자 결정 2026-09-25 기록: DEC-19(운영 데이터 리전 서울 `asia-northeast3`, K-17 해소, DF-942·DF-043 추가), DEC-20(스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 AI가 rebase 병합), DF-908 법률 의뢰 보류(S03 발송 계획, 최신 10-30), DF-930 동결 선언 기록. S01 체크리스트, Q-24·Q-DEV-04-01, 규모 요약(192건·464점) 갱신, K-18 추가 |

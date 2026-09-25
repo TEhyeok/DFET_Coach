@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-01 |
-| 버전 | v1.0 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -47,7 +47,7 @@
 
 1. **게이트가 달력보다 우선한다**(PRD §12). 날짜는 잠정이고, 단계 전환·실데이터 투입·플래그 개방은 게이트 증빙이 있어야만 한다.
 2. **외부 게이트는 코딩을 막지 않는다.** 법률(G-04, G-09), 식약처(G-05a/b), IRB(G-06, G-07)가 늦어져도 합성 데이터와 에뮬레이터로 개발은 계속한다. 막히는 것은 단계 전환, 실데이터, 플래그 개방뿐이다.
-3. **검토 역량이 속도의 상한이다.** 에이전트는 코드를 빨리 만들지만, 병합 판단과 규칙·개인정보 경로 검토는 소유자 한 사람이 한다. 모든 추정·WIP 규칙은 소유자 검토 시간을 기준으로 잡는다.
+3. **검토 역량이 속도의 상한이다.** 에이전트는 코드를 빨리 만들지만, 규칙·개인정보 경로의 정독과 되돌림 판단은 소유자 한 사람이 한다. 스프린트 PR의 병합 실행은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)으로 AI에 위임했다([에이전트 권한 경계](#에이전트-권한-경계)). 모든 추정·WIP 규칙은 소유자 검토 시간을 기준으로 잡는다.
 
 ---
 
@@ -59,10 +59,11 @@
 |---|---|---|---|
 | PO(제품 책임자) | 소유자 CJH | 백로그 우선순위, 스토리 수용·반려, 단계 종료 판정, PRD 개정 | PRD 수정, 우선순위 결정, 플래그 개방 |
 | 개발자·통합자 | 소유자 CJH | 에이전트 작업 지시서 작성, 통합, 실기기 확인, 에이전트가 못 하는 작업(서명, 콘솔, 실기기) | 모든 경로 쓰기 |
-| 리뷰어·병합자 | 소유자 CJH | 모든 PR 검토, 민감 경로 diff 직접 읽기, 스쿼시 병합 | `main` 병합(유일) |
+| 리뷰어 | 소유자 CJH | 위험 라벨 PR의 민감 경로 diff 정독(병합 전 또는 병합 뒤), 되돌림 결정, DEC-20 위임 철회 | `main` 병합, 되돌림(revert) |
+| 병합 담당 AI | 오케스트레이션 AI 세션(구현 에이전트와 다른 세션, DEC-20) | 적대적 리뷰 결과 확인, 조건 충족 시 스프린트 PR rebase 병합, 병합 근거 기록 | 조건을 모두 충족한 스프린트 PR의 rebase 병합만 |
 | 게이트 책임자 | 소유자 CJH | G-01~G-10 증빙 수집, 외부 기관 접수, EP-00 트랙 운영 | 게이트 판정 기록 |
 | 배포자·이관 실행자 | 소유자 CJH | 규칙·인덱스·Functions 배포, TestFlight 업로드, MIG-02~10 운영 실행 | `firebase deploy`, 운영 데이터 접근 |
-| 구현 에이전트 | Claude Code, Codex | 작업 지시서 범위 안의 구현, 테스트 작성·실행, PR 초안 작성, 완료 보고 | 자기 브랜치 푸시, draft PR 생성 |
+| 구현 에이전트 | Claude Code, Codex | 작업 지시서 범위 안의 구현, 테스트 작성·실행, PR 작성, 완료 보고 | 자기 브랜치 푸시, PR 생성(자기 PR 병합 금지) |
 | 외부 자문 | 법률 자문, 규제 자문, IRB, 변리 자문 | G-04·G-05b·G-06·G-07·Q-17 의견 | — (소유자가 결과를 기록) |
 | 협업자 | Windows/GPU 협업자 | BodyPath 재구성 서버·연구 트랙 협업. v1 런타임은 GPU 경로에 의존하지 않는다(PRD §0.1) | 가명 처리 데이터만, 서면 약정 후(PRD §12.6) |
 
@@ -72,12 +73,13 @@
 
 | 구분 | 허용 | 금지 |
 |---|---|---|
-| Git | `claude/DF-NNN-<slug>`·`codex/DF-NNN-<slug>` 브랜치(스프린트 문서 초안은 `claude/sprint-NN`·`codex/sprint-NN`) 생성·푸시, draft PR 생성 | `main` 직접 푸시, 병합, 자동 병합 설정, force-push to `main`, 태그 생성 |
+| Git | `claude/DF-NNN-<slug>`·`codex/DF-NNN-<slug>` 브랜치(스프린트 문서 초안은 `claude/sprint-NN`·`codex/sprint-NN`) 생성·푸시, PR 생성(draft 또는 Ready) | `main` 직접 푸시, 자기 PR 병합, 자동 병합(auto-merge) 설정, force-push to `main`, 태그 생성 |
+| 병합(DEC-20, 병합 담당 AI만) | 스프린트 PR의 **rebase 병합**. 조건을 모두 충족할 때만: ① CI 필수 체크 전부 초록 ② 구현 에이전트와 다른 세션의 적대적 리뷰가 승인(위험 라벨 PR은 [소유자 검토 체크](#소유자-검토-체크위험-라벨별) 표의 확인 방식을 리뷰가 대신 수행하고 결과에 적는다) ③ `needs-device-test`면 실기기 기록(V1-T09) 첨부 ④ `freeze-exception`이면 [동결 예외 절차](#동결-예외-절차) 1~3 충족 ⑤ 병합 뒤 PR에 병합 근거(체크·리뷰 링크)를 코멘트 | 스쿼시·머지 커밋 병합, 조건 미충족 병합, 필수 체크 우회(관리자 권한 병합), PRD(`docs/PRD_V1.md`) 변경·D1~D4 영향 PR 병합(소유자만), 소유자가 보류·변경 요청한 PR 병합 |
 | GitHub | 할당된 이슈에 완료 보고 코멘트 | **이슈 생성**, 라벨·마일스톤·Projects 수정, 저장소 설정 변경 |
 | 파일 | 작업 지시서의 '수정 허용 경로' | 지시서 밖 경로, `docs/PRD_V1.md`(수정 제안만), `trainer_ios/`(동결, DF-142 삭제 전까지 읽기만), `ios/Runner/AppDelegate.swift`(freeze-exception 지시서가 있을 때만) |
 | 비밀 | — | `.env*`, `functions/.secret.local`, `GoogleService-Info.plist` 값, 서명 인증서, API 키, 서비스 계정 키 **열람·출력·커밋**(ADR-019) |
 | 데이터 | 합성 가상 회원, `contracts/fixtures/**`, 에뮬레이터 | 운영 Firestore·Storage 접근, `output/`·`tmp/`·내보내기 파일·회원 데이터 열람 |
-| 실행 | 단위 테스트, 에뮬레이터, 시뮬레이터, 린트, 생성기 | `firebase deploy`, 이관 스크립트 `--apply`, TestFlight 업로드, 운영 프로젝트를 가리키는 모든 명령 |
+| 실행 | 단위 테스트, 에뮬레이터, 시뮬레이터, 린트, 생성기 | `firebase deploy`, 이관 스크립트 `--apply`, `tool/backlog/create_github_issues.sh --apply`(소유자 지시 없이), TestFlight 업로드, 운영 프로젝트를 가리키는 모든 명령. DEC-20 위임은 병합만 넓히며 이 금지는 그대로다 |
 | 의존성 | 지시서가 허용한 것만 | 새 npm·SPM·pub 의존성 추가(ADR 없이). Functions는 ADR-017, Swift 스냅샷 도구는 ADR-013에 정한 것만 |
 
 위반을 발견하면 해당 PR은 내용과 무관하게 닫고, 원인을 회고(V1-T11)에 기록한 뒤 지시서를 고친다.
@@ -231,7 +233,7 @@ DF-901은 약 1.5일 걸린다고 본다([SPRINT_01 ASM-S01-01](sprints/SPRINT_0
 | D9 | 저장이 있는 기능은 syncState를 PRD §6.0.3 문구대로만 표시하고, 오류 주입 테스트에서 `synced`가 거짓으로 뜨지 않는다(C-05, NFR-06). '저장됨' 단독 문구 0 |
 | D10 | UI 변경은 접근성 식별자·VoiceOver 라벨(A-03)·44pt 탭 대상·회색조 구분(AC-A11Y-03)을 지켰고, PRD §8.4 상태 매트릭스의 O 칸 상태를 모두 구현했다 |
 | D11 | 쿼리·권한 오류를 빈 목록으로 삼키지 않고 '불러오기 실패'와 재시도를 보인다(PRD §8.4, §9.6) |
-| D12 | 소유자가 검토하고 스쿼시 병합했다. 이슈는 Done, Projects 필드(Status, Points, Sprint)가 최신이다 |
+| D12 | DEC-20 조건(CI 초록 + 적대적 리뷰 승인)으로 rebase 병합됐다(병합 담당 AI 또는 소유자). 이슈는 Done, Projects 필드(Status, Points, Sprint)가 최신이다 |
 
 ### 필수 체크 활성화 표
 
@@ -399,15 +401,16 @@ Co-Authored-By: <에이전트 트레일러>
 - scope(선택): `trainer|member|admin|functions|rules|storage|contracts|bodypath|ci|docs|mig`.
 - 에이전트 커밋은 도구가 붙이는 Co-Authored-By 트레일러를 유지한다.
 - 스쿼시 제목: `<type>(<scope>): <요약> (DF-NNN)`. 예: `feat(contracts): add metric catalog v1 (DF-003)`.
+- DEC-20 이후 스프린트 PR은 rebase 병합이라 PR의 **모든 커밋**이 그대로 `main`에 남는다. 그래서 커밋마다 위 형식과 `Refs:` footer를 지키고, 수정용 커밋(`fixup`, `wip`)은 병합 전에 정리한다.
 
 ### PR
 
 - PR 하나 = 스토리 하나. 생성물을 뺀 변경은 400줄 이하 권장.
-- 템플릿([GH-08](../../.github/pull_request_template.md))을 모두 채운다. 에이전트는 draft로 연다. 소유자가 검토를 시작할 때 Ready로 바꾼다.
+- 템플릿([GH-08](../../.github/pull_request_template.md))을 모두 채운다. 에이전트는 로컬 검증 전이면 draft로, 지시서의 검증 명령을 모두 통과했으면 Ready로 연다(DEC-20 흐름의 적대적 리뷰는 Ready PR을 대상으로 한다).
 - 본문 첫 줄에 `Closes #<이슈 번호>`를 넣어 병합 시 이슈가 닫히게 한다.
 - 필수 체크: [필수 체크 활성화 표](#필수-체크-활성화-표)에서 PR 생성 시점에 활성인 것. 모두 활성화된 뒤(S07 이후)의 목록은 `flutter`, `functions-and-rules`, `admin-web`, `ios-no-codesign`, `trainer-app`, `contracts`, `copy-lint`, `static-guards`, 경로 조건부 `migrations`, `docs-and-backlog`, `trainer-app-emulator-it`이다.
 - **소유자 정독 경로**(라벨 rules-change, schema-change, regulatory, privacy-impact): `firestore.rules`, `storage.rules`, `functions/src/{access,consent,privacy,summaries}/**`, `functions/scripts/migrations/**`, `contracts/prohibited-terms.v1.json`, 회원 노출 문구. 이 경로는 CODEOWNERS(GH-09)로 표시한다.
-- 병합은 소유자만, 스쿼시로 한다. 자동 병합 금지.
+- 병합은 **rebase 병합**이다. 스프린트 PR은 DEC-20 조건([에이전트 권한 경계](#에이전트-권한-경계)의 '병합' 행)을 모두 충족하면 병합 담당 AI가, 그 밖의 PR(PRD·D1~D4 영향, 소유자 보류 PR)은 소유자가 병합한다. 구현 에이전트의 자기 PR 병합과 자동 병합(auto-merge) 설정은 금지다. 위험 라벨 PR은 소유자가 병합 뒤라도 정독하고, 문제가 있으면 되돌림(revert) PR로 처리한다. ADR-014(스쿼시)와의 차이는 [V1-00 K-18](00_README.md#알려진-차이와-남은-일)이다.
 - PR에 넣지 않는 것: 실데이터, 비밀, `output/`·`tmp/` 내용, 공개 URL, 배포 명령 실행 결과(배포 로그는 소유자 기록에만).
 
 ---
@@ -430,7 +433,8 @@ Co-Authored-By: <에이전트 트레일러>
      │        ├─ 변경 요청 → 지시서에 '검토 피드백' 절 추가 → 같은 에이전트 재실행(3으로)
      │        └─ 2회 반려 → 스토리 분할 또는 소유자 직접 처리, 회고에 원인 기록
      │
-[6 병합]    소유자 스쿼시 병합 → 이슈 Done → Projects 갱신 → 일일 기록
+[6 병합]    DEC-20 조건 충족 → 병합 담당 AI가 rebase 병합(병합 근거 코멘트) → 이슈 Done → Projects 갱신 → 일일 기록
+            (소유자는 위험 라벨 PR을 병합 전 또는 뒤에 정독하고, 문제가 있으면 revert)
 ```
 
 ### 작업 지시서 규칙
@@ -743,3 +747,4 @@ GitHub 템플릿: GH-01 [config.yml](../../.github/ISSUE_TEMPLATE/config.yml), G
 | v1.0 | 2026-09-24 | 최초 작성 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 백로그 도구 참조를 단일 `tool/backlog/issues.json`과 `create_github_issues.sh`(호환 진입점 `create_backlog.sh`)에 맞춤. 순수 타깃 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2). owner-action 속도 포함 여부 충돌은 00_README K-01로 이관 | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: owner-action·스파이크 점수를 약속·속도에 포함(ASM-01-16 재작성, R1), 가정 ID를 ASM-01-NN으로 변경(R10), SPRINT_01·V1-03 가정 참조 갱신, 순수 타깃 패키지 표기를 TrainerCore로 정정(R4) | — | 없음 |
+| v1.1 | 2026-09-25 | 소유자 위임 DEC-20 반영: 스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 rebase 병합(역할 표, 에이전트 권한 경계 '병합' 행, PR 규칙, 흐름 6단계, DoD D12, 커밋 규칙). 운영 배포·`--apply` 금지는 유지 | claude/docs-dec-2026-09-25 | 없음(개발 운영 규칙) |

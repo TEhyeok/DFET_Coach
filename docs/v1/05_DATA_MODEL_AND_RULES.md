@@ -1814,6 +1814,8 @@ MIG-03 이관 문서(레거시 원문 보존)
 
 ## 8 Storage 경로·규칙 초안
 
+버킷은 서울 버킷을 명시한다(DEC-19, 트레이너 앱은 DF-104). 회원 앱·admin_web·Functions·`firebase.json`의 명시는 DF-043이 한다(Functions는 `functions/src/shared/storage.js`의 `appBucket()`, 에뮬레이터에서는 기본 버킷).
+
 ### 8.1 경로 표
 
 | 경로 | 부모 문서 | contentType | 크기 상한(제안) | 클라이언트 쓰기 | 클라이언트 읽기 | 삭제 | 단계 | 등급 |
@@ -2910,3 +2912,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0(정합 패스 2) | 2026-09-24 | 시드 경로·ID 정본화(R2), 규칙 테스트 파일 배치, 기대 결과 경로 `soap_legacy/expected_v2/`, consentRecords.capturedAt, sync.reason 키, MIG-08 ① 배포 순서, 배포 명령(R7), 충돌 ID CF-05-NN(R10) | — | §9.2 consentRecords 필드 추가 제안 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 리드 결정 R2·R4·R5·R7·R10 반영, 결정 ASM-05-43~ASM-05-45 기록 | — | 없음(위 행의 §9.2 제안과 같음) |
 | v1.0.2 | 2026-09-25 | §7.3에 null·키 생략 원칙과 DF-020 구현 차이(스위치 줄 위치, `measuredAtOk` 이름, v1 delete 분기, 미사용 헬퍼 이월, 문서 조회 수) 기록 | DF-020 | 없음 |
+| v1.0.3 | 2026-09-25 | §8 머리에 서울 버킷 명시 한 줄(DEC-19, DF-043. 트레이너 앱은 DF-104) | DF-043 | 없음 |

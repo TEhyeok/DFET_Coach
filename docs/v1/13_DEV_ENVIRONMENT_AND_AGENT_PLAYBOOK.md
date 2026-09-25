@@ -149,7 +149,7 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 
 정본은 [01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계)다. 요지:
 
-- **Git·GitHub:** `main` 직접 푸시, 자기 PR 병합, 자동 병합, 태그 생성, 이슈 생성, 라벨·마일스톤·Projects·저장소 설정 변경을 하지 않는다. `tool/backlog/create_github_issues.sh --apply`를 실행하지 않는다(dry-run만). 스프린트 PR의 병합은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)을 확인한 병합 담당 AI만 rebase로 한다([01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계) '병합' 행).
+- **Git·GitHub:** `main` 직접 푸시, 자기 PR 병합, 자동 병합, 태그 생성, 이슈 생성, 라벨·마일스톤·Projects·저장소 설정 변경을 하지 않는다. `tool/backlog/create_github_issues.sh --apply`를 실행하지 않는다(dry-run만). 스프린트 PR의 병합은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)을 확인한 병합 담당 AI만 rebase로 한다. 권한 경계를 바꾸는 PR(01 권한 경계, 00 DEC 행, `.github/CODEOWNERS`, PR 템플릿, `AGENTS.md`, `CLAUDE.md`)은 소유자만 병합한다([01 에이전트 권한 경계](01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계) '병합' 행).
 - **파일:** 지시서의 수정 허용 경로 밖, `docs/PRD_V1.md`(수정 제안만), 동결 경로(`trainer_ios/`, `ios/Runner/AppDelegate.swift`, `lib/widgets/shells/trainer_shell.dart`, `lib/screens/trainer/**`, `lib/router/app_router.dart`의 `/trainer` 라우트·트레이너 리다이렉트 줄, `lib/services/firestore_service.dart`의 SOAP 함수. 정본 목록은 [G-01 동결 선언](evidence/G-01.md#동결-선언). freeze-exception 지시서가 있을 때만 예외)를 고치지 않는다.
 - **비밀:** `.env*`, `functions/.secret.local`, `GoogleService-Info.plist` 값, 서명 인증서, API 키, 서비스 계정 키를 열거나 출력하거나 커밋하지 않는다. CI 시크릿 이름(값 아님): `TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64`([ADR-019](adr/ADR-019-config-and-secrets.md)), 서명 인증서·App Store Connect API 키(DF-922·DF-139), BodyPath 읽기 자격(DF-923). 초대 코드 HMAC 키는 Secret Manager에 둔다.
 - **데이터:** 운영 Firestore·Storage, `output/`, `tmp/`, 내보내기 파일, 회원 데이터를 열지 않는다. 테스트·픽스처·스크린숏은 합성 가상 회원만 쓴다([V1-10 §5.1](10_TEST_PLAN.md#51-금지-데이터와-허용-데이터)).

@@ -3,12 +3,12 @@
 | 항목 | 값 |
 |---|---|
 | 문서 ID | V1-03-S01 |
-| 버전 | v1.0.2 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
 | 근거 PRD 절 | §11.2(MIG-01), §9.3, 부록 A·B, §10.2.1, §12.1 P0, §12.2(G-01·G-02·G-04), §13.3(Q-09, Q-22, Q-24) |
-| 관련 에픽·스토리 | EP-00(DF-901, DF-902, DF-903, DF-904, DF-908, DF-913, DF-930), EP-01(DF-001, DF-002), EP-02(DF-003, DF-004, DF-005), EP-05(DF-008) |
+| 관련 에픽·스토리 | EP-00(DF-901, DF-902, DF-903, DF-904, DF-913, DF-930, DF-942. DF-908은 S03으로 보류), EP-01(DF-001, DF-002), EP-02(DF-003, DF-004, DF-005), EP-05(DF-008) |
 | 변경 규칙 | [문서 변경](../01_AGILE_WORKING_AGREEMENT.md#문서-변경) |
 
 ## 목차
@@ -56,7 +56,7 @@
 | 3 | `trainer-app` 워크플로가 초록이다: 재생성 diff 0, macOS `swift test --package-path trainer_app/Packages/TrainerCore`, iPad 시뮬레이터 빌드·UI 스모크, plist 없는 Release no-codesign 빌드. 경로에 해당하지 않는 PR에서는 '건너뜀 = 통과'로 보고된다 | `.github/workflows/trainer-app.yml` |
 | 4 | SOAP 픽스처(v2 5개, 레거시 6개, [P0 픽스처 규약](../backlog/P0.md#fixture-contract))가 `contracts/fixtures/`에 있고 픽스처 테스트가 통과한다 | `node --test tool/contracts/test/` |
 | 5 | `docs/v1/**`가 main에 있고 헤더 린트가 통과한다. 백로그 dry-run이 통과하고, 소유자가 라벨·마일스톤·Projects를 만들었다 | ci.yml `docs-and-backlog` job, `gh label list` |
-| 6 | 소유자 행동: Firebase 앱 등록(DF-903), Q-22 확인(DF-904), 법률 자문 의뢰 발송(DF-908), Q-09 결정(DF-913), Runner 동결 선언(DF-930) | 각 증빙 문서 |
+| 6 | 소유자 행동: Firebase 앱 등록(DF-903), Q-22 확인(DF-904), 운영 DB·Storage 서울 전환(DF-942, DEC-19), Q-09 결정(DF-913), Runner 동결 선언(DF-930). 법률 자문 의뢰(DF-908)는 소유자 보류(2026-09-25)로 S03 | 각 증빙 문서 |
 
 ## 3. 용량
 
@@ -67,7 +67,7 @@
 | 약속 한도 | 18점(90%) | [03 §3.2](../03_RELEASE_AND_SPRINT_PLAN.md#3-달력-휴일과-스프린트-용량) |
 | 약속 | **18점** = 개발 15 + 소유자 행동 3 | §4. owner-action 점수는 약속과 속도에 포함(ASM-S01-13) |
 | 버퍼 | 2점 | 쓰는 순서는 03 §10.1 |
-| 소유자 실제 시간 예상 | DF-901 약 1.5일(ASM-S01-01), PR 검토 약 7.5시간(개발 15점 × 30분), 법률 의뢰서 반나절, 콘솔·ASC 1.5시간 | 5작업일 안에 들어간다 |
+| 소유자 실제 시간 예상 | DF-901 약 1.5일(ASM-S01-01), PR 검토 약 7.5시간(개발 15점 × 30분), 서울 전환 반나절(DF-942), 콘솔·ASC 1.5시간 | 5작업일 안에 들어간다 |
 | 동시 에이전트 브랜치 | 최대 3개 | [01 에이전트 규약](../01_AGILE_WORKING_AGREEMENT.md) |
 
 ## 4. 약속 항목
@@ -82,13 +82,14 @@
 | DF-002 | 백로그 도구 dry-run 검증 | 2 | chore | C · claude | `tool/backlog/**`(ci.yml은 고치지 않는다. DF-001이 조건부 단계를 미리 넣는다) | DF-901 | must |
 | DF-005 | SOAP v2·레거시 교차 픽스처 | 2 | story | C · claude | `contracts/fixtures/**`, `tool/contracts/test/fixtures.test.mjs` | DF-003 | must |
 | DF-903 | kr.co.dfet.trainer Firebase 등록, plist, App Attest(G-02) | 1 | owner-action | 소유자 | 콘솔, `docs/v1/evidence/G-02.md` | — | must |
-| DF-908 | 법률 자문 의뢰(G-04: Q-04, Q-05, Q-07, Q-21, Q-24) | 1 | owner-action | 소유자 | `docs/v1/evidence/G-04.md` | — | must |
+| DF-942 | 운영 DB·Storage 서울 전환: `nam5` `(default)` 삭제·`asia-northeast3` 재생성, 서울 버킷 생성·연결(DEC-19) | 1 | owner-action | 소유자 | 콘솔, `docs/v1/evidence/G-09.md` 리전 절 | — | must |
 | DF-904 | App Store Connect 레코드·iPhone 배포 이력 확인(Q-22) | 0 | owner-action | 소유자 | `docs/v1/evidence/G-02.md` | — | must |
 | DF-913 | Q-09(2026 과업지시서와의 관계) 결정 | 0 | owner-action | 소유자 | [00_README](../00_README.md) 결정 기록 | — | must |
 | DF-930 | Runner 내장 트레이너 동결 선언 | 0 | owner-action | 소유자 | `docs/v1/evidence/G-01.md` '동결 선언' 절, `freeze-exception` 라벨. CODEOWNERS 반영은 DF-001 병합 뒤 확인만 한다 | — | must |
 | DF-902 | 라벨·마일스톤·Projects·이슈 생성 스크립트 실행 | 0 | owner-action | 소유자 | GitHub 설정 | DF-002 | must |
 | **합계** | | **18** | | | | | |
 
+- 2026-09-25 소유자 결정: 법률 자문 의뢰 DF-908(1점)은 보류해 S03으로 옮겼고(최신 발송 10-30, [03 §5.2](../03_RELEASE_AND_SPRINT_PLAN.md#52-트랙별-리드타임과-최신-착수일)), 그 자리에 서울 리전 전환 DF-942(1점, [V1-00 DEC-19](../00_README.md#결정-기록))를 넣었다. 약속은 18점 그대로다.
 - 의존 열은 [02 색인](../02_PRODUCT_BACKLOG.md)·P0 카드의 `Depends on`과 같다. 같은 레인 안의 **작업 순서**(DF-001 → DF-002 → DF-005, DF-003 → DF-004)는 의존이 아니라 §5의 배정 순서다.
 
 당김 후보(버퍼가 남을 때만, 목요일 오전까지 판단): 없음. DF-010(3점)은 버퍼(2점)를 넘으므로 S02에 그대로 둔다([03 §14.2 D-2](../03_RELEASE_AND_SPRINT_PLAN.md#14-가정asm과-스파인prd와의-차이)).
@@ -116,10 +117,10 @@
 | 일자 | 오전 | 오후 | 그날 병합 목표 |
 |---|---|---|---|
 | 09-28(월) | 계획 회의. DF-901 보존·분류(901-1~901-3) | DF-901 A 커밋·B 보관(901-4, 901-5). 에이전트 레인 A·B·C 착수: DF-003, DF-008(008-1 TrainerCore 패키지부터), DF-001 | — |
-| 09-29(화) | DF-901 PR·CI·병합(901-6), 브랜치 보호(901-7). DF-001·DF-003 PR 검토 | DF-001 병합(ci.yml 차례 1번) → DF-003 병합. 레인 A는 DF-004, 레인 C는 DF-002 착수. 소유자: DF-908 의뢰서 초안(908-1) | DF-901, DF-001, DF-003 |
-| 09-30(수) | 소유자: DF-903 콘솔 등록(903-1~903-3), DF-904 ASC 확인 | DF-930 동결 선언. 게이트 점검 16:00. DF-008 중간 검토(Package.swift·project.yml) | — |
+| 09-29(화) | DF-901 PR·CI·병합(901-6), 브랜치 보호(901-7). DF-001·DF-003 PR 검토 | DF-001 병합(ci.yml 차례 1번) → DF-003 병합. 레인 A는 DF-004, 레인 C는 DF-002 착수. 소유자: DF-942 서울 전환(942-1~942-4) | DF-901, DF-001, DF-003 |
+| 09-30(수) | 소유자: DF-903 콘솔 등록(903-1~903-3), DF-904 ASC 확인 | DF-930 동결 선언(선언문은 2026-09-25 G-01.md에 기록됨, 이날은 라벨·CODEOWNERS 확인). 게이트 점검 16:00. DF-008 중간 검토(Package.swift·project.yml) | — |
 | 10-01(목) | DF-002 PR 검토·병합. DF-004 PR 검토 | DF-004 병합(ci.yml 차례 2번). 레인 B는 rebase 뒤 ci.yml grep step을 마지막 커밋으로 추가(008-8). 레인 C는 DF-005 착수. DF-008 PR 검토. 소유자: DF-913 결정 | DF-002, DF-004 |
-| 10-02(금) | DF-008 병합(ci.yml 차례 3번), DF-005 PR 검토·병합. DF-902 실행. DF-908 의뢰서 발송 | 15:00 데모, 15:20 회고. main 필수 체크에 `contracts`·`trainer-app`·`docs-and-backlog` 추가(902-2 사전 확인 뒤) | DF-008, DF-005 |
+| 10-02(금) | DF-008 병합(ci.yml 차례 3번), DF-005 PR 검토·병합. DF-902 실행 | 15:00 데모, 15:20 회고. main 필수 체크에 `contracts`·`trainer-app`·`docs-and-backlog` 추가(902-2 사전 확인 뒤) | DF-008, DF-005 |
 
 ## 7. 작업 분해
 
@@ -508,8 +509,11 @@ v2 픽스처 예시(`soap_v2/finalized_no_metrics.json`, P0 규약 1번과 같�
 | 903-2 | 수 오전 15m | `GoogleService-Info.plist`를 받아 **저장소 밖**에 둔다(예: `~/secure/dfet/trainer/`, ASM-S01-08). 내용은 어디에도 붙여 넣지 않는다 | — | DF-034(S02)에서 CI 시크릿 등록 |
 | 903-3 | 수 오전 30m | App Check에 앱 등록, 공급자 App Attest(강제는 끔, NFR-09 강제는 DF-386). Apple Developer에서 App ID `kr.co.dfet.trainer`의 App Attest 기능 확인 | G-02.md | 등록 확인 |
 | 904-1 | 수 오전 30m | App Store Connect에서 `kr.co.dfet.trainer` 앱 레코드 유무, 빌드 이력, iPhone 지원 빌드 배포 이력 확인(Q-22) | G-02.md, 결과가 Universal이면 [03 §11 T-07](../03_RELEASE_AND_SPRINT_PLAN.md#11-재계획-트리거) | 기록 완료. DF-008의 `TARGETED_DEVICE_FAMILY` 확정 |
-| 908-1 | 화 오후 3h | 법률 자문 의뢰서 초안. 질문: Q-04(동의 ④ 범위), Q-05(대기 회원 민감정보), Q-07(동의 증빙 보존), Q-21(프리랜서 트레이너 지위), **Q-24(코칭 기록 최대 보유기간 N)**, AS-22(만 14세), AS-31(처리 주체 모델), 대기 회원 최소 정보의 근거, 동의 5종 고지 항목 초안, 국외이전 고지(AS-19). 첨부는 PRD 발췌(§6.6 F-LINK-01, §6.7, §9.7, 부록 B.5)만 한다. 특허 공개 범위(Q-17) 때문에 PRD 전문과 LiDAR 방법은 보내지 않는다. 회원 실데이터는 넣지 않는다 | `docs/v1/evidence/G-04.md`(질문 목록, 발송일, 회신 예정일) | 초안 완료 |
-| 908-2 | 금 오전 30m | 의뢰서 발송, 자문사에 회신 예정일 요청(ASM-03-01 검증) | G-04.md | 발송일 10-02 기록. 최신 발송일은 10-08([03 §5.2](../03_RELEASE_AND_SPRINT_PLAN.md#5-게이트-타임라인과-소유자-병렬-트랙)) |
+| 942-1 | 화 오후 30m | 운영 `(default)`(`nam5`)에 테스트 데이터만 있는지 컬렉션 이름·문서 수로 다시 확인. 삭제 대상 DB ID(`(default)`)와 위치(`nam5`)를 두 번 확인한다(미사용 `asia-east1` Enterprise DB 2개는 건드리지 않는다) | `docs/v1/evidence/G-09.md` 리전 절(수량만) | 확인 기록 |
+| 942-2 | 화 오후 1h | 삭제 보호 해제 → `(default)` 삭제 → 같은 ID `(default)`를 `asia-northeast3`·Standard 에디션으로 재생성 → 삭제 보호 켬. 규칙은 전부 거부 그대로 | G-09.md(위치, 생성 일시) | 콘솔에서 위치 `asia-northeast3` |
+| 942-3 | 화 오후 1h | `asia-northeast3` 단일 리전 Storage 버킷 생성과 Firebase 연결. 규칙 전부 거부 | G-09.md(버킷 이름·위치·연결 일시) | 버킷 이름을 DF-043(S02)에 전달 |
+| 942-4 | 화 오후 30m | 앱 구성 재확인: 서울 버킷은 기본 버킷이 아니라 구성 파일의 `storageBucket`은 그대로다. 다시 받아 차이 없음만 확인. admin_web 운영 환경 변수 `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`을 서울 버킷으로 바꿈(값은 저장소에 적지 않음). 절차 전문은 [DF-942 카드](../backlog/OWNER_ACTIONS_AND_GATES.md#df-942) | G-09.md | 재확인 결과 기록 |
+| 908-1·908-2 | S03으로 보류 | 법률 자문 의뢰서 초안·발송은 소유자 보류(2026-09-25). 질문 목록과 첨부 제한은 [DF-908 카드](../backlog/OWNER_ACTIONS_AND_GATES.md#df-908) | `docs/v1/evidence/G-04.md` | 최신 발송 10-30 |
 | 913-1 | 목 오후 30m | Q-09 결정. 결정 전 기본값은 '자체 제품 로드맵, 과업 산출물 양식 미적용' | [00_README](../00_README.md) 결정 기록. PRD §13.3 반영은 소유자가 직접 PRD 변경 이력과 함께 한다(에이전트는 PRD를 고치지 않는다) | 결정 기록 |
 | 930-1 | 수 오후 30m | Runner 내장 트레이너와 trainer_ios 동결 선언. 이후 두 영역의 수정 PR은 `freeze-exception` 라벨과 사유가 필요하다(MIG-09). DF-902 전이면 라벨 하나만 먼저 만든다 | `gh label create freeze-exception --color B60205 --description "동결 영역 예외 수정(MIG-09)" --repo TEhyeok/DFET_Coach`. 선언문은 G-01.md '동결 선언' 절. DF-001이 화요일에 병합되면 CODEOWNERS에 `ios/Runner/AppDelegate.swift`, `trainer_ios/**`가 있는지 확인만 한다(없으면 DF-001 PR에 수정 요청). 선언 자체는 DF-001을 기다리지 않는다 | 선언 기록 |
 | 902-1 | 금 오전 1h | 백로그 생성 실행(DF-002 병합 뒤) | `gh auth refresh -s project,read:project` → `bash tool/backlog/create_backlog.sh --dry-run` 확인 → `bash tool/backlog/create_backlog.sh --apply --only labels,milestones` → `--apply --only project --create-project`로 보드를 만들고 `export PROJECT_NUMBER=<번호>` → `bash tool/backlog/create_backlog.sh --apply --only project` → `bash tool/backlog/create_backlog.sh --apply --only issues --phase P0 --owner-actions --exclude-proposals` → 같은 dry-run을 다시 돌려 '생성 0건' 확인 | 라벨·마일스톤·Projects 존재, 중복 이슈 0. P1a 이후 이슈는 각 단계 계획 때 같은 방식으로 추가(ASM-S01-11) |
@@ -587,10 +591,10 @@ v2 픽스처 예시(`soap_v2/finalized_no_metrics.json`, P0 규약 1번과 같�
 | DF-904 Q-22 | 수 | 30분 | DF-008 기기군 확정, T-07 | G-02.md |
 | DF-930 동결 선언 | 수 | 30분 | 동결 예외 절차(DF-028, S04) | G-01.md |
 | DF-913 Q-09 | 목 | 30분 | P0 진입 조건(PRD §13.3 기한 'P0 진입') | 00_README 결정 기록 |
-| DF-908 법률 자문 의뢰 | 금 발송 | 반나절 | G-04, G-09(DF-909, S03), P1a 개방 | `docs/v1/evidence/G-04.md` |
+| DF-942 운영 DB·Storage 서울 전환(DEC-19) | 화 | 반나절 | DF-043(S02), DF-905(S02), DF-906·DF-038(S03), DF-931, 실데이터 | `docs/v1/evidence/G-09.md` |
 | DF-902 백로그 생성 | 금 | 1시간 | Projects 보드 운영(S02부터) | GitHub |
 
-다음 주 이후 미리 볼 소유자 일정: DF-905(S02, claim 테스트 계정·가상 회원 시드), DF-906·DF-909(S03), DF-911·DF-907·DF-916(S04), DF-910(S05, G-05b 보수 가정의 최신 제출일 10-30).
+다음 주 이후 미리 볼 소유자 일정: DF-905(S02, claim 테스트 계정·가상 회원 시드, 서울 `(default)`에), DF-906·DF-908(보류, 최신 발송 10-30)·DF-909(S03), DF-911·DF-907·DF-916(S04), DF-910(S05, G-05b 보수 가정의 최신 제출일 10-30).
 
 ## 10. DoD 점검
 
@@ -644,7 +648,8 @@ v2 픽스처 예시(`soap_v2/finalized_no_metrics.json`, P0 규약 1번과 같�
 | `.github/workflows/ci.yml` 동시 수정 충돌 | 중 | 하 | DF-004·DF-008 rebase 충돌 | ci.yml 순서 차례(§5): DF-001 → DF-004 → DF-008, 각자 마지막 커밋에만 변경 |
 | plist 없는 환경에서 앱 빌드가 실패한다 | 하 | 중: AC-DF-008.4 실패, 에이전트 로컬 빌드 불가 | `Build input file cannot be found` | plist를 소스로 참조하지 않고 빌드 후 복사 스크립트 사용(ASM-S01-12) |
 | plist가 저장소에 들어간다 | 하 | 상 | `git status`에 `GoogleService-Info.plist` | 저장소 밖 보관(ASM-S01-08), `trainer_app/.gitignore`(008-5), 커밋 직전 grep |
-| 법률 의뢰서에 특허 관련 내용이 섞인다(Q-17) | 하 | 중 | 첨부 목록 | 첨부는 §7.8 908-1의 발췌만 |
+| 서울 전환에서 다른 DB를 지우거나 테스트 데이터가 아닌 문서가 있다 | 하 | 상: 데이터 손실 | 942-1 확인 결과 | DB ID·위치 두 번 확인, 문서 수가 예상과 다르면 삭제를 멈추고 내보내기부터 한다 |
+| 법률 의뢰서에 특허 관련 내용이 섞인다(Q-17) | 하 | 중 | 첨부 목록 | 첨부는 [DF-908 카드](../backlog/OWNER_ACTIONS_AND_GATES.md#df-908)의 발췌만(S03) |
 | Q-22 결과가 Universal | 하 | 중 | ASC 빌드 이력 | T-07: S02에 project.yml 한 줄 수정 PR, compact 제한 기능 스토리 추가 |
 | 소유자 검토 대기로 에이전트가 쉰다 | 중 | 하 | PR 대기 1일 초과 | 주경로 PR(DF-003·004·008) 당일 검토 원칙, 다른 PR은 다음 날 오전 |
 
@@ -660,7 +665,7 @@ v2 픽스처 예시(`soap_v2/finalized_no_metrics.json`, P0 규약 1번과 같�
 | ASM-S01-04 | 픽스처 표기는 [P0 DF-005 픽스처 규약](../backlog/P0.md#fixture-contract)을 따른다: 봉투 `_fixture`·`path`·`data`, 태그 `$ts`·`$serverTimestamp`·`$bytes`·`$int`, 합성 ID `fx-`(레거시 예외 `native_fx_<yyyymmdd>`, `member-00000000-0000-4000-8000-00000000000N`). 이 문서의 초안에 있던 `$timestamp` 표기는 쓰지 않는다 | F-SOAP-06, §9.3 변경 절차 3, ASM-P0-01 | DF-005, DF-007·DF-009(S02) |
 | ASM-S01-05 | 필수 체크가 되는 job은 워크플로 수준 `on.*.paths` 필터를 쓰지 않는다. 경로 조건은 항상 도는 `changes-*` job의 출력과 job 수준 `if`로 건다. GitHub는 조건으로 건너뛴 job을 필수 체크 '통과'로 보고하지만, `paths` 필터로 워크플로가 뜨지 않으면 체크가 'Expected — waiting'으로 남아 병합이 막힌다. `docs-and-backlog`는 기술 스파인·[10 §19.2](../10_TEST_PLAN.md)대로 `ci.yml` 안의 job이고(`changes-ci` 사용), `trainer-app`은 `trainer-app.yml` 안에서 `changes-trainer`를 쓴다 | 기술 스파인 ciJobs, 10 ASM-10-14 | DF-001·DF-008 PR에서 경로 밖 PR의 체크 보고 확인(902-2) |
 | ASM-S01-06 | Firebase iOS SDK는 trainer_ios와 같은 `from: 11.0.0` 범위를 쓰고(dfet:trainer_ios/project.yml:10-13), `TrainerKit/Package.swift`에서만 선언한다(V1-04 ASM-04-11). 해석 결과는 `trainer_app/DFETTrainer.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`를 커밋해 고정한다 | NFR-14, ADR-001 | DF-008(008-5) |
-| ASM-S01-07 | DF-901 PR은 주제별 커밋을 보존하려고 스쿼시가 아닌 rebase 병합을 쓴다(선형 이력 규칙과 양립). 이후 PR은 스쿼시 병합 원칙을 따른다 | ADR-014 | DF-901 |
+| ASM-S01-07 | DF-901 PR은 주제별 커밋을 보존하려고 스쿼시가 아닌 rebase 병합을 쓴다(선형 이력 규칙과 양립). 이후 스프린트 PR도 DEC-20(2026-09-25)에 따라 rebase 병합하며, CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 병합한다([01 에이전트 권한 경계](../01_AGILE_WORKING_AGREEMENT.md#에이전트-권한-경계)) | ADR-014, DEC-20 | DF-901 |
 | ASM-S01-08 | `GoogleService-Info.plist`는 DF-034(S02)에서 CI 시크릿 주입이 준비될 때까지 저장소 밖에 둔다 | ADR-019, G-02, AS-DEV-04 | DF-034 |
 | ASM-S01-09 | XcodeGen 버전은 로컬 설치본 2.44.1(2026-09-24 확인)로 고정한다. CI는 GitHub 릴리스 `xcodegen.zip`(SHA-256 `a2e905fb68446e9bb4008cdfe2e13e3f176d0cbcca828b71770f8e53fca91b73`, 압축 안 경로 `xcodegen/bin/xcodegen`, 2026-09-24 확인)을 내려받아 쓴다. 같은 날 Homebrew 안정판은 2.46.0이라 `brew install xcodegen`은 버전이 고정되지 않는다. 10_TEST_PLAN §19.4와 P0 DF-008 카드의 설치 단계도 이 방식으로 맞출 것을 제안한다 | ADR-001(`.xcodegen-version` 고정), AS-DEV-06 | DF-008 CI |
 | ASM-S01-10 | `output/`, `tmp/`는 현재 `.gitignore`에 없다(2026-09-24 확인). 소유자가 MIG-01 A 커밋에서 무시 규칙에 추가할지 결정한다 | MIG-01 C 분류, PRD §11.2 '.gitignore 검토' | DF-901 |
@@ -678,7 +683,7 @@ v2 픽스처 예시(`soap_v2/finalized_no_metrics.json`, P0 규약 1번과 같�
 5. 게이트 트랙에서 노랑·빨강이 생겼나?
 
 S02 준비(10-06 화 오전 계획 회의 전까지):
-- S02 약속(11점): DF-006, DF-007, DF-009, DF-010, DF-034, DF-905. 모두 이번 주 산출물(DF-003·004·005·008)에 의존하므로, 금요일에 이 넷이 병합되지 않으면 S02 약속을 줄인다.
+- S02 약속(12점, 한도 11 초과 1점은 버퍼): DF-006, DF-007, DF-009, DF-010, DF-034, DF-043(서울 버킷 명시, DF-942 뒤), DF-905. 모두 이번 주 산출물(DF-003·004·005·008)에 의존하므로, 금요일에 이 넷이 병합되지 않으면 S02 약속을 줄인다.
 - S01 완료 점수를 기록한다. 속도 보정은 S02 종료 뒤 S03 계획(10-12)에서 8작업일 기준으로 한다([03 §3.2](../03_RELEASE_AND_SPRINT_PLAN.md#3-달력-휴일과-스프린트-용량)).
 - `docs/v1/sprints/SPRINT_02.md`를 [V1-T04](../templates/SPRINT_PLAN.md)로 만든다. S02의 쓰기 경로 분리(`generate.mjs`는 DF-010만, 메타 스키마는 DF-006만, DF-009는 `#filePath`로 픽스처 직접 읽기)는 [03 §6.1 S02 행](../03_RELEASE_AND_SPRINT_PLAN.md#61-p0p1b-주-단위)을 따른다.
 
@@ -691,3 +696,4 @@ S02 준비(10-06 화 오전 계획 회의 전까지):
 | v1.0(정합 패스 2) | 2026-09-24 | §7.2를 V1-05 §13 링크로 축소(R5), 속도 포함 규칙 기록(R1, ASM-S01-13) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: §7.2·§7.3·§8.1의 contracts 값을 V1-05 §13 정본(`excludedMetricCodes`, `confirmed`, enum 33개)으로 맞추고 ASM-S01-13(R1) 추가 | — | 없음 |
 | v1.0.2 | 2026-09-25 | §7.5 ci.yml 초안 위에 10_TEST_PLAN §19.3(v1.1.0)이 정본이라는 안내와 구현 차이를 적음 | #105 | 없음 |
+| v1.1 | 2026-09-25 | 소유자 결정 반영: DF-908 법률 의뢰 보류(S03, 최신 10-30), 그 자리에 DF-942 서울 전환(DEC-19, 942-1~942-4)을 넣음(약속 18 유지), DF-930 선언문 선기록, S02 약속 12(DF-043), ASM-S01-07을 DEC-20 rebase 병합으로 | claude/docs-dec-2026-09-25 | 없음 |

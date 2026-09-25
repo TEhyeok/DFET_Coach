@@ -1,0 +1,3 @@
+// D-FET Trainer - Debug configuration (V1-04 §19.2).
+// No secrets here: only versioning / Swift settings. GoogleService-Info.plist stays untracked (ADR-019).
+// Debug accepts --preview-*, --use-emulator and --emulator-host=<ip>; App Check uses the debug provider.

@@ -176,3 +176,20 @@ jobs:
       - run: bash tool/lint/test/static-guards.test.sh
       # G1~G9 grep 불변식. lib/ 결과는 tool/lint/static-guards.allow와 정확히 같아야 한다(AC-DF-011.1~.5)
       - run: bash tool/lint/static-guards.sh
+
+  copy-lint:                  # DF-010(보고 모드) → DF-040(차단 모드). 필수 체크 이름. 워크플로 수준 paths 없음, 항상 실행
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      # 저장소 변수. 비어 있으면 report(위반이 있어도 exit 0). DF-040에서 block으로 바꾼다(docs/v1/12 §7.9)
+      COPY_LINT_MODE: ${{ vars.COPY_LINT_MODE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --test tool/lint/test/prohibited-terms.test.mjs    # TC-DF010-01~05
+      # 보고서를 job 로그와 Step Summary 표로 남긴다(AC-DF-010.2, AC-DF-010.6)
+      - run: node tool/lint/prohibited-terms.mjs --mode="${COPY_LINT_MODE:-report}" --summary "$GITHUB_STEP_SUMMARY"

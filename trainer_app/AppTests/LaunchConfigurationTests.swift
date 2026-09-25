@@ -48,17 +48,27 @@ final class LaunchConfigurationTests: XCTestCase {
     }
   }
 
-  /// Exercises the real `bundle.url(forResource:)` lookup: the test bundle never contains the plist.
-  func testBundleWithoutPlistResolvesToMisconfigured() {
-    let resolved = LaunchConfiguration.resolve(arguments: [], bundle: Bundle(for: Self.self), environment: [:])
-    XCTAssertEqual(resolved.mode, .misconfigured(reason: "missingPlist"))
+  /// The app's launch path (`AppEnvironment.resolveAtLaunch`) with the real `bundle.url(forResource:)` lookup: the
+  /// test bundle never contains the plist, so the result is misconfigured with zero Firebase calls.
+  func testLaunchPathWithoutPlistResolvesToMisconfigured() {
+    let environment = AppEnvironment.resolveAtLaunch(
+      arguments: [], processEnvironment: [:],
+      bootstrap: AppBootstrap(plistPresent: LaunchConfiguration.plistPresent(in: Bundle(for: Self.self))) { _ in
+        XCTFail("misconfigured must not configure Firebase")
+      })
+    guard case let .misconfigured(reason) = environment else { return XCTFail("expected misconfigured") }
+    XCTAssertEqual(reason, "missingPlist")
   }
 
-  func testXCTestHostIsForcedIntoPreview() {
+  /// The launch path forces a DEBUG process hosted by XCTest into preview even when a plist is present.
+  func testLaunchPathForcesXCTestHostIntoPreview() {
     #if DEBUG
-    let resolved = LaunchConfiguration.resolve(
-      arguments: [], bundle: Bundle(for: Self.self), environment: ["XCTestConfigurationFilePath": "/tmp/x"])
-    XCTAssertEqual(resolved.mode, .preview(scenario: "unit-test-host"))
+    let environment = AppEnvironment.resolveAtLaunch(
+      arguments: [], processEnvironment: ["XCTestConfigurationFilePath": "/tmp/x"],
+      bootstrap: AppBootstrap(plistPresent: true) { _ in XCTFail("an XCTest host must not configure Firebase") })
+    guard case let .preview(preview) = environment else { return XCTFail("expected preview") }
+    XCTAssertEqual(preview.scenario, .unitTestHost)
+    XCTAssertEqual(preview.unknownArguments, [])
     #endif
   }
 }

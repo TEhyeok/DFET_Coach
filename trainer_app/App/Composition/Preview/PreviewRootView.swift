@@ -6,9 +6,17 @@ import UIKit
 struct PreviewRootView: View {
   let preview: PreviewEnvironment
 
+  @Environment(\.horizontalSizeClass) private var windowSizeClass
+  /// Whether the `--preview-width=` simulation is applied. Toggled by `preview.toggleWidth` (`--preview-resizable`).
+  @State private var isNarrow = true
+
   var body: some View {
     Group {
-      if preview.isSignedIn {
+      if !preview.unknownArguments.isEmpty {
+        // A mistyped `--preview-<name>` must not silently run another scenario. No `app.root`, so UI tests fail.
+        Text(verbatim: "Unknown preview argument: \(preview.unknownArguments.joined(separator: " "))")
+          .accessibilityIdentifier("preview.unknownArgument")
+      } else if preview.isSignedIn {
         shell
       } else {
         // `--preview-login`: FeatureAuth's login screen (DF-012) replaces this placeholder.
@@ -20,19 +28,24 @@ struct PreviewRootView: View {
     .background(PreviewOrientationBridge(forcesLandscape: preview.forcesLandscape))
   }
 
-  @ViewBuilder
+  /// One view tree whatever the width, so toggling the simulation changes only the size class and frame, exactly
+  /// like a real window resize, and `RootSplitView` keeps its state.
   private var shell: some View {
-    let root = RootSplitView(flags: preview.flagsProvider.current, members: preview.members)
-    if let width = preview.simulatedWidth {
+    let narrowWidth = isNarrow ? preview.simulatedWidth : nil
+    return RootSplitView(flags: preview.flagsProvider.current, members: preview.members)
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
-      root
-        .environment(\.horizontalSizeClass, .compact)
-        .frame(width: width)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .systemGray5).ignoresSafeArea())
-    } else {
-      root
-    }
+      .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
+      .frame(width: narrowWidth)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(Color(uiColor: .systemGray5).ignoresSafeArea())
+      .overlay(alignment: .bottomTrailing) {
+        if preview.isResizable, preview.simulatedWidth != nil {
+          Button { isNarrow.toggle() } label: { Text(verbatim: isNarrow ? "Wide" : "Narrow") }  // DEBUG tool, not copy
+            .buttonStyle(.borderedProminent)
+            .padding(24)
+            .accessibilityIdentifier("preview.toggleWidth")
+        }
+      }
   }
 }
 

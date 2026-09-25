@@ -68,6 +68,17 @@ enum AppEnvironment {
     }
   }
 
+  /// The app's launch path (`DFETTrainerApp.environment`): process arguments plus the XCTest guard, the build's
+  /// DEBUG flag, then `resolve(arguments:isDebug:bootstrap:)`. Tests call this same function.
+  static func resolveAtLaunch(
+    arguments: [String], processEnvironment: [String: String], bootstrap: AppBootstrap
+  ) -> AppEnvironment {
+    let isDebug = LaunchConfiguration.isDebugBuild
+    return resolve(
+      arguments: LaunchConfiguration.effectiveArguments(arguments, isDebug: isDebug, environment: processEnvironment),
+      isDebug: isDebug, bootstrap: bootstrap)
+  }
+
   /// Decides the environment from the launch mode (`LaunchConfiguration`, DF-008) and configures Firebase for
   /// `.live` only. `isDebug == false` ignores every `--preview-*` argument, so Release never gets preview data.
   static func resolve(arguments: [String], isDebug: Bool, bootstrap: AppBootstrap) -> AppEnvironment {

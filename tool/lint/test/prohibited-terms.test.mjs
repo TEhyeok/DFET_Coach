@@ -1,6 +1,7 @@
 // tool/lint/prohibited-terms.mjs 테스트(DF-010: TC-DF010-01~04, AC-DF-010.1~.5).
 // 실행: node --test tool/lint/test/prohibited-terms.test.mjs   (Node 22 내장 모듈만)
 // 입력 샘플: tool/lint/test/fixtures/prohibited-terms/. CLI 테스트는 임시 저장소 루트를 만들어 돌린다.
+// Dart 샘플은 flutter analyze가 저장소 전체 .dart를 분석하므로 .dart.txt로 둔다(추출기는 확장자가 아니라 함수로 고른다).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -138,7 +139,7 @@ test('TC-DF010-01 Swift: literals only, comments skipped, interpolation masked, 
 });
 
 test('TC-DF010-01 Dart: single, double, triple and raw strings; ${…} and $name masked; comments skipped', () => {
-  const src = fixture('sample.dart');
+  const src = fixture('sample.dart.txt');
   const got = texts(extractDart(src));
   assert.ok(got.includes('자세교정'));
   assert.ok(got.some((t) => t.startsWith('회원 ') && t.endsWith(' 진단')));

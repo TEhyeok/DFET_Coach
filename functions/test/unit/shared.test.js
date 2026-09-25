@@ -18,8 +18,8 @@ function recordingHandler() {
 }
 
 const request = Object.freeze({
-  data: Object.freeze({email: 'synth-member-0001@example.test'}),
-  auth: Object.freeze({uid: 'synthAdminA', token: {admin: true}}),
+  data: Object.freeze({email: 'synthMember0001@example.invalid'}),
+  auth: Object.freeze({uid: 'synthAdmin', token: {admin: true}}),
   rawRequest: {headers: {}},
   acceptsStreaming: false,
 });
@@ -170,17 +170,17 @@ test('TC-DF037-03 AC-DF-037.3 fail with a non-standard code is a developer error
 test('TC-DF037-03 AC-DF-037.3 fail rejects Korean sentences and free-form details', () => {
   assert.throws(() => fail('not-found', '회원을 찾을 수 없습니다.'), TypeError);
   assert.throws(() => fail('not-found', 'notAKey'), TypeError);
-  assert.throws(() => fail('not-found', 'member.notFound', {email: 'x@example.test'}), TypeError);
+  assert.throws(() => fail('not-found', 'member.notFound', {email: 'synthMember0001@example.invalid'}), TypeError);
   assert.throws(() => fail('not-found', 'member.notFound', {fields: 'uid'}), TypeError);
   assert.throws(() => fail('not-found', 'member.notFound', ['fields']), TypeError);
 });
 
 test('TC-DF037-03 AC-DF-037.3 ok returns {ok: true, ...payload}', () => {
   assert.deepEqual(ok(), {ok: true});
-  assert.deepEqual(ok({replayed: false, summaryId: 'synthSummary01'}), {
+  assert.deepEqual(ok({replayed: false, summaryId: 'SYNTHsummary00000001'}), {
     ok: true,
     replayed: false,
-    summaryId: 'synthSummary01',
+    summaryId: 'SYNTHsummary00000001',
   });
   assert.throws(() => ok({ok: false}), TypeError);
   assert.throws(() => ok(null), TypeError);
@@ -223,9 +223,9 @@ test('DF-037 requireTrainer needs token.trainer === true', () => {
 });
 
 test('DF-037 requireAdminClaim needs token.admin === true (same claim as verifyAdmin, ADR-018)', () => {
-  assert.equal(requireAdminClaim({auth: {uid: 'synthAdminA', token: {admin: true}}}), 'synthAdminA');
+  assert.equal(requireAdminClaim({auth: {uid: 'synthAdmin', token: {admin: true}}}), 'synthAdmin');
   for (const token of [{}, {admin: 'true'}, {role: 'admin'}, {trainer: true}]) {
-    assertCode(() => requireAdminClaim({auth: {uid: 'synthAdminA', token}}), 'permission-denied', 'auth.notAdmin');
+    assertCode(() => requireAdminClaim({auth: {uid: 'synthAdmin', token}}), 'permission-denied', 'auth.notAdmin');
   }
   assertCode(() => requireAdminClaim({auth: null}), 'unauthenticated', 'auth.required');
 });
@@ -274,7 +274,7 @@ function fakeTransaction() {
 
 const assignmentEntry = Object.freeze({
   action: 'member.assignment.update',
-  actorUid: 'synthAdminA',
+  actorUid: 'synthAdmin',
   actorRole: 'admin',
   targetCollection: 'trainers',
   targetId: 'synthTrainerA',
@@ -298,7 +298,7 @@ test('TC-DF037-04 AC-DF-037.4 writes one auditLogs document with at and createdA
     {...data, at: 'serverTimestamp', createdAt: 'serverTimestamp'},
     {
       action: 'member.assignment.update',
-      actorUid: 'synthAdminA',
+      actorUid: 'synthAdmin',
       actorRole: 'admin',
       targetCollection: 'trainers',
       targetId: 'synthTrainerA',
@@ -355,7 +355,7 @@ test('TC-DF037-04 AC-DF-037.4 metadata values: short strings, booleans, integers
     actorUid: null,
     actorRole: 'system',
     targetCollection: 'pendingMembers',
-    targetId: 'synthPending01',
+    targetId: 'SYNTHpending00000001',
     memberUid: null,
   };
   const allowedKeys = ['reason', 'counts', 'pendingMember', 'note'];
@@ -406,11 +406,11 @@ test('TC-DF037-04 AC-DF-037.4 deterministic docId, Firestore writer and writer v
     actorUid: 'synthTrainerA',
     actorRole: 'trainer',
     targetCollection: 'soap_notes',
-    targetId: 'synthNote01',
+    targetId: 'SYNTHnote00000000001',
     memberUid: 'synthMember0001',
   };
-  const ref = writeAuditEntry(tx, soapEntry, {db, allowedKeys: [], docId: 'soapFinalized_synthNote01'});
-  assert.equal(ref.path, 'auditLogs/soapFinalized_synthNote01');
+  const ref = writeAuditEntry(tx, soapEntry, {db, allowedKeys: [], docId: 'soapFinalized_SYNTHnote00000000001'});
+  assert.equal(ref.path, 'auditLogs/soapFinalized_SYNTHnote00000000001');
   assert.deepEqual(tx.writes[0].data.metadata, {});
 
   const dbRef = await writeAuditEntry(db, soapEntry, {allowedKeys: []});

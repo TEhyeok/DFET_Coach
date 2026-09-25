@@ -31,6 +31,8 @@
 
 ---
 
+> **DEC-22(2026-09-25) 범위 안내.** 카드 Labels에 `scope/mvp`가 있는 카드만 지금 만든다(카드의 `### MVP 범위(DEC-22)` 절이 범위를 정한다). `scope/carryover`는 이미 PR이 열려 있어 마치는 MVP 밖 항목이다. 둘 다 없는 카드는 **연기(DEC-22), MVP 뒤 재계획**이다: 카드 Sprint 값은 DEC-22 이전 계획이고, `issues.json`에서는 `scope/deferred`·스프린트 'MVP 뒤'가 되며 `brief.mjs`는 작업 지시서를 만들지 않는다. 정본은 [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)이다.
+
 ## 1 이 문서의 범위와 읽는 법
 
 - P1b(알파-평가) 단계의 스토리 카드 전문이다. 키, 제목, 점수, 스프린트, 의존은 백로그 스파인과 같다. 스파인에 없던 세부(파일 경로, 타입, 문구 키, 테스트)만 보탰다. 스파인과 다른 제안은 [2 추가 제안](#2-추가-제안)에 모았고, 카드 본문은 제안이 채택되지 않아도 구현할 수 있게 썼다.
@@ -318,8 +320,9 @@ DF-004 ─▶ DF-220, DF-221          DF-130,117 ─▶ DF-219     DF-137,216 �
 
 - MVP 스프린트: S08(원래 계획 S12). 상태: 할 일
 - 왜 필요한가: Apple Vision 2D 랜드마크 가능성 확인. 체형 흐름의 자동 랜드마크 전제
-- 지금 만든다: 시뮬레이터와 연결된 iPhone 15 Pro Max에서 합성·공개 샘플 사진으로 정확도·좌우 매핑·지연 확인
+- 지금 만든다: 합성·공개 샘플 사진(ASM-P1b-39, 실제 인물 사진 없음)으로 좌표 변환·좌우 매핑(Q1·Q2·Q4)을 iPad 시뮬레이터에서 확인한다. 시뮬레이터에서 `VNDetectHumanBodyPoseRequest`가 결과를 내지 않거나 오류면(시뮬레이터·CI 러너 제약), 같은 하네스(`trainer_app/Spikes/VisionPoseSpike/`, 트레이너 앱 아님)를 연결된 iPhone 15 Pro Max에서 돌려 Q1·Q2·Q4를 확인하고 결과를 스파이크 보고서에 적는다. iPhone 지연 값은 참고로만 적는다(Q3 판정은 iPad)
 - MVP 뒤로 미룬다: 대상 iPad 실기기 측정(iPad 연결 뒤)
+- Vision이 시뮬레이터에서 돌지 않을 때(대비책): DF-207 자동 테스트는 매퍼 단위 테스트(AC-DF-207.1~207.5·207.7, macOS)와 DF-200이 iPhone에서 기록한 관절 픽스처로 돌리고, AC-DF-207.6은 iPhone 하네스 기록으로 대신한다. 데모 체크리스트 A의 체형 흐름은 DF-208 '지정 필요'(AC-DF-208.2) 수동 지정으로 한다
 
 ---
 
@@ -622,6 +625,7 @@ public protocol LandmarkSuggester: Sendable {
 - MVP 스프린트: S11(원래 계획 S15). 상태: 할 일
 - 왜 필요한가: 흐름 3: Vision 2D 랜드마크 어댑터
 - 지금 만든다: 카드 전체 범위
+- 대비책(DF-200 결과에 따름): 시뮬레이터에서 Vision이 결과를 내지 않으면 AC-DF-207.6을 DF-200 iPhone 하네스 기록으로 대신하고, `VisionLandmarkSuggester`는 사람 미검출(`personDetected=false`)로 끝나 화면이 '지정 필요'를 보인다(AC-DF-207.3). 테스트를 skip하지 않고 조건을 PR에 적는다
 
 ---
 
@@ -822,6 +826,7 @@ public enum SeriesSegmenter {
 - 지금 만든다: 정면·측면 두 장 촬영, 인물·조명 검출, 동의 ②③ 게이트. 시뮬레이터에는 카메라가 없으므로 DEBUG·시뮬레이터에서 사진 가져오기(PhotosPicker) 입력을 둔다. roll·pitch 게이트는 센서가 있을 때만 켠다
 - MVP 뒤로 미룬다: 스테이션 프로필·회차 체크리스트(DF-203)
 - MVP에서 기다리지 않는 의존: DF-203: DEC-21에 따라 촬영 프로토콜 v1 초안 값을 기본값으로 쓴다(소유자 확정 DF-915는 MVP 뒤)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-204.7(`posture_capture_started`·`posture_capture_done`)과 `TrainerAnalyticsTests/PostureCaptureEventsTests.swift`는 만들지 않는다
 
 ---
 
@@ -937,8 +942,8 @@ public enum SeriesSegmenter {
 
 - MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
 - 왜 필요한가: 흐름 3: EXIF·GPS 제거, 재촬영 폐기, 앱 전용 저장
-- 지금 만든다: EXIF·GPS 제거, 재촬영 폐기, 앱 전용 저장
-- MVP 뒤로 미룬다: 얼굴 가림 썸네일(테스트 회원만 쓰는 동안 연기, 실회원 전 필수)
+- 지금 만든다: AC-DF-205.1(`PhotoSanitizer`), AC-DF-205.2의 원본과 **일반 썸네일**(`Thumbnailer`, `{view}_thumb.jpg`, 긴 변 480px. 가림본 규격은 뺀다), AC-DF-205.4(재촬영 폐기. 가림본 파일은 없다), AC-DF-205.5, AC-DF-205.6
+- MVP 뒤로 미룬다: 얼굴 가림 썸네일만(AC-DF-205.3 `FaceMasker`, `{view}_masked_thumb.jpg`, `FaceMaskerTests`). 테스트 회원만 쓰는 동안 연기하고 실회원 전에는 필수다. 저장 경로 순서는 `raw → sanitize → thumb`
 
 ---
 
@@ -1013,7 +1018,9 @@ public enum SeriesSegmenter {
 
 - MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
 - 왜 필요한가: 흐름 3: 체형 draft 오프라인 저장과 사진 업로드 큐
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위에서 가림본만 뺀다. Outbox #2는 뷰마다 **두 파일**(`{view}.jpg`, `{view}_thumb.jpg`)을 올리고, #3은 `maskedThumbPath=null`로 쓴다(V1-05 §4.6 `str|null`). #5 확정 전환은 두 파일과 #3·#4 완료만 기다리고 가림본을 기다리지 않는다. AC-DF-206.5는 `front.jpg`·`front_thumb.jpg`만 대조한다
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-206.4의 `save_failure_shown` 기록 부분만 뺀다. '동기화 실패'·사유·재시도 표시와 로컬 보존은 그대로다
+- 동의 ③ 철회 시 로컬 파일 삭제(DF-227 또는 카드 '대안')는 MVP 뒤다. MVP 테스트 회원은 철회 시나리오를 에뮬레이터 규칙 거부(AC-DF-206.4)로만 확인한다
 
 ---
 
@@ -1078,7 +1085,8 @@ public enum SeriesSegmenter {
 
 - MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
 - 왜 필요한가: 흐름 3: TR-08 랜드마크 수동 보정
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위(분석용 AC-DF-208.7 제외)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-208.7(`calibrationStartedAt`·조정 횟수 기록, DF-209 이벤트용)은 만들지 않는다
 
 ---
 
@@ -1402,7 +1410,9 @@ public struct AssessmentSummary: Sendable {
 
 - MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
 - 왜 필요한가: 흐름 3: 체형 확정·새 버전·기준선
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위에서 아래 두 AC만 뺀다
+- MVP 뒤로 미룬다: AC-DF-209.10(확정 시 머리 상자 가림본, DF-205 `FaceMasker` 연기와 같다). AC-DF-209.8(`posture_landmarks_confirmed`)과 `TrainerAnalyticsTests/PostureConfirmEventTests.swift`(분석 이벤트 AC는 MVP 뒤, DF-126·DF-033)
+- `PhotoRebaser`(새 버전 사진)는 로컬 파일만 쓴다: 로컬 원본 → 캐시. 둘 다 없으면 원격에서 받지 않고 '사진 없음'으로 새 draft를 만들어 다시 찍게 한다. `StoragePhotoFetcher`(DF-227·DF-214, MVP 밖)는 만들지 않는다. 한 기기·한 트레이너 MVP에서는 원본이 기기에 있다
 
 ---
 
@@ -1466,7 +1476,8 @@ public struct AssessmentSummary: Sendable {
 
 - MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
 - 왜 필요한가: 흐름 3: TR-09 결과 화면과 편위 표('산정 준비 중')
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위(분석 이벤트 제외)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): `change_status_rendered{surface:"trainer"}` 전송은 만들지 않는다
 
 ---
 
@@ -1635,8 +1646,8 @@ DF-114의 타임라인 병합 코드에 소스 하나를 더하는 방식으로 
 
 - MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
 - 왜 필요한가: 흐름 4: 타임라인에 체형평가 이벤트
-- 지금 만든다: 카드 전체 범위
-- 참고: 썸네일 얼굴 가림은 DF-205 연기분과 같다
+- 지금 만든다: 카드 전체 범위. 썸네일은 **로컬 `{view}_thumb.jpg`만** 쓴다(DF-205 `Thumbnailer` 산출물, LocalStore 경로). 동의 ③ 확인은 로컬 동의 상태로 하고, 로컬 파일이 없으면 도식 아이콘(AC-DF-225.2). `PhotoAccessGate`·`StoragePhotoFetcher`(DF-227·DF-214, MVP 밖)와 원격 다운로드는 만들지 않는다
+- 참고: 썸네일 얼굴 가림은 DF-205 연기분과 같다. 로컬 일반 썸네일은 기기 밖으로 공유하지 않는다
 
 ---
 ### DF-215 TR-10 추이 차트(seriesBreak, 날짜 척도, L/R, 툴팁, noComparison)를 구현한다
@@ -1711,8 +1722,9 @@ DF-114의 타임라인 병합 코드에 소스 하나를 더하는 방식으로 
 
 - MVP 스프린트: S12(원래 계획 S18). 상태: 할 일
 - 왜 필요한가: 흐름 4: TR-10 추이 차트(seriesBreak, 날짜 척도, L/R)
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위(분석 이벤트 제외)
 - 참고: 변화 판정은 '산정 준비 중'만 표시한다(MDC 엔진 없음, DEC-22)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): `change_status_rendered{surface:"trainer"}` 전송은 만들지 않는다
 
 ---
 
@@ -2098,4 +2110,4 @@ public enum ObjectiveSourceError: Error, Equatable { case permissionDenied, unav
 | v1.0 | 2026-09-24 | 최초 작성. 스파인 P1b 스토리 24개 카드화, 추가 제안 DF-227과 충돌 8건(G-P1b-1~8), 가정 ASM-P1b-01~41 | CJH(에이전트 초안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 경로(PostureMath, TrainerDomain/Series)와 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2) | CJH(AI 에이전트, 릴리스 편집) |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 경로 규칙 TrainerCore·TrainerKit(R4), 대기 회원 시드 ID·시드 스크립트 정본(R2), DF-209 경계 문제 기록(G-P1b-9, ASM-P1b-43), 리드 결정 기록(ASM-P1b-44), 덱 키 DoR(§4, K-11), 가정 ID 참조(R10) | CJH(AI 에이전트, 정합 편집) |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기) | CJH(AI 에이전트) |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: 체형 사진 파이프라인 MVP 절 정리(DF-205 FaceMasker만 연기·일반 썸네일 유지, DF-206 뷰당 두 파일·`maskedThumbPath=null`, DF-209 AC-DF-209.10 제외·PhotoRebaser 로컬만, DF-225 로컬 썸네일만), 분석 이벤트 AC는 MVP 뒤(DF-204·DF-206·DF-208·DF-209·DF-210·DF-215), DF-200·DF-207 Vision 대비책(시뮬레이터 실패 시 iPhone 하네스·수동 지정), 파일 머리 DEC-22 범위 안내. | CJH(AI 에이전트) |

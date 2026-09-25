@@ -410,7 +410,19 @@
     {
       "name": "scope/mvp",
       "color": "0E8A16",
-      "description": "DEC-22 1인 알파 MVP 범위(트레이너 앱 4개 흐름). 없는 항목은 MVP 뒤로 연기",
+      "description": "DEC-22 1인 알파 MVP 범위(트레이너 앱 4개 흐름). 카드 Labels 줄에 적는다",
+      "group": "scope"
+    },
+    {
+      "name": "scope/carryover",
+      "color": "FBCA04",
+      "description": "DEC-22 MVP 밖이지만 PR이 이미 열려 있어 마치는 항목(DF-007·DF-010·DF-011). 카드 Labels 줄에 적는다",
+      "group": "scope"
+    },
+    {
+      "name": "scope/deferred",
+      "color": "BFBFBF",
+      "description": "DEC-22 연기. MVP 뒤 재계획. 생성기가 scope/mvp·scope/carryover가 없는 항목에 붙인다. 작업 지시서를 만들지 않는다",
       "group": "scope"
     }
   ]

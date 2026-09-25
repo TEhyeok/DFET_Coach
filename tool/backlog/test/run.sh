@@ -39,9 +39,9 @@ PATH="$work/bin:$PATH" bash "$tool/create_backlog.sh" --dry-run --offline > "$wo
 mut=$(grep -cE "$MUTATING" "$FAKE_GH_LOG" || true)
 [ "$mut" -eq 0 ] || fail "dry-run made $mut mutating gh calls"
 [ ! -s "$FAKE_GH_LOG" ] || fail "dry-run called gh: $(head -1 "$FAKE_GH_LOG")"
-grep -q '^== plan: labels 68, milestones 9, issues 232 ' "$work/dry.txt" || fail "dry-run plan summary"
+grep -q '^== plan: labels 70, milestones 9, issues 232 ' "$work/dry.txt" || fail "dry-run plan summary"
 cmp -s "$work/dry.txt" "$work/dry-offline.txt" || fail "--dry-run --offline differs from the default dry-run"
-echo "ok 1 dry-run makes no gh calls and prints the plan (labels 68, milestones 9, issues 232)"
+echo "ok 1 dry-run makes no gh calls and prints the plan (labels 70, milestones 9, issues 232)"
 
 # 2) apply twice. 기존 이슈 #1 [DF-001]을 심어 둔다(가짜 gh issue list가 이를 돌려준다)
 mkdir -p "$FAKE_GH_STATE"

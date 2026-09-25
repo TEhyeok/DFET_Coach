@@ -27,6 +27,8 @@
 
 ---
 
+> **DEC-22(2026-09-25) 범위 안내.** 카드 Labels에 `scope/mvp`가 있는 카드만 지금 만든다(카드의 `### MVP 범위(DEC-22)` 절이 범위를 정한다). `scope/carryover`는 이미 PR이 열려 있어 마치는 MVP 밖 항목이다. 둘 다 없는 카드는 **연기(DEC-22), MVP 뒤 재계획**이다: 카드 Sprint 값은 DEC-22 이전 계획이고, `issues.json`에서는 `scope/deferred`·스프린트 'MVP 뒤'가 되며 `brief.mjs`는 작업 지시서를 만들지 않는다. 정본은 [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)이다.
+
 ## 1 이 문서의 범위와 읽는 법
 
 - 이 문서는 **P1a 알파-기록** 단계의 스토리 카드 전문이다. 키 대역은 DF-100~199이며, 백로그 스파인이 정한 키·제목·점수·스프린트·의존을 그대로 쓴다. 스파인에 없는 필요 작업은 [§2 추가 제안](#2-추가-제안)에 다음 빈 키(DF-143, DF-144)로 올렸다.
@@ -497,7 +499,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `agent/claude` `scope/mvp` |
 | Depends on | DF-014 |
 | PRD refs | §10.2.3, NFR-04, NFR-05, NFR-06, NFR-07, F-SOAP-04.8, AC-SOAP-04.6, §9.5 '링크 정책', ADR-002, ADR-007 |
 
@@ -571,7 +573,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | ci |
-| Labels | `type/story` `area/ci` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `scope/mvp` |
+| Labels | `type/story` `area/ci` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `agent/claude` `scope/mvp` |
 | Depends on | DF-015, DF-104 |
 | PRD refs | §12.5 '트레이너 앱 단위·UI', NFR-04, NFR-05, NFR-06, C-05, AC-C-05.1, AC-SOAP-01.3, AC-SOAP-01.4, M-G3, ADR-013 |
 
@@ -644,7 +646,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `privacy-impact` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `privacy-impact` `agent/claude` `scope/mvp` |
 | Depends on | DF-013, DF-016 |
 | PRD refs | F-LINK-01.1, F-LINK-01.2, F-LINK-01.4, F-LINK-01.8, AC-LINK-01.2, AC-LINK-01.6, TR-14, AS-22, §9.2 `pendingMembers`, R-30, R-31 |
 
@@ -714,7 +716,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | functions |
-| Labels | `type/story` `area/functions` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `scope/mvp` |
+| Labels | `type/story` `area/functions` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `agent/codex` `scope/mvp` |
 | Depends on | DF-025, DF-032, DF-107(같은 스프린트: P1a 시드 데이터 PR만 선행, §4.2) |
 | PRD refs | F-PRIV-01.4, F-PRIV-02.1, F-PRIV-02.2, F-PRIV-03.2, F-PRIV-03.3, F-PRIV-03.6, AC-PRIV-02.1, AC-PRIV-03.1, AC-PRIV-03.2, R-20, R-28, §9.2 `consentRecords`·`memberConsentStates`, §9.5 `consentSignatures`, §9.7 `consentChanged`, §10.6 |
 
@@ -821,7 +823,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `regulatory` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `regulatory` `agent/claude` `scope/mvp` |
 | Depends on | DF-108, DF-109 |
 | PRD refs | F-PRIV-01.1, F-PRIV-01.2, F-PRIV-01.3, F-PRIV-03.1, F-PRIV-03.6, AC-PRIV-01.3, AC-PRIV-03.2, F-LINK-01.5, M-08, TR-14, §5.5 `onboarding_consent_completed` |
 
@@ -884,6 +886,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: 테스트 회원 등록 때 동의 ①②③을 기록하는 화면
 - 지금 만든다: 대기 회원 등록 직후 동의 유형별 선택(①②③)과 recordConsent 호출, 결과 상태 칩
 - MVP 뒤로 미룬다: 서명 패드, 가입(uid) 회원 흐름, 동의 문서 전문 표시의 법률 문구(G-04 뒤)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-110.7(`onboarding_consent_completed`)과 TC-110-09는 만들지 않는다. `AnalyticsClient` 호출도 넣지 않는다
 
 ---
 
@@ -1027,7 +1030,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 2 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/S` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/S` `agent/claude` `scope/mvp` |
 | Depends on | DF-108, DF-013 |
 | PRD refs | TR-02, F-LINK-01.2, F-LINK-01.5, F-LINK-03.2, §8.4(TR-02 행), NFR-11, AC-IA-02 |
 
@@ -1094,7 +1097,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/rules` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `flag/bodyComposition` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `area/rules` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `flag/bodyComposition` `agent/claude` `scope/mvp` |
 | Depends on | DF-016, DF-013, DF-113(TR-03 셸), DF-116(세션 시작 흐름) |
 | PRD refs | F-VIZ-05.1, F-VIZ-05.2(P1a), F-VIZ-05.4, F-VIZ-05.6, F-VIZ-05.7, AC-VIZ-05.1, AC-VIZ-05.2, AC-VIZ-05.4, TR-03, F-SOAP-04.5, C-01, AC-C-01.2, §9.6, NFR-15 |
 
@@ -1228,7 +1231,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `needs-device-test` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `needs-device-test` `agent/claude` `scope/mvp` |
 | Depends on | DF-015, DF-016, DF-017, DF-039, DF-113(같은 스프린트: TR-03 셸의 '세션 시작' 진입점, §4.2) |
 | PRD refs | F-SOAP-01.1, F-SOAP-01.2, F-SOAP-01.5, F-SOAP-01.6, F-SOAP-01.8, F-SOAP-01.9, AC-SOAP-01.1~01.3, AC-SOAP-01.6, AC-SOAP-01.9, AC-IA-03, §6.4.1 M1, NFR-12, NFR-15, TR-04 |
 
@@ -1298,7 +1301,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
 - 왜 필요한가: SOAP 흐름 1: TR-04 Live(Pencil 캔버스, 한 줄 입력, '기록 완료')
 - 지금 만든다: 카드 전체 범위
-- 참고: 카드대로 NRS·바디맵·핵심 지표·빠른 추가 칩 자리는 빈 슬롯으로 둔다(DF-117·119는 MVP 밖). 분석 이벤트(DF-126)는 MVP 밖
+- 참고: 카드대로 NRS·바디맵·핵심 지표·빠른 추가 칩 자리는 빈 슬롯으로 둔다(DF-117·119는 MVP 밖). 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033)
 
 ---
 
@@ -1376,7 +1379,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `agent/claude` `scope/mvp` |
 | Depends on | DF-116, DF-023, DF-104 |
 | PRD refs | F-SOAP-01.7, AC-SOAP-01.5, AC-SOAP-02.1, NFR-05, §9.5 `soapInk` 경로·'필기 revision', S-01~S-04, §9.2 '문서 크기와 배열 상한' |
 
@@ -1499,7 +1502,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `regulatory` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `regulatory` `agent/claude` `scope/mvp` |
 | Depends on | DF-116, DF-010 |
 | PRD refs | F-SOAP-02.1, F-SOAP-02.2, F-SOAP-02.3, F-SOAP-02.7, F-SOAP-02.8, F-SOAP-02.10, AC-SOAP-02.1, AC-SOAP-02.5, AC-SOAP-02.8, F-PRIV-06.1, §3.4, 부록 C, TR-05 |
 
@@ -1569,7 +1572,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `regulatory` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `regulatory` `agent/claude` `scope/mvp` |
 | Depends on | DF-120, DF-916 |
 | PRD refs | F-SOAP-02.4, F-SOAP-02.5, F-SOAP-02.6, AC-SOAP-02.2, AC-SOAP-02.3, AC-SOAP-02.4, AC-SOAP-02.6, §9.3 `objective.metrics[]`, 부록 A.1·A.2·A.5·A.6, Q-14, Q-23, §3.4 6번 |
 
@@ -1641,7 +1644,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `agent/claude` `scope/mvp` |
 | Depends on | DF-121, DF-015 |
 | PRD refs | F-SOAP-02.9, F-SOAP-04.1, F-SOAP-04.2, §6.4.2 상태 모델, §6.4.4, AC-SOAP-04.5, AC-SOAP-02.4, M-11, AS-26, §5.5 `soap_review_finalized`, C-05 |
 
@@ -1695,7 +1698,8 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 - MVP 스프린트: S08(원래 계획 S10). 상태: 할 일
 - 왜 필요한가: SOAP 흐름 1: 확정 최소 요건과 확정·확정 대기
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위(분석 이벤트 AC 제외)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-122.7(`soap_review_finalized`)과 TC-122-07은 만들지 않는다. 나머지 수용 기준은 카드 그대로
 
 ---
 
@@ -1710,7 +1714,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/functions` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `privacy-impact` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `area/functions` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `privacy-impact` `agent/claude` `scope/mvp` |
 | Depends on | DF-122 |
 | PRD refs | F-SOAP-04.3~04.8, F-PRIV-07.3, AC-SOAP-04.1~04.4, AC-SOAP-04.6, R-08, R-09, §9.3 `addenda`, §9.7 `soapFinalized`, §5.5 `soap_addendum_created` |
 
@@ -1766,6 +1770,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: SOAP 흐름 1: addendum과 draft 삭제
 - 지금 만든다: addendum, draft 삭제
 - MVP 뒤로 미룬다: auditSoapFinalized 감사 트리거(감사는 MVP 밖)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-123.8(`soap_addendum_created`)과 TC-123-08은 만들지 않는다
 
 ---
 
@@ -1970,7 +1975,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `privacy-impact` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `privacy-impact` `agent/claude` `scope/mvp` |
 | Depends on | DF-109, DF-016, DF-104, DF-121(`NumberParser`, S10), DF-114(같은 스프린트: TR-03 헤더에 진입점 추가, §4.2) |
 | PRD refs | F-BC-01.1~01.4, F-BC-03.1~03.3, AC-BC-01.1~01.5, AC-BC-03.1, AC-BC-03.2, AC-BC-03.4, AC-PRIV-01.1, R-14, R-17, R-27, §9.2 `bodyCompositionRecords`, §5.5 `bodycomp_record_saved`, TR-11 |
 
@@ -2036,7 +2041,8 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 - MVP 스프린트: S09(원래 계획 S11). 상태: 할 일
 - 왜 필요한가: 흐름 2: TR-11 신체조성 수기 입력
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위(분석 이벤트 AC 제외)
+- 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-127.10(`bodycomp_record_saved`)과 TC-127-11은 만들지 않는다
 
 ---
 
@@ -2051,7 +2057,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `privacy-impact` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `privacy-impact` `agent/claude` `scope/mvp` |
 | Depends on | DF-127, DF-118 |
 | PRD refs | F-BC-02.1, F-BC-02.3, F-BC-03.4, F-BC-03.5, AC-BC-03.3, AC-BC-03.5, §7.4 신체조성 조건 키, §9.5 `bodyCompositionRecords/{recordId}/report.*` |
 
@@ -2120,7 +2126,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `scope/mvp` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `agent/claude` `scope/mvp` |
 | Depends on | DF-127 |
 | PRD refs | F-ASM-06.1~06.6, AC-ASM-06.1~06.5, R-26, R-29, §9.2 `circumferenceMeasurements`, 부록 A.1(둘레 코드·side 규칙), TR-12 |
 
@@ -2195,7 +2201,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Points | 3 |
 | Priority | must |
 | Area | design |
-| Labels | `type/story` `area/design` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `scope/mvp` |
+| Labels | `type/story` `area/design` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `agent/claude` `scope/mvp` |
 | Depends on | DF-016, DF-128 |
 | PRD refs | F-VIZ-07.1~07.9, C-01~C-04, AC-VIZ-07.1~07.5, AC-C-01.1, AC-C-02.1, AC-C-03.1, AC-C-03.2, AC-C-04.1, AC-BC-03.3(렌더 부분), A-02, A-03, AC-A11Y-03, §6.5.0 |
 
@@ -3157,4 +3163,4 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | v1.0(검토 반영) | 2026-09-24 | 시드 경로·ID·에뮬레이터 포트를 V1-10과 통일(§5.4, DF-107, AC-DF-107.7), 문구 키를 덱 이름으로 정리하고 덱 추가 요청 표 신설(§5.3), DF-116 진입점을 TR-03 셸(DF-113)로 바꾸고 입력 한도 규칙 확정(AC-DF-116.4·116.8), DF-114·DF-127·DF-129 진입점 기준 추가, 누락 의존 보강(DF-109·114·116·127), ASM-P1a-48~50, CF-20~22 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 이슈 JSON 참조를 `tool/backlog/issues.json`으로, 순수 타깃 경로를 `Packages/TrainerCore`로 고침(LocalStore는 TrainerKit) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: Outbox kind·LocalPendingMemberDraft·FilterPreference(R5), DF-114 인덱스 2개, syncRecordAccessKeysCore 호출, MIG-08 ①을 DF-100으로, 경로 표(R4), CF-18·19·20·22 갱신, 가정 ID 참조(R10), ASM-P1a-51 | — | 없음 |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기) | #113 | 없음 |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: MVP 스토리 17건에 `agent/` 라벨(DF-109 codex, 나머지 claude), 분석 이벤트 AC는 MVP 뒤(DF-110·DF-116·DF-122·DF-123·DF-127 MVP 절), 파일 머리 DEC-22 범위 안내. | #113 | 없음 |

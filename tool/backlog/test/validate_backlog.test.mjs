@@ -162,3 +162,15 @@ test('AC-DF-002.3 schema: wrong type and enum value fail', () => {
   assert.match(r.err, /^issues\.json: DF-002 points type$/m);
   assert.match(r.err, /^issues\.json: DF-002 kind not in enum: feature$/m);
 });
+
+test('DEC-22 scope checks: one scope/ label, deferred sprint, agent label on MVP items', () => {
+  const noScope = validateMutated((doc) => { const it = item(doc, 'DF-025'); it.labels = it.labels.filter((l) => !l.startsWith('scope/')); });
+  assert.equal(noScope.code, 1);
+  assert.match(noScope.err, /^issues\.json: DF-025 needs exactly one scope\/ label \(DEC-22\)$/m);
+  const sprint = validateMutated((doc) => { item(doc, 'DF-025').sprint = 'S05'; });
+  assert.equal(sprint.code, 1);
+  assert.match(sprint.err, /^issues\.json: DF-025 scope\/deferred needs sprint 'MVP 뒤' and plannedSprint$/m);
+  const agent = validateMutated((doc) => { const it = item(doc, 'DF-116'); it.labels = it.labels.filter((l) => !l.startsWith('agent/')); });
+  assert.equal(agent.code, 1);
+  assert.match(agent.err, /^issues\.json: DF-116 MVP item needs an agent\/ label \(DEC-22\)$/m);
+});

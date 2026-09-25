@@ -3,7 +3,11 @@
 // Node 22+ 내장 모듈만 쓴다. 파일만 읽고 네트워크·gh·git을 부르지 않는다(ASM-01-17, 00_README K-04).
 //
 // 사용: node tool/backlog/brief.mjs DF-NNN [--sprint SNN] [--agent claude|codex] [--slug <kebab>]
-//                                   [--files <issues.json>] [--repo-root <dir>] > brief.md
+//                                   [--allow-deferred] [--files <issues.json>] [--repo-root <dir>] > brief.md
+//
+// DEC-22 범위: scope/mvp·scope/carryover 항목만 지시서를 만든다. scope/deferred(또는 scope/ 라벨 없음)는
+// exit 1이다. --allow-deferred를 주면 stderr 경고와 지시서 맨 위 '연기 항목' 경고를 달고 만든다(MVP 뒤 재계획 검토용).
+// --sprint의 같은 스프린트 목록은 scope/mvp·scope/carryover만 센다.
 //
 // 채우는 절(V1-T08 '사용법' 표)
 //   0·10·11  고정문(템플릿)
@@ -22,7 +26,7 @@
 //                   에이전트는 --agent → (--sprint를 줬으면) 스프린트 문서 레인·브랜치 → agent/ 라벨 순서로 정한다.
 //                   스프린트 문서와 라벨이 다르면 stderr에 경고한다
 //
-// 종료 코드: 0 성공, 1 대상이 아님(없는 키, 에픽, 소유자 행동, 에이전트 미정, 카드 없음), 2 사용법 오류
+// 종료 코드: 0 성공, 1 대상이 아님(없는 키, 에픽, 소유자 행동, 연기 항목, 에이전트 미정, 카드 없음), 2 사용법 오류
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname, resolve, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,9 +37,9 @@ const CARD_DIR = 'docs/v1/backlog';
 const SPRINT_DIR = 'docs/v1/sprints';
 
 // ---------- 인자 ----------
-const USAGE = 'usage: node tool/backlog/brief.mjs DF-NNN [--sprint SNN] [--agent claude|codex] [--slug <kebab>] [--files <issues.json>] [--repo-root <dir>]';
+const USAGE = 'usage: node tool/backlog/brief.mjs DF-NNN [--sprint SNN] [--agent claude|codex] [--slug <kebab>] [--allow-deferred] [--files <issues.json>] [--repo-root <dir>]';
 const here = dirname(fileURLToPath(import.meta.url));
-const opts = { root: resolve(here, '..', '..'), key: null, sprint: null, agent: null, slug: null, files: null };
+const opts = { root: resolve(here, '..', '..'), key: null, sprint: null, agent: null, slug: null, files: null, allowDeferred: false };
 {
   const argv = process.argv.slice(2);
   const need = (i) => { if (i >= argv.length || argv[i].startsWith('--')) usage(`${argv[i - 1]} needs a value`); return argv[i]; };
@@ -46,6 +50,7 @@ const opts = { root: resolve(here, '..', '..'), key: null, sprint: null, agent: 
     else if (a === '--agent') opts.agent = need(++i);
     else if (a === '--slug') opts.slug = need(++i);
     else if (a === '--files') opts.files = need(++i);
+    else if (a === '--allow-deferred') opts.allowDeferred = true;
     else if (a === '--repo-root') opts.root = resolve(need(++i));
     else if (a.startsWith('--')) usage(`unknown option ${a}`);
     else if (!opts.key) opts.key = a;
@@ -71,6 +76,15 @@ if (!item) fail(`${opts.key} not found in ${issuesPath}`);
 if (item.kind === 'epic') fail(`${opts.key} is an epic`);
 const labelAgent = (it) => (it.labels.find((l) => /^agent\/(claude|codex)$/.test(l)) || '').slice(6) || null;
 if (item.ownerAction || (item.labels.includes('agent/human') && !labelAgent(item))) fail(`${opts.key} is an owner/human task (agent/human); no agent brief`);
+// DEC-22 범위. scope/ 라벨이 없는 옛 issues.json도 연기로 본다.
+const inMvp = (it) => it.labels.includes('scope/mvp') || it.labels.includes('scope/carryover');
+const deferred = !inMvp(item);
+const MVP_PLAN_URL = `${BLOB}docs/v1/03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22`;
+if (deferred) {
+  const was = item.plannedSprint || item.sprint || '-';
+  if (!opts.allowDeferred) fail(`${opts.key} is deferred (scope/deferred, DEC-22; old plan ${was}): not in the 1-person alpha MVP, so no agent brief. Re-plan it after the MVP exit review (03 MVP 계획), or pass --allow-deferred to build one anyway`);
+  console.error(`warning: ${opts.key} is deferred (scope/deferred, DEC-22; old plan ${was}); building the brief because --allow-deferred was given`);
+}
 
 // ---------- 마크다운 도구 ----------
 // 상대 링크를 GitHub blob 절대 링크로 바꾼다(지시서는 이슈 코멘트로 붙으므로 상대 링크가 깨진다). build_issues.mjs와 같은 규칙.
@@ -371,6 +385,7 @@ const reading = [
   'docs/v1/01_AGILE_WORKING_AGREEMENT.md — \'에이전트 권한 경계\', \'완료 정의(DoD)\' 공통' + ([...new Set(areas.map((a) => AREA[a]?.dod).filter(Boolean))].map((d) => ` + '${d}'`).join('')),
   'docs/v1/13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md — §7 금지 행동과 비밀·실데이터 규칙',
 ];
+if (!deferred) reading.push('docs/v1/03_RELEASE_AND_SPRINT_PLAN.md — \'MVP 계획(DEC-22)\': 지금 적용되는 범위·스프린트·MVP 공통 규칙(01 스프린트 달력은 DEC-22 이전 계획)');
 if (prdSections.length) reading.push(`docs/PRD_V1.md — ${prdSections.join(', ')} (절 단위로만 읽는다)`);
 for (const a of areas) for (const r of AREA[a]?.reading ?? []) if (!reading.includes(r)) reading.push(r);
 for (const adr of adrs) {
@@ -386,7 +401,7 @@ if (opts.sprint) {
   const sf = sprintFile(opts.sprint);
   for (const it of issues) {
     if (it.key === opts.key || it.kind === 'epic' || it.proposal || it.ownerAction) continue;
-    if (!labelAgent(it) || !inSprint(it, opts.sprint)) continue;
+    if (!labelAgent(it) || !inMvp(it) || !inSprint(it, opts.sprint)) continue;
     const info = sprintInfo(it.key, sf);
     const ag = resolveAgent(it, info, true, false);
     const paths = info.allowed ? info.allowed : `area ${it.area ?? '-'}, 카드 ${BLOB}${it.sourceDoc}`;
@@ -396,7 +411,7 @@ if (opts.sprint) {
 
 // ---------- 출력 ----------
 const title = item.title;
-const genCmd = ['node tool/backlog/brief.mjs', opts.key, ...(opts.sprint ? ['--sprint', opts.sprint] : []), ...(opts.agent ? ['--agent', opts.agent] : []), ...(opts.slug ? ['--slug', opts.slug] : [])].join(' ');
+const genCmd = ['node tool/backlog/brief.mjs', opts.key, ...(opts.sprint ? ['--sprint', opts.sprint] : []), ...(opts.agent ? ['--agent', opts.agent] : []), ...(opts.slug ? ['--slug', opts.slug] : []), ...(opts.allowDeferred ? ['--allow-deferred'] : [])].join(' ');
 const out = [];
 const push = (...xs) => out.push(...xs);
 push(
@@ -404,6 +419,7 @@ push(
   '',
   `> \`${genCmd}\`가 카드(${card.file})와 \`tool/backlog/issues.json\`에서 생성했다(V1-T08). 카드를 고친 뒤 다시 생성한다. 손으로 고치지 않는다.`,
   '',
+  ...(deferred ? [`> **연기 항목(DEC-22, \`scope/deferred\`). 1인 알파 MVP 범위가 아니다.** 소유자가 MVP 뒤 재계획에서 이 항목을 스프린트에 다시 넣기 전에는 구현하지 않는다. 옛 계획 스프린트: ${item.plannedSprint || item.sprint || '-'}. [03 MVP 계획](${MVP_PLAN_URL})`, ''] : []),
   `너는 D-FET Coach v1 저장소(${REPO}, 트렁크 main)에서 **이 스토리 하나만** 구현하는 코딩 에이전트다.`,
   '결과물은 draft PR 하나와 이슈 완료 보고 하나다.',
   '',
@@ -421,7 +437,7 @@ push(
   orNone(section.story),
   '',
   '## 2. 추적',
-  `- 스토리: ${opts.key} (에픽 ${item.epic ?? '-'}${epicTitle ? ` ${epicTitle}` : ''}, 단계 ${item.phase}, 스프린트 ${item.sprint ?? '-'}, ${item.points}점, 우선 ${item.prio ?? '-'}, 플래그 ${flags.length ? flags.join(', ') : '없음'})`,
+  `- 스토리: ${opts.key} (에픽 ${item.epic ?? '-'}${epicTitle ? ` ${epicTitle}` : ''}, 단계 ${item.phase}, 스프린트 ${item.sprint ?? '-'}${item.plannedSprint ? `(옛 계획 ${item.plannedSprint})` : ''}, ${item.points}점, 우선 ${item.prio ?? '-'}, 플래그 ${flags.length ? flags.join(', ') : '없음'})`,
   `- PRD: ${traceIds || '없음'}`,
   `- 관련 ADR: ${adrs.length ? adrs.join(', ') : '없음'}`,
   `- 먼저 끝나야 하는 항목: ${item.deps.length ? item.deps.join(', ') : '없음'}${item.cardDeps.length ? ` (카드가 더한 의존: ${item.cardDeps.join(', ')})` : ''}`,
@@ -439,6 +455,7 @@ push(
 );
 if (opts.sprint) push(`- 같은 스프린트(${opts.sprint})의 다른 에이전트 작업(건드리지 않음):`, ...(others.length ? others : ['  - 없음']));
 if (section.mvp) push('', 'MVP 범위(DEC-22, 카드 원문). \'MVP 뒤로 미룬다\'에 적힌 것은 만들지 않는다:', '', section.mvp);
+if (item.labels.includes('scope/mvp')) push('', 'MVP 공통 규칙(DEC-22, 03 \'MVP 공통 규칙\'): 분석 이벤트는 MVP 뒤다(DF-126·DF-033). 카드의 분석 이벤트 수용 기준·`TrainerAnalyticsTests` 테스트·이벤트 전송 코드는 만들지 않는다. 연기 항목(`scope/deferred`)의 코드·API에 기대지 않는다.');
 push(
   '',
   '카드의 에이전트 브리프(소유자 작성):',

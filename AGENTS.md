@@ -292,3 +292,10 @@ final response = await model.generateContent([
 - **Gemini not responding**: Verify AI Logic is enabled in Firebase Console (Build → AI Logic)
 - **JSON parsing fails**: Service includes extraction logic for markdown code blocks (```json```), but verify prompt asks for JSON-only output
 - **API quota exceeded**: Free tier is 15,000 requests/month; check Firebase Console for usage
+
+## D-FET Coach v1 개발
+- 정본: [docs/PRD_V1.md](docs/PRD_V1.md). 개발 문서: [docs/v1/00_README.md](docs/v1/00_README.md)(지도), [docs/v1/13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md](docs/v1/13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md)(에이전트 규약).
+- 작업은 이슈의 에이전트 작업 지시서(V1-T08)에 적힌 수정 허용 경로 안에서만 한다.
+- 금지: main 직접 푸시·병합·배포, 운영 데이터 접근·이관 실행, 비밀 파일(.env*, .secret.local, GoogleService-Info.plist 값, 키)과 output/·tmp/ 열람.
+- 금지: GitHub 이슈 생성, PRD 직접 수정(수정 제안만).
+- 모든 검증은 합성 데이터와 에뮬레이터로 하고 증빙을 PR에 첨부한다.

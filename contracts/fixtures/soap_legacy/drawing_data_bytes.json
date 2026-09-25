@@ -1,0 +1,72 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/drawing_data_bytes",
+    "description": "trainer_ios 저장본의 인라인 필기 drawingData(Bytes, 16바이트 합성), 지표 0개, status complete",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-06",
+      "§11.7"
+    ],
+    "expect": {
+      "legacyMetricCount": 0
+    }
+  },
+  "path": "soap_notes/fx-note-legacy-006",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "fx-member-001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1790298000000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "bodyRegion": "",
+    "subjective": "특별한 불편 없음",
+    "observation": "필기로만 기록",
+    "assessment": "",
+    "treatmentPlan": "다음 세션 동일 루틴",
+    "painNow": {
+      "$int": 0
+    },
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "특별한 불편 없음"
+      },
+      "objective": {
+        "observation": "필기로만 기록"
+      },
+      "assessment": {
+        "problemList": ""
+      },
+      "plan": {
+        "treatmentPlan": "다음 세션 동일 루틴"
+      },
+      "metrics": [],
+      "workflow": {
+        "status": "complete",
+        "completedCategories": [
+          "S",
+          "O",
+          "A",
+          "P"
+        ],
+        "riskLevel": "low",
+        "followUpDate": null
+      }
+    },
+    "createdAt": {
+      "$int": 1790298000000
+    },
+    "updatedAt": {
+      "$int": 1790301600000
+    },
+    "drawingData": {
+      "$bytes": "ZngtZHJhd2luZy1ieXRlcw=="
+    }
+  }
+}

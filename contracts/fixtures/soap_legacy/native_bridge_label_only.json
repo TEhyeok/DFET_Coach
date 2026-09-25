@@ -1,0 +1,138 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/native_bridge_label_only",
+    "description": "네이티브 브리지(Runner) 저장본. rom·mmt·exercise는 label만, 날짜 고정 문서 ID, 로컬 seed memberId, diagnosis 자동 채움, 인라인 필기 base64(64바이트 합성), 공유 true",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-03",
+      "MIG-04",
+      "MIG-05",
+      "MIG-06",
+      "MIG-07",
+      "§11.4"
+    ],
+    "expect": {
+      "legacyMetricCount": 3
+    }
+  },
+  "path": "soap_notes/native_fx_20260928",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "member-00000000-0000-4000-8000-000000000001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1790521200000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "diagnosis": "가상 자동 채움 문구(합성)",
+    "bodyRegion": "허리",
+    "caseStatus": "active",
+    "subjective": "허리를 숙일 때 뻐근하다고 함",
+    "painSite": "허리",
+    "painPattern": "",
+    "painNow": {
+      "$int": 4
+    },
+    "painBest": null,
+    "painWorst": null,
+    "observation": "숙이기 동작에서 속도 느림",
+    "rom": "허리 굴곡",
+    "mmt": "엉덩이 외전",
+    "neurologicalTests": "",
+    "specialTests": "",
+    "functionalTests": "",
+    "assessment": "숙이기 패턴 연습 필요",
+    "shortTermGoal": "",
+    "longTermGoal": "",
+    "treatmentPlan": "힙힌지 연습",
+    "homeExercise": "",
+    "nextPlan": "숙이기 동작 다시 보기",
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "허리를 숙일 때 뻐근하다고 함",
+        "painSite": "허리",
+        "painNow": {
+          "$int": 4
+        },
+        "nativeInkDataBase64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+Pw==",
+        "nativeInkStrokeCount": {
+          "$int": 3
+        }
+      },
+      "objective": {
+        "observation": "숙이기 동작에서 속도 느림",
+        "romEntries": [
+          "허리 굴곡"
+        ],
+        "mmtEntries": [
+          "엉덩이 외전"
+        ],
+        "exerciseEntries": [
+          "힙힌지 드릴"
+        ]
+      },
+      "assessment": {
+        "problemList": "숙이기 패턴 연습 필요",
+        "riskLevel": "medium"
+      },
+      "plan": {
+        "treatmentPlan": "힙힌지 연습",
+        "homeExercise": "",
+        "nextPlan": "숙이기 동작 다시 보기"
+      },
+      "metrics": [
+        {
+          "type": "rom",
+          "label": "허리 굴곡",
+          "side": "",
+          "value": "",
+          "unit": "deg",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "mmt",
+          "label": "엉덩이 외전",
+          "side": "",
+          "value": "",
+          "unit": "grade",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "exercise",
+          "label": "힙힌지 드릴",
+          "side": "",
+          "value": "",
+          "unit": "",
+          "score": null,
+          "note": ""
+        }
+      ],
+      "workflow": {
+        "status": "draft",
+        "completedCategories": [
+          "meta",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "sharing"
+        ],
+        "riskLevel": "medium",
+        "followUpDate": null
+      }
+    },
+    "createdAt": {
+      "$int": 1790521200000
+    },
+    "updatedAt": {
+      "$int": 1790565600000
+    }
+  }
+}

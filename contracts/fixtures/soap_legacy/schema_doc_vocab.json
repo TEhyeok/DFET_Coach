@@ -1,0 +1,101 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/schema_doc_vocab",
+    "description": "스키마 문서(docs/firestore_schema.md) 어휘 pain·functional·specialTest, 한글 side, unit 도, status 완료, completedCategories S·O·A·P",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-03",
+      "§11.4"
+    ],
+    "expect": {
+      "legacyMetricCount": 3
+    }
+  },
+  "path": "soap_notes/fx-note-legacy-003",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "fx-member-001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1790038800000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "bodyRegion": "허리",
+    "subjective": "아침에 허리가 뻐근하다고 함",
+    "observation": "스쿼트 하강 속도 일정",
+    "assessment": "코어 안정화 운동 필요",
+    "treatmentPlan": "코어 운동 3세트",
+    "painNow": {
+      "$int": 5
+    },
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "아침에 허리가 뻐근하다고 함"
+      },
+      "objective": {
+        "observation": "스쿼트 하강 속도 일정"
+      },
+      "assessment": {
+        "problemList": "코어 안정화 운동 필요"
+      },
+      "plan": {
+        "treatmentPlan": "코어 운동 3세트"
+      },
+      "metrics": [
+        {
+          "type": "pain",
+          "label": "허리 뻐근함",
+          "side": "해당 없음",
+          "value": "5",
+          "unit": "",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "functional",
+          "label": "스쿼트 패턴",
+          "side": "양측",
+          "value": "",
+          "unit": "",
+          "score": {
+            "$int": 2
+          },
+          "note": "가상 관찰"
+        },
+        {
+          "type": "specialTest",
+          "label": "가상 검사 항목",
+          "side": "좌",
+          "value": "양성",
+          "unit": "",
+          "score": null,
+          "note": ""
+        }
+      ],
+      "workflow": {
+        "status": "완료",
+        "completedCategories": [
+          "S",
+          "O",
+          "A",
+          "P"
+        ],
+        "riskLevel": "medium",
+        "followUpDate": {
+          "$int": 1790643600000
+        }
+      }
+    },
+    "createdAt": {
+      "$int": 1790038800000
+    },
+    "updatedAt": {
+      "$int": 1790042400000
+    }
+  }
+}

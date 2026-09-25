@@ -1,0 +1,80 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/status_shared_korean",
+    "description": "status 공유됨(한글), isSharedWithMember true, type general과 빈 value 행 1개",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-03",
+      "MIG-05",
+      "§11.4"
+    ],
+    "expect": {
+      "legacyMetricCount": 1
+    }
+  },
+  "path": "soap_notes/fx-note-legacy-005",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "fx-member-001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1790211600000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "bodyRegion": "목",
+    "subjective": "목 뒤 당김은 줄었다고 함",
+    "observation": "고개 돌리기 편해 보임",
+    "assessment": "현재 운동 유지",
+    "treatmentPlan": "턱 당기기 10회",
+    "painNow": {
+      "$int": 1
+    },
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "목 뒤 당김은 줄었다고 함"
+      },
+      "objective": {
+        "observation": "고개 돌리기 편해 보임"
+      },
+      "assessment": {
+        "problemList": "현재 운동 유지"
+      },
+      "plan": {
+        "treatmentPlan": "턱 당기기 10회"
+      },
+      "metrics": [
+        {
+          "type": "general",
+          "label": "컨디션",
+          "side": "",
+          "value": "",
+          "unit": "",
+          "score": null,
+          "note": ""
+        }
+      ],
+      "workflow": {
+        "status": "공유됨",
+        "completedCategories": [
+          "S",
+          "O",
+          "A",
+          "P"
+        ],
+        "riskLevel": "low",
+        "followUpDate": null
+      }
+    },
+    "createdAt": {
+      "$int": 1790211600000
+    },
+    "updatedAt": {
+      "$int": 1790218800000
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/trainer_ios_korean_enum",
+    "description": "trainer_ios 한글·대문자 어휘 ROM·통증·MMT·기능검사·특수검사, side 좌·우·양측·해당 없음, unit 도, Swift Double 문자열 value, workflow 작성 중, completedCategories S",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-03",
+      "§11.4"
+    ],
+    "expect": {
+      "legacyMetricCount": 5
+    }
+  },
+  "path": "soap_notes/fx-note-legacy-004",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "fx-member-001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1790125200000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "bodyRegion": "무릎",
+    "subjective": "계단 내려갈 때 왼쪽 무릎이 불편하다고 함",
+    "observation": "한 발 스쿼트에서 무릎 흔들림 관찰",
+    "assessment": "하체 정렬 연습 필요",
+    "treatmentPlan": "미니 스쿼트 연습",
+    "painNow": {
+      "$int": 3
+    },
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "계단 내려갈 때 왼쪽 무릎이 불편하다고 함"
+      },
+      "objective": {
+        "observation": "한 발 스쿼트에서 무릎 흔들림 관찰"
+      },
+      "assessment": {
+        "problemList": "하체 정렬 연습 필요"
+      },
+      "plan": {
+        "treatmentPlan": "미니 스쿼트 연습"
+      },
+      "metrics": [
+        {
+          "type": "ROM",
+          "label": "무릎 굴곡",
+          "side": "좌",
+          "value": "120.0",
+          "unit": "도",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "통증",
+          "label": "무릎 불편감",
+          "side": "해당 없음",
+          "value": "3.0",
+          "unit": "",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "MMT",
+          "label": "엉덩이 외전근",
+          "side": "우",
+          "value": "",
+          "unit": "",
+          "score": {
+            "$int": 4
+          },
+          "note": ""
+        },
+        {
+          "type": "기능검사",
+          "label": "한 발 스쿼트",
+          "side": "양측",
+          "value": "",
+          "unit": "",
+          "score": null,
+          "note": "가상 관찰"
+        },
+        {
+          "type": "특수검사",
+          "label": "가상 검사 항목",
+          "side": "좌",
+          "value": "",
+          "unit": "",
+          "score": null,
+          "note": ""
+        }
+      ],
+      "workflow": {
+        "status": "작성 중",
+        "completedCategories": [
+          "S"
+        ],
+        "riskLevel": "low",
+        "followUpDate": null
+      }
+    },
+    "createdAt": {
+      "$int": 1790125200000
+    },
+    "updatedAt": {
+      "$int": 1790127000000
+    }
+  }
+}

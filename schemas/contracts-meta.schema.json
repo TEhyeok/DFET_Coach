@@ -7,7 +7,7 @@
   "required": ["contract"],
   "properties": {
     "contract": {
-      "enum": ["metric-catalog", "vocab"]
+      "enum": ["metric-catalog", "vocab", "prohibited-terms"]
     }
   },
   "allOf": [
@@ -24,6 +24,13 @@
         "required": ["contract"]
       },
       "then": { "$ref": "#/$defs/vocab" }
+    },
+    {
+      "if": {
+        "properties": { "contract": { "const": "prohibited-terms" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/prohibitedTerms" }
     }
   ],
   "$defs": {
@@ -315,6 +322,177 @@
           }
         }
       }
+    },
+    "prohibitedTerms": {
+      "description": "PRD appendix C as data (DF-010, ADR-016). Rule sets and path mapping: docs/v1/12_COPY_ANALYTICS_AND_LINT.md §7. Read by tool/lint/prohibited-terms.mjs; copied to Functions and rendered to Swift by the generator.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "ruleSets", "causalPatterns", "abbreviationAllowlist", "pathRuleSets", "allowPaths", "excludePaths", "allowEntries"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "prohibited-terms" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "ruleSets": {
+          "type": "object",
+          "required": ["common", "member", "trainer"],
+          "additionalProperties": false,
+          "properties": {
+            "common": {
+              "description": "Appendix C.1, every row. Each row carries its clinical-mode (v2) note.",
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/termRule", "required": ["clinicalModeNote"] }
+            },
+            "member": { "type": "array", "items": { "$ref": "#/$defs/termRule" } },
+            "trainer": { "type": "array", "items": { "$ref": "#/$defs/termRule" } }
+          }
+        },
+        "causalPatterns": {
+          "description": "Appendix C.2. Always reported as warnings (ASM-P0-07).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "prdRow", "regex", "severity", "allowedExample"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^C2-[0-9]{2}$" },
+              "prdRow": { "type": "string", "minLength": 1 },
+              "regex": { "type": "string", "minLength": 1 },
+              "severity": { "const": "warn" },
+              "allowedExample": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "abbreviationAllowlist": {
+          "type": "object",
+          "required": ["trainer"],
+          "additionalProperties": false,
+          "properties": {
+            "trainer": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*$" },
+              "uniqueItems": true
+            }
+          }
+        },
+        "pathRuleSets": {
+          "description": "First matching glob wins (ASM-P0-08).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["glob", "ruleSets"],
+            "additionalProperties": false,
+            "properties": {
+              "glob": { "$ref": "#/$defs/glob" },
+              "ruleSets": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["common", "member", "trainer"] }
+              }
+            }
+          }
+        },
+        "allowPaths": {
+          "description": "Appendix C.3 exceptions: appendix and legal quotes, test fixtures, the rule file itself.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/glob" },
+          "uniqueItems": true
+        },
+        "excludePaths": {
+          "description": "Not product source: generated copies (the contracts input is checked instead), frozen port source, build output, third-party code.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/glob" },
+          "uniqueItems": true
+        },
+        "allowEntries": {
+          "description": "Exact-string exceptions. Only the PRD §3.1 disclaimers may be active without an owner-reviewed regulatory PR (docs/v1/12 §7.13).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "active", "exactString", "rules", "reason", "reviewedBy", "reviewStatus"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^AE-[0-9]{2}$" },
+              "kind": { "enum": ["regulatoryDisclaimer"] },
+              "active": { "type": "boolean" },
+              "exactString": { "type": "string", "minLength": 1 },
+              "rules": { "$ref": "#/$defs/ruleIdList" },
+              "reason": { "type": "string", "minLength": 1 },
+              "reviewedBy": { "type": "string", "minLength": 1 },
+              "reviewStatus": { "enum": ["approvedByPrd", "approvedByOwner"] }
+            }
+          }
+        }
+      }
+    },
+    "termRule": {
+      "type": "object",
+      "required": ["id", "prdRow", "terms", "alternatives", "scopes", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^C[13]-[0-9A-Za-z-]+$" },
+        "prdRow": { "type": "string", "minLength": 1 },
+        "terms": {
+          "description": "Plain terms. A space inside a term also matches no space or a · - _ / separator (docs/v1/12 §7.3).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "regex": {
+          "description": "Extra JavaScript-compatible patterns (flags gu), e.g. accuracy percentages.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "alternatives": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["ui", "summary", "notification", "marketing", "event", "input", "export"] }
+        },
+        "severity": { "enum": ["block", "warn"] },
+        "match": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "boundary": { "const": "wordStart" },
+            "except": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "onlyIn": {
+          "description": "The rule applies only to strings under these catalog key prefixes or these path globs.",
+          "type": "object",
+          "required": ["keyPrefixes", "globs"],
+          "additionalProperties": false,
+          "properties": {
+            "keyPrefixes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "globs": { "type": "array", "items": { "$ref": "#/$defs/glob" } }
+          }
+        },
+        "clinicalModeNote": {
+          "description": "Appendix C.1 'clinical mode (v2)' column. Not read by v1 checks.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ruleIdList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^C[13]-[0-9A-Za-z-]+$" }
+    },
+    "glob": {
+      "description": "Repository-relative path glob: ** any depth, * within one segment.",
+      "type": "string",
+      "pattern": "^[^/!\\\\][^\\\\]*$"
     }
   }
 }

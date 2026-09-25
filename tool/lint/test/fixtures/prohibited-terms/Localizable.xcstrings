@@ -1,0 +1,46 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "tr05.plan.title" : {
+      "comment" : "진단 in a comment is not checked",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "치료 (en value is not checked)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "치료계획, 홈운동, 다음 세션"
+          }
+        }
+      }
+    },
+    "tr13.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관측 단면 측정값"
+          }
+        }
+      }
+    },
+    "tr11.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정값을 하나 이상 입력하세요"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

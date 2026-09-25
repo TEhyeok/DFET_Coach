@@ -1,5 +1,5 @@
 # GH-02 에픽 이슈 폼 (V1-02 제품 백로그 총괄)
-name: "에픽"
+name: "에픽(Epic)"
 description: "EP-00~EP-23 에픽. 하위 스토리는 본문 체크리스트로 연결한다."
 title: "[EP-NN] "
 labels: ["type/epic"]

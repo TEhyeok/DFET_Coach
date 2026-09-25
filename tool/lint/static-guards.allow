@@ -1,0 +1,4 @@
+G2 lib/screens/create_request_screen.dart # 기존 요청 사진 업로드. PRD §9.5 링크 정책과 충돌, 제거 스토리 없음. Q-DEV로 소유자 결정 대기(ASM-P0-25, CF-P0-09)
+G2 lib/services/community_service.dart # 기존 커뮤니티 업로드. §9.5 링크 정책과 충돌, Q-DEV로 소유자 결정 대기(ASM-P0-25, CF-P0-09)
+G9 lib/contracts/generated/metric_catalog.g.dart # DF-004 계약 생성물. metricCode별 원 기록 컬렉션 이름을 담은 메타데이터이고 조회 코드가 아니다. 손으로 고치지 않고 tool/contracts/generate.mjs가 쓴다
+G9 lib/services/firestore_service.dart # 회원 앱의 soap_notes 직접 조회. P2 DF-315에서 memberSummaries로 교체하며 제거(AC-VIZ-06.1, ASM-01-15)

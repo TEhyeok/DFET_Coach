@@ -57,7 +57,7 @@
 
 ### MVP 공통 규칙
 
-모든 MVP 카드에 적용한다. 카드의 MVP 절이 더 좁게 정하면 카드를 따른다. `brief.mjs`가 MVP 스토리의 작업 지시서 §4에 1번을 넣는다.
+모든 MVP 카드에 적용한다. 카드의 MVP 절이 더 좁게 정하면 카드를 따른다. `brief.mjs`가 MVP 스토리의 작업 지시서 §4에 1번과 6번을 넣는다.
 
 1. **분석 이벤트는 MVP 뒤다(DF-126·DF-033).** `AnalyticsSink`·`DebugSink`·`TrainerEvent`와 이벤트 레지스트리가 연기돼 있으므로, MVP 카드의 분석 이벤트 수용 기준(AC-DF-110.7, AC-DF-122.7, AC-DF-123.8, AC-DF-127.10, AC-DF-204.7, AC-DF-206.4의 `save_failure_shown`, AC-DF-208.7, AC-DF-209.8, DF-210·DF-215의 `change_status_rendered`)과 `TrainerAnalyticsTests` 테스트, 이벤트 전송 코드는 만들지 않는다. 각 카드 MVP 절에도 한 줄씩 적었다.
 2. **체형 사진은 뷰마다 두 파일이다.** 원본 `{view}.jpg`와 일반 썸네일 `{view}_thumb.jpg`(DF-205 `PhotoSanitizer`·`Thumbnailer`). 얼굴 가림본(`FaceMasker`, `{view}_masked_thumb.jpg`)은 MVP 뒤이고 실회원 전에는 필수다. 문서의 `maskedThumbPath`는 `null`(V1-05 §4.6 `str|null`)이고, 확정 전환(DF-206 Outbox #5)은 가림본을 기다리지 않는다. 사진은 기기 로컬 파일만 읽는다: 새 버전 사진(DF-209 `PhotoRebaser`)과 타임라인 썸네일(DF-225)은 원격에서 받지 않으며 `PhotoAccessGate`·`StoragePhotoFetcher`(DF-227·DF-214)는 만들지 않는다.
@@ -104,7 +104,7 @@
 | DF-006 | firestore_schema.md를 §9.3으로 개정하고 새 JSON Schema를 추가한다 | 진행 중 | S02 | 2 | 새 컬렉션(대기 회원·신체조성·둘레·체형·동의 상태) 스키마. 규칙과 코덱의 기준 | 전체 |
 | DF-009 | Swift SOAP v2 코덱(TrainerDomain)과 교차 왕복 테스트를 구현한다 | 할 일 | S02 | 3 | 트레이너 앱이 SOAP v2 문서를 읽고 쓰는 유일한 코덱(DEC-21: Claude 담당, Codex 브랜치는 대체) | 전체 |
 | DF-034 | GoogleService-Info.plist 비추적과 CI 시크릿 주입을 설정한다 | 할 일 | S02 | 1 | 실제 Firebase(서울) 연결에 필요한 GoogleService-Info.plist 비추적·CI 주입 | 전체 |
-| DF-043 | 서울 Storage 버킷과 Firestore 위치를 앱·admin_web·Functions·firebase.json에 명시한다(DEC-19) | 할 일 | S02 | 1 | 서울 버킷·Firestore 위치를 코드에 명시(DEC-19). 사진·필기 업로드 대상 | 전체 |
+| DF-043 | 서울 Storage 버킷과 Firestore 위치를 앱·admin_web·Functions·firebase.json에 명시한다(DEC-19) | 할 일 | S02 | 1 | 서울 버킷·Firestore 위치를 코드에 명시(DEC-19): Functions·admin_web·회원 앱·`firebase.json` 버킷. 트레이너 앱은 DF-104 | 전체 |
 | DF-017 | AppShell(NavigationSplitView, TR 라우트, DI, --preview-*, 플래그 진입점 숨김)을 만든다 | 진행 중 | S03 | 3 | AppShell·라우트·DI. 모든 화면의 진입점 | 전체 |
 | DF-020 | firestore.rules v2 헬퍼(canWriteFor, hasConsent, featureOn)와 soap_notes v2 규칙을 작성한다 | 진행 중 | S03 | 5 | firestore.rules v2 헬퍼와 soap_notes 규칙. SOAP 동기화의 서버 쪽 조건 | 전체 |
 | DF-021 | 새 컬렉션 규칙(체형·신체조성·둘레·bodyScans·대기 회원·동의·요약·권리·opsMetrics·정책)을 작성한다 | 진행 중 | S03 | 5 | 대기 회원·신체조성·둘레·체형·동의 상태·appConfig 규칙 | 일부(카드 MVP 절) |
@@ -121,7 +121,7 @@
 | DF-014 | LocalStore SwiftData 스키마 v1과 파일 보호를 만든다 | 할 일 | S05 | 3 | LocalStore(SwiftData)와 파일 보호. local-first의 저장소 | 전체 |
 | DF-016 | DesignSystem 기초 토큰과 SyncStateBadge·SourceGradeChip·MetricRow·EmptyState를 만든다 | 할 일 | S05 | 3 | DesignSystem 토큰과 SyncStateBadge·SourceGradeChip·MetricRow·EmptyState | 전체 |
 | DF-039 | AppDelegate.swift 이식 대상을 모듈별 줄 범위로 확정한다(보관 브랜치 tip 기준) | 할 일 | S05 | 2 | AppDelegate 이식 대상 줄 범위. Live 캔버스·체형 화면 이식의 지도 | 전체 |
-| DF-104 | FirebaseData RemoteWriter·BinaryUploader·CallableClient와 퍼시스턴스 설정을 구현한다 | 할 일 | S05 | 3 | FirebaseData RemoteWriter·BinaryUploader·CallableClient. 동기화의 원격 쪽 | 전체 |
+| DF-104 | FirebaseData RemoteWriter·BinaryUploader·CallableClient와 퍼시스턴스 설정을 구현한다 | 할 일 | S05 | 3 | FirebaseData RemoteWriter·BinaryUploader·CallableClient. 동기화의 원격 쪽. 트레이너 앱의 서울 버킷 명시(사진·필기 업로드 대상, DEC-19) | 전체 |
 | DF-108 | TR-14 대기 회원 최소 등록(만 14세 확인)을 구현한다 | 할 일 | S05 | 3 | TR-14 대기 회원 최소 등록(만 14세 확인). MVP의 테스트 회원 생성 경로 | 전체 |
 | DF-015 | SyncEngine Outbox 순서·백오프·syncState 계산을 구현한다 | 할 일 | S06 | 5 | SyncEngine Outbox·백오프·syncState. 로컬 기록을 Firebase로 보내는 엔진 | 전체 |
 | DF-018 | TR-15 설정 기초(실제 로그아웃, 미동기 경고, 큐 상태·재시도, 버전)를 구현한다 | 할 일 | S06 | 2 | TR-15 설정 기초(로그아웃, 미동기 경고, 큐 상태·재시도) | 전체 |
@@ -141,7 +141,7 @@
 | DF-128 | 결과지 사진 첨부, '정정', 기기 변경 경고를 구현한다 | 할 일 | S09 | 3 | 흐름 2: 결과지 사진 첨부·정정·기기 변경 경고 | 전체 |
 | DF-201 | PostureMath 산식과 posture-metrics.v1 벡터를 구현한다 | 할 일 | S09 | 5 | 흐름 3: PostureMath 산식(CVA, 어깨 높이 차 등) | 일부(카드 MVP 절) |
 | DF-129 | TR-12 줄자 둘레(기본 허리·엉덩이, 부위 추가, 반복 3회, side·landmarkNote 규칙)를 구현한다 | 할 일 | S10 | 5 | 흐름 2: TR-12 줄자 둘레 반복 입력 | 전체 |
-| DF-130 | Swift 공통 차트 규칙(SeriesTrendChart, 출처 칩, '산정 준비 중', 보간 금지)과 TR-11 미니 추이를 구현한다 | 할 일 | S10 | 3 | 흐름 4: Swift 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 신체조성·둘레 미니 추이 | 전체 |
+| DF-130 | Swift 공통 차트 규칙(SeriesTrendChart, 출처 칩, '산정 준비 중', 보간 금지)과 TR-11 미니 추이를 구현한다 | 할 일 | S10 | 3 | 흐름 4: Swift 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 TR-11 신체조성 미니 추이(둘레 추이는 DF-215 TR-10) | 전체 |
 | DF-204 | TR-07 촬영(정면·측면, roll·pitch 게이트, 인물·조명 검출, 동의 ②③ 게이트)을 구현한다 | 할 일 | S10 | 5 | 흐름 3: TR-07 정면·측면 촬영 | 일부(카드 MVP 절) |
 | DF-216 | conditionKey 비교와 seriesBreak·seriesKey 분할을 Swift·Dart 공통 규칙으로 구현한다 | 할 일 | S10 | 3 | 흐름 4: conditionKey 비교와 seriesBreak 분할(추이 차트의 끊김 규칙) | 일부(카드 MVP 절) |
 | DF-205 | EXIF·GPS 제거, 얼굴 가림 썸네일, 재촬영 폐기, 앱 전용 저장을 구현한다 | 할 일 | S11 | 3 | 흐름 3: EXIF·GPS 제거, 재촬영 폐기, 앱 전용 저장 | 일부(카드 MVP 절) |
@@ -185,8 +185,9 @@
 - [ ] 비행기 모드(네트워크 차단)에서 기록 → 복구 뒤 동기화, 유실 0(syncState 배지, TR-15 큐). DF-107 통합 CI가 초록이다
 - [ ] 에뮬레이터 Firestore·Storage에 기대한 문서·파일이 있고, 규칙 테스트(DF-022·DF-035·DF-023)가 초록이다
 
-**B. 실제 Firebase(서울, 소유자 대기 목록 1~11 뒤)**
+**B. 실제 Firebase(서울, 소유자 대기 목록 1~12 뒤)**
 
+- [ ] 먼저 소유자 대기 목록 12(DF-931 MVP 재배포)를 한다: MVP 종료 규칙·Functions 태그에서 `firebase deploy --project dfetmanage --only firestore:rules,firestore:indexes,storage,functions:recordConsent`를 다시 실행하고(S07 뒤 DF-114 인덱스 2개, DF-206·DF-209 규칙 보강), 콘솔에서 인덱스 빌드가 모두 끝난 것을 확인한다. 빠지면 타임라인·추이 쿼리가 `FAILED_PRECONDITION`으로 실패한다
 - [ ] 서울 `(default)`와 서울 버킷이 쓰이고 있다(G-09.md 리전 절). DF-038 S-09 확인을 서울에서 다시 한다
 - [ ] 소유자 계정(claim)으로 시뮬레이터 앱에서 A의 네 흐름을 한 번 더 하고, 콘솔에서 문서·파일을 확인한다. 테스트 회원만 쓰고, 넣는 데이터는 공통 규칙 3(합성·공개 샘플 또는 소유자 본인, 제3자 없음)을 따른다. 체형 문서는 `maskedThumbPath=null`, Storage에는 뷰마다 두 파일이다
 - [ ] 연결된 iPhone은 회원 앱·BodyPath 확인과 DF-200 Vision 하네스에만 쓴다(공통 규칙 4). iPad 실기기가 연결되면 체형 촬영(roll·pitch 게이트, 카메라)을 실기기로 다시 확인한다
@@ -639,4 +640,4 @@ PRD §12.7에 따라 단계마다 [단계 종료 검토 템플릿](templates/PHA
 | v1.0(정합 패스 2) | 2026-09-24 | 추가 제안 제외 규칙(R9), 배포 명령 순서(R7), MIG-08 ① 시점(S08·S09), ASM-03-14·15 | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 약속·속도에 소유자 행동·스파이크 포함(R1), 추가 제안 제외(R9), `firebase deploy --project dfetmanage --only …` 형식(R7), MIG-08 ①을 S08 PR·S09 배포로, DF-138은 ②~③(§6.1·§9.3), 헤더 버전 v1.0.1 | — | 없음 |
 | v1.1 | 2026-09-25 | 소유자 결정 2026-09-25 반영: DEC-19 서울 리전 전환(DF-942 S01, DF-043 S02) 게이트 트랙·간트·§6.1 추가, DF-908 법률 의뢰 보류(S03 발송 계획, 최신 10-30)와 G-04 여유 재계산, §4.2 P0 적재 79/6(한도 −2, §10.1 예외 K-19와 되돌림 규칙), G-09 리전 행 | claude/docs-dec-2026-09-25 | 없음(Q-08 답의 PRD 반영은 소유자) |
-| v1.2 | 2026-09-25 | DEC-22 'MVP 계획' 절 추가(1인 알파 MVP, `scope/mvp` 65건·185점, MVP 스프린트 S02~S13, 네 흐름별 항목, 미루는 것, 종료·데모 체크리스트). §4~§8·§12는 MVP 뒤 계획으로 연기 표시(내용 보존). 리뷰 반영: 'MVP 공통 규칙' 절(분석 이벤트 AC는 MVP 뒤, 체형 사진 두 파일·가림본 없음·로컬 사진만, 테스트 회원 데이터 규칙, 기기, Vision 대비책, 연기 항목 비의존), 연기 125건·진행 중 3건과 `scope/deferred` 처리, 데모 체크리스트 ③·B 보강 | #113 | 없음(PRD 수정 없음. MVP 범위는 PRD §12 단계 안의 부분 집합) |
+| v1.2 | 2026-09-25 | DEC-22 'MVP 계획' 절 추가(1인 알파 MVP, `scope/mvp` 65건·185점, MVP 스프린트 S02~S13, 네 흐름별 항목, 미루는 것, 종료·데모 체크리스트). §4~§8·§12는 MVP 뒤 계획으로 연기 표시(내용 보존). 리뷰 반영: 'MVP 공통 규칙' 절(분석 이벤트 AC는 MVP 뒤, 체형 사진 두 파일·가림본 없음·로컬 사진만, 테스트 회원 데이터 규칙, 기기, Vision 대비책, 연기 항목 비의존), 연기 125건·진행 중 3건과 `scope/deferred` 처리, 데모 체크리스트 ③·B 보강 리뷰 반영 2: 데모 체크리스트 B 첫 항목에 DF-931 MVP 재배포(소유자 대기 목록 12), MVP 항목 표 DF-043·DF-104·DF-130 '왜 필요한가', brief가 공통 규칙 1·6을 넣음. | #113 | 없음(PRD 수정 없음. MVP 범위는 PRD §12 단계 안의 부분 집합) |

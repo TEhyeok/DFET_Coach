@@ -455,7 +455,7 @@ push(
 );
 if (opts.sprint) push(`- 같은 스프린트(${opts.sprint})의 다른 에이전트 작업(건드리지 않음):`, ...(others.length ? others : ['  - 없음']));
 if (section.mvp) push('', 'MVP 범위(DEC-22, 카드 원문). \'MVP 뒤로 미룬다\'에 적힌 것은 만들지 않는다:', '', section.mvp);
-if (item.labels.includes('scope/mvp')) push('', 'MVP 공통 규칙(DEC-22, 03 \'MVP 공통 규칙\'): 분석 이벤트는 MVP 뒤다(DF-126·DF-033). 카드의 분석 이벤트 수용 기준·`TrainerAnalyticsTests` 테스트·이벤트 전송 코드는 만들지 않는다. 연기 항목(`scope/deferred`)의 코드·API에 기대지 않는다.');
+if (item.labels.includes('scope/mvp')) push('', 'MVP 공통 규칙(DEC-22, 03 \'MVP 공통 규칙\'): 분석 이벤트는 MVP 뒤다(DF-126·DF-033). 카드의 분석 이벤트 수용 기준·`TrainerAnalyticsTests` 테스트·이벤트 전송 코드는 만들지 않는다. 연기 항목(`scope/deferred`)의 코드·API를 호출하거나 먼저 만들지 않는다(규칙 6). 구현 노트가 연기 항목을 재사용하라고 하면 카드 MVP 절의 대체 방법을 따른다.');
 push(
   '',
   '카드의 에이전트 브리프(소유자 작성):',

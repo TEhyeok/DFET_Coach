@@ -520,6 +520,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 6. **AC-DF-104.6** (← §9.5 링크 정책, NFR-10) `FirebaseData` 타깃에 `getDownloadURL`·`downloadURL(`·`print(` 0건(static-guards). 다운로드는 `write(toFile:)`만 쓴다. 로그는 `os.Logger`와 `privacy: .private`만. *(CI static-guards)*
 7. **AC-DF-104.7** (← NFR-16) `CallableClient`는 `Functions.functions(region: "asia-northeast3")`로만 호출한다. *(단위)*
 8. **AC-DF-104.8** (← §9.5, DF-118·DF-123 전제) `RemoteWriter.delete`, `BinaryUploader.delete`, `BinaryDownloader.download`가 구현돼 있고 가짜 구현(테스트 지원 타깃)에도 같은 메서드가 있다. *(단위)*
+9. **AC-DF-104.9** (← Q-08, G-09, DEC-19, DF-043) `FirebaseData`의 모든 Storage 접근(`StorageBinaryUploader`, `StorageBinaryDownloader`, 그 위의 DF-118 필기·DF-128 결과지·DF-206 체형 사진 업로드)이 `StorageFactory.make(emulator:)` 한 곳을 거친다. 운영에서는 `Storage.storage(url: StorageBucket.seoul)`(서울 버킷, DEC-19)을, 에뮬레이터 호스트가 주입되면 지금처럼 기본 버킷 `Storage.storage()`를 쓴다. 버킷 값은 `FirebaseData/StorageBucket.swift` 상수 하나에만 있고 DF-043의 Functions·회원 앱 상수와 같은 값이다(버킷 이름은 비밀이 아니다, [V1-00 소유자 대기 목록](../00_README.md#소유자-대기-목록)). `trainer_app/`에서 URL 없는 `Storage.storage()` 호출은 `StorageFactory.swift`와 `FirebaseBootstrap.swift`의 에뮬레이터 분기([V1-04 §10.7](../04_ARCHITECTURE.md)의 `useEmulator`) 밖에 0건이다. *(단위 + static-guards)*
 
 **구현 노트**
 - 생성(`trainer_app/Packages/TrainerKit/Sources/FirebaseData/`)
@@ -547,6 +548,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | TC-104-06 | static-guards | `getDownloadURL`·`print(` 0건(AC-DF-104.6) |
 | TC-104-07 | 단위 | callable 리전 고정(AC-DF-104.7) |
 | TC-104-08 | 단위 | delete·download 구현과 가짜 구현 존재(AC-DF-104.8) |
+| TC-104-09 | 단위 + static-guards | `StorageFactory`가 에뮬레이터 주입이면 기본 버킷, 아니면 `StorageBucket.seoul`. URL 없는 `Storage.storage()`가 `StorageFactory.swift`·`FirebaseBootstrap.swift` 에뮬레이터 분기 밖에 0건(AC-DF-104.9) |
 
 **비고·가정** — ASM-P1a-07(무결성 대조를 MD5+size로), ASM-P1a-31(캐시 100MB). 서버 측 통합 확인은 DF-107이 맡는다.
 
@@ -557,8 +559,9 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 ### MVP 범위(DEC-22)
 
 - MVP 스프린트: S05(원래 계획 S06). 상태: 할 일
-- 왜 필요한가: FirebaseData RemoteWriter·BinaryUploader·CallableClient. 동기화의 원격 쪽
-- 지금 만든다: 카드 전체 범위
+- 왜 필요한가: FirebaseData RemoteWriter·BinaryUploader·CallableClient. 동기화의 원격 쪽. 트레이너 앱의 서울 버킷 명시(DEC-19)
+- 지금 만든다: 카드 전체 범위. 서울 버킷 명시(AC-DF-104.9)는 DF-043이 `trainer_app/`에 남긴 몫이다. DF-118(필기)·DF-128(결과지 사진)·DF-206(체형 사진)은 이 업로더만 쓰므로 버킷을 따로 정하지 않는다
+- 참고: 버킷 값은 DF-043(S02)의 상수와 같게 둔다. DF-942가 늦어 이름이 없으면 상수 자리만 두고 값은 DF-043과 같은 PR 흐름으로 채운다. static-guards 규칙은 DF-011(`tool/lint/static-guards.sh`) 병합 뒤 그 파일에 한 줄 더한다
 
 ---
 
@@ -808,6 +811,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: recordConsent와 memberConsentStates 파생. 규칙 hasConsent()가 이 문서를 보므로, 없으면 테스트 회원의 SOAP·측정·사진 쓰기가 모두 거부된다
 - 지금 만든다: 대기 회원 대상 recordConsent(①②③ 동의 기록, 상태 파생), 서명 없이 기록(`signaturePath` null, 05 §4.11 허용), 게시된 테스트 동의 문서 버전 검사. 서울용 테스트 동의 문서 게시 스크립트(기본 dry-run, `--apply --project dfetmanage`는 소유자만 실행)
 - MVP 뒤로 미룬다: 서명 PNG 저장, uid 회원 경로와 접근 키 동기화(DF-025), 철회(DF-112), 감사 기록 확장
+- 실회원 전 복원(재계획 항목): MVP는 현장 동의의 서명 필수 검증(ASM-P1a-03, F-PRIV-03.2)을 끄고 배포한다. 실회원 투입 전에 서명 필수 검증과 서명 PNG 저장(AC-DF-109.2)을 되살린다. MVP에서 서명 없이 만든 `consentRecords`·`memberConsentStates`는 테스트 회원 전용이며 실회원 투입 전에 정리한다. 이것은 개발 데이터 규칙이며 법률 판단이 아니다
 - MVP에서 기다리지 않는 의존: DF-025(uid 회원 접근 키, MVP 밖), DF-032(AD-03 화면 대신 시드·게시 스크립트로 테스트 동의 문서를 만든다)
 
 ---
@@ -1165,6 +1169,8 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: 흐름 4: TR-03 회원 상세 헤더와 통합 타임라인
 - 지금 만든다: 카드 전체 범위
 - 참고: TR-03 진입 감사(DF-115)는 MVP 밖
+- 참고: S08에는 TR-11·TR-12 기록 보기가 아직 없다. AC-DF-114.8의 신체조성·둘레 이동은 라우트 자리만 두고 DF-128(S09)·DF-129(S10)가 연결한다. 신체조성·둘레 이벤트 테스트는 시드 문서로 한다. 에이전트 브리프의 '같은 스프린트의 DF-127·128'은 옛 계획 기준이며, MVP에서는 `FeatureBodyComposition` 경로를 건드리지 않는다는 뜻만 남는다
+- 참고: 이 스토리가 더하는 `circumferenceMeasurements` 인덱스 2개는 S07 DF-931 배포 뒤에 병합되므로 서울에는 [V1-00 소유자 대기 목록](../00_README.md#소유자-대기-목록) 12(DF-931 MVP 재배포)로 올라간다
 
 ---
 
@@ -1557,6 +1563,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 스프린트: S08(원래 계획 S09). 상태: 할 일
 - 왜 필요한가: SOAP 흐름 1: TR-05 Review S/A/P 카드
 - 지금 만든다: S/A/P 카드와 금지어 인라인 경고
+- 대체(MVP 공통 규칙 6): S 카드의 NRS·부위 자리는 빈 슬롯으로 둔다(DF-117 `PainScale`·`BodyMapView`는 MVP 뒤). 구현 노트의 'DF-117 재사용'을 하지 않고, DF-117 컴포넌트를 먼저 만들지 않는다. `SoapReviewInput`의 `painNrs`·`painRegions`는 쓰지 않는다(null, 페이로드에 값 없음)
 - MVP 뒤로 미룬다: '회원에게 남길 한 줄'은 입력칸만 두고 공유 경로는 만들지 않는다(공유는 P2)
 
 ---
@@ -2261,7 +2268,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 ### MVP 범위(DEC-22)
 
 - MVP 스프린트: S10(원래 계획 S12). 상태: 할 일
-- 왜 필요한가: 흐름 4: Swift 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 신체조성·둘레 미니 추이
+- 왜 필요한가: 흐름 4: 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 TR-11 신체조성 미니 추이(둘레 추이는 DF-215 TR-10)
 - 지금 만든다: 카드 전체 범위
 
 ---
@@ -3163,4 +3170,4 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | v1.0(검토 반영) | 2026-09-24 | 시드 경로·ID·에뮬레이터 포트를 V1-10과 통일(§5.4, DF-107, AC-DF-107.7), 문구 키를 덱 이름으로 정리하고 덱 추가 요청 표 신설(§5.3), DF-116 진입점을 TR-03 셸(DF-113)로 바꾸고 입력 한도 규칙 확정(AC-DF-116.4·116.8), DF-114·DF-127·DF-129 진입점 기준 추가, 누락 의존 보강(DF-109·114·116·127), ASM-P1a-48~50, CF-20~22 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 이슈 JSON 참조를 `tool/backlog/issues.json`으로, 순수 타깃 경로를 `Packages/TrainerCore`로 고침(LocalStore는 TrainerKit) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: Outbox kind·LocalPendingMemberDraft·FilterPreference(R5), DF-114 인덱스 2개, syncRecordAccessKeysCore 호출, MIG-08 ①을 DF-100으로, 경로 표(R4), CF-18·19·20·22 갱신, 가정 ID 참조(R10), ASM-P1a-51 | — | 없음 |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: MVP 스토리 17건에 `agent/` 라벨(DF-109 codex, 나머지 claude), 분석 이벤트 AC는 MVP 뒤(DF-110·DF-116·DF-122·DF-123·DF-127 MVP 절), 파일 머리 DEC-22 범위 안내. | #113 | 없음 |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: MVP 스토리 17건에 `agent/` 라벨(DF-109 codex, 나머지 claude), 분석 이벤트 AC는 MVP 뒤(DF-110·DF-116·DF-122·DF-123·DF-127 MVP 절), 파일 머리 DEC-22 범위 안내. 리뷰 반영 2: AC-DF-104.9·TC-104-09(트레이너 앱 서울 버킷 `StorageFactory`·`StorageBucket.seoul`, 에뮬레이터는 기본 버킷), DF-104·DF-114·DF-120·DF-109·DF-130 MVP 절 보강(DF-114 라우트 자리와 재배포, DF-120 NRS·부위 빈 슬롯, DF-109 서명 필수 검증 실회원 전 복원, DF-130 둘레 추이는 DF-215). | #113 | 없음 |

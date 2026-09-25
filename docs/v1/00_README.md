@@ -305,6 +305,7 @@ PRD에 없는 개발 운영 가정이다. PRD로 올릴 때는 AS-34부터 새 �
 | K-14 | BodyPath 결과 패키지 UTType 식별자 `com.<소유자 계정명>.bodyscan.result-package`(P2_P3 DF-301·DF-320, ASM-P2P3-03)는 BodyPath 실제 `bundleIdPrefix`에서 왔고 소유자 개인 이름 로마자 표기를 포함한다. 공개 저장소 문서·앱 Info.plist에 그대로 노출된다 | 결정: DF-301(S23-S24) 전에 식별자를 조직 접두(예: `kr.co.dfet`)로 바꿀지. 바꾸면 BodyPath 앱의 export 선언도 같이 바꾼다 |
 | K-15 | V1-03 §14.2의 문서 로컬 차이 ID `D-1`~`D-7`이 PRD 결정 ID(D1~D4 등)와 모양이 비슷하다. R10 범위(ASM-NN·C-NN)는 아니어서 두었다 | 작업(낮음): 다음 03 개정 때 `CF-03-NN`으로 바꿀지 |
 | K-16 | Flutter 3.47 전환(기술부채). PR #1 CI에서 최신 stable(3.47)로 돌리자 ① `SizeTransition.axisAlignment` deprecation으로 `flutter analyze` 실패(`lib/screens/dashboard/today_signal_screen.dart:426`, 대체값 `alignment: AlignmentDirectional.topStart`) ② 위젯 테스트 다수 실패(`protein_foods_dialog_test`, `clinical_demo_app_test` 등) ③ iOS SPM 기본 활성화로 FlutterFire 플러그인 버전 혼재 충돌(`firebase_auth` 6.1.0 ↔ `firebase_storage` 13.0.4). 그래서 CI·로컬을 3.38.2로 고정하고 iOS는 CocoaPods로 빌드한다. 전환 시 FlutterFire 전체를 같은 릴리스로 올리고(현재 `firebase_core` 4.2.1, 최신 4.15) SPM 설정을 다시 켠다 | 작업: 백로그 기술부채 후보로 소유자가 스토리 채택(2026-09-25 기록) |
+| K-17 | 운영 Firebase 상태(2026-09-25 읽기 전용 조회, [G-01 후속 1](evidence/G-01.md#후속-조치)): 코드가 쓰는 Firestore `(default)` 위치가 `nam5`(미국)이고, Firestore·Storage 운영 규칙이 전부 거부다. 미사용 Enterprise DB 2개(`asia-east1`)가 있다. PRD Q-08의 리전 답이 '미국'으로 확정됐다 | 결정: ① 실사용 여부 확인 뒤 규칙 첫 배포 시점(G-03 통과 후) ② 국외이전 고지(G-09)로 갈지, 아시아 리전 새 DB로 옮길지 ③ 미사용 DB 정리 |
 
 ## 규모 요약
 

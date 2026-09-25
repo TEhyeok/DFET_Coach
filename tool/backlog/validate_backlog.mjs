@@ -5,6 +5,7 @@
 //  1) issue.schema.json의 required·type·enum
 //  2) 키 유일성, 제목 '[KEY] ' 접두
 //  3) 라벨이 labels.json에 존재, type/·phase/·prio/ 정확히 1(에픽은 type/epic만), size/ 0~1
+//     DEC-22: scope/ 정확히 1. scope/deferred는 sprint 'MVP 뒤'와 plannedSprint, scope/mvp·scope/carryover는 agent/ 라벨 1개 이상
 //  4) 마일스톤이 milestones.json에 존재(trackingOnly 아닌 것)
 //  5) epic 참조 존재, deps·cardDeps 대상 존재, 의존 순환 0(deps ∪ cardDeps)
 //  6) trace 토큰이 PRD에 존재(범위 A~B는 양 끝, §는 제목 존재, ADR-NNN은 docs/v1/adr 파일 존재,
@@ -124,6 +125,10 @@ for (const f of files) {
     else {
       for (const g of ['type', 'phase', 'prio']) if (count(new RegExp(`^${g}/`)) !== 1) err(f, k, `needs exactly one ${g}/ label`);
       if (count(/^size\//) > 1) err(f, k, 'more than one size/ label');
+      if (count(/^scope\//) !== 1) err(f, k, 'needs exactly one scope/ label (DEC-22)');
+      if (it.labels?.includes('scope/deferred') && (it.sprint !== 'MVP 뒤' || !it.plannedSprint)) err(f, k, "scope/deferred needs sprint 'MVP 뒤' and plannedSprint");
+      if (!it.labels?.includes('scope/deferred') && it.plannedSprint !== undefined) err(f, k, 'plannedSprint is only for scope/deferred');
+      if ((it.labels?.includes('scope/mvp') || it.labels?.includes('scope/carryover')) && count(/^agent\//) < 1) err(f, k, 'MVP item needs an agent/ label (DEC-22)');
       if (it.ownerAction && !it.labels.includes('owner-action')) err(f, k, 'owner-action label missing');
       if (it.proposal && !it.labels.includes('status/needs-decision')) err(f, k, 'proposal needs status/needs-decision');
       if (it.milestone !== null && !milestones.has(it.milestone)) err(f, k, `milestone ${it.milestone} not in milestones.json`);

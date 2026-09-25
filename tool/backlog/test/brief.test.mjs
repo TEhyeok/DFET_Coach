@@ -16,6 +16,9 @@ const brief = (...args) => {
   const r = spawnSync(process.execPath, [script, ...args], { cwd: root, encoding: 'utf8' });
   return { code: r.status, out: r.stdout, err: r.stderr };
 };
+// DEC-22: 연기 항목(scope/deferred)은 --allow-deferred가 있어야 지시서가 나온다. 형식 검사는 모든 항목에 한다.
+const isDeferred = (k) => issues.find((i) => i.key === k)?.labels.includes('scope/deferred');
+const briefAny = (k, ...args) => brief(k, ...args, ...(isDeferred(k) ? ['--allow-deferred'] : []));
 const sectionOf = (md, n) => {
   const s = md.indexOf(`\n## ${n}. `);
   const e = md.indexOf('\n## ', s + 1);
@@ -103,7 +106,7 @@ test('brief builds for every agent-assigned story without placeholders for card 
   const keys = issues.filter((i) => i.kind !== 'epic' && !i.ownerAction && i.labels.some((l) => /^agent\/(claude|codex)$/.test(l))).map((i) => i.key);
   assert.ok(keys.length > 50);
   for (const k of keys) {
-    const r = brief(k);
+    const r = briefAny(k);
     assert.equal(r.code, 0, `${k}: ${r.err}`);
     assert.ok(!sectionOf(r.out, 1).includes('_카드에 없음._'), `${k}: story`);
     assert.ok(!sectionOf(r.out, 6).includes('_카드에 없음._'), `${k}: acceptance criteria`);
@@ -120,18 +123,18 @@ test('brief builds for every agent-assigned story without placeholders for card 
 
 test('brief §8 drops owner-run and production-capable script commands (DF-326, DF-330) but keeps emulator runs (DF-030)', () => {
   for (const [k, script] of [['DF-326', 'functions/scripts/research/exportRetestDataset.js'], ['DF-330', 'functions/scripts/migrations/mig08-remove-trainer-workspaces.js']]) {
-    const r = brief(k);
+    const r = briefAny(k);
     assert.equal(r.code, 0, r.err);
     assert.ok(sectionOf(r.out, 6).includes(script), `fixture: ${k} card AC mentions ${script}`);
     assert.ok(commandsOf(r.out).every((c) => !c.includes(script)), `${k}: ${script} must not be an agent verification command`);
   }
-  const mig02 = commandsOf(brief('DF-030').out).filter((c) => PROD_SCRIPT.test(c));
+  const mig02 = commandsOf(briefAny('DF-030').out).filter((c) => PROD_SCRIPT.test(c));
   assert.ok(mig02.length > 0 && mig02.every(inEmulator), mig02.join('\n'));
 });
 
 test('brief §8 rejects non-commands, CI-only lines, cwd-relative tests and writing generators', () => {
   const all = new Set();
-  for (const k of ['DF-004', 'DF-008', 'DF-009', 'DF-010', 'DF-016', 'DF-025', 'DF-220', 'DF-224', 'DF-300']) for (const c of commandsOf(brief(k).out)) all.add(c);
+  for (const k of ['DF-004', 'DF-008', 'DF-009', 'DF-010', 'DF-016', 'DF-025', 'DF-220', 'DF-224', 'DF-300']) { const r = briefAny(k); assert.equal(r.code, 0, `${k}: ${r.err}`); for (const c of commandsOf(r.out)) all.add(c); }
   for (const bad of ['node:test', 'swift-snapshot-testing', 'swift-tools-version:5.9', 'flutter', 'node tool/contracts/generate.mjs', 'node --test test/*.test.mjs']) assert.ok(!all.has(bad), `dropped: ${bad}`);
   assert.ok([...all].every((c) => !/GITHUB_STEP_SUMMARY/.test(c)));
   assert.ok(all.has('node tool/contracts/generate.mjs --check'), 'keeps the --check generator');
@@ -171,9 +174,9 @@ test('brief keeps the card body after "### MVP 범위(DEC-22)" and shows the MVP
   // MVP 절 뒤에 끝나지 않고 카드 원문 전체가 들어간다(수용 기준·테스트)
   assert.match(sectionOf(r.out, 6), /AC-DF-027\.6/);
   // scope/mvp가 없는 카드에는 MVP 줄이 없다
-  const other = brief('DF-028');
+  const other = brief('DF-028', '--allow-deferred');
   assert.equal(other.code, 0, other.err);
-  assert.doesNotMatch(other.out, /MVP 범위\(DEC-22/);
+  assert.doesNotMatch(other.out, /MVP 범위\(DEC-22, 카드 원문/);
 });
 
 test('every scope/mvp item except done foundations has a "### MVP 범위(DEC-22)" card section', () => {
@@ -181,4 +184,52 @@ test('every scope/mvp item except done foundations has a "### MVP 범위(DEC-22)
   const mvp = issues.filter((i) => i.labels.includes('scope/mvp') && !done.has(i.key));
   assert.ok(mvp.length > 40);
   for (const i of mvp) assert.match(i.body, /^### MVP 범위\(DEC-22\)$/m, `${i.key}: MVP section missing`);
+});
+
+test('brief refuses deferred items (scope/deferred, DEC-22) unless --allow-deferred, and then warns', () => {
+  const plain = brief('DF-025');
+  assert.equal(plain.code, 1);
+  assert.match(plain.err, /DF-025 is deferred \(scope\/deferred, DEC-22; old plan S05\)/);
+  assert.equal(plain.out, '');
+  const forced = brief('DF-025', '--allow-deferred');
+  assert.equal(forced.code, 0, forced.err);
+  assert.match(forced.err, /^warning: DF-025 is deferred/m);
+  assert.match(forced.out, /^> \*\*연기 항목\(DEC-22, `scope\/deferred`\)/m);
+  assert.match(sectionOf(forced.out, 2), /스프린트 MVP 뒤\(옛 계획 S05\)/);
+  // 진행 중이라 마치는 MVP 밖 항목(scope/carryover)은 플래그 없이 만든다
+  const carry = brief('DF-011');
+  assert.equal(carry.code, 0, carry.err);
+  assert.doesNotMatch(carry.out, /연기 항목/);
+});
+
+test('brief --sprint peer list holds only scope/mvp and scope/carryover items (DF-013 in S05)', () => {
+  const s4 = sectionOf(brief('DF-013', '--sprint', 'S05').out, 4);
+  for (const k of ['DF-025', 'DF-031', 'DF-040']) assert.doesNotMatch(s4, new RegExp(`^ {2}- ${k} `, 'm'), `${k} is deferred`);
+  for (const k of ['DF-014', 'DF-104', 'DF-108']) assert.match(s4, new RegExp(`^ {2}- ${k} \\(`, 'm'), `${k} is MVP S05`);
+});
+
+test('every non-owner scope/mvp item has an agent label, and every MVP brief builds without --allow-deferred', () => {
+  const mvp = issues.filter((i) => i.labels.includes('scope/mvp') && !i.ownerAction && !i.labels.includes('agent/human'));
+  assert.ok(mvp.length > 50);
+  for (const i of mvp) {
+    assert.ok(i.labels.some((l) => /^agent\/(claude|codex)$/.test(l)), `${i.key}: agent label`);
+    const r = brief(i.key);
+    assert.equal(r.code, 0, `${i.key}: ${r.err}`);
+    assert.match(sectionOf(r.out, 4), /MVP 공통 규칙\(DEC-22/, `${i.key}: MVP common rule`);
+  }
+});
+
+test('issues.json keeps deferred items out of MVP sprints (DEC-22)', () => {
+  const doc = JSON.parse(readFileSync(join(root, 'tool/backlog/issues.json'), 'utf8'));
+  for (const i of doc.issues.filter((x) => x.kind !== 'epic')) {
+    const scopes = i.labels.filter((l) => l.startsWith('scope/'));
+    assert.equal(scopes.length, 1, `${i.key}: one scope label`);
+    if (scopes[0] === 'scope/deferred') {
+      assert.equal(i.sprint, 'MVP 뒤', `${i.key}: sprint`);
+      assert.ok(i.plannedSprint, `${i.key}: plannedSprint`);
+      assert.match(i.body, /연기\(DEC-22\), MVP 뒤 재계획/, `${i.key}: body banner`);
+    }
+  }
+  assert.equal(doc.totals.bySprint.S05.points, 17);
+  assert.equal(doc.totals.byScope.mvp.count, 65);
 });

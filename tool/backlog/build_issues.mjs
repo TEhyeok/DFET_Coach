@@ -24,6 +24,10 @@ const INDEX = 'docs/v1/02_PRODUCT_BACKLOG.md';
 const CARD_DIR = 'docs/v1/backlog';
 const OUT = 'tool/backlog/issues.json';
 const MAX_BODY = 60000; // GitHub 한도 65536자 아래로 여유
+// DEC-22: scope/mvp·scope/carryover가 없는 항목은 연기(scope/deferred)다. 이슈 sprint는 DEFERRED_SPRINT로 두고
+// 색인의 옛 계획 스프린트는 plannedSprint에 남긴다(MVP 스프린트 번호와 섞이지 않게).
+const DEFERRED_SPRINT = 'MVP 뒤';
+const MVP_PLAN = 'docs/v1/03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22';
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
 const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
@@ -141,8 +145,14 @@ for (const r of rows) {
       continue;
     }
     if (!knownLabels.has(l)) { warnings.push(`${r.key}: 알 수 없는 카드 라벨 ${l}(제외)`); continue; }
+    if (l === 'scope/deferred') continue; // 생성기가 붙인다
     if (!labels.includes(l)) labels.push(l);
   }
+  const scopes = labels.filter((l) => /^scope\//.test(l));
+  if (scopes.length > 1) warnings.push(`${r.key}: scope/ 라벨이 둘 이상(${scopes.join(', ')})`);
+  const deferred = scopes.length === 0;
+  if (deferred) labels.push('scope/deferred');
+  const sprint = deferred ? DEFERRED_SPRINT : r.sprint;
   // 카드 메타와 색인 불일치 보고(색인이 정본)
   if (card) {
     const cp = card.meta.Points && Number((/^(\d+)/.exec(card.meta.Points) || [])[1]);
@@ -156,9 +166,11 @@ for (const r of rows) {
   const sourceDoc = card ? `${card.file}${anchor}` : INDEX;
   const kind = ownerAction ? 'owner-action' : r.type;
   const head = [
-    `> **${r.key}** · ${kind} · ${r.epic} · ${r.phase} · ${r.sprint} · ${r.points}점 · ${r.prio}${r.proposal ? ' · **추가 제안(채택 대기)**' : ''}`,
+    `> **${r.key}** · ${kind} · ${r.epic} · ${r.phase} · ${deferred ? `${DEFERRED_SPRINT}(옛 계획 ${r.sprint})` : r.sprint} · ${r.points}점 · ${r.prio}${r.proposal ? ' · **추가 제안(채택 대기)**' : ''}`,
     `> 원본 카드: [${sourceDoc}](${BLOB}${sourceDoc}) · 색인: [02 §8](${BLOB}${INDEX}#8-전체-스토리-색인)`,
     `> 이 본문은 \`tool/backlog/build_issues.mjs\`가 카드에서 생성했다. 수정은 카드에서 하고 다시 생성한다.`,
+    ...(deferred ? [`> **연기(DEC-22), MVP 뒤 재계획.** 1인 알파 MVP 범위가 아니다. 지금 구현하지 않고 MVP 스프린트에 넣지 않는다. 카드의 Sprint 값(${r.sprint})은 DEC-22 이전 계획이다. [03 MVP 계획](${BLOB}${MVP_PLAN})`] : []),
+    ...(labels.includes('scope/carryover') ? [`> **MVP 밖, 진행 중이라 마친다(DEC-22).** PR이 이미 열려 있다. 새 범위를 더하지 않는다. [03 MVP 계획](${BLOB}${MVP_PLAN})`] : []),
     '',
     '<!-- df-links:start -->',
     `**에픽**: ${r.epic}`,
@@ -179,7 +191,7 @@ for (const r of rows) {
   }
   issues.push({
     key: r.key, kind, title: `[${r.key}] ${r.title}`, type: ownerAction ? 'task' : r.type,
-    epic: r.epic, phase: r.phase, sprint: r.sprint, points: r.points, prio: r.prio, area: r.area,
+    epic: r.epic, phase: r.phase, sprint, ...(deferred ? { plannedSprint: r.sprint } : {}), points: r.points, prio: r.prio, area: r.area,
     labels, milestone: milestoneOf(r), deps, cardDeps, trace, ownerAction, proposal: r.proposal,
     status: r.proposal ? 'proposed' : 'adopted', ...(r.decisionAt ? { decisionAt: r.decisionAt } : {}),
     sourceDoc, body,
@@ -224,6 +236,8 @@ const totals = {
   byKind: Object.fromEntries(['story', 'chore', 'spike', 'owner-action'].map((k) => [k, adopted.filter((i) => i.kind === k).length])),
   byPhase: Object.fromEntries(phases.map((p) => { const a = adopted.filter((i) => i.phase === p); return [p, { count: a.length, points: a.reduce((s, i) => s + i.points, 0) }]; })),
   byMilestone: Object.fromEntries(Object.values(MS).map((m) => { const a = adopted.filter((i) => i.milestone === m); return [m, { count: a.length, points: a.reduce((s, i) => s + i.points, 0) }]; })),
+  byScope: Object.fromEntries(['scope/mvp', 'scope/carryover', 'scope/deferred'].map((l) => { const a = adopted.filter((i) => i.labels.includes(l)); return [l.slice(6), { count: a.length, points: a.reduce((s, i) => s + i.points, 0) }]; })),
+  // 연기 항목은 sprint가 'MVP 뒤'라 한 행으로 모인다. S02~S13 행은 MVP와 진행 중(carryover) 항목만 센다.
   bySprint: Object.fromEntries([...new Set(adopted.map((i) => i.sprint))].sort((a, b) => (sprintNo(a) ?? 999) - (sprintNo(b) ?? 999)).map((s) => { const a = adopted.filter((i) => i.sprint === s); return [s, { count: a.length, points: a.reduce((t, i) => t + i.points, 0) }]; })),
 };
 
@@ -234,7 +248,7 @@ const out = {
   generatedFrom: [INDEX, ...cardFiles.map((f) => posix.join(CARD_DIR, f))],
   generator: 'tool/backlog/build_issues.mjs',
   repo: REPO,
-  note: '생성물. 손으로 고치지 않는다. 키·점수·의존은 02 §8 색인, 본문은 카드가 정본이다. proposal=true 항목은 채택 대기(status/needs-decision)이고 합계에서 뺀다.',
+  note: '생성물. 손으로 고치지 않는다. 키·점수·의존은 02 §8 색인, 본문은 카드가 정본이다. proposal=true 항목은 채택 대기(status/needs-decision)이고 합계에서 뺀다. DEC-22: scope/mvp·scope/carryover가 없는 항목은 scope/deferred이고 sprint는 \'MVP 뒤\', 옛 계획 스프린트는 plannedSprint다.',
   totals,
   issues: all,
 };
@@ -254,3 +268,4 @@ if (CHECK) {
 // | 버전 | 날짜 | 내용 |
 // |---|---|---|
 // | v1.0.1 | 2026-09-24 | 교차 정합성 조정: '카드가 더한 의존' 본문 머리글을 02 §8.8.1(채택 시 색인에 추가) 기준으로 바꿈(R3). 로직 변경 없음 |
+// | v1.1 | 2026-09-25 | DEC-22: scope/mvp·scope/carryover가 없는 항목에 scope/deferred를 붙이고 sprint를 'MVP 뒤'(옛 값은 plannedSprint)로, 본문 머리에 연기 안내. totals.byScope 추가, bySprint는 MVP 스프린트와 연기를 나눈다 |

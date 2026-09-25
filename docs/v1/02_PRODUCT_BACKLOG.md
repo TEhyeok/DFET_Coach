@@ -119,7 +119,7 @@ PRD로 올릴 가정·질문은 PRD §13.4에 따라 AS-34, Q-25부터 번호를
 | `flag/` | soapV2, bodyComposition, bodyAssessment, memberShare, lidarBeta | 0 이상 | 산출물이 플래그 뒤에 숨는 경우(ADR-010) |
 | `agent/` | claude, codex, human | 0 또는 1 | 스프린트 계획에서 배정. TrainerKit 타깃이 겹치지 않게 한다 |
 | `status/` | ready, blocked, needs-decision | 0 또는 1 | ready는 DoR 충족. Projects Status 필드와 함께 쓴다 |
-| `scope/` | mvp | 0 또는 1 | [DEC-22](00_README.md#결정-기록) 1인 알파 MVP 범위 항목. 카드 Labels 줄에 적고 카드에 `### MVP 범위(DEC-22)` 절(지금 만들 것·미룰 것·기다리지 않는 의존)을 둔다. 없는 항목은 MVP 뒤로 연기한다([03 MVP 계획](03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)) |
+| `scope/` | mvp, carryover, deferred | 정확히 1(에픽 제외) | [DEC-22](00_README.md#결정-기록). `mvp`: 1인 알파 MVP 범위. 카드 Labels 줄에 적고 카드에 `### MVP 범위(DEC-22)` 절(지금 만들 것·미룰 것·기다리지 않는 의존)을 두며, 에이전트 스토리는 `agent/` 라벨이 있어야 한다. `carryover`: MVP 밖이지만 PR이 열려 있어 마치는 항목(DF-007·DF-010·DF-011). 카드 Labels 줄에 적는다. `deferred`: 둘 다 없는 항목에 생성기가 붙인다. 연기(DEC-22), MVP 뒤 재계획이며 `issues.json` 스프린트는 'MVP 뒤'(옛 계획 값은 `plannedSprint`)이고 `brief.mjs`가 지시서를 만들지 않는다([03 MVP 계획](03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)) |
 | 위험 표시 | freeze-exception, regulatory, privacy-impact, schema-change, rules-change, needs-device-test | 0 이상 | 소유자가 diff를 직접 읽어야 병합할 수 있는 PR 표시 |
 
 위험 표시를 반드시 붙이는 경우:
@@ -347,8 +347,9 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | S12 | 12-14~12-18 | 5 | 18 | 15 | DF-209, DF-210, DF-215, DF-225 | - | **흐름 3** 확정·결과, **흐름 4** 추이 차트·체형 타임라인 |
 | S13 | 12-21~12-24 | 4 | 14 | 0 | - | - | MVP 종료: 데모 체크리스트(시뮬레이터 + 에뮬레이터 → 서울), 버퍼. 새 항목 없음 |
 
-- 같은 스프린트 안 의존은 [§4.2](#42-크기포인트)대로 허용한다(예: S05 DF-108←DF-013, S12 DF-215←DF-209). MVP 항목이 MVP 밖 항목을 기다리지 않도록, 그런 의존은 카드의 'MVP에서 기다리지 않는 의존'에 적었다: DF-109←DF-025·DF-032, DF-121←DF-916, DF-204←DF-203, DF-931←DF-025, DF-925←DF-908·DF-909·DF-910·DF-924, DF-929←DF-927. 색인의 의존 값은 바꾸지 않았다(MVP 뒤 전체 계획의 정본).
-- `scope/mvp`가 없는 채택 항목(128건)은 MVP 뒤로 연기한다. 스프린트 값은 §7.3의 옛 계획 그대로이며 MVP 종료 검토 뒤 다시 계획한다.
+- 같은 스프린트 안 의존은 [§4.2](#42-크기포인트)대로 허용한다(예: S05 DF-108←DF-013, S12 DF-215←DF-209). MVP 항목이 MVP 밖 항목을 기다리지 않도록, 그런 의존은 카드의 'MVP에서 기다리지 않는 의존'에 적었다: DF-109←DF-025·DF-032, DF-121←DF-916, DF-204←DF-203, DF-931←DF-025, DF-925←DF-908·DF-909·DF-910·DF-924, DF-929←DF-927·DF-209(DF-929는 S11, DF-209는 S12. 체형 draft 업로드를 S11에 서울에서 확인하려면 플래그가 먼저 열려야 한다). 반대로 색인에 없지만 MVP에서 먼저 끝나야 하는 것: DF-931(MVP 배포에 `functions:recordConsent` 포함)←DF-109(S06). 색인의 의존 값은 바꾸지 않았다(MVP 뒤 전체 계획의 정본).
+- `scope/mvp`가 없는 채택 항목 128건 가운데 진행 중인 3건(DF-007·DF-010·DF-011, `scope/carryover`, 6점)은 마치고, 나머지 125건(274점)은 연기한다(`scope/deferred`). 색인과 카드의 스프린트 값은 §7.3의 옛 계획 그대로 두지만, `issues.json`에서는 스프린트가 'MVP 뒤'이고 옛 값은 `plannedSprint`로만 남는다. 그래서 `totals.bySprint`의 S02~S13은 MVP와 진행 중 항목만 센다. MVP 종료 검토 뒤 다시 계획한다.
+- **MVP 공통 규칙(DEC-22)**: 분석 이벤트 AC는 MVP 뒤다(DF-126 AnalyticsSink·DebugSink·TrainerEvent, DF-033 이벤트 레지스트리). MVP 카드의 분석 이벤트 수용 기준(예: AC-DF-122.7, AC-DF-209.8, DF-210·DF-215의 `change_status_rendered`), `TrainerAnalyticsTests` 테스트, 이벤트 전송 코드는 만들지 않는다. 해당 카드의 MVP 절에 한 줄씩 적었다. 나머지 공통 규칙(체형 사진 파이프라인, 테스트 데이터, Vision 대비책)은 [03 MVP 공통 규칙](03_RELEASE_AND_SPRINT_PLAN.md#mvp-공통-규칙)에 있다.
 
 ## 8. 전체 스토리 색인
 
@@ -1607,4 +1608,4 @@ flowchart LR
 | v1.0(정합 패스 2) | 2026-09-24 | 카드가 더한 의존 6건을 §8 색인에 반영(R3), ASM-02-14(R1)·ASM-02-15(R3) 추가, 설 연휴 추정 정정 | CJH(AI 에이전트) |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: R1·R3·R9 결정 반영(속도에 owner-action·스파이크 포함, 카드 의존 색인 반영, 제안 합계 제외 확정), 설 연휴 추정 03과 일치 | CJH(AI 에이전트) |
 | v1.1 | 2026-09-25 | 소유자 결정 2026-09-25 반영: DEC-19 서울 리전 전환 항목 DF-043(chore, S02, 1점)·DF-942(owner-action, S01, 1점) 추가, 의존 추가(DF-038←DF-043, DF-905·DF-906·DF-909←DF-942, DF-931←DF-043), DF-908을 S01에서 S03으로(보류). 합계 192건·464점, §6·§7·§8.8.2·§9.4 재계산 | CJH(AI 에이전트) |
-| v1.2 | 2026-09-25 | DEC-21·DEC-22(MVP 범위, 소유자 확인 필요: PR #113 소유자 병합 시 발효): DF-042 채택(§8.1 S03, DF-012 의존 추가, 193건·465점, 제안 15건·19점), 라벨 `scope/mvp`(§3), MVP 항목 스프린트 재배치(색인 스프린트 열), §7.3을 DEC-22 이전 계획으로 보존 표시, §7.4 MVP 적재 추가, §8.8 나머지 제안은 MVP 뒤 결정 | CJH(AI 에이전트) |
+| v1.2 | 2026-09-25 | DEC-21·DEC-22(MVP 범위, 소유자 확인 필요: PR #113 소유자 병합 시 발효): DF-042 채택(§8.1 S03, DF-012 의존 추가, 193건·465점, 제안 15건·19점), 라벨 `scope/mvp`(§3), MVP 항목 스프린트 재배치(색인 스프린트 열), §7.3을 DEC-22 이전 계획으로 보존 표시, §7.4 MVP 적재 추가, §8.8 나머지 제안은 MVP 뒤 결정. 리뷰 반영: 라벨 `scope/carryover`·`scope/deferred`(§3, 정확히 1), 연기 항목은 `issues.json` 스프린트 'MVP 뒤'·`plannedSprint`, §7.4에 연기 125건·진행 중 3건, DF-929←DF-209 면제와 DF-931←DF-109 선행, MVP 공통 규칙(분석 이벤트 AC는 MVP 뒤) | CJH(AI 에이전트) |

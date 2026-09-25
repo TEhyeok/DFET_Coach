@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dfet.co.kr/schemas/soap-note-v2.schema.json",
+  "title": "soap_notes/{noteId} v2 document",
+  "description": "PRD §9.3 SOAP 스키마 v2(필드 정본)와 V1-05 §5를 옮긴 JSON Schema(DF-006). Firestore 네이티브 타입이 아니라 교차 클라이언트 중립 표기를 검증한다: 픽스처 봉투(contracts/fixtures/README.md)의 data만 대상이고, 타임스탬프는 {\"$ts\"}·{\"$serverTimestamp\"}, Firestore 정수는 {\"$int\"} 태그다. metricCode는 형식만 보고 카탈로그 소속은 보지 않는다(F-SOAP-06.2, 소속 검사는 코덱과 TC-DF005-04). 배열 원소 단위 검증은 규칙이 아니라 이 스키마·코덱·교차 픽스처가 맡는다(PRD §9.2 '문서 크기와 배열 상한').",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "trainerId",
+    "authorUid",
+    "sessionDate",
+    "status",
+    "legalNature",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "trainerId": {
+      "description": "파생 접근 키. create 때 본인 uid, 이후 서버(syncRecordAccessKeys)만 바꾼다. 담당 해제 시 null.",
+      "$ref": "#/$defs/nullableId"
+    },
+    "authorUid": { "description": "불변 작성자.", "$ref": "#/$defs/id" },
+    "memberUid": { "description": "검증된 회원 uid. 대기 기록은 null.", "$ref": "#/$defs/nullableId" },
+    "pendingMemberId": { "description": "대기 회원 문서 ID. 승격 뒤에도 남는다.", "$ref": "#/$defs/nullableId" },
+    "sessionDate": { "$ref": "#/$defs/ts" },
+    "status": { "$ref": "#/$defs/soapStatus" },
+    "quickNote": { "type": "string", "maxLength": 1000 },
+    "inkPath": {
+      "description": "필기 Storage 경로 soapInk/{noteId}/{inkRevision}.drawing. 문서 인라인 필기는 금지(MIG-06).",
+      "oneOf": [
+        { "type": "string", "pattern": "^soapInk/[^/]+/[0-9]+\\.drawing$" },
+        { "type": "null" }
+      ]
+    },
+    "inkRevision": {
+      "allOf": [
+        { "$ref": "#/$defs/int" },
+        { "properties": { "$int": { "minimum": 1 } } }
+      ]
+    },
+    "subjective": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "chiefComplaint": { "type": "string", "maxLength": 2000 },
+        "painNrs": {
+          "description": "0–10 정수. 미입력은 null(0과 구분, AC-SOAP-01.7).",
+          "oneOf": [
+            {
+              "allOf": [
+                { "$ref": "#/$defs/int" },
+                { "properties": { "$int": { "minimum": 0, "maximum": 10 } } }
+              ]
+            },
+            { "type": "null" }
+          ]
+        },
+        "painRegions": {
+          "description": "부록 A.7 regionCode(vocab 초안이라 형식만 검사).",
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/code" }
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "maxItems": 60,
+          "items": { "$ref": "#/$defs/metricRow" }
+        },
+        "refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "postureAssessmentIds": { "$ref": "#/$defs/refIds" },
+            "bodyCompositionRecordIds": { "$ref": "#/$defs/refIds" },
+            "circumferenceMeasurementIds": { "$ref": "#/$defs/refIds" },
+            "bodyScanIds": { "$ref": "#/$defs/refIds" }
+          }
+        },
+        "snapshots": {
+          "description": "참조 기록 값의 불변 사본(PRD §7.8, F-SOAP-03).",
+          "type": "array",
+          "maxItems": 60,
+          "items": { "$ref": "#/$defs/snapshot" }
+        }
+      }
+    },
+    "exerciseAssessment": {
+      "description": "선택. 진단명·KCD·원인 단정 금지(문구 검사는 금지어 린트).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string", "maxLength": 4000 },
+        "observations": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nextSession": { "type": "string", "maxLength": 2000 },
+        "homeExercise": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "memberNote": { "type": "string", "maxLength": 200 },
+    "legalNature": { "const": "coachingRecord" },
+    "memberSummaryId": { "description": "서버 전용(S). P2 역참조.", "$ref": "#/$defs/nullableId" },
+    "finalizedAt": { "$ref": "#/$defs/ts" },
+    "createdAt": { "$ref": "#/$defs/ts" },
+    "updatedAt": { "$ref": "#/$defs/ts" },
+    "migratedFrom": {
+      "description": "서버 전용(S). MIG-03 이관 문서 표식.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "schemaVersion"],
+      "properties": {
+        "runId": { "type": "string", "minLength": 1 },
+        "schemaVersion": { "type": "integer" }
+      }
+    },
+    "legacy": {
+      "description": "서버 전용(S, 이관 스크립트만, 읽기 전용). 파싱 실패 metric 원문 등을 보존한다(MIG-03·MIG-04).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metricsRaw"],
+      "properties": {
+        "metricsRaw": { "type": "array", "items": { "type": "object" } },
+        "diagnosisRaw": { "type": "string" },
+        "originalIsShared": { "type": "boolean" },
+        "completedCategories": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "memberId": {
+      "description": "레거시 호환(P0~P3). 있으면 memberUid와 같은 값이어야 한다(두 필드 비교는 JSON Schema로 표현하지 않고 코덱 테스트가 맡는다). 대기 기록에는 없다.",
+      "$ref": "#/$defs/id"
+    },
+    "isSharedWithMember": {
+      "description": "레거시 호환. 있으면 false만(D9). 공유는 memberSummaries로만 한다.",
+      "const": false
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "회원 키: memberUid와 pendingMemberId 중 하나 이상이 문자열이다(PRD §9.1 공통 규약).",
+      "anyOf": [
+        { "required": ["memberUid"], "properties": { "memberUid": { "type": "string" } } },
+        { "required": ["pendingMemberId"], "properties": { "pendingMemberId": { "type": "string" } } }
+      ]
+    },
+    {
+      "description": "memberId는 memberUid가 있을 때만 둔다(대기 기록에는 없음).",
+      "if": { "required": ["memberUid"], "properties": { "memberUid": { "type": "string" } } },
+      "else": { "not": { "required": ["memberId"] } }
+    },
+    {
+      "description": "finalized 문서는 finalizedAt을 가진다(PRD §9.3 '확정 시 ●').",
+      "if": { "required": ["status"], "properties": { "status": { "const": "finalized" } } },
+      "then": { "required": ["finalizedAt"] }
+    },
+    {
+      "description": "앱에서 확정한 문서는 plan.nextSession이 비어 있지 않다(PRD §9.3, V1-05 §5.4 확정 최소 요건 4). MIG-03 이관 문서(migratedFrom 있음)는 예외다(V1-05 §5.5).",
+      "if": {
+        "required": ["status"],
+        "properties": { "status": { "const": "finalized" } },
+        "not": { "required": ["migratedFrom"] }
+      },
+      "then": {
+        "required": ["plan"],
+        "properties": {
+          "plan": {
+            "required": ["nextSession"],
+            "properties": { "nextSession": { "pattern": "\\S" } }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ts": {
+      "description": "픽스처 규약 2번. {\"$ts\": ISO 8601(Z 또는 오프셋)} 또는 쓰기 페이로드의 서버 시각 자리 {\"$serverTimestamp\": true}.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["$ts"],
+          "properties": {
+            "$ts": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["$serverTimestamp"],
+          "properties": { "$serverTimestamp": { "const": true } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "int": {
+      "description": "픽스처 규약 2번. Firestore 정수여야 하는 값(painNrs, mmtGrade value, inkRevision, trialIndex).",
+      "type": "object",
+      "required": ["$int"],
+      "properties": { "$int": { "type": "integer" } },
+      "additionalProperties": false
+    },
+    "id": {
+      "description": "Firestore 문서 ID 또는 Auth uid. 빈 문자열과 '/'는 쓸 수 없다.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^/]+$"
+    },
+    "nullableId": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }]
+    },
+    "code": {
+      "description": "영문 camelCase 코드(PRD §9.1 '키 표기'). 한글·단위 섞인 값('통증', '도', '좌')은 통과하지 못한다.",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "maxLength": 64
+    },
+    "metricCode": {
+      "description": "F-SOAP-06.2: 앞으로 추가될 코드도 받도록 enum이 아니라 형식만 검사한다.",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "maxLength": 64
+    },
+    "refIds": {
+      "type": "array",
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/id" }
+    },
+    "soapStatus": { "enum": ["draft", "finalized"] },
+    "side": { "enum": ["none", "left", "right", "bilateral"] },
+    "sourceGrade": {
+      "enum": [
+        "tape",
+        "device",
+        "photoManual",
+        "photoAuto",
+        "observedSection",
+        "modelEstimate",
+        "aiAppearance",
+        "selfReport",
+        "trainerObserved",
+        "derived"
+      ]
+    },
+    "activeOrPassive": { "enum": ["active", "passive"] },
+    "changeStatus": {
+      "enum": ["meaningfulImprovement", "withinError", "meaningfulDecline", "indeterminate", "pendingPolicy"]
+    },
+    "reasonCode": {
+      "enum": [
+        "conditionMismatch",
+        "deviceChanged",
+        "protocolChanged",
+        "noMdc",
+        "noComparison",
+        "referenceMetric",
+        "betaMetric"
+      ]
+    },
+    "mdcSource": { "enum": ["literature", "inHouse"] },
+    "metricRow": {
+      "description": "objective.metrics[] 원소(PRD §9.3, V1-05 §5.2). value는 숫자이고 mmtGrade만 {\"$int\"} 0–5다.",
+      "type": "object",
+      "required": ["metricCode", "value", "unit", "side", "sourceGrade"],
+      "properties": {
+        "metricCode": {
+          "allOf": [
+            { "$ref": "#/$defs/metricCode" },
+            { "description": "specialTestResult는 v1 금지(Q-14).", "not": { "const": "specialTestResult" } }
+          ]
+        },
+        "value": { "anyOf": [{ "type": "number" }, { "$ref": "#/$defs/int" }] },
+        "unit": { "description": "vocab unit 코드. 새 지표의 새 단위를 받도록 형식만 검사한다.", "$ref": "#/$defs/code" },
+        "side": { "$ref": "#/$defs/side" },
+        "sourceGrade": { "$ref": "#/$defs/sourceGrade" },
+        "note": { "type": "string", "maxLength": 500 },
+        "joint": { "description": "부록 A.5(vocab 초안).", "$ref": "#/$defs/code" },
+        "motion": { "description": "부록 A.5(vocab 초안).", "$ref": "#/$defs/code" },
+        "activeOrPassive": { "$ref": "#/$defs/activeOrPassive" },
+        "muscleGroup": { "description": "부록 A.6(vocab 초안).", "$ref": "#/$defs/code" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "required": ["metricCode"], "properties": { "metricCode": { "const": "romDeg" } } },
+          "then": {
+            "required": ["joint", "motion", "activeOrPassive"],
+            "properties": {
+              "value": { "type": "number" },
+              "unit": { "const": "deg" },
+              "side": { "enum": ["left", "right", "bilateral"] },
+              "sourceGrade": { "const": "trainerObserved" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["metricCode"], "properties": { "metricCode": { "const": "mmtGrade" } } },
+          "then": {
+            "required": ["muscleGroup"],
+            "properties": {
+              "value": {
+                "allOf": [
+                  { "$ref": "#/$defs/int" },
+                  { "properties": { "$int": { "minimum": 0, "maximum": 5 } } }
+                ]
+              },
+              "unit": { "const": "grade" },
+              "side": { "enum": ["left", "right", "bilateral"] },
+              "sourceGrade": { "const": "trainerObserved" }
+            }
+          }
+        }
+      ]
+    },
+    "snapshot": {
+      "description": "objective.snapshots[] 원소(PRD §7.8·§9.3). 원 기록 저장값의 불변 사본.",
+      "type": "object",
+      "required": [
+        "refId",
+        "metricCode",
+        "value",
+        "unit",
+        "side",
+        "sourceGrade",
+        "changeStatus",
+        "reasonCode",
+        "policyVersion",
+        "mdcSource",
+        "measuredAt"
+      ],
+      "properties": {
+        "refId": { "$ref": "#/$defs/id" },
+        "metricCode": { "$ref": "#/$defs/metricCode" },
+        "value": { "type": "number" },
+        "unit": { "$ref": "#/$defs/code" },
+        "side": { "$ref": "#/$defs/side" },
+        "sourceGrade": { "$ref": "#/$defs/sourceGrade" },
+        "changeStatus": { "$ref": "#/$defs/changeStatus" },
+        "reasonCode": { "oneOf": [{ "$ref": "#/$defs/reasonCode" }, { "type": "null" }] },
+        "policyVersion": { "type": ["string", "null"] },
+        "mdcSource": { "oneOf": [{ "$ref": "#/$defs/mdcSource" }, { "type": "null" }] },
+        "measuredAt": { "$ref": "#/$defs/ts" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

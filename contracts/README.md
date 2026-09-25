@@ -11,10 +11,12 @@
 |---|---|---|---|---|
 | `metric-catalog.v1.json` | `metrics[]` 22개(부록 A.1 코드, A.2 판정 메타), `excludedMetricCodes` 3개(부록 A.4) | 부록 A.1, A.2, A.4, F-SOAP-06.1 | §13.1, §6.2 | DF-003 |
 | `vocab.v1.json` | enum 33개와 `jointMotionPairs` | 부록 A.3, A.5~A.7, 부록 B | §13.2, §6.1, §6.3~§6.5 | DF-003 |
-| `feature-flags.v1.json` | 기능 플래그 키 | §6.0.2, 부록 B.7(ADR-010) | §13.3 | DF-027(예정) |
+| `feature-flags.v1.json` | `appConfig/features` 키 8개(기존 3 + v1 5). 키마다 `default`(모두 false), `phase`, `descriptionKo`(AD-07 표시), `ruleGatedCollections` | §6.0.2, §12.3, 부록 B.7(ADR-010) | §4.17, §13.3 | DF-027 |
 | `audit-actions.v1.json`, `analytics-events.v1.json` | 감사 action, 분석 이벤트 허용 목록 | §5.5, F-PRIV-06.3(ADR-015) | §13.3 | DF-033(예정) |
 | `prohibited-terms.v1.json` | 금지어·대체어 규칙 세트(common·member·trainer), 인과 패턴, 경로별 세트, 예외 경로·정확 문자열 예외 | 부록 C.1~C.3, §3.1 | — ([V1-12 §7](../docs/v1/12_COPY_ANALYTICS_AND_LINT.md#7-금지어-린트-설계)) | DF-010 |
 | `fixtures/**`, `vectors/**` | 교차 픽스처, 알고리즘 벡터 | F-SOAP-06, AC-ASM-03.x, T01~T25 | §13.4 | DF-005 외 |
+
+`feature-flags.v1.json`의 `default`는 메타 스키마가 false로 고정한다. 문서나 키가 없거나 값이 불리언이 아니면 네 소비자 모두 꺼진 것으로 읽는다(AC-IA-02). `firestore.rules`·`storage.rules`의 `featureOn('<key>')` 인자는 이 파일의 키여야 하며 `tool/contracts/test/flags-rules.test.mjs`가 대조한다(AC-DF-027.4). 키 추가는 이 파일에서만 한다.
 
 `prohibited-terms.v1.json`은 `tool/lint/prohibited-terms.mjs`(copy-lint)가 직접 읽는다. 바꾸는 PR에는 `regulatory` 라벨을 달고 [V1-12 §7.13](../docs/v1/12_COPY_ANALYTICS_AND_LINT.md#713-예외-추가규칙-변경-절차) 절차를 따른다. `allowEntries`에 넣을 수 있는 실제 문장은 PRD §3.1 고지 원문뿐이다(DF-010).
 

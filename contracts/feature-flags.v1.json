@@ -1,0 +1,74 @@
+{
+  "contract": "feature-flags",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/PRD_V1.md 6.0.2, 12.3, B.7; docs/v1/05_DATA_MODEL_AND_RULES.md 4.17, 13.3; ADR-010",
+  "flags": [
+    {
+      "key": "gut",
+      "default": false,
+      "phase": "existing",
+      "descriptionKo": "장내미생물 리포트",
+      "ruleGatedCollections": []
+    },
+    {
+      "key": "blood",
+      "default": false,
+      "phase": "existing",
+      "descriptionKo": "혈액 리포트",
+      "ruleGatedCollections": []
+    },
+    {
+      "key": "insights",
+      "default": false,
+      "phase": "existing",
+      "descriptionKo": "통합 인사이트",
+      "ruleGatedCollections": []
+    },
+    {
+      "key": "soapV2",
+      "default": false,
+      "phase": "P1a",
+      "descriptionKo": "SOAP 기록·확정(TR-04, TR-05)",
+      "ruleGatedCollections": [
+        "soap_notes"
+      ]
+    },
+    {
+      "key": "bodyComposition",
+      "default": false,
+      "phase": "P1a",
+      "descriptionKo": "신체조성·줄자 둘레 입력(TR-11, TR-12)",
+      "ruleGatedCollections": [
+        "bodyCompositionRecords",
+        "circumferenceMeasurements(tape)"
+      ]
+    },
+    {
+      "key": "bodyAssessment",
+      "default": false,
+      "phase": "P1b",
+      "descriptionKo": "체형 촬영·보정·비교(TR-07~TR-10)",
+      "ruleGatedCollections": [
+        "postureAssessments"
+      ]
+    },
+    {
+      "key": "memberShare",
+      "default": false,
+      "phase": "P2",
+      "descriptionKo": "회원 요약·리포트 공유, 초대 코드",
+      "ruleGatedCollections": []
+    },
+    {
+      "key": "lidarBeta",
+      "default": false,
+      "phase": "P2",
+      "descriptionKo": "LiDAR 관측 단면 베타(내부 트레이너)",
+      "ruleGatedCollections": [
+        "bodyScans",
+        "circumferenceMeasurements(observedSection)"
+      ]
+    }
+  ]
+}

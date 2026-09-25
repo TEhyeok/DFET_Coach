@@ -23,7 +23,18 @@ export const RESERVED_TYPE_NAMES = Object.freeze([
   'TermBoundary',
   'TermCausalPattern',
   'TermAllowEntry',
+  'FeatureFlagKey',
+  'FeatureFlagPhase',
+  'FeatureFlagDefinition',
 ]);
+
+// DF-027: `phase` values of contracts/feature-flags.v1.json. Must equal the meta-schema enum
+// ($defs.featureFlag.properties.phase); tool/contracts/test/flags-rules.test.mjs checks that.
+export const FEATURE_FLAG_PHASES = Object.freeze(['existing', 'P1a', 'P1b', 'P2', 'P3']);
+
+// Members the generated FeatureFlagKey enums declare next to their cases (Swift and Dart). A flag key
+// with one of these names would not compile, so the generator rejects it.
+export const FEATURE_FLAG_KEY_MEMBERS = Object.freeze(['defaultValue']);
 
 // metrics[] field -> vocab enum that holds its allowed values (V1-05 §13.1).
 export const METRIC_FIELD_ENUMS = Object.freeze({

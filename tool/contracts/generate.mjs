@@ -22,11 +22,12 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020Module from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 
-import { METRIC_FIELD_ENUMS, RESERVED_TYPE_NAMES, typeName } from './emitters/common.mjs';
+import { FEATURE_FLAG_KEY_MEMBERS, METRIC_FIELD_ENUMS, RESERVED_TYPE_NAMES, typeName } from './emitters/common.mjs';
 import { SWIFT_DIR, swiftEmitters, swiftIdentCollisions } from './emitters/swift.mjs';
-import { DART_DIR, dartEmitters, dartIdentCollisions } from './emitters/dart.mjs';
+import { DART_DIR, dartEmitters, dartIdent, dartIdentCollisions } from './emitters/dart.mjs';
 import { FUNCTIONS_DIR, functionsEmitters } from './emitters/functions.mjs';
 import { ADMIN_WEB_DIR, adminWebEmitters } from './emitters/adminWeb.mjs';
+import { schemasEmitters } from './emitters/schemas.mjs';
 
 const Ajv2020 = Ajv2020Module.default ?? Ajv2020Module;
 const addFormats = addFormatsModule.default ?? addFormatsModule;
@@ -36,7 +37,7 @@ export const META_SCHEMA = 'schemas/contracts-meta.schema.json';
 export const GENERATOR = 'tool/contracts/generate.mjs';
 
 // Input registry. A missing file is skipped with a warning, together with every emitter that needs it.
-// Later stories append inputs and emitters: DF-027 feature-flags, DF-033 analytics-events and audit-actions. contracts/fixtures/** is never copied (DF-009 reads it in place).
+// Later stories append inputs and emitters: DF-033 analytics-events and audit-actions. contracts/fixtures/** is never copied (DF-009 reads it in place).
 export const INPUTS = [
   {
     file: 'metric-catalog.v1.json',
@@ -57,6 +58,15 @@ export const INPUTS = [
     key: 'prohibitedTerms',
     requires: [],
     emit: [swiftEmitters.prohibitedTerms, functionsEmitters.prohibitedTermsJson],
+  },
+  {
+    // DF-027: appConfig/features keys (ADR-010). Swift FeatureFlagKey for TrainerDomain FeatureFlags, Dart
+    // FeatureFlagKey for AppFeatureFlags, the example document in schemas/, and FEATURE_FLAGS in admin_web
+    // contracts.ts (aggregate below). tool/contracts/test/flags-rules.test.mjs checks featureOn() keys in the rules.
+    file: 'feature-flags.v1.json',
+    key: 'featureFlags',
+    requires: [],
+    emit: [swiftEmitters.featureFlags, dartEmitters.featureFlags, schemasEmitters.featureFlagsExample],
   },
 ];
 
@@ -240,6 +250,23 @@ export function crossCheckErrors(loaded) {
   }
   const terms = loaded.prohibitedTerms?.doc;
   if (terms) errors.push(...prohibitedTermsErrors(`contracts/${loaded.prohibitedTerms.file}`, terms));
+  const flags = loaded.featureFlags?.doc;
+  if (flags) errors.push(...featureFlagErrors(`contracts/${loaded.featureFlags.file}`, flags));
+  return errors;
+}
+
+// DF-027: keys unique, not a member name of the generated enums, and unique after Dart/Swift escaping.
+function featureFlagErrors(p, doc) {
+  const errors = [];
+  const firstIndex = new Map();
+  doc.flags.forEach((f, i) => {
+    if (firstIndex.has(f.key)) errors.push(`${p}#/flags/${i}/key: duplicate key "${f.key}" (first at #/flags/${firstIndex.get(f.key)})`);
+    else firstIndex.set(f.key, i);
+    // Checked before and after Dart escaping: `default` becomes `defaultValue` in Dart.
+    const member = [f.key, dartIdent(f.key)].find((ident) => FEATURE_FLAG_KEY_MEMBERS.includes(ident));
+    if (member) errors.push(`${p}#/flags/${i}/key: "${f.key}" collides with the generated FeatureFlagKey member ${member}`);
+  });
+  errors.push(...identifierErrors(doc.flags.map((f) => f.key), (i) => `${p}#/flags/${i}/key`, { vocab: false }));
   return errors;
 }
 

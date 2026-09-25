@@ -1,6 +1,6 @@
 // admin_web emitter (DF-004): admin_web/lib/generated/contracts.ts.
 // `as const` value lists plus derived union types, for zod schemas (z.enum(SOURCE_GRADES)).
-import { METRIC_FIELD_ENUMS, lines, numberLiteral, pluralConstName, sqString, typeName } from './common.mjs';
+import { FEATURE_FLAG_PHASES, METRIC_FIELD_ENUMS, lines, numberLiteral, pluralConstName, sqString, typeName } from './common.mjs';
 
 export const ADMIN_WEB_DIR = 'admin_web/lib/generated';
 
@@ -41,10 +41,10 @@ function entryLiteral(m) {
   ];
 }
 
-export function renderContracts({ metricCatalog, vocab }) {
+export function renderContracts({ metricCatalog, vocab, featureFlags }) {
   const t = (field) => typeName(METRIC_FIELD_ENUMS[field]);
   const out = ['export const CONTRACTS_VERSION = {'];
-  for (const input of [metricCatalog, vocab]) {
+  for (const input of [metricCatalog, vocab, featureFlags]) {
     const { doc } = input;
     out.push(
       `  ${input.key}: { contract: ${str(doc.contract)}, version: ${doc.version}, revision: ${doc.revision}, sha256: ${str(input.sha12)} },`,
@@ -132,6 +132,42 @@ export function renderContracts({ metricCatalog, vocab }) {
   );
   for (const m of doc.metrics) out.push(...entryLiteral(m));
   out.push('};');
+
+  // DF-027: contracts/feature-flags.v1.json for the AD-07 zod schema and editor.
+  const flags = featureFlags.doc.flags;
+  const list = (vs) => `[${vs.map(str).join(', ')}]`;
+  out.push(
+    '',
+    '/** `appConfig/features` keys in contract order (ADR-010, V1-05 §4.17). */',
+    ...constList('FEATURE_FLAG_KEYS', flags.map((f) => f.key)),
+    'export type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];',
+    '',
+    '/** Phase that may open a flag (PRD §12.3). `existing` is a member-app flag from before v1 (D4). */',
+    `export type FeatureFlagPhase = ${FEATURE_FLAG_PHASES.map(str).join(' | ')};`,
+    '',
+    'export interface FeatureFlagDefinition {',
+    '  readonly key: FeatureFlagKey;',
+    '  /** Value when the document or the key is missing, or the stored value is not a boolean (AC-IA-02). */',
+    '  readonly default: boolean;',
+    '  readonly phase: FeatureFlagPhase;',
+    '  readonly descriptionKo: string;',
+    '  /** Collections whose Firestore rules check featureOn(key) (V1-05 §13.3). */',
+    '  readonly ruleGatedCollections: ReadonlyArray<string>;',
+    '}',
+    '',
+    '/** Flag definitions in contract order. */',
+    'export const FEATURE_FLAGS: ReadonlyArray<FeatureFlagDefinition> = [',
+    ...flags.flatMap((f) => [
+      '  {',
+      `    key: ${str(f.key)},`,
+      `    default: ${f.default},`,
+      `    phase: ${str(f.phase)},`,
+      `    descriptionKo: ${str(f.descriptionKo)},`,
+      `    ruleGatedCollections: ${list(f.ruleGatedCollections)},`,
+      '  },',
+    ]),
+    '];',
+  );
   return lines(out);
 }
 
@@ -140,7 +176,7 @@ export const adminWebEmitters = Object.freeze({
     id: 'adminWeb.contracts',
     path: `${ADMIN_WEB_DIR}/contracts.ts`,
     comment: '//',
-    uses: ['metricCatalog', 'vocab'],
+    uses: ['metricCatalog', 'vocab', 'featureFlags'],
     render: renderContracts,
   },
 });

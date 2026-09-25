@@ -2,9 +2,9 @@
   "gut": false,
   "blood": false,
   "insights": false,
-  "bodyAssessment": false,
-  "bodyComposition": false,
   "soapV2": false,
+  "bodyComposition": false,
+  "bodyAssessment": false,
   "memberShare": false,
   "lidarBeta": false
 }

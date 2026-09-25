@@ -300,6 +300,38 @@ export function renderContractsVersion(ctx) {
   return lines(out);
 }
 
+// contracts/feature-flags.v1.json -> feature_flags.g.dart (DF-027). AppFeatureFlags.fromMap
+// (lib/services/clinical_repository.dart) reads `appConfig/features` with these wire names.
+export function renderFeatureFlags({ featureFlags }) {
+  const doc = featureFlags.doc;
+  const out = [
+    ...header(doc),
+    '',
+    '/// `appConfig/features` keys in contract order (ADR-010, V1-05 §4.17). `wire` is the Firestore field name.',
+    'enum FeatureFlagKey {',
+    ...doc.flags.flatMap((f) => [`  /// Phase ${f.phase}.`, `  ${dartIdent(f.key)}(${str(f.key)}, defaultValue: ${f.default}),`]),
+    '  ;',
+    '',
+    '  const FeatureFlagKey(this.wire, {required this.defaultValue});',
+    '',
+    '  /// The field name in `appConfig/features` and in contracts/feature-flags.v1.json.',
+    '  final String wire;',
+    '',
+    '  /// Value when the document or the key is missing, or the stored value is not a bool (AC-IA-02).',
+    '  final bool defaultValue;',
+    '',
+    '  /// Returns null for a missing or unknown key.',
+    '  static FeatureFlagKey? fromWire(String? value) {',
+    '    for (final candidate in FeatureFlagKey.values) {',
+    '      if (candidate.wire == value) return candidate;',
+    '    }',
+    '    return null;',
+    '  }',
+    '}',
+  ];
+  return lines(out);
+}
+
 export const dartEmitters = Object.freeze({
   vocab: { id: 'dart.vocab', path: `${DART_DIR}/vocab.g.dart`, comment: '//', uses: ['vocab'], render: renderVocab },
   metricCatalog: {
@@ -308,6 +340,13 @@ export const dartEmitters = Object.freeze({
     comment: '//',
     uses: ['metricCatalog'],
     render: renderMetricCatalog,
+  },
+  featureFlags: {
+    id: 'dart.featureFlags',
+    path: `${DART_DIR}/feature_flags.g.dart`,
+    comment: '//',
+    uses: ['featureFlags'],
+    render: renderFeatureFlags,
   },
   contractsVersion: {
     id: 'dart.contractsVersion',

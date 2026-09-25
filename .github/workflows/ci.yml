@@ -144,3 +144,21 @@ jobs:
       - name: Backlog dry-run offline (DF-002)
         if: hashFiles('tool/backlog/create_backlog.sh') != ''
         run: bash tool/backlog/create_backlog.sh --dry-run --offline > /dev/null
+
+  contracts:                  # DF-004. 필수 체크 이름. 워크플로 수준 paths 없음, 항상 실행(SPRINT_01 §5, ASM-S01-05)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tool/package-lock.json
+      - run: npm ci --prefix tool
+      # Node 22의 node --test는 디렉터리 인자를 받지 않아 글롭을 따옴표로 넘긴다. 순서는 10_TEST_PLAN §19.3과 같다
+      - run: node --test 'tool/contracts/test/**/*.test.mjs'
+      # ajv 메타 스키마(schemas/contracts-meta.schema.json) → 교차 검증 → 생성물 드리프트(AC-DF-004.2~.4)
+      - run: node tool/contracts/generate.mjs --check

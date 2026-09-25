@@ -26,6 +26,10 @@ const commandsOf = (md) => {
   const m = /```bash\n([\s\S]*?)\n```/.exec(s8);
   return m ? m[1].split('\n').filter((l) => l && !l.startsWith('#')) : [];
 };
+// §8 한 줄은 허용 목록의 실행 파일 + 공백으로 시작해야 한다.
+const ALLOWED_EXEC = /^(?:(?:node|npm|npx|bash|flutter|swift|xcodebuild|xcodegen|jq|shellcheck)\s+\S|firebase emulators:exec\s|git diff\s)/;
+const PROD_SCRIPT = /\bfunctions\/scripts\/(migrations|research)\//;
+const inEmulator = (c) => /^firebase emulators:exec\s/.test(c) || /(^|\s)--emulator(\s|=|$)/.test(c);
 const SECTIONS = ['0. 절대 규칙', '1. 목표', '2. 추적', '3. 컨텍스트 팩', '4. 작업 범위', '5. 인터페이스 계약', '6. 수용 기준(원문)', '7. 구현 메모', '8. 검증 명령', '9. 브랜치·커밋·PR', '10. 막혔을 때', '11. 완료 보고'];
 
 test('brief DF-002 --sprint S01 fills every V1-T08 section from the card and issues.json', () => {
@@ -104,8 +108,47 @@ test('brief builds for every agent-assigned story without placeholders for card 
     assert.ok(!sectionOf(r.out, 1).includes('_카드에 없음._'), `${k}: story`);
     assert.ok(!sectionOf(r.out, 6).includes('_카드에 없음._'), `${k}: acceptance criteria`);
     assert.match(r.out, new RegExp(`^- 브랜치: (claude|codex|docs)/${k}-[a-z0-9-]+$`, 'm'), `${k}: branch`);
-    assert.ok(commandsOf(r.out).every((c) => !/--apply|firebase deploy/.test(c)), `${k}: unsafe command`);
+    const cmds = commandsOf(r.out);
+    assert.ok(cmds.every((c) => !/--apply|firebase deploy/.test(c)), `${k}: unsafe command`);
+    for (const c of cmds) {
+      assert.match(c, ALLOWED_EXEC, `${k}: §8 line is not an allow-listed command: ${c}`);
+      assert.doesNotMatch(c, /\$\{?GITHUB_/, `${k}: CI-only line: ${c}`);
+      assert.ok(!PROD_SCRIPT.test(c) || inEmulator(c), `${k}: production-capable script outside the emulator: ${c}`);
+    }
   }
+});
+
+test('brief §8 drops owner-run and production-capable script commands (DF-326, DF-330) but keeps emulator runs (DF-030)', () => {
+  for (const [k, script] of [['DF-326', 'functions/scripts/research/exportRetestDataset.js'], ['DF-330', 'functions/scripts/migrations/mig08-remove-trainer-workspaces.js']]) {
+    const r = brief(k);
+    assert.equal(r.code, 0, r.err);
+    assert.ok(sectionOf(r.out, 6).includes(script), `fixture: ${k} card AC mentions ${script}`);
+    assert.ok(commandsOf(r.out).every((c) => !c.includes(script)), `${k}: ${script} must not be an agent verification command`);
+  }
+  const mig02 = commandsOf(brief('DF-030').out).filter((c) => PROD_SCRIPT.test(c));
+  assert.ok(mig02.length > 0 && mig02.every(inEmulator), mig02.join('\n'));
+});
+
+test('brief §8 rejects non-commands, CI-only lines, cwd-relative tests and writing generators', () => {
+  const all = new Set();
+  for (const k of ['DF-004', 'DF-008', 'DF-009', 'DF-010', 'DF-016', 'DF-025', 'DF-220', 'DF-224', 'DF-300']) for (const c of commandsOf(brief(k).out)) all.add(c);
+  for (const bad of ['node:test', 'swift-snapshot-testing', 'swift-tools-version:5.9', 'flutter', 'node tool/contracts/generate.mjs', 'node --test test/*.test.mjs']) assert.ok(!all.has(bad), `dropped: ${bad}`);
+  assert.ok([...all].every((c) => !/GITHUB_STEP_SUMMARY/.test(c)));
+  assert.ok(all.has('node tool/contracts/generate.mjs --check'), 'keeps the --check generator');
+});
+
+test('brief warns when the sprint doc and the agent label disagree; --sprint lets the sprint doc win (DF-005)', () => {
+  const item = issues.find((i) => i.key === 'DF-005');
+  const label = (item.labels.find((l) => /^agent\/(claude|codex)$/.test(l)) || '').slice(6);
+  const withSprint = brief('DF-005', '--sprint', 'S01');
+  assert.equal(withSprint.code, 0, withSprint.err);
+  assert.match(withSprint.out, /^- 브랜치: claude\/DF-005-soap-fixtures$/m);
+  if (label !== 'claude') {
+    assert.match(withSprint.err, /warning: DF-005: sprint doc assigns claude .* label is agent\/codex; using the sprint doc/);
+    assert.match(brief('DF-005').err, /warning: DF-005: .*using the label \(codex\)/);
+    assert.match(brief('DF-005', '--agent', 'codex', '--sprint', 'S01').out, /^- 브랜치: codex\/DF-005-/m);
+  }
+  assert.equal(brief('DF-002', '--sprint', 'S01').err, '', 'no warning when they agree');
 });
 
 test('brief refuses owner actions, epics, unknown keys; bad usage exits 2', () => {

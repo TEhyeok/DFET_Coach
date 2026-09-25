@@ -16,8 +16,11 @@
 //   6 수용 기준     카드 '수용 기준'과 '테스트'(원문)
 //   7 구현 메모     카드 '배경·맥락', '비고·가정', 'DoR'
 //   8 검증 명령     area별 기본 명령(01 영역별 DoD, 13 §4) + 카드·스프린트 문서의 명령
-//                   (--apply, firebase deploy, 자리 표시자가 든 명령은 넣지 않는다)
+//                   (--apply, firebase deploy, 자리 표시자가 든 명령은 넣지 않는다. 소유자가 실행하는 수용 기준·테스트 줄의
+//                   명령, 에뮬레이터 밖의 functions/scripts/(migrations|research)/, 명령이 아닌 낱말·CI 전용 줄도 뺀다)
 //   9 브랜치·커밋   브랜치는 스프린트 문서 → --slug → 제목의 영문 낱말 순서로 정한다
+//                   에이전트는 --agent → (--sprint를 줬으면) 스프린트 문서 레인·브랜치 → agent/ 라벨 순서로 정한다.
+//                   스프린트 문서와 라벨이 다르면 stderr에 경고한다
 //
 // 종료 코드: 0 성공, 1 대상이 아님(없는 키, 에픽, 소유자 행동, 에이전트 미정, 카드 없음), 2 사용법 오류
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -68,8 +71,6 @@ if (!item) fail(`${opts.key} not found in ${issuesPath}`);
 if (item.kind === 'epic') fail(`${opts.key} is an epic`);
 const labelAgent = (it) => (it.labels.find((l) => /^agent\/(claude|codex)$/.test(l)) || '').slice(6) || null;
 if (item.ownerAction || (item.labels.includes('agent/human') && !labelAgent(item))) fail(`${opts.key} is an owner/human task (agent/human); no agent brief`);
-const agent = opts.agent ?? labelAgent(item);
-if (!agent) fail(`${opts.key} has no agent/claude or agent/codex label; pass --agent claude|codex`);
 
 // ---------- 마크다운 도구 ----------
 // 상대 링크를 GitHub blob 절대 링크로 바꾼다(지시서는 이슈 코멘트로 붙으므로 상대 링크가 깨진다). build_issues.mjs와 같은 규칙.
@@ -292,6 +293,27 @@ const sprintForLookup = opts.sprint || (/^S\d{2}$/.test(item.sprint || '') ? ite
 const sFile = sprintFile(sprintForLookup);
 const sInfo = sprintInfo(opts.key, sFile);
 
+// 스프린트 문서가 정한 에이전트: 레인 표의 '에이전트' 칸, 없으면 브랜치 접두(claude/…, codex/…)
+function sprintAgent(info) {
+  const lane = /^(claude|codex)$/i.exec((info.lane?.agent || '').trim());
+  if (lane) return lane[1].toLowerCase();
+  const b = /^(claude|codex)\//.exec(info.branch || '');
+  return b ? b[1] : null;
+}
+// --agent → (--sprint를 줬으면) 스프린트 문서 → 라벨. 문서와 라벨이 다르면 경고한다(조용히 버리지 않는다).
+function resolveAgent(it, info, sprintGiven, warn) {
+  const lab = labelAgent(it);
+  const doc = sprintAgent(info);
+  if (doc && lab && doc !== lab && warn) {
+    console.error(`warning: ${it.key}: sprint doc assigns ${doc}${info.branch ? ` (\`${info.branch}\`)` : ''} but issues.json label is agent/${lab}; ` +
+      (opts.agent ? `using --agent ${opts.agent}` : sprintGiven ? `using the sprint doc (${doc})` : `using the label (${lab}); pass --sprint or --agent to override`) +
+      '. Fix the label or the sprint doc in a docs follow-up.');
+  }
+  return (sprintGiven && doc) ? doc : lab;
+}
+const agent = opts.agent ?? resolveAgent(item, sInfo, !!opts.sprint, true);
+if (!agent) fail(`${opts.key} has no agent/claude or agent/codex label; pass --agent claude|codex`);
+
 function slugFromTitle(t) {
   const stop = new Set(['json', 'md', 'mjs', 'js', 'sh', 'yml', 'v1', 'v2', 'the', 'and', 'ci']);
   const words = (t.replace(/^\[[^\]]+\]\s*/, '').match(/[A-Za-z][A-Za-z0-9]*/g) || []).map((w) => w.toLowerCase()).filter((w) => !stop.has(w) && w.length > 1);
@@ -314,8 +336,18 @@ const epic = item.epic ? byKey.get(item.epic) : null;
 const epicTitle = epic ? epic.title.replace(/^\[[^\]]+\]\s*/, '') : '';
 
 // 검증 명령: area 기본 + 경로 기반 + 스프린트 문서 + 카드. 위험하거나 자리 표시자가 든 명령은 뺀다.
-const COMMAND_RE = /^(node|npm|npx|bash|flutter|firebase emulators:exec|swift|xcodebuild|xcodegen|jq|shellcheck|git diff)\b/;
-const unsafe = (c) => /^(xcodebuild|swift) \w+$|^swift$/.test(c) || (/^xcodebuild\b/.test(c) && !/ -(project|workspace|scheme) /.test(c)) || /--apply\b|firebase deploy|\bgh\s|…|\.\.\.|<[^>]*>|DF-NNN|\bSNN\b/.test(c) || /\bgh (issue|label|api|project)\b/.test(c);
+// 실행 파일 이름 바로 뒤에 공백이 와야 한다(node:test, swift-snapshot-testing, swift-tools-version:5.9 같은 낱말을 거른다).
+const COMMAND_RE = /^(?:(?:node|npm|npx|bash|flutter|swift|xcodebuild|xcodegen|jq|shellcheck)\s+\S|firebase emulators:exec\s|git diff\s)/;
+// 운영 데이터를 읽을 수 있는 스크립트: 에뮬레이터 안(firebase emulators:exec 또는 --emulator)에서만 허용한다(13 §7).
+const PROD_SCRIPT_RE = /\bfunctions\/scripts\/(migrations|research)\//;
+const inEmulator = (c) => /^firebase emulators:exec\s/.test(c) || /(^|\s)--emulator(\s|=|$)/.test(c);
+const unsafe = (c) =>
+  /^(xcodebuild|swift) \w+$/.test(c) || (/^xcodebuild\s/.test(c) && !/ -(project|workspace|scheme) /.test(c)) ||
+  /--apply\b|firebase deploy|\bgh\s|…|\.\.\.|<[^>]*>|DF-NNN|\bSNN\b/.test(c) || /\bgh (issue|label|api|project)\b/.test(c) ||
+  /\$\{?GITHUB_/.test(c) || // CI 전용 줄
+  (PROD_SCRIPT_RE.test(c) && !inEmulator(c)) ||
+  /^node tool\/contracts\/generate\.mjs(?!.*\s--check\b)/.test(c) || // --check 없는 생성기는 파일을 쓴다
+  /^node\s.*(\s|")test\//.test(c); // cwd 기준 test/(패키지 안에서만 뜻이 있다. 루트 test/는 Flutter 테스트다)
 const commands = [];
 // Node 22의 --test는 디렉터리 인자를 펼치지 않는다. 'node --test dir/'는 'node --test dir/*.test.mjs'로 바꾼다.
 const addCmd = (c) => { const x = c.trim().replace(/^node --test (\S+)\/$/, 'node --test $1/*.test.mjs'); if (x && COMMAND_RE.test(x) && !unsafe(x) && !commands.includes(x)) commands.push(x); };
@@ -324,7 +356,11 @@ const scopeText = [sInfo.allowed || '', section.notes || '', section.brief || ''
 const scopePaths = ticks(scopeText);
 for (const [re, cs] of PATH_COMMANDS) if (scopePaths.some((p) => re.test(p))) cs.forEach(addCmd);
 sInfo.commands.forEach(addCmd);
-for (const k of ['ac', 'tests', 'notes', 'brief']) for (const t of ticks(section[k] || '')) addCmd(t);
+// 수용 기준·테스트에서 소유자가 실행하는 줄(예: 'Given 소유자가 `… --dry-run`을 실행')의 명령은 에이전트 검증 명령이 아니다.
+const OWNER_ACTOR = /소유자가/;
+const agentLines = (s) => (s || '').split('\n').filter((l) => !OWNER_ACTOR.test(l)).join('\n');
+for (const k of ['ac', 'tests']) for (const t of ticks(agentLines(section[k]))) addCmd(t);
+for (const k of ['notes', 'brief']) for (const t of ticks(section[k] || '')) addCmd(t);
 
 // 컨텍스트 팩
 const reading = [
@@ -347,9 +383,9 @@ if (opts.sprint) {
   const sf = sprintFile(opts.sprint);
   for (const it of issues) {
     if (it.key === opts.key || it.kind === 'epic' || it.proposal || it.ownerAction) continue;
-    const ag = labelAgent(it);
-    if (!ag || !inSprint(it, opts.sprint)) continue;
+    if (!labelAgent(it) || !inSprint(it, opts.sprint)) continue;
     const info = sprintInfo(it.key, sf);
+    const ag = resolveAgent(it, info, true, false);
     const paths = info.allowed ? info.allowed : `area ${it.area ?? '-'}, 카드 ${BLOB}${it.sourceDoc}`;
     others.push(`  - ${it.key} (${ag}${info.branch ? `, \`${info.branch}\`` : ''}): ${paths}`);
   }

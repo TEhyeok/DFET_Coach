@@ -528,34 +528,34 @@ void main() {
         expect(SoapNoteV2Codec.fromMap(FixtureFile.load(file).data), expected);
       });
 
-      final swift = fixtureFile('soap_v2/swift_written_$base.json');
-      test(
-        'swift_written_$base.json decodes to the hand-built model',
-        () {
-          final written = FixtureFile.load(swift);
-          expect(written.writer, 'swift');
-          final note = SoapNoteV2Codec.fromMap(written.data);
-          expect(
-            structuralDiff(
-              note.toMap(target: CodecTarget.fixture),
-              expected.toMap(target: CodecTarget.fixture),
-            ),
-            isEmpty,
-          );
-          expect(note, expected);
-        },
-        // AC-DF-009.6: DF-009 commits swift_written_*; the story merged second removes this skip.
-        skip: swift.existsSync()
-            ? false
-            : 'DF-009 not merged yet: ${swift.path} is missing. '
-                'The story merged second removes this skip (AC-DF-009.6).',
-      );
+      // AC-DF-009.6: DF-009 committed swift_written_* and removed the skip branch, so a missing
+      // file fails here.
+      test('swift_written_$base.json decodes to the hand-built model', () {
+        final swift = fixtureFile('soap_v2/swift_written_$base.json');
+        expect(swift.existsSync(), isTrue, reason: _swiftRecordHint);
+        final written = FixtureFile.load(swift);
+        expect(written.writer, 'swift');
+        expect(written.path, fixture(base).path);
+        final note = SoapNoteV2Codec.fromMap(written.data);
+        expect(
+          structuralDiff(
+            note.toMap(target: CodecTarget.fixture),
+            expected.toMap(target: CodecTarget.fixture),
+          ),
+          isEmpty,
+        );
+        expect(note, expected);
+      });
     }
   });
 }
 
 const String _recordHint =
     'Run DFET_RECORD_FIXTURES=1 flutter test test/contracts/soap_v2_fixture_test.dart and commit the output.';
+
+const String _swiftRecordHint =
+    'Run DFET_RECORD_FIXTURES=1 swift test --package-path trainer_app/Packages/TrainerCore '
+    '--filter SoapNoteV2CodecTests and commit the output (DF-009).';
 
 List<Map<dynamic, dynamic>> _metricRows(Map<dynamic, dynamic> data) {
   // Map rows only; tests with non-map rows read `objective.metrics` directly.

@@ -1,0 +1,770 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01014D391AFB42F7677A085F /* FeatureSettings in Frameworks */ = {isa = PBXBuildFile; productRef = F9D4AA520F29F8910FA570FF /* FeatureSettings */; };
+		090DA8569AF8AACFAE038D69 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7681D5BB6B15EED55E6DA977 /* Localizable.xcstrings */; };
+		129EA549E5ED99C16EAA6536 /* LaunchConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */; };
+		1EBD89607252B2BCC5170CCE /* ConfigurationMissingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */; };
+		3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = C0A547249E8270079960845F /* TrainerContracts */; };
+		5699194EF75B54399B1CB799 /* TrainerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = BABB8811F7884DE7FDE325AE /* TrainerDomain */; };
+		57601A9F2F62C726CEFB54F8 /* IntegrationPlaceholderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */; };
+		600B8722B67AABFC1106E746 /* LaunchConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */; };
+		8767D43C529393A356413391 /* FirebaseData in Frameworks */ = {isa = PBXBuildFile; productRef = 6C6782D060D070D344DA8255 /* FirebaseData */; };
+		A138F141CD54E5AD508068E9 /* LaunchSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */; };
+		D0C20FECB0166D5536A88C55 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A5FA9FD51FE87125AA7512 /* AppDelegate.swift */; };
+		E638EBB868DF8BB352ABB795 /* DFETTrainerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03664F32BFCD1F18818FADEC /* DFETTrainerApp.swift */; };
+		EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */; };
+		F024D4270749A21CE5E2B20C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E726F1893F83B5B473A6E62 /* Assets.xcassets */; };
+		F9D482753961D8EDF9779B82 /* RootPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9B33CE01DAD7B845C5F7A0 /* RootPlaceholderView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4AE275412F508DF6A8F4ED49 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B6B0E0104F66E64758728141 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41384EC1AE88C58AD8AAF781;
+			remoteInfo = DFETTrainer;
+		};
+		63F8462C7E023C99089357C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B6B0E0104F66E64758728141 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41384EC1AE88C58AD8AAF781;
+			remoteInfo = DFETTrainer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		03664F32BFCD1F18818FADEC /* DFETTrainerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFETTrainerApp.swift; sourceTree = "<group>"; };
+		03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchConfiguration.swift; sourceTree = "<group>"; };
+		0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationPlaceholderTests.swift; sourceTree = "<group>"; };
+		0F3195DBB113071C1729DFF8 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchConfigurationTests.swift; sourceTree = "<group>"; };
+		36A5FA9FD51FE87125AA7512 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchSmokeTests.swift; sourceTree = "<group>"; };
+		3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMissingView.swift; sourceTree = "<group>"; };
+		6F6DB0354FEB83D61BCC59B8 /* DFETTrainerIntegrationTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DFETTrainerIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7681D5BB6B15EED55E6DA977 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		794979F05400B72EC344B146 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7E726F1893F83B5B473A6E62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B71EBDA3E488D4A82665229C /* DFETTrainerUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DFETTrainerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DFETTrainerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD9B33CE01DAD7B845C5F7A0 /* RootPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootPlaceholderView.swift; sourceTree = "<group>"; };
+		C8E8A52B4086B072876E1EA4 /* TrainerCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrainerCore; path = Packages/TrainerCore; sourceTree = SOURCE_ROOT; };
+		E95AECD063ED2DA384A3A0CE /* DFETTrainer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DFETTrainer.entitlements; sourceTree = "<group>"; };
+		F50B192E4E41316D41F1948C /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DFETTrainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB36652EB36168DE6BFA8AFE /* TrainerKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrainerKit; path = Packages/TrainerKit; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7D8101F6CD43F7C0E8FFA164 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */,
+				5699194EF75B54399B1CB799 /* TrainerDomain in Frameworks */,
+				8767D43C529393A356413391 /* FirebaseData in Frameworks */,
+				01014D391AFB42F7677A085F /* FeatureSettings in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		12D4A773F95776B71C8E030E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */,
+				6F6DB0354FEB83D61BCC59B8 /* DFETTrainerIntegrationTests.xctest */,
+				B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */,
+				B71EBDA3E488D4A82665229C /* DFETTrainerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		22C00FA05F8DAD2985659844 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				36A5FA9FD51FE87125AA7512 /* AppDelegate.swift */,
+				03664F32BFCD1F18818FADEC /* DFETTrainerApp.swift */,
+				A10766BAB3CD6442605E279A /* AppShell */,
+				4E2DE7BCA1304897B5D8AE26 /* Composition */,
+				7CC1883F3807AA7D77E979AB /* Resources */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		4E2DE7BCA1304897B5D8AE26 /* Composition */ = {
+			isa = PBXGroup;
+			children = (
+				03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */,
+			);
+			path = Composition;
+			sourceTree = "<group>";
+		};
+		54DA41D08BE1E844BC5792C8 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F50B192E4E41316D41F1948C /* Debug.xcconfig */,
+				0F3195DBB113071C1729DFF8 /* Release.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		7CC1883F3807AA7D77E979AB /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7E726F1893F83B5B473A6E62 /* Assets.xcassets */,
+				E95AECD063ED2DA384A3A0CE /* DFETTrainer.entitlements */,
+				794979F05400B72EC344B146 /* Info.plist */,
+				7681D5BB6B15EED55E6DA977 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7E28F909E59BA75D34CCDDA2 /* IntegrationTests */ = {
+			isa = PBXGroup;
+			children = (
+				0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */,
+			);
+			path = IntegrationTests;
+			sourceTree = "<group>";
+		};
+		85879694A8FF3A1B691A46D4 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		9005C022080C2D13053D664B /* AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */,
+			);
+			path = AppTests;
+			sourceTree = "<group>";
+		};
+		A10766BAB3CD6442605E279A /* AppShell */ = {
+			isa = PBXGroup;
+			children = (
+				3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */,
+				BD9B33CE01DAD7B845C5F7A0 /* RootPlaceholderView.swift */,
+			);
+			path = AppShell;
+			sourceTree = "<group>";
+		};
+		BA19B179B778B77E062D3F61 = {
+			isa = PBXGroup;
+			children = (
+				22C00FA05F8DAD2985659844 /* App */,
+				9005C022080C2D13053D664B /* AppTests */,
+				54DA41D08BE1E844BC5792C8 /* Config */,
+				7E28F909E59BA75D34CCDDA2 /* IntegrationTests */,
+				D7D61D98CD6CF3AA801C2262 /* Packages */,
+				85879694A8FF3A1B691A46D4 /* UITests */,
+				12D4A773F95776B71C8E030E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D7D61D98CD6CF3AA801C2262 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C8E8A52B4086B072876E1EA4 /* TrainerCore */,
+				FB36652EB36168DE6BFA8AFE /* TrainerKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		41384EC1AE88C58AD8AAF781 /* DFETTrainer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E2BDA343891532881157F3B7 /* Build configuration list for PBXNativeTarget "DFETTrainer" */;
+			buildPhases = (
+				D4EF63A0220C89CF668E208D /* Sources */,
+				DA986CA07BE23454A4635928 /* Resources */,
+				7D8101F6CD43F7C0E8FFA164 /* Frameworks */,
+				C7B934153A9B49DB5E22F10C /* Copy Firebase config if present */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DFETTrainer;
+			packageProductDependencies = (
+				C0A547249E8270079960845F /* TrainerContracts */,
+				BABB8811F7884DE7FDE325AE /* TrainerDomain */,
+				6C6782D060D070D344DA8255 /* FirebaseData */,
+				F9D4AA520F29F8910FA570FF /* FeatureSettings */,
+			);
+			productName = DFETTrainer;
+			productReference = F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9AC6C5BA0A87F878D443D774 /* DFETTrainerIntegrationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7D7CE2112CE501563445DA3E /* Build configuration list for PBXNativeTarget "DFETTrainerIntegrationTests" */;
+			buildPhases = (
+				3D73A504F56450BAE66AE4DC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				804D831622A91A41D40A68A5 /* PBXTargetDependency */,
+			);
+			name = DFETTrainerIntegrationTests;
+			packageProductDependencies = (
+			);
+			productName = DFETTrainerIntegrationTests;
+			productReference = 6F6DB0354FEB83D61BCC59B8 /* DFETTrainerIntegrationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B7BD3D120AA999713D74EF14 /* DFETTrainerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1702279078D8244454B731E5 /* Build configuration list for PBXNativeTarget "DFETTrainerTests" */;
+			buildPhases = (
+				E53B55F8ED313804320E6B4C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DFETTrainerTests;
+			packageProductDependencies = (
+			);
+			productName = DFETTrainerTests;
+			productReference = B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F0F930B9FAFB7BE7F1BCF4F3 /* DFETTrainerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B3B4B0CA5C16C8E955096EF /* Build configuration list for PBXNativeTarget "DFETTrainerUITests" */;
+			buildPhases = (
+				09E72ECFC7728F3E481C1415 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				81C617E2186A3A0F4B983FA6 /* PBXTargetDependency */,
+			);
+			name = DFETTrainerUITests;
+			packageProductDependencies = (
+			);
+			productName = DFETTrainerUITests;
+			productReference = B71EBDA3E488D4A82665229C /* DFETTrainerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B6B0E0104F66E64758728141 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					41384EC1AE88C58AD8AAF781 = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+					};
+					9AC6C5BA0A87F878D443D774 = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+					};
+					B7BD3D120AA999713D74EF14 = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+					};
+					F0F930B9FAFB7BE7F1BCF4F3 = {
+						DevelopmentTeam = MT27Z7369H;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 41384EC1AE88C58AD8AAF781;
+					};
+				};
+			};
+			buildConfigurationList = 80C4FB744AA63B014CFC3D53 /* Build configuration list for PBXProject "DFETTrainer" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ko;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				ko,
+			);
+			mainGroup = BA19B179B778B77E062D3F61;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				410A8E475F36B128E04E2DC8 /* XCLocalSwiftPackageReference "Packages/TrainerCore" */,
+				97C8BCA5EA9E3324AB568BAE /* XCLocalSwiftPackageReference "Packages/TrainerKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				41384EC1AE88C58AD8AAF781 /* DFETTrainer */,
+				9AC6C5BA0A87F878D443D774 /* DFETTrainerIntegrationTests */,
+				B7BD3D120AA999713D74EF14 /* DFETTrainerTests */,
+				F0F930B9FAFB7BE7F1BCF4F3 /* DFETTrainerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DA986CA07BE23454A4635928 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F024D4270749A21CE5E2B20C /* Assets.xcassets in Resources */,
+				090DA8569AF8AACFAE038D69 /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C7B934153A9B49DB5E22F10C /* Copy Firebase config if present */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Firebase config if present";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# ADR-019: copy the untracked plist into the bundle only when the owner/CI placed it. Never print it.\nif [ -f \"$SRCROOT/Config/GoogleService-Info.plist\" ]; then\n  cp \"$SRCROOT/Config/GoogleService-Info.plist\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		09E72ECFC7728F3E481C1415 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A138F141CD54E5AD508068E9 /* LaunchSmokeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3D73A504F56450BAE66AE4DC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57601A9F2F62C726CEFB54F8 /* IntegrationPlaceholderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4EF63A0220C89CF668E208D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0C20FECB0166D5536A88C55 /* AppDelegate.swift in Sources */,
+				1EBD89607252B2BCC5170CCE /* ConfigurationMissingView.swift in Sources */,
+				E638EBB868DF8BB352ABB795 /* DFETTrainerApp.swift in Sources */,
+				EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */,
+				F9D482753961D8EDF9779B82 /* RootPlaceholderView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E53B55F8ED313804320E6B4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				600B8722B67AABFC1106E746 /* LaunchConfiguration.swift in Sources */,
+				129EA549E5ED99C16EAA6536 /* LaunchConfigurationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		804D831622A91A41D40A68A5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41384EC1AE88C58AD8AAF781 /* DFETTrainer */;
+			targetProxy = 4AE275412F508DF6A8F4ED49 /* PBXContainerItemProxy */;
+		};
+		81C617E2186A3A0F4B983FA6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41384EC1AE88C58AD8AAF781 /* DFETTrainer */;
+			targetProxy = 63F8462C7E023C99089357C7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1E06937F6CE4046DF7154762 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = DFETTrainer;
+			};
+			name = Release;
+		};
+		20E6174D906FA273AAB27E10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = MT27Z7369H;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		23D666B891C5D0F52DAE9A14 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F50B192E4E41316D41F1948C /* Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/DFETTrainer.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer;
+				PRODUCT_MODULE_NAME = DFETTrainer;
+				PRODUCT_NAME = "D-FET Trainer";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		6243827970609B36E12944E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0F3195DBB113071C1729DFF8 /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/DFETTrainer.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer;
+				PRODUCT_MODULE_NAME = DFETTrainer;
+				PRODUCT_NAME = "D-FET Trainer";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		65E7B3D10758745550FF9942 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		D6D5B6748EC097C43AE3E86E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.integrationtests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer";
+			};
+			name = Debug;
+		};
+		D89942AF61734E15B81E873A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = DFETTrainer;
+			};
+			name = Debug;
+		};
+		D9189658E8A6D8F5A689837C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = MT27Z7369H;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DF2798A401BE9CD350F98CB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		F55F1A550F0EC424517CCE9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = kr.co.dfet.trainer.integrationtests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1702279078D8244454B731E5 /* Build configuration list for PBXNativeTarget "DFETTrainerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				65E7B3D10758745550FF9942 /* Debug */,
+				DF2798A401BE9CD350F98CB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4B3B4B0CA5C16C8E955096EF /* Build configuration list for PBXNativeTarget "DFETTrainerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D89942AF61734E15B81E873A /* Debug */,
+				1E06937F6CE4046DF7154762 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7D7CE2112CE501563445DA3E /* Build configuration list for PBXNativeTarget "DFETTrainerIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6D5B6748EC097C43AE3E86E /* Debug */,
+				F55F1A550F0EC424517CCE9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		80C4FB744AA63B014CFC3D53 /* Build configuration list for PBXProject "DFETTrainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D9189658E8A6D8F5A689837C /* Debug */,
+				20E6174D906FA273AAB27E10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E2BDA343891532881157F3B7 /* Build configuration list for PBXNativeTarget "DFETTrainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23D666B891C5D0F52DAE9A14 /* Debug */,
+				6243827970609B36E12944E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		410A8E475F36B128E04E2DC8 /* XCLocalSwiftPackageReference "Packages/TrainerCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TrainerCore;
+		};
+		97C8BCA5EA9E3324AB568BAE /* XCLocalSwiftPackageReference "Packages/TrainerKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TrainerKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6C6782D060D070D344DA8255 /* FirebaseData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseData;
+		};
+		BABB8811F7884DE7FDE325AE /* TrainerDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TrainerDomain;
+		};
+		C0A547249E8270079960845F /* TrainerContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TrainerContracts;
+		};
+		F9D4AA520F29F8910FA570FF /* FeatureSettings */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureSettings;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B6B0E0104F66E64758728141 /* Project object */;
+}

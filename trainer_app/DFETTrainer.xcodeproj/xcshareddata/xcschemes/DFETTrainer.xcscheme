@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1430"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "41384EC1AE88C58AD8AAF781"
+               BuildableName = "DFETTrainer.app"
+               BlueprintName = "DFETTrainer"
+               ReferencedContainer = "container:DFETTrainer.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "NO">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "41384EC1AE88C58AD8AAF781"
+            BuildableName = "DFETTrainer.app"
+            BlueprintName = "DFETTrainer"
+            ReferencedContainer = "container:DFETTrainer.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B7BD3D120AA999713D74EF14"
+               BuildableName = "DFETTrainerTests.xctest"
+               BlueprintName = "DFETTrainerTests"
+               ReferencedContainer = "container:DFETTrainer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F0F930B9FAFB7BE7F1BCF4F3"
+               BuildableName = "DFETTrainerUITests.xctest"
+               BlueprintName = "DFETTrainerUITests"
+               ReferencedContainer = "container:DFETTrainer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "9AC6C5BA0A87F878D443D774"
+               BuildableName = "DFETTrainerIntegrationTests.xctest"
+               BlueprintName = "DFETTrainerIntegrationTests"
+               ReferencedContainer = "container:DFETTrainer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "LocalStoreTests"
+               BuildableName = "LocalStoreTests"
+               BlueprintName = "LocalStoreTests"
+               ReferencedContainer = "container:Packages/TrainerKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FirebaseDataTests"
+               BuildableName = "FirebaseDataTests"
+               BlueprintName = "FirebaseDataTests"
+               ReferencedContainer = "container:Packages/TrainerKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PostureVisionTests"
+               BuildableName = "PostureVisionTests"
+               BlueprintName = "PostureVisionTests"
+               ReferencedContainer = "container:Packages/TrainerKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DesignSystemTests"
+               BuildableName = "DesignSystemTests"
+               BlueprintName = "DesignSystemTests"
+               ReferencedContainer = "container:Packages/TrainerKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FeatureModulesTests"
+               BuildableName = "FeatureModulesTests"
+               BlueprintName = "FeatureModulesTests"
+               ReferencedContainer = "container:Packages/TrainerKit">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "41384EC1AE88C58AD8AAF781"
+            BuildableName = "DFETTrainer.app"
+            BlueprintName = "DFETTrainer"
+            ReferencedContainer = "container:DFETTrainer.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "41384EC1AE88C58AD8AAF781"
+            BuildableName = "DFETTrainer.app"
+            BlueprintName = "DFETTrainer"
+            ReferencedContainer = "container:DFETTrainer.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

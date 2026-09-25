@@ -1,0 +1,119 @@
+# D-FET Trainer (canonical iPad app, ADR-001). Generate with the pinned XcodeGen (.xcodegen-version):
+#   xcodegen generate --spec trainer_app/project.yml --project trainer_app
+# The generated DFETTrainer.xcodeproj is committed; CI regenerates it and fails on any diff.
+name: DFETTrainer
+options:
+  minimumXcodeGenVersion: 2.44.1
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  developmentLanguage: ko
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: MT27Z7369H
+    MARKETING_VERSION: 0.1.0 # 0.1(P0) -> 0.2(P1a) -> 0.3(P1b) -> 0.4(P2) -> 1.0(P3), ADR-014
+    CURRENT_PROJECT_VERSION: 1
+    CODE_SIGN_STYLE: Automatic
+packages:
+  TrainerCore:
+    path: Packages/TrainerCore
+  TrainerKit:
+    path: Packages/TrainerKit # the only place that declares firebase-ios-sdk (ASM-04-11)
+targets:
+  DFETTrainer:
+    type: application
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      # GoogleService-Info.plist is NOT a source: referencing it (even optional) breaks plist-less builds
+      # with "Build input file cannot be found" (SPRINT_01 ASM-S01-12). It is copied by the script below.
+      - path: App
+    dependencies:
+      # The App target never links a Firebase product directly; it calls FirebaseBootstrap.configure(_:)
+      # from FirebaseData (AC-DF-008.2, V1-04 ASM-04-03). Remaining Feature*/LocalStore/DesignSystem/
+      # PostureVision products are added with their routes by DF-017 (AppShell).
+      - package: TrainerCore
+        product: TrainerContracts
+      - package: TrainerCore
+        product: TrainerDomain
+      - package: TrainerKit
+        product: FirebaseData
+      - package: TrainerKit
+        product: FeatureSettings
+    postBuildScripts:
+      - name: Copy Firebase config if present
+        basedOnDependencyAnalysis: false
+        script: |
+          # ADR-019: copy the untracked plist into the bundle only when the owner/CI placed it. Never print it.
+          if [ -f "$SRCROOT/Config/GoogleService-Info.plist" ]; then
+            cp "$SRCROOT/Config/GoogleService-Info.plist" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/"
+          fi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer
+        PRODUCT_NAME: D-FET Trainer
+        PRODUCT_MODULE_NAME: DFETTrainer
+        TARGETED_DEVICE_FAMILY: "2" # iPad only; "1,2" if DF-904 (Q-22) finds iPhone distribution history
+        INFOPLIST_FILE: App/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/Resources/DFETTrainer.entitlements
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        OTHER_LDFLAGS: ["$(inherited)", "-ObjC"] # recommended for Firebase via SPM
+        ENABLE_USER_SCRIPT_SANDBOXING: NO # the copy script reads an undeclared file; it prints no values
+  DFETTrainerTests:
+    # Host-less unit tests for App-target pure code (TC-DF008-05). LaunchConfiguration.swift is compiled
+    # directly into the bundle, so the app never launches and Firebase is never configured.
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AppTests
+      - path: App/Composition/LaunchConfiguration.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "2"
+  DFETTrainerIntegrationTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: IntegrationTests
+    dependencies:
+      - target: DFETTrainer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.integrationtests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/D-FET Trainer.app/D-FET Trainer" # PRODUCT_NAME differs from the target name
+        TARGETED_DEVICE_FAMILY: "2"
+  DFETTrainerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: DFETTrainer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "2"
+schemes:
+  DFETTrainer:
+    build:
+      targets:
+        DFETTrainer: all
+    test:
+      gatherCoverageData: false
+      targets:
+        - DFETTrainerTests
+        - DFETTrainerUITests
+        - DFETTrainerIntegrationTests # placeholder until DF-107; CI passes -skip-testing for it
+        # TrainerKit package test targets run only on the iPad simulator (ADR-001, V1-10 ASM-10-12).
+        - package: TrainerKit/LocalStoreTests
+        - package: TrainerKit/FirebaseDataTests
+        - package: TrainerKit/PostureVisionTests
+        - package: TrainerKit/DesignSystemTests
+        - package: TrainerKit/FeatureModulesTests

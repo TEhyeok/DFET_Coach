@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Self-test for tool/lint/static-guards.sh (DF-011: TC-DF011-01, TC-DF011-02; V1-10 §16.2).
+# Self-test for tool/lint/static-guards.sh (DF-011: TC-DF011-01, TC-DF011-02; V1-10 §16.2) and its W1 workflow
+# check (DF-034: TC-DF034-01, TC-DF034-03 through tool/lint/test/check-workflow-secrets.test.sh).
 # Builds throwaway trees in a temp directory, drops one fixture from tool/lint/test/fixtures/static-guards/ into the
 # guarded scope, and checks the exit code and the reported guard ID. Also runs the real repository against the
 # committed baseline and against edited copies of it.
@@ -186,6 +187,33 @@ expect_bad_allow "line with a line number fails" 'G9 lib/services/firestore_serv
 expect_bad_allow "trainer_app entry fails" "G4 $TK/FeatureSOAP/FeatureSOAP.swift # reason" 'zero-tolerance'
 expect_bad_allow "stale entry fails" 'G9 lib/services/does_not_exist.dart # reason' 'stale baseline entry'
 expect_bad_allow "duplicate entry fails" "$(sed -n 1p "$ALLOW")" 'duplicate entry'
+
+# ---------------------------------------------------------------------------------------------------------------
+# W1 (DF-034, AC-DF-034.3): static-guards runs check-workflow-secrets.sh on trees that have .github/workflows/.
+WF="$REPO/.github/workflows/trainer-app.yml"
+t="$(new_tree w1-ok)"
+mkdir -p "$t/.github/workflows"
+cp "$WF" "$t/.github/workflows/trainer-app.yml"
+run "$t"
+if [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'W1 workflow secrets OK'; then ok "AC-DF-034.3 TC-DF034-03 static-guards runs W1 on the committed workflow"
+else not_ok "AC-DF-034.3 TC-DF034-03 static-guards runs W1 on the committed workflow (rc=$RC)" "$OUT"; fi
+t="$(new_tree w1-bad)"
+mkdir -p "$t/.github/workflows"
+sed -e "s/if: [$]{{ failure() && github.event_name == 'pull_request' }}/if: failure()/" "$WF" > "$t/.github/workflows/trainer-app.yml"
+run "$t"
+if [ "$RC" -eq 1 ] && printf '%s\n' "$OUT" | grep -q '^C3 '; then ok "AC-DF-034.3 TC-DF034-03 static-guards fails on a workflow that uploads artifacts after injection"
+else not_ok "AC-DF-034.3 TC-DF034-03 static-guards fails on a workflow that uploads artifacts after injection (rc=$RC)" "$OUT"; fi
+t="$(new_tree w1-missing)"
+mkdir -p "$t/.github/workflows"
+run "$t"
+if [ "$RC" -eq 2 ] && printf '%s\n' "$OUT" | grep -q 'trainer-app.yml missing'; then ok "AC-DF-034.3 TC-DF034-03 static-guards exits 2 when trainer-app.yml is missing"
+else not_ok "AC-DF-034.3 TC-DF034-03 static-guards exits 2 when trainer-app.yml is missing (rc=$RC)" "$OUT"; fi
+
+# The checker's own self-test (TC-DF034-01, TC-DF034-03 mutations) runs in the same required job.
+RC=0
+OUT="$(bash "$HERE/check-workflow-secrets.test.sh" 2>&1)" || RC=$?
+if [ "$RC" -eq 0 ]; then ok "AC-DF-034.1 AC-DF-034.3 check-workflow-secrets.test.sh passes ($(printf '%s\n' "$OUT" | tail -n1))"
+else not_ok "AC-DF-034.1 AC-DF-034.3 check-workflow-secrets.test.sh passes (rc=$RC)" "$OUT"; fi
 
 echo
 echo "static-guards.test: $passed passed, $failed failed"

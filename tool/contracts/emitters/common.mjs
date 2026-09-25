@@ -29,7 +29,7 @@ export const RESERVED_TYPE_NAMES = Object.freeze([
 ]);
 
 // DF-027: `phase` values of contracts/feature-flags.v1.json. Must equal the meta-schema enum
-// ($defs.featureFlag.properties.phase); tool/contracts/test/flags-rules.test.mjs checks that.
+// ($defs.featureFlag.properties.phase); tool/contracts/test/feature-flags.test.mjs checks that.
 export const FEATURE_FLAG_PHASES = Object.freeze(['existing', 'P1a', 'P1b', 'P2', 'P3']);
 
 // Members the generated FeatureFlagKey enums declare next to their cases (Swift and Dart). A flag key

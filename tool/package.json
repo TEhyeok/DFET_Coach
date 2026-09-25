@@ -1,0 +1,19 @@
+{
+  "name": "dfet-tool",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Repository tooling. contracts/ generator (DF-004) dependencies only.",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "contracts:generate": "node contracts/generate.mjs",
+    "contracts:check": "node contracts/generate.mjs --check",
+    "test": "node --test 'contracts/test/*.test.mjs'"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

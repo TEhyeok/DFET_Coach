@@ -1,0 +1,2 @@
+/// Read-only display of legacy SOAP documents (AC-DF-011.2 exception).
+let legacyInkKeys = ["nativeInkDataBase64", "inkDataBase64", "drawingData"]

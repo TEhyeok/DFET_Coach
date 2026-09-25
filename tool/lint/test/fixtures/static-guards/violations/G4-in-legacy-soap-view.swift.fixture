@@ -1,0 +1,2 @@
+// The LegacySoapView exception covers only the G5 key names, not native_ IDs.
+let documentId = "native_\(noteId)"

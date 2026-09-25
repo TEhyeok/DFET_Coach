@@ -1,0 +1,1 @@
+let avatar = URL(string: "https://www.tapback.co/api/avatar/\(seed).webp")

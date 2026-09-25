@@ -1,0 +1,1 @@
+let note = SoapNote(memberId: memberId, isSharedWithMember: true)

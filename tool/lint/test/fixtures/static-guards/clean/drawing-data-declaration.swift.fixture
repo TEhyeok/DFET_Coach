@@ -1,0 +1,5 @@
+struct Sketch {
+  let drawingData: Data
+  var inkDataBase64Count = 0
+  let isSharedWithMember = false
+}

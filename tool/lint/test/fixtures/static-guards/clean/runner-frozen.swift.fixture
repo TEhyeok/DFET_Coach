@@ -1,0 +1,3 @@
+let memberId = "member-\(UUID().uuidString)"
+let documentId = "native_\(stamp)"
+map["inkDataBase64"] = ink

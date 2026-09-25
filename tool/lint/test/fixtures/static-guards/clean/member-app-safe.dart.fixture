@@ -1,0 +1,4 @@
+import 'member_soap_notes_screen.dart';
+
+bool shared(SoapNote note) => note.isSharedWithMember;
+final summaries = FirebaseFirestore.instance.collection('memberSummaries');

@@ -1,0 +1,3 @@
+@preconcurrency import FirebaseStorage
+
+public enum G1FeatureViolation {}

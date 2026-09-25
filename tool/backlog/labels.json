@@ -2,7 +2,7 @@
   "docId": "TL-02",
   "title": "D-FET Coach v1 라벨 정의",
   "version": "1.0",
-  "updated": "2026-09-24",
+  "updated": "2026-09-25",
   "canonicalDoc": "docs/v1/02_PRODUCT_BACKLOG.md#3-라벨-체계",
   "labels": [
     {
@@ -406,6 +406,12 @@
       "color": "E99695",
       "description": "실기기 확인이 수용 기준에 포함",
       "group": "risk"
+    },
+    {
+      "name": "scope/mvp",
+      "color": "0E8A16",
+      "description": "DEC-22 1인 알파 MVP 범위(트레이너 앱 4개 흐름). 없는 항목은 MVP 뒤로 연기",
+      "group": "scope"
     }
   ]
 }

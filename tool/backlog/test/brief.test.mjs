@@ -161,3 +161,24 @@ test('brief refuses owner actions, epics, unknown keys; bad usage exits 2', () =
   assert.equal(brief('DF-002', '--sprint', 'week1').code, 2);
   assert.equal(brief('DF-002', '--agent', 'gpt').code, 2);
 });
+
+test('brief keeps the card body after "### MVP 범위(DEC-22)" and shows the MVP slice in §4 (DEC-22)', () => {
+  const r = brief('DF-027');
+  assert.equal(r.code, 0, r.err);
+  const s4 = sectionOf(r.out, 4);
+  assert.match(s4, /MVP 범위\(DEC-22, 카드 원문\)/);
+  assert.match(s4, /MVP 뒤로 미룬다: AC-DF-027\.2/);
+  // MVP 절 뒤에 끝나지 않고 카드 원문 전체가 들어간다(수용 기준·테스트)
+  assert.match(sectionOf(r.out, 6), /AC-DF-027\.6/);
+  // scope/mvp가 없는 카드에는 MVP 줄이 없다
+  const other = brief('DF-028');
+  assert.equal(other.code, 0, other.err);
+  assert.doesNotMatch(other.out, /MVP 범위\(DEC-22/);
+});
+
+test('every scope/mvp item except done foundations has a "### MVP 범위(DEC-22)" card section', () => {
+  const done = new Set(['DF-001', 'DF-002', 'DF-003', 'DF-004', 'DF-005', 'DF-008', 'DF-901']);
+  const mvp = issues.filter((i) => i.labels.includes('scope/mvp') && !done.has(i.key));
+  assert.ok(mvp.length > 40);
+  for (const i of mvp) assert.match(i.body, /^### MVP 범위\(DEC-22\)$/m, `${i.key}: MVP section missing`);
+});

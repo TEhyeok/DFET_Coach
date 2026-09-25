@@ -3,7 +3,7 @@
 | 항목 | 값 |
 |---|---|
 | 문서 ID | V1-02-P1b |
-| 버전 | v1.0 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -263,11 +263,11 @@ DF-004 ─▶ DF-220, DF-221          DF-130,117 ─▶ DF-219     DF-137,216 �
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | spike |
 | Phase | P1b(P1a 기간 선행) |
-| Sprint | S12 (2026-12-14~12-18), 타임박스 2작업일 |
+| Sprint | S08(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S12 (2026-12-14~12-18), 타임박스 2작업일 |
 | Points | 2 (size/S) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/spike` `area/trainer-app` `phase/P1b` `prio/must` `size/S` `flag/bodyAssessment` `agent/human` `needs-device-test` |
+| Labels | `type/spike` `area/trainer-app` `phase/P1b` `prio/must` `size/S` `flag/bodyAssessment` `agent/human` `needs-device-test` `scope/mvp` |
 | Depends on | DF-008 |
 | PRD refs | F-ASM-02.1, F-ASM-02.2, F-ASM-02.7, AC-ASM-02.3, Q-18, AS-12, NFR-12, NFR-15, RISK-02 |
 
@@ -314,6 +314,13 @@ DF-004 ─▶ DF-220, DF-221          DF-130,117 ─▶ DF-219     DF-137,216 �
 **에이전트 브리프**
 소유자가 직접 수행하고 Claude는 하네스 초안만 돕는다. 먼저 `VisionPoseSpike` 스킴에 사진 한 장을 넣어 원시 좌표(왼쪽 아래 원점)와 변환 좌표를 나란히 출력하는 화면을 만든다. `TrainerKit` 타깃, `project.yml`의 앱 타깃, `contracts/`는 건드리지 않는다. 회원 사진과 실데이터는 쓰지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S08(원래 계획 S12). 상태: 할 일
+- 왜 필요한가: Apple Vision 2D 랜드마크 가능성 확인. 체형 흐름의 자동 랜드마크 전제
+- 지금 만든다: 시뮬레이터와 연결된 iPhone 15 Pro Max에서 합성·공개 샘플 사진으로 정확도·좌우 매핑·지연 확인
+- MVP 뒤로 미룬다: 대상 iPad 실기기 측정(iPad 연결 뒤)
+
 ---
 
 ### DF-201 PostureMath 산식과 posture-metrics.v1 벡터를 구현한다
@@ -323,11 +330,11 @@ DF-004 ─▶ DF-220, DF-221          DF-130,117 ─▶ DF-219     DF-137,216 �
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S14 (2026-12-28~12-31) |
+| Sprint | S09(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S14 (2026-12-28~12-31) |
 | Points | 5 (size/L) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/contracts` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `area/contracts` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-003, DF-009 |
 | PRD refs | F-ASM-02.5, F-ASM-03.1~03.6, F-ASM-04.2, AC-ASM-02.1(도메인), AC-ASM-02.4, AC-ASM-02.5, AC-ASM-03.1~03.4, AC-ASM-03.6, AC-ASM-04.1(도메인), 부록 A.1~A.3 |
 
@@ -445,6 +452,13 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
 **에이전트 브리프**
 먼저 `contracts/vectors/posture-metrics.v1.json`을 위 사례로 쓰고, 벡터를 읽어 실패하는 테스트를 만든 뒤 산식을 채운다(테스트 우선). V1-09와 PRD F-ASM-03.3 외의 산식을 만들지 않는다. `TrainerDomain`의 기존 타입을 바꾸지 말고, 필요한 enum(`LandmarkCode`, `MetricCode`, `Side`, `SourceGrade`)은 `TrainerContracts` 생성물을 쓴다. 생성물을 손으로 고치지 않는다. UI·Vision·Firebase 코드는 이 스토리 범위가 아니다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S09(원래 계획 S14). 상태: 할 일
+- 왜 필요한가: 흐름 3: PostureMath 산식(CVA, 어깨 높이 차 등)
+- 지금 만든다: posture-metrics.v1 산식과 벡터 테스트 전체
+- MVP 뒤로 미룬다: 화면 강조는 CVA·어깨 높이 차만. 나머지 지표는 '참고'로만 표시(DEC-22)
+
 ---
 ### DF-203 스테이션 프로필과 회차 체크리스트 4항목을 구현한다
 
@@ -538,11 +552,11 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S15 (2027-01-04~01-08) — 레인 B 첫 작업(DF-204보다 먼저 병합) |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S15 (2027-01-04~01-08) — 레인 B 첫 작업(DF-204보다 먼저 병합) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-200, DF-201 |
 | PRD refs | F-ASM-02.1, F-ASM-02.2, F-ASM-02.5, F-ASM-02.6, F-ASM-02.7, AC-ASM-02.3, AC-ASM-01.3(`landmarkEngine`), NFR-15, Q-18, AS-12 |
 
@@ -603,6 +617,12 @@ public protocol LandmarkSuggester: Sendable {
 **에이전트 브리프**
 순수 매퍼와 단위 테스트를 먼저 병합(macOS `swift test`)한 뒤 Vision 어댑터를 붙인다. 매핑 표 밖 코드를 제안하지 않는다(C7·견봉 정의 차이 때문). `PostureVision/Capture/`(DF-204 영역)와 FeatureAssessment 화면은 건드리지 않는다. Vision 좌표의 원점 차이를 매퍼 안에서만 처리하고 다른 곳에 y 반전을 흩뜨리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S11(원래 계획 S15). 상태: 할 일
+- 왜 필요한가: 흐름 3: Vision 2D 랜드마크 어댑터
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-216 conditionKey 비교와 seriesBreak·seriesKey 분할을 Swift·Dart 공통 규칙으로 구현한다
@@ -612,11 +632,11 @@ public protocol LandmarkSuggester: Sendable {
 | Epic | EP-15 O 자동 불러오기·비교·추이 |
 | Type | story |
 | Phase | P1b |
-| Sprint | S15 (2027-01-04~01-08) |
+| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S15 (2027-01-04~01-08) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | contracts |
-| Labels | `type/story` `area/contracts` `area/trainer-app` `area/member-app` `phase/P1b` `prio/must` `size/M` `agent/claude` `schema-change` |
+| Labels | `type/story` `area/contracts` `area/trainer-app` `area/member-app` `phase/P1b` `prio/must` `size/M` `agent/claude` `schema-change` `scope/mvp` |
 | Depends on | DF-201, DF-003 |
 | PRD refs | §7.4, F-VIZ-03.3, F-VIZ-03.2, F-BC-03.4, C-02, AC-C-02.1, ADR-009 |
 
@@ -708,6 +728,13 @@ public enum SeriesSegmenter {
 **에이전트 브리프**
 벡터 JSON부터 쓰고 Swift·Dart 두 구현이 같은 벡터를 읽게 한다. 비교 순서(프로토콜 → 기기 → 조건)와 `unknown` 규칙을 벡터로 먼저 못 박는다. MDC·판정 결과·정책 코드를 이 모듈에 넣지 않는다(정적 검사가 실패한다). 차트 뷰(DF-215)와 functions(DF-224)는 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S10(원래 계획 S15). 상태: 할 일
+- 왜 필요한가: 흐름 4: conditionKey 비교와 seriesBreak 분할(추이 차트의 끊김 규칙)
+- 지금 만든다: Swift 구현과 공통 벡터 테스트
+- MVP 뒤로 미룬다: Dart 구현(회원 앱, P2)
+
 ---
 
 ### DF-204 TR-07 촬영(정면·측면, roll·pitch 게이트, 인물·조명 검출, 동의 ②③ 게이트)을 구현한다
@@ -717,11 +744,11 @@ public enum SeriesSegmenter {
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S15 (2027-01-04~01-08) — 레인 A 두 번째(DF-203 뒤, DF-207 병합 뒤) |
+| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S15 (2027-01-04~01-08) — 레인 A 두 번째(DF-203 뒤, DF-207 병합 뒤) |
 | Points | 5 (size/L) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `privacy-impact` `needs-device-test` |
+| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `privacy-impact` `needs-device-test` `scope/mvp` |
 | Depends on | DF-203, DF-110 |
 | PRD refs | F-ASM-01.1, F-ASM-01.4, F-ASM-01.5, F-ASM-01.6(뷰별 재촬영 UI), F-ASM-01.8(동의 서버 확인 조건), AC-ASM-01.1, AC-ASM-01.2, AC-ASM-01.3, AC-PRIV-01.2(클라이언트), AC-IA-02, M-04a, TR-07, NFR-12 |
 
@@ -788,6 +815,14 @@ public enum SeriesSegmenter {
 **에이전트 브리프**
 `ShutterGate`와 동의 게이트 단위 테스트를 먼저 통과시키고, 카메라는 `PhotoCapturing` 가짜로 화면을 완성한 뒤 실제 `AVCaptureSession` 구현을 붙인다. 원격 저장(Outbox·Firestore)과 EXIF 제거(DF-205)는 이 스토리에서 하지 않는다. 사진을 카메라 롤·공유 시트·로그로 내보내는 코드를 만들지 않는다. `PostureVision/Landmarks/`(DF-207)는 호출만 하고 고치지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S10(원래 계획 S15). 상태: 할 일
+- 왜 필요한가: 흐름 3: TR-07 정면·측면 촬영
+- 지금 만든다: 정면·측면 두 장 촬영, 인물·조명 검출, 동의 ②③ 게이트. 시뮬레이터에는 카메라가 없으므로 DEBUG·시뮬레이터에서 사진 가져오기(PhotosPicker) 입력을 둔다. roll·pitch 게이트는 센서가 있을 때만 켠다
+- MVP 뒤로 미룬다: 스테이션 프로필·회차 체크리스트(DF-203)
+- MVP에서 기다리지 않는 의존: DF-203: DEC-21에 따라 촬영 프로토콜 v1 초안 값을 기본값으로 쓴다(소유자 확정 DF-915는 MVP 뒤)
+
 ---
 
 ### DF-220 AD-05 지표 카탈로그 조회 화면을 구현한다
@@ -847,11 +882,11 @@ public enum SeriesSegmenter {
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S16 (2027-01-11~01-15) |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S16 (2027-01-11~01-15) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `privacy-impact` `scope/mvp` |
 | Depends on | DF-204 |
 | PRD refs | F-ASM-01.6, F-ASM-01.7, F-ASM-01.10, AC-ASM-01.4, AC-ASM-01.6, NFR-17, §9.5, RISK-06 |
 
@@ -898,6 +933,13 @@ public enum SeriesSegmenter {
 **에이전트 브리프**
 `PhotoSanitizer` 테스트(메타 제거·방향)를 먼저 통과시킨다. 원본 메타 사전을 통째로 복사한 뒤 일부만 지우는 방식은 쓰지 않는다(빠뜨리기 쉽다) — 필요한 속성만 새로 넣는다. 업로드·Outbox 구현(DF-206)과 TR-08 화면(DF-208)은 건드리지 않는다. 얼굴 가림은 블러가 아니라 단색 채움이다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
+- 왜 필요한가: 흐름 3: EXIF·GPS 제거, 재촬영 폐기, 앱 전용 저장
+- 지금 만든다: EXIF·GPS 제거, 재촬영 폐기, 앱 전용 저장
+- MVP 뒤로 미룬다: 얼굴 가림 썸네일(테스트 회원만 쓰는 동안 연기, 실회원 전 필수)
+
 ---
 
 ### DF-206 체형 draft 오프라인 저장과 사진 업로드 큐·확정 대기 표시를 구현한다
@@ -907,11 +949,11 @@ public enum SeriesSegmenter {
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S16 (2027-01-11~01-15) |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S16 (2027-01-11~01-15) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `privacy-impact` `scope/mvp` |
 | Depends on | DF-204, DF-015 |
 | PRD refs | F-ASM-01.8, AC-ASM-01.5, AC-ASM-01.6(Storage), AC-ASM-04.5, NFR-04, NFR-05, NFR-06, C-05, AC-C-05.1, §9.5, S-01~S-04, §6.0.3 |
 
@@ -967,6 +1009,12 @@ public enum SeriesSegmenter {
 **에이전트 브리프**
 `PostureOutboxPlan` 순수 함수와 테스트로 순서를 먼저 고정한다. 확정 전환을 업로드보다 먼저 보내는 경로가 생기면 Storage 규칙에 거부되므로 테스트로 막는다. 규칙 파일(`firestore.rules`, `storage.rules`)은 고치지 않는다 — 규칙 보강이 필요하면 PR 본문에 G-P1b-3을 적고 소유자에게 넘긴다. FeatureAssessment 화면은 배지 표시 한 곳만 건드린다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
+- 왜 필요한가: 흐름 3: 체형 draft 오프라인 저장과 사진 업로드 큐
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-208 TR-08 랜드마크 보정(확대 핀, 1px 방향 버튼, auto/확정 모양, '지정 필요')을 구현한다
@@ -976,11 +1024,11 @@ public enum SeriesSegmenter {
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S16 (2027-01-11~01-15) |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S16 (2027-01-11~01-15) |
 | Points | 5 (size/L) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-207 |
 | PRD refs | F-ASM-02.3, F-ASM-02.4, F-ASM-02.5, F-ASM-02.6, F-VIZ-02.1, F-VIZ-02.2, F-VIZ-02.3, F-VIZ-02.8, AC-ASM-02.1, AC-ASM-02.2, AC-VIZ-02.1, AC-VIZ-02.2, A-04, AC-A11Y-03, M-04b, TR-08 |
 
@@ -1025,6 +1073,12 @@ public enum SeriesSegmenter {
 
 **에이전트 브리프**
 `CalibrationViewModel`의 좌표 변환·1px 이동·되돌리기 테스트를 먼저 쓰고, 그다음 캔버스와 회색조 스냅샷을 만든다. 오버레이 도형은 FeatureAssessment에서 만들어 DesignSystem에 값으로 넘긴다(DesignSystem → PostureMath 의존을 만들지 않는다). 확정 전환·버전·기준선 로직(DF-209)과 업로드(DF-206)는 호출만 한다. 색만으로 상태를 구분하는 코드는 만들지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
+- 왜 필요한가: 흐름 3: TR-08 랜드마크 수동 보정
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -1275,11 +1329,11 @@ draft 경로(AC-DF-211.1)를 먼저 끝내고, confirmed 경로는 DF-209의 `su
 | Epic | EP-14 체형평가(정적 2D) |
 | Type | story |
 | Phase | P1b |
-| Sprint | S17 (2027-01-18~01-22) — 1일차에 프로토콜 PR 먼저(G-P1b-8) |
+| Sprint | S12(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S17 (2027-01-18~01-22) — 1일차에 프로토콜 PR 먼저(G-P1b-8) |
 | Points | 5 (size/L) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-208, DF-206 |
 | PRD refs | F-ASM-04.1, F-ASM-04.2, F-ASM-04.3, F-ASM-04.4, F-ASM-04.6, AC-ASM-04.1, AC-ASM-04.2, AC-ASM-04.3, AC-ASM-04.4, AC-ASM-04.5, AS-33, M-04b, §9.4 postureAssessments update |
 
@@ -1344,6 +1398,12 @@ public struct AssessmentSummary: Sendable {
 **에이전트 브리프**
 1일차에 `AssessmentLifecycle` 프로토콜·`AssessmentSummary`·가짜 구현만 담은 작은 PR을 먼저 올려 병합받는다(다른 세 스토리가 기다린다). 그다음 기준선 유일성·voided 제외 단위 테스트, 마지막에 에뮬레이터 연동 테스트를 쓴다. confirmed 문서의 `metrics`·`views`를 바꾸는 코드 경로를 만들지 않는다(연동 테스트의 강제 훅은 `#if DEBUG` 테스트 전용). 편위 표(DF-210)와 TR-10(DF-214)은 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
+- 왜 필요한가: 흐름 3: 체형 확정·새 버전·기준선
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-210 TR-09 결과 화면과 자세 편위 표를 구현한다('산정 준비 중')
@@ -1353,11 +1413,11 @@ public struct AssessmentSummary: Sendable {
 | Epic | EP-15 O 자동 불러오기·비교·추이 |
 | Type | story |
 | Phase | P1b |
-| Sprint | S17 (2027-01-18~01-22) |
+| Sprint | S12(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S17 (2027-01-18~01-22) |
 | Points | 3 (size/M) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `regulatory` |
+| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/M` `flag/bodyAssessment` `agent/claude` `regulatory` `scope/mvp` |
 | Depends on | DF-209, DF-130 |
 | PRD refs | F-VIZ-01.1~01.6, F-ASM-03.7, AC-VIZ-01.1~01.5, AC-ASM-03.5, AC-C-01.1, AC-C-03.1, AC-C-03.2, §6.5.0, §8.4 TR-09, A-01, A-03, TR-09 |
 
@@ -1401,6 +1461,12 @@ public struct AssessmentSummary: Sendable {
 
 **에이전트 브리프**
 `DeviationRowBuilder` 단위 테스트로 열 규칙과 '산정 준비 중'을 먼저 고정한다. 판정 로직·MDC·점수·합계를 만들지 않는다. 확정·새 버전 로직(DF-209)과 오버레이 캔버스(DF-208)는 호출만 한다. 금지어 목록을 보고 지표 부제를 관찰 문구로만 쓴다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
+- 왜 필요한가: 흐름 3: TR-09 결과 화면과 편위 표('산정 준비 중')
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -1522,11 +1588,11 @@ public struct AssessmentSummary: Sendable {
 | Epic | EP-12 타임라인·공통 시각화 |
 | Type | story |
 | Phase | P1b |
-| Sprint | S17 (2027-01-18~01-22) |
+| Sprint | S12(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S17 (2027-01-18~01-22) |
 | Points | 2 (size/S) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/S` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `phase/P1b` `prio/must` `size/S` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-114, DF-209 |
 | PRD refs | F-VIZ-05.1(체형평가 행), F-VIZ-05.4, F-VIZ-05.6, F-VIZ-05.7, AC-VIZ-05.2, AC-VIZ-05.4, TR-03 |
 
@@ -1565,6 +1631,13 @@ public struct AssessmentSummary: Sendable {
 **에이전트 브리프**
 DF-114의 타임라인 병합 코드에 소스 하나를 더하는 방식으로 작업하고, 기존 SOAP·신체조성 행 동작은 바꾸지 않는다(회귀 테스트 유지). 사진은 동의 게이트를 거친 fetcher로만 받는다. TR-09 화면은 건드리지 않고 라우트만 호출한다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S12(원래 계획 S17). 상태: 할 일
+- 왜 필요한가: 흐름 4: 타임라인에 체형평가 이벤트
+- 지금 만든다: 카드 전체 범위
+- 참고: 썸네일 얼굴 가림은 DF-205 연기분과 같다
+
 ---
 ### DF-215 TR-10 추이 차트(seriesBreak, 날짜 척도, L/R, 툴팁, noComparison)를 구현한다
 
@@ -1573,11 +1646,11 @@ DF-114의 타임라인 병합 코드에 소스 하나를 더하는 방식으로 
 | Epic | EP-15 O 자동 불러오기·비교·추이 |
 | Type | story |
 | Phase | P1b |
-| Sprint | S18 (2027-01-25~01-29) |
+| Sprint | S12(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S18 (2027-01-25~01-29) |
 | Points | 5 (size/L) |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` |
+| Labels | `type/story` `area/trainer-app` `area/design` `phase/P1b` `prio/must` `size/L` `flag/bodyAssessment` `agent/claude` `scope/mvp` |
 | Depends on | DF-216, DF-130, DF-209 |
 | PRD refs | F-VIZ-03.1~03.4, F-VIZ-03.7~03.10, F-ASM-04.6, AC-VIZ-03.1, AC-VIZ-03.2, AC-VIZ-03.3, AC-VIZ-03.5, AC-VIZ-03.6, C-01, C-02, C-04, AC-C-02.1, AC-C-04.1, AC-A11Y-03, A-03, TR-10 |
 
@@ -1633,6 +1706,13 @@ DF-114의 타임라인 병합 코드에 소스 하나를 더하는 방식으로 
 
 **에이전트 브리프**
 `TrendViewModel` 단위 테스트(날짜 비례, 보간 없음, 등급 혼합 거부)를 먼저 쓴다. 끊김 계산은 DF-216 `SeriesSegmenter`만 호출하고 다시 구현하지 않는다. 밴드·배지·Δ 판정을 그리지 않는다. `SeriesTrendChart`(DF-130)의 공개 동작을 바꿔야 하면 옵션 추가로만 하고 TR-11 미니 추이 스냅샷이 그대로인지 확인한다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S12(원래 계획 S18). 상태: 할 일
+- 왜 필요한가: 흐름 4: TR-10 추이 차트(seriesBreak, 날짜 척도, L/R)
+- 지금 만든다: 카드 전체 범위
+- 참고: 변화 판정은 '산정 준비 중'만 표시한다(MDC 엔진 없음, DEC-22)
 
 ---
 
@@ -2018,3 +2098,4 @@ public enum ObjectiveSourceError: Error, Equatable { case permissionDenied, unav
 | v1.0 | 2026-09-24 | 최초 작성. 스파인 P1b 스토리 24개 카드화, 추가 제안 DF-227과 충돌 8건(G-P1b-1~8), 가정 ASM-P1b-01~41 | CJH(에이전트 초안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 경로(PostureMath, TrainerDomain/Series)와 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2) | CJH(AI 에이전트, 릴리스 편집) |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 경로 규칙 TrainerCore·TrainerKit(R4), 대기 회원 시드 ID·시드 스크립트 정본(R2), DF-209 경계 문제 기록(G-P1b-9, ASM-P1b-43), 리드 결정 기록(ASM-P1b-44), 덱 키 DoR(§4, K-11), 가정 ID 참조(R10) | CJH(AI 에이전트, 정합 편집) |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기) | CJH(AI 에이전트) |

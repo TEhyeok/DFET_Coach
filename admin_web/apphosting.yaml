@@ -22,7 +22,7 @@ env:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: dfetmanage.firebasestorage.app
+    value: dfetmanage-seoul
     availability:
       - BUILD
       - RUNTIME

@@ -1814,7 +1814,7 @@ MIG-03 이관 문서(레거시 원문 보존)
 
 ## 8 Storage 경로·규칙 초안
 
-버킷은 서울 버킷을 명시한다(DEC-19, 트레이너 앱은 DF-104). 회원 앱·admin_web·Functions·`firebase.json`의 명시는 DF-043이 한다(Functions는 `functions/src/shared/storage.js`의 `appBucket()`, 에뮬레이터에서는 기본 버킷).
+버킷은 서울 버킷을 명시한다(DEC-19, 트레이너 앱은 DF-104). 회원 앱·admin_web·Functions·`firebase.json`의 명시는 DF-043이 한다(회원 앱은 `lib/config/storage_bucket.dart`의 `appStorage()`, Functions는 `functions/src/shared/storage.js`의 `appBucket()`이고 에뮬레이터에서는 기본 버킷). 계정 삭제는 DF-043 전 업로드가 남은 기존 기본 버킷도 지운다(`deleteAccountMedia()`).
 
 ### 8.1 경로 표
 

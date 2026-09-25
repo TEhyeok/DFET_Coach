@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/tokens.dart';
 import '../../state/auth_state.dart';
 import '../../core/utils/app_logger.dart';
+import '../config/storage_bucket.dart';
 
 class CreateRequestScreen extends ConsumerStatefulWidget {
   const CreateRequestScreen({super.key});
@@ -91,9 +91,8 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
       // 1. Upload Video
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('requests/${user.uid}/$timestamp.mp4');
+      final storageRef =
+          appStorage().ref().child('requests/${user.uid}/$timestamp.mp4');
 
       final uploadTask = storageRef.putFile(_videoFile!);
       final snapshot = await uploadTask;

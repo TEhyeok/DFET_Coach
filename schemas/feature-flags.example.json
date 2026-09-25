@@ -1,5 +1,10 @@
 {
   "gut": false,
   "blood": false,
-  "insights": false
+  "insights": false,
+  "bodyAssessment": false,
+  "bodyComposition": false,
+  "soapV2": false,
+  "memberShare": false,
+  "lidarBeta": false
 }

@@ -1,0 +1,14 @@
+{
+  "description": "judgeAs must name another metricCode in the catalog",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/metrics/8/judgeAs",
+      "value": "weightLb"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/8/judgeAs: \"weightLb\" must be another metricCode in this catalog"
+  ]
+}

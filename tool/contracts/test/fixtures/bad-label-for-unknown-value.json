@@ -1,0 +1,14 @@
+{
+  "description": "labelsKo has a key that is not one of the enum values",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "add",
+      "path": "/enums/side/labelsKo/up",
+      "value": "위"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums/side/labelsKo: labels for unknown values up"
+  ]
+}

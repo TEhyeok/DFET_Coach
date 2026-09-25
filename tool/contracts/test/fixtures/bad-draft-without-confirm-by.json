@@ -1,0 +1,13 @@
+{
+  "description": "a draft enum must name its confirmBy story (V1-05 §13.2)",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "remove",
+      "path": "/enums/joint/confirmBy"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums/joint: must have required property 'confirmBy'"
+  ]
+}

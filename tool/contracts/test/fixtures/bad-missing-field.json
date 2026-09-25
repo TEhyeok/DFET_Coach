@@ -1,0 +1,13 @@
+{
+  "description": "metrics[3] (pelvicTiltFrontal) without the required field unit (AC-DF-004.3, TC-DF004-03)",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "remove",
+      "path": "/metrics/3/unit"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/3: must have required property 'unit'"
+  ]
+}

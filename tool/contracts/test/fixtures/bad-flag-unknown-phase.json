@@ -1,0 +1,14 @@
+{
+  "description": "phase must be existing or a PRD 12 phase (DF-027)",
+  "file": "feature-flags.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/flags/0/phase",
+      "value": "P4"
+    }
+  ],
+  "expect": [
+    "contracts/feature-flags.v1.json#/flags/0/phase: must be equal to one of the allowed values"
+  ]
+}

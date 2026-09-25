@@ -1,0 +1,14 @@
+{
+  "description": "flags[4] reuses soapV2 (DF-027)",
+  "file": "feature-flags.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/flags/4/key",
+      "value": "soapV2"
+    }
+  ],
+  "expect": [
+    "contracts/feature-flags.v1.json#/flags/4/key: duplicate key \"soapV2\" (first at #/flags/3)"
+  ]
+}

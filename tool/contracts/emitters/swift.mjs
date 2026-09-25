@@ -329,6 +329,31 @@ export function renderProhibitedTerms({ prohibitedTerms }) {
   return lines(out);
 }
 
+// contracts/feature-flags.v1.json -> FeatureFlagKey.swift (DF-027). TrainerDomain `FeatureFlags` switches over
+// these cases and reads them with `init(map:)`; a new key therefore fails to compile until FeatureFlags handles it.
+export function renderFeatureFlagKey({ featureFlags }) {
+  const doc = featureFlags.doc;
+  const byDefault = [true, false]
+    .map((value) => ({ value, keys: doc.flags.filter((f) => f.default === value).map((f) => `.${swiftCase(f.key)}`) }))
+    .filter((g) => g.keys.length > 0);
+  const out = [
+    `// contract ${doc.contract} v${doc.version} revision ${doc.revision}. Regenerate with: node tool/contracts/generate.mjs`,
+    '',
+    '/// `appConfig/features` keys in contract order (ADR-010, V1-05 §4.17). The raw value is the Firestore field name.',
+    'public enum FeatureFlagKey: String, Codable, CaseIterable, Sendable {',
+    ...doc.flags.flatMap((f) => [`  /// Phase ${f.phase}.`, caseDecl(f.key)]),
+    '',
+    '  /// Value when the document or the key is missing, or the stored value is not a Bool (AC-IA-02).',
+    '  public var defaultValue: Bool {',
+    '    switch self {',
+    ...byDefault.map((g) => `    case ${g.keys.join(', ')}: return ${g.value}`),
+    '    }',
+    '  }',
+    '}',
+  ];
+  return lines(out);
+}
+
 export const swiftEmitters = Object.freeze({
   vocab: { id: 'swift.vocab', path: `${SWIFT_DIR}/Vocab.swift`, comment: '//', uses: ['vocab'], render: renderVocab },
   metricCatalog: {
@@ -344,6 +369,13 @@ export const swiftEmitters = Object.freeze({
     comment: '//',
     uses: ['prohibitedTerms'],
     render: renderProhibitedTerms,
+  },
+  featureFlags: {
+    id: 'swift.featureFlags',
+    path: `${SWIFT_DIR}/FeatureFlagKey.swift`,
+    comment: '//',
+    uses: ['featureFlags'],
+    render: renderFeatureFlagKey,
   },
   contractsVersion: {
     id: 'swift.contractsVersion',

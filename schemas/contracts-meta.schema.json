@@ -7,7 +7,7 @@
   "required": ["contract"],
   "properties": {
     "contract": {
-      "enum": ["metric-catalog", "vocab", "prohibited-terms"]
+      "enum": ["metric-catalog", "vocab", "prohibited-terms", "feature-flags"]
     }
   },
   "allOf": [
@@ -31,6 +31,13 @@
         "required": ["contract"]
       },
       "then": { "$ref": "#/$defs/prohibitedTerms" }
+    },
+    {
+      "if": {
+        "properties": { "contract": { "const": "feature-flags" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/featureFlags" }
     }
   ],
   "$defs": {
@@ -493,6 +500,41 @@
       "description": "Repository-relative path glob: ** any depth, * within one segment.",
       "type": "string",
       "pattern": "^[^/!\\\\][^\\\\]*$"
+    },
+    "featureFlags": {
+      "description": "appConfig/features keys (DF-027, ADR-010, V1-05 §4.17 and §13.3). Every default is false: a missing document or key reads as off (AC-IA-02). Key uniqueness and generated identifier collisions are cross-checked by tool/contracts/generate.mjs.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "flags"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "feature-flags" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "flags": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/featureFlag" }
+        }
+      }
+    },
+    "featureFlag": {
+      "type": "object",
+      "required": ["key", "default", "phase", "descriptionKo", "ruleGatedCollections"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/identifier" },
+        "default": { "description": "Always false (PRD §12.3: new flags ship off; DoD D8).", "const": false },
+        "phase": { "description": "existing = member-app flag before v1 (D4). Otherwise the PRD §12 phase that may open it.", "enum": ["existing", "P1a", "P1b", "P2", "P3"] },
+        "descriptionKo": { "description": "Admin-screen label (AD-07). tool/contracts/test/feature-flags.test.mjs scans it with the copy-lint common and trainer rule sets.", "type": "string", "minLength": 1 },
+        "ruleGatedCollections": {
+          "description": "Collections whose Firestore rules check featureOn(key) (V1-05 §13.3). A parenthesised suffix names the sourceGrade subset.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][A-Za-z_]*(\\([a-z][A-Za-z]*\\))?$" }
+        }
+      }
     }
   }
 }

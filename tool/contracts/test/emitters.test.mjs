@@ -166,6 +166,20 @@ const MINI_CATALOG = {
   excludedMetricCodes: ['oldCode'],
 };
 
+// Not schema-valid on purpose: one default true exercises the Swift `defaultValue` grouping, and `in`
+// exercises escaping (Swift backticks, Dart `inValue`).
+const MINI_FLAGS = {
+  contract: 'feature-flags',
+  version: 1,
+  revision: 2,
+  source: 'synthetic test contract',
+  flags: [
+    { key: 'gut', default: false, phase: 'existing', descriptionKo: '장 \'인용\' $x', ruleGatedCollections: [] },
+    { key: 'in', default: true, phase: 'P3', descriptionKo: '예약어 키', ruleGatedCollections: ['soap_notes', 'circumferenceMeasurements(tape)'] },
+    { key: 'soapV2', default: false, phase: 'P1a', descriptionKo: 'SOAP', ruleGatedCollections: ['soap_notes'] },
+  ],
+};
+
 function loadedFrom(key, file, doc) {
   const text = `${JSON.stringify(doc, null, 2)}\n`;
   const buf = Buffer.from(text, 'utf8');
@@ -176,6 +190,7 @@ function loadedFrom(key, file, doc) {
 const miniOutputs = renderOutputs({
   metricCatalog: loadedFrom('metricCatalog', 'metric-catalog.v1.json', MINI_CATALOG),
   vocab: loadedFrom('vocab', 'vocab.v1.json', MINI_VOCAB),
+  featureFlags: loadedFrom('featureFlags', 'feature-flags.v1.json', MINI_FLAGS),
 }).outputs;
 
 for (const [rel, content] of miniOutputs) {
@@ -206,4 +221,19 @@ test('synthetic contract: escaping per language', () => {
   assert.ok(out('MetricCatalog.swift').includes('nameKo: "무릎 \\"각도\\" \'인용\' $x \\\\ 역슬래시",'));
   assert.ok(out('metric_catalog.g.dart').includes("nameKo: '무릎 \"각도\" \\'인용\\' \\$x \\\\ 역슬래시',"));
   assert.ok(out('contracts.ts').includes("nameKo: '무릎 \"각도\" \\'인용\\' $x \\\\ 역슬래시',"));
+});
+
+test('synthetic contract: feature flag keys per language (DF-027)', () => {
+  const out = (suffix) => [...miniOutputs].find(([rel]) => rel.endsWith(suffix))[1];
+  const swift = out('FeatureFlagKey.swift');
+  assert.ok(swift.includes('  case `in` = "in"\n'));
+  assert.ok(swift.includes('    case .`in`: return true\n    case .gut, .soapV2: return false\n'));
+  const dart = out('feature_flags.g.dart');
+  assert.ok(dart.includes("  inValue('in', defaultValue: true),"));
+  assert.ok(dart.includes('  static FeatureFlagKey? fromWire(String? value) {'));
+  const ts = out('contracts.ts');
+  assert.ok(ts.includes("export const FEATURE_FLAG_KEYS = [\n  'gut',\n  'in',\n  'soapV2',\n] as const;"));
+  assert.ok(ts.includes("    descriptionKo: '장 \\'인용\\' $x',"));
+  assert.ok(ts.includes("    ruleGatedCollections: ['soap_notes', 'circumferenceMeasurements(tape)'],"));
+  assert.equal(out('feature-flags.example.json'), '{\n  "gut": false,\n  "in": true,\n  "soapV2": false\n}\n');
 });

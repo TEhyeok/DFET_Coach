@@ -13,15 +13,19 @@ import { applyPatch, makeRoot, readJson, removeRoot, runCli, writeJson } from '.
 
 const FIXTURES = path.join(REPO_ROOT, 'tool', 'contracts', 'test', 'fixtures');
 
-// AC-DF-004.1: the files the generator owns for the v1 inputs (ten from DF-004, two from DF-010).
+// AC-DF-004.1: the files the generator owns in its directories for the v1 inputs (ten from DF-004, two
+// from DF-010, two from DF-027). DF-027 also writes schemas/feature-flags.example.json, outside those
+// directories (see EXTRA_OUTPUTS).
 const EXPECTED_OUTPUTS = [
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/MetricCatalog.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/Vocab.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ContractsVersion.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ProhibitedTerms.swift',
+  'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/FeatureFlagKey.swift',
   'lib/contracts/generated/metric_catalog.g.dart',
   'lib/contracts/generated/vocab.g.dart',
   'lib/contracts/generated/contracts_version.g.dart',
+  'lib/contracts/generated/feature_flags.g.dart',
   'functions/src/shared/generated/contracts.js',
   'functions/src/shared/generated/json/metric-catalog.v1.json',
   'functions/src/shared/generated/json/vocab.v1.json',
@@ -29,17 +33,23 @@ const EXPECTED_OUTPUTS = [
   'admin_web/lib/generated/contracts.ts',
 ].sort();
 
+// Generated files outside GENERATED_DIRS (the rest of their directory is hand-written).
+const EXTRA_OUTPUTS = ['schemas/feature-flags.example.json'];
+const OUTPUT_COUNT = EXPECTED_OUTPUTS.length + EXTRA_OUTPUTS.length;
+
 // Which inputs each output is generated from (header `from ...`).
 const SOURCES = {
   'MetricCatalog.swift': ['metric-catalog.v1.json'],
   'Vocab.swift': ['vocab.v1.json'],
   'ContractsVersion.swift': ['metric-catalog.v1.json', 'vocab.v1.json'],
   'ProhibitedTerms.swift': ['prohibited-terms.v1.json'],
+  'FeatureFlagKey.swift': ['feature-flags.v1.json'],
+  'feature_flags.g.dart': ['feature-flags.v1.json'],
   'metric_catalog.g.dart': ['metric-catalog.v1.json'],
   'vocab.g.dart': ['vocab.v1.json'],
   'contracts_version.g.dart': ['metric-catalog.v1.json', 'vocab.v1.json'],
   'contracts.js': ['metric-catalog.v1.json', 'vocab.v1.json'],
-  'contracts.ts': ['metric-catalog.v1.json', 'vocab.v1.json'],
+  'contracts.ts': ['metric-catalog.v1.json', 'vocab.v1.json', 'feature-flags.v1.json'],
 };
 
 function listGenerated(root) {
@@ -55,7 +65,7 @@ function listGenerated(root) {
 }
 
 function snapshot(root) {
-  return new Map(listGenerated(root).map((rel) => [rel, readFileSync(path.join(root, rel))]));
+  return new Map([...listGenerated(root), ...EXTRA_OUTPUTS].map((rel) => [rel, readFileSync(path.join(root, rel))]));
 }
 
 test('AC-DF-004.1 generate writes the four consumer locations', () => {
@@ -64,6 +74,7 @@ test('AC-DF-004.1 generate writes the four consumer locations', () => {
     const r = runCli(['--root', root]);
     assert.equal(r.code, 0, r.stderr);
     assert.deepEqual(listGenerated(root), EXPECTED_OUTPUTS);
+    for (const rel of EXTRA_OUTPUTS) assert.ok(existsSync(path.join(root, rel)), rel);
   } finally {
     removeRoot(root);
   }
@@ -76,7 +87,7 @@ test('TC-DF004-01 second run changes 0 bytes (deterministic output)', () => {
     const first = snapshot(root);
     const r = runCli(['--root', root]);
     assert.equal(r.code, 0, r.stderr);
-    assert.match(r.stdout, /12 generated files, 0 changed/);
+    assert.match(r.stdout, new RegExp(`${OUTPUT_COUNT} generated files, 0 changed`));
     const second = snapshot(root);
     assert.deepEqual([...second.keys()], [...first.keys()]);
     for (const [rel, bytes] of first) assert.ok(bytes.equals(second.get(rel)), `${rel} changed on the second run`);
@@ -97,7 +108,7 @@ test('TC-DF004-01 second run changes 0 bytes (deterministic output)', () => {
 test('TC-DF004-01 committed generated files are up to date (--check on this checkout)', () => {
   const r = runCli(['--check']);
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /12 generated files are up to date/);
+  assert.match(r.stdout, new RegExp(`${OUTPUT_COUNT} generated files are up to date`));
 });
 
 test('AC-DF-004.5 every generated file starts with the GENERATED header and input hash', () => {
@@ -274,7 +285,7 @@ test('a missing input is skipped with a warning, together with the outputs that 
     assert.ok(files.includes('lib/contracts/generated/vocab.g.dart'));
     assert.ok(files.includes('lib/contracts/generated/contracts_version.g.dart'), 'version file renders from the inputs present');
     assert.ok(!files.includes('lib/contracts/generated/metric_catalog.g.dart'));
-    assert.ok(!files.includes('admin_web/lib/generated/contracts.ts'), 'needs both inputs');
+    assert.ok(!files.includes('admin_web/lib/generated/contracts.ts'), 'needs metric-catalog, vocab and feature-flags');
     const version = readFileSync(path.join(root, 'lib/contracts/generated/contracts_version.g.dart'), 'utf8');
     assert.match(version.split('\n', 1)[0], /from contracts\/vocab\.v1\.json — DO NOT EDIT/);
   } finally {

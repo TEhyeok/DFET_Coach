@@ -1,0 +1,14 @@
+{
+  "description": "a flag default must be false (AC-DF-027.1, DoD D8)",
+  "file": "feature-flags.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/flags/3/default",
+      "value": true
+    }
+  ],
+  "expect": [
+    "contracts/feature-flags.v1.json#/flags/3/default: must be equal to constant false"
+  ]
+}

@@ -7,7 +7,7 @@ import path from 'node:path';
 import { REPO_ROOT } from './helpers.mjs';
 
 export const GENERATOR = path.join(REPO_ROOT, 'tool', 'contracts', 'generate.mjs');
-export const CONTRACT_FILES = ['metric-catalog.v1.json', 'vocab.v1.json'];
+export const CONTRACT_FILES = ['metric-catalog.v1.json', 'vocab.v1.json', 'prohibited-terms.v1.json'];
 
 // Copies the inputs (contracts/*.v1.json + meta-schema) into a fresh temp root.
 // With { withGenerated: true } the committed generated directories are copied as well.

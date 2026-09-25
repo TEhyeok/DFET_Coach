@@ -103,6 +103,8 @@ function jsonCopy(key) {
 export const functionsEmitters = Object.freeze({
   metricCatalogJson: jsonCopy('metricCatalog'),
   vocabJson: jsonCopy('vocab'),
+  // DF-010: read by the P2 createMemberSummary check (functions/src/summaries/prohibitedTerms.js, DF-309).
+  prohibitedTermsJson: jsonCopy('prohibitedTerms'),
   contracts: {
     id: 'functions.contracts',
     path: `${FUNCTIONS_DIR}/contracts.js`,

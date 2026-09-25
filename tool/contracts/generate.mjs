@@ -36,8 +36,7 @@ export const META_SCHEMA = 'schemas/contracts-meta.schema.json';
 export const GENERATOR = 'tool/contracts/generate.mjs';
 
 // Input registry. A missing file is skipped with a warning, together with every emitter that needs it.
-// Later stories append inputs and emitters: DF-010 prohibited-terms, DF-027 feature-flags,
-// DF-033 analytics-events and audit-actions. contracts/fixtures/** is never copied (DF-009 reads it in place).
+// Later stories append inputs and emitters: DF-027 feature-flags, DF-033 analytics-events and audit-actions. contracts/fixtures/** is never copied (DF-009 reads it in place).
 export const INPUTS = [
   {
     file: 'metric-catalog.v1.json',
@@ -50,6 +49,14 @@ export const INPUTS = [
     key: 'vocab',
     requires: [],
     emit: [swiftEmitters.vocab, dartEmitters.vocab, functionsEmitters.vocabJson],
+  },
+  {
+    // DF-010: PRD appendix C. Swift for the trainer app's inline warnings (DF-120), a verbatim copy for
+    // Functions (DF-309). The copy-lint tool reads contracts/ directly. No Dart or admin_web output.
+    file: 'prohibited-terms.v1.json',
+    key: 'prohibitedTerms',
+    requires: [],
+    emit: [swiftEmitters.prohibitedTerms, functionsEmitters.prohibitedTermsJson],
   },
 ];
 
@@ -231,6 +238,42 @@ export function crossCheckErrors(loaded) {
       }
     });
   }
+  const terms = loaded.prohibitedTerms?.doc;
+  if (terms) errors.push(...prohibitedTermsErrors(`contracts/${loaded.prohibitedTerms.file}`, terms));
+  return errors;
+}
+
+// DF-010: rule ids unique across sets, allow entries point at existing rules, every pattern compiles
+// with the flags the matchers use (docs/v1/12 §7.3).
+function prohibitedTermsErrors(p, doc) {
+  const errors = [];
+  const seen = new Map();
+  for (const [set, rules] of Object.entries(doc.ruleSets)) {
+    rules.forEach((r, i) => {
+      const at = `${p}#/ruleSets/${set}/${i}`;
+      if (seen.has(r.id)) errors.push(`${at}/id: duplicate rule id "${r.id}" (first at ${seen.get(r.id)})`);
+      else seen.set(r.id, `#/ruleSets/${set}/${i}`);
+      (r.regex ?? []).forEach((rx, j) => {
+        try {
+          new RegExp(rx, 'giu');
+        } catch (e) {
+          errors.push(`${at}/regex/${j}: ${e.message}`);
+        }
+      });
+    });
+  }
+  doc.causalPatterns.forEach((c, i) => {
+    try {
+      new RegExp(c.regex, 'gu');
+    } catch (e) {
+      errors.push(`${p}#/causalPatterns/${i}/regex: ${e.message}`);
+    }
+  });
+  doc.allowEntries.forEach((e, i) => {
+    e.rules.forEach((id, j) => {
+      if (!seen.has(id)) errors.push(`${p}#/allowEntries/${i}/rules/${j}: unknown rule id "${id}"`);
+    });
+  });
   return errors;
 }
 

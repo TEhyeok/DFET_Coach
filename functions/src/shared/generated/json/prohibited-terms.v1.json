@@ -1,0 +1,812 @@
+{
+  "contract": "prohibited-terms",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/PRD_V1.md appendix C.1-C.3, 3.1, 7.7, F-ASM-03.7; docs/v1/12_COPY_ANALYTICS_AND_LINT.md 7",
+  "ruleSets": {
+    "common": [
+      {
+        "id": "C1-01",
+        "prdRow": "진단, 진단명, 진단/이슈",
+        "terms": [
+          "진단명",
+          "진단/이슈",
+          "진단"
+        ],
+        "alternatives": [
+          "운동 관점 평가",
+          "관찰",
+          "관찰 요약"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "지도 의사 소견 인용 필드만 재검토, 회원 문구는 계속 금지"
+      },
+      {
+        "id": "C1-02",
+        "prdRow": "정밀 진단, 진단 보조",
+        "terms": [
+          "정밀 진단",
+          "진단 보조"
+        ],
+        "alternatives": [
+          "근거 수준 그대로 서술"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "금지"
+      },
+      {
+        "id": "C1-03",
+        "prdRow": "치료, 치료계획",
+        "terms": [
+          "치료계획",
+          "치료"
+        ],
+        "alternatives": [
+          "운동 지도",
+          "관리",
+          "운동 계획"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "의료기관 내부 기록 재검토"
+      },
+      {
+        "id": "C1-04",
+        "prdRow": "치료됨, 완치",
+        "terms": [
+          "치료됨",
+          "완치"
+        ],
+        "alternatives": [
+          "이번 기록에서 ~가 관찰됐어요",
+          "정한 목표 수치에 도달했어요"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-05",
+        "prdRow": "교정(체형교정·자세교정)",
+        "terms": [
+          "체형 교정",
+          "자세 교정",
+          "교정"
+        ],
+        "alternatives": [
+          "자세 정렬 관찰",
+          "자세 균형 운동",
+          "정렬 변화 기록"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-06",
+        "prdRow": "재활, 재활 보조, 재활 트레이닝, 회복",
+        "terms": [
+          "재활 보조",
+          "재활 트레이닝",
+          "재활",
+          "회복"
+        ],
+        "alternatives": [
+          "운동 지도",
+          "컨디션 관리 운동"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-07",
+        "prdRow": "재활훈련",
+        "terms": [
+          "재활훈련"
+        ],
+        "alternatives": [
+          "운동 프로그램"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "역할 플래그 뒤 재검토"
+      },
+      {
+        "id": "C1-08",
+        "prdRow": "처방, 운동 처방",
+        "terms": [
+          "운동 처방",
+          "처방"
+        ],
+        "alternatives": [
+          "운동 계획",
+          "추천 운동(트레이너 확정)"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-09",
+        "prdRow": "환자, ○○ 환자용, 수술 후 관리, 디스크·측만 대상",
+        "terms": [
+          "환자",
+          "수술 후 관리"
+        ],
+        "alternatives": [
+          "회원"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "의료기관 내부 문서 재검토"
+      },
+      {
+        "id": "C1-10",
+        "prdRow": "진료, 진료용",
+        "terms": [
+          "진료용",
+          "진료"
+        ],
+        "alternatives": [
+          "세션",
+          "상담"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-11",
+        "prdRow": "질환명(거북목증후군, 척추측만증, 디스크), KCD 코드",
+        "terms": [
+          "거북목증후군",
+          "거북목",
+          "척추측만증",
+          "측만",
+          "디스크",
+          "KCD"
+        ],
+        "alternatives": [
+          "머리 전방 자세 관찰",
+          "어깨 높이 차이 관찰",
+          "불편 부위"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "지도 의사 소견 인용 필드 재검토"
+      },
+      {
+        "id": "C1-11b",
+        "prdRow": "§7.7·F-ASM-03.7 진단성 라벨",
+        "terms": [
+          "골반 틀어짐",
+          "골반 불균형"
+        ],
+        "alternatives": [
+          "골반 좌우 높이 차이 관찰"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-12",
+        "prdRow": "원인은, ~때문에(인과 단정)",
+        "terms": [
+          "원인은"
+        ],
+        "alternatives": [
+          "함께 관찰됨",
+          "연관 가능성"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-13",
+        "prdRow": "거북목 개선, 자세 개선, 체형 개선, 불균형 해소",
+        "terms": [
+          "거북목 개선",
+          "자세 개선",
+          "체형 개선",
+          "불균형 해소"
+        ],
+        "alternatives": [
+          "머리·목 정렬 각도(CVA) 기록",
+          "운동 기록과 변화 관찰"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-14",
+        "prdRow": "통증 완화, 통증 감소, 통증 개선",
+        "terms": [
+          "통증 완화",
+          "통증 감소",
+          "통증 개선"
+        ],
+        "alternatives": [
+          "통증 점수 기록",
+          "말씀하신 불편 기록"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지(회원)"
+      },
+      {
+        "id": "C1-15",
+        "prdRow": "예방",
+        "terms": [
+          "예방"
+        ],
+        "alternatives": [
+          "건강관리",
+          "운동 기록"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-16",
+        "prdRow": "도수(도수치료, 도수교정, 도수근력검사)",
+        "terms": [
+          "도수치료",
+          "도수교정",
+          "도수근력검사",
+          "도수"
+        ],
+        "alternatives": [
+          "근력 등급(MMT 0–5)"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "match": {
+          "boundary": "wordStart",
+          "except": [
+            "빈도수",
+            "온도수",
+            "정도수"
+          ]
+        },
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-17",
+        "prdRow": "신체교정운동",
+        "terms": [
+          "신체교정운동",
+          "신체 교정 운동"
+        ],
+        "alternatives": [
+          "자세 균형 운동",
+          "가동성 운동"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "재검토"
+      },
+      {
+        "id": "C1-18",
+        "prdRow": "근골격 기능 등급",
+        "terms": [
+          "근골격 기능 등급"
+        ],
+        "alternatives": [
+          "지표별 값과 변화 관찰"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "별도 PRD"
+      },
+      {
+        "id": "C1-19",
+        "prdRow": "체형 점수, 체형 등급, 자세 종합 점수",
+        "terms": [
+          "체형 점수",
+          "체형 등급",
+          "자세 종합 점수"
+        ],
+        "alternatives": [
+          "지표별 값·출처·변화 관찰"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "정책 승인 전 금지"
+      },
+      {
+        "id": "C1-20",
+        "prdRow": "반드시 개선, 효과가 입증됨, 임상적으로 검증, 과학적으로 입증",
+        "terms": [
+          "반드시 개선",
+          "효과가 입증",
+          "임상적으로 검증",
+          "과학적으로 입증"
+        ],
+        "alternatives": [
+          "측정 오차보다 큰 변화가 관찰됐어요",
+          "근거 수준 그대로 서술"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-21",
+        "prdRow": "의료기관 수준, 정확도 N%, 3D 정밀 체형분석",
+        "terms": [
+          "의료기관 수준",
+          "3D 정밀 체형분석"
+        ],
+        "regex": [
+          "정확도\\s*:?\\s*\\d+(\\.\\d+)?\\s*%"
+        ],
+        "alternatives": [
+          "문헌값은 출처와 '자체 재검사 전'을 함께 적기"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "clinicalModeNote": "항상 금지"
+      },
+      {
+        "id": "C1-22",
+        "prdRow": "정상, 비정상(규준 없는 지표)",
+        "terms": [
+          "비정상",
+          "정상 범위",
+          "정상"
+        ],
+        "alternatives": [
+          "규준 없음",
+          "값만 표시"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing",
+          "event",
+          "input"
+        ],
+        "severity": "block",
+        "match": {
+          "boundary": "wordStart",
+          "except": [
+            "정상적",
+            "비정상적"
+          ]
+        },
+        "clinicalModeNote": "승인 규준이 있을 때 재검토"
+      },
+      {
+        "id": "C1-23",
+        "prdRow": "측정값(LiDAR 베타 값 한정)",
+        "terms": [
+          "측정값",
+          "측정 값"
+        ],
+        "alternatives": [
+          "관측 단면 · 실측 대조 전 · 베타/참고"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "export"
+        ],
+        "severity": "block",
+        "onlyIn": {
+          "keyPrefixes": [
+            "tr13.",
+            "lidar."
+          ],
+          "globs": [
+            "trainer_app/Packages/TrainerKit/Sources/FeatureLidarBeta/**",
+            "trainer_app/Packages/TrainerKit/Sources/BodyPath*/**"
+          ]
+        },
+        "clinicalModeNote": "G-07·정책 승인 전 금지"
+      }
+    ],
+    "member": [
+      {
+        "id": "C3-M-01",
+        "prdRow": "회원 노출: '개선'",
+        "terms": [
+          "개선"
+        ],
+        "alternatives": [
+          "부록 B.8 문장(mb.change.*)"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing"
+        ],
+        "severity": "block"
+      },
+      {
+        "id": "C3-M-02",
+        "prdRow": "회원 노출: '악화'",
+        "terms": [
+          "악화"
+        ],
+        "alternatives": [
+          "부록 B.8 문장(mb.change.*)"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing"
+        ],
+        "severity": "block"
+      },
+      {
+        "id": "C3-M-03",
+        "prdRow": "회원 노출: '판정'",
+        "terms": [
+          "판정"
+        ],
+        "alternatives": [
+          "'비교', '측정 오차 범위' 등 부록 B.8 표현"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing"
+        ],
+        "severity": "block"
+      },
+      {
+        "id": "C3-M-04",
+        "prdRow": "회원 노출: '의미 있는' + 방향 표현",
+        "terms": [
+          "의미 있는",
+          "의미있게",
+          "의미 있게"
+        ],
+        "alternatives": [
+          "측정 오차보다 큰 변화"
+        ],
+        "scopes": [
+          "ui",
+          "summary",
+          "notification",
+          "marketing"
+        ],
+        "severity": "block"
+      }
+    ],
+    "trainer": []
+  },
+  "causalPatterns": [
+    {
+      "id": "C2-01",
+      "prdRow": "A 때문에 B / A로 인해 B",
+      "regex": "(때문에|(으)?로\\s*인해|덕분에)",
+      "severity": "warn",
+      "allowedExample": "같은 기간에 ~와 ~ 변화가 함께 관찰됐어요"
+    },
+    {
+      "id": "C2-02",
+      "prdRow": "A하면 B가 좋아진다",
+      "regex": "하면\\s?\\S{0,12}\\s?(좋아|나아|맞춰|바로잡)",
+      "severity": "warn",
+      "allowedExample": "이 운동과 ~ 변화는 연관 가능성이 있어요. 인과를 뜻하지 않아요"
+    },
+    {
+      "id": "C2-03",
+      "prdRow": "효과 단정",
+      "regex": "효과(가|를)?\\s?(있어|봤|나타났|입증)",
+      "severity": "warn",
+      "allowedExample": "측정 오차보다 큰 변화가 나타났어요(자격 있는 지표만)"
+    },
+    {
+      "id": "C2-04",
+      "prdRow": "누락을 채운 서술",
+      "regex": "(했|였)을\\s?거(예요|에요|야)",
+      "severity": "warn",
+      "allowedExample": "지난달 기록이 없어 비교할 수 없어요"
+    }
+  ],
+  "abbreviationAllowlist": {
+    "trainer": [
+      "SOAP",
+      "ROM",
+      "AROM",
+      "PROM",
+      "MMT",
+      "NRS",
+      "MDC"
+    ]
+  },
+  "pathRuleSets": [
+    {
+      "glob": "trainer_app/**",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    },
+    {
+      "glob": "ios/Runner/AppDelegate.swift",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    },
+    {
+      "glob": "ios/Runner/**",
+      "ruleSets": [
+        "common",
+        "member"
+      ]
+    },
+    {
+      "glob": "lib/screens/trainer/**",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    },
+    {
+      "glob": "lib/widgets/shells/trainer_shell.dart",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    },
+    {
+      "glob": "lib/admin/**",
+      "ruleSets": [
+        "common"
+      ]
+    },
+    {
+      "glob": "lib/**",
+      "ruleSets": [
+        "common",
+        "member"
+      ]
+    },
+    {
+      "glob": "admin_web/**",
+      "ruleSets": [
+        "common"
+      ]
+    },
+    {
+      "glob": "contracts/metric-catalog.v1.json",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    },
+    {
+      "glob": "contracts/vocab.v1.json",
+      "ruleSets": [
+        "common",
+        "trainer"
+      ]
+    }
+  ],
+  "allowPaths": [
+    "docs/**",
+    "**/*.md",
+    "schemas/**",
+    "contracts/prohibited-terms.v1.json",
+    "contracts/fixtures/**",
+    "contracts/vectors/**",
+    "test/**",
+    "**/test/**",
+    "**/Tests/**",
+    "**/*Tests.swift",
+    "functions/test/**",
+    "tool/lint/test/**",
+    "functions/scripts/migrations/**"
+  ],
+  "excludePaths": [
+    "trainer_ios/**",
+    "**/Generated/**",
+    "lib/contracts/generated/**",
+    "functions/src/shared/generated/**",
+    "admin_web/lib/generated/**",
+    "build/**",
+    "**/.build/**",
+    "**/Pods/**",
+    "**/node_modules/**"
+  ],
+  "allowEntries": [
+    {
+      "id": "AE-01",
+      "kind": "regulatoryDisclaimer",
+      "active": true,
+      "exactString": "운동 지도와 건강관리 기록용이며 진단이나 치료를 위한 정보가 아닙니다.",
+      "rules": [
+        "C1-01",
+        "C1-03"
+      ],
+      "reason": "§3.1 고지 문구, 부정문",
+      "reviewedBy": "CJH",
+      "reviewStatus": "approvedByPrd"
+    },
+    {
+      "id": "AE-02",
+      "kind": "regulatoryDisclaimer",
+      "active": true,
+      "exactString": "D-FET Coach는 트레이너가 회원의 일상적 건강관리와 운동 지도를 위해 세션 기록, 자세 사진 관찰, 신체조성 결과를 정리하고 시각화하는 기록 도구입니다. 질병의 진단·치료·경감·예방·재활을 목적으로 하지 않으며 의료기관의 진료를 대체하지 않습니다. 표시되는 수치에는 측정 조건에 따른 오차가 있습니다.",
+      "rules": [
+        "C1-01",
+        "C1-03",
+        "C1-06",
+        "C1-10",
+        "C1-15"
+      ],
+      "reason": "§3.1 기본 사용목적 문구(설명서·앱스토어), 부정문",
+      "reviewedBy": "CJH",
+      "reviewStatus": "approvedByPrd"
+    }
+  ]
+}

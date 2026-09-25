@@ -227,6 +227,108 @@ export function renderContractsVersion(ctx) {
   return lines(out);
 }
 
+// contracts/prohibited-terms.v1.json -> ProhibitedTerms.swift (DF-010). Data only: the matcher that uses it
+// (TrainerDomain CopyGuard, TR-05 inline warnings) is DF-120. Matching rules: docs/v1/12 §7.3.
+function termRuleInit(r, indent) {
+  const t = `${indent}  `;
+  return [
+    `${indent}TermRule(`,
+    `${t}id: ${dqString(r.id)},`,
+    `${t}terms: ${stringList(r.terms)},`,
+    `${t}regex: ${stringList(r.regex ?? [])},`,
+    `${t}alternatives: ${stringList(r.alternatives)},`,
+    `${t}severity: .${r.severity},`,
+    `${t}boundary: .${r.match?.boundary ?? 'anywhere'},`,
+    `${t}except: ${stringList(r.match?.except ?? [])},`,
+    `${t}onlyInKeyPrefixes: ${r.onlyIn ? stringList(r.onlyIn.keyPrefixes) : 'nil'},`,
+    `${t}onlyInGlobs: ${r.onlyIn ? stringList(r.onlyIn.globs) : 'nil'}`,
+    `${indent}),`,
+  ];
+}
+
+function ruleList(name, doc, rules) {
+  if (rules.length === 0) return [`  /// ${doc}`, `  public static let ${name}: [TermRule] = []`];
+  return [`  /// ${doc}`, `  public static let ${name}: [TermRule] = [`, ...rules.flatMap((r) => termRuleInit(r, '    ')), '  ]'];
+}
+
+export function renderProhibitedTerms({ prohibitedTerms }) {
+  const doc = prohibitedTerms.doc;
+  const out = [
+    `// contract ${doc.contract} v${doc.version} revision ${doc.revision}. Regenerate with: node tool/contracts/generate.mjs`,
+    '// PRD appendix C as data. Matching rules (normalization, optional spacing, wordStart, except): docs/v1/12 §7.3.',
+    '',
+    '/// `block` stops sharing and fails copy-lint in block mode; `warn` is reported only.',
+    'public enum TermSeverity: String, Sendable {',
+    '  case block',
+    '  case warn',
+    '}',
+    '',
+    '/// `wordStart`: a match preceded by a Hangul letter or an ASCII letter/digit is ignored.',
+    'public enum TermBoundary: String, Sendable {',
+    '  case anywhere',
+    '  case wordStart',
+    '}',
+    '',
+    '/// One rule of `ruleSets.common`, `ruleSets.member` or `ruleSets.trainer`.',
+    'public struct TermRule: Sendable, Equatable {',
+    '  public let id: String',
+    '  /// A space inside a term also matches no space or one of `· - _ /`.',
+    '  public let terms: [String]',
+    '  /// Extra patterns (JavaScript syntax, case-insensitive), e.g. accuracy percentages.',
+    '  public let regex: [String]',
+    '  public let alternatives: [String]',
+    '  public let severity: TermSeverity',
+    '  public let boundary: TermBoundary',
+    '  /// A match that lies entirely inside one of these phrases is ignored.',
+    '  public let except: [String]',
+    '  /// When non-nil the rule applies only to catalog keys with one of these prefixes',
+    '  /// or to files under one of `onlyInGlobs`.',
+    '  public let onlyInKeyPrefixes: [String]?',
+    '  public let onlyInGlobs: [String]?',
+    '}',
+    '',
+    '/// Appendix C.2 cause-and-effect pattern. Always a warning (ASM-P0-07).',
+    'public struct TermCausalPattern: Sendable, Equatable {',
+    '  public let id: String',
+    '  public let regex: String',
+    '  public let allowedExample: String',
+    '}',
+    '',
+    '/// An active exact-string exception (PRD §3.1 disclaimers). The rules are dropped only when the',
+    '/// whole normalized string equals `exactString`.',
+    'public struct TermAllowEntry: Sendable, Equatable {',
+    '  public let id: String',
+    '  public let exactString: String',
+    '  public let rules: [String]',
+    '}',
+    '',
+    'public enum ProhibitedTerms {',
+    `  public static let version = ${doc.version}`,
+    `  public static let revision = ${doc.revision}`,
+    '',
+    ...ruleList('common', 'Appendix C.1: every user-facing string.', doc.ruleSets.common),
+    '',
+    ...ruleList('member', 'Appendix C.3 member-facing additions.', doc.ruleSets.member),
+    '',
+    ...ruleList('trainer', 'Appendix C.3 trainer additions (none: the trainer set is `common` only).', doc.ruleSets.trainer),
+    '',
+    '  /// Appendix C.2 patterns (warnings).',
+    '  public static let causalPatterns: [TermCausalPattern] = [',
+    ...doc.causalPatterns.map((p) => `    TermCausalPattern(id: ${dqString(p.id)}, regex: ${dqString(p.regex)}, allowedExample: ${dqString(p.allowedExample)}),`),
+    '  ]',
+    '',
+    '  /// Abbreviations trainers may use in their own records (appendix B.8).',
+    `  public static let trainerAbbreviations: [String] = ${stringList(doc.abbreviationAllowlist.trainer)}`,
+    '',
+    '  /// Active `allowEntries`.',
+    '  public static let allowEntries: [TermAllowEntry] = [',
+    ...doc.allowEntries.filter((e) => e.active).map((e) => `    TermAllowEntry(id: ${dqString(e.id)}, exactString: ${dqString(e.exactString)}, rules: ${stringList(e.rules)}),`),
+    '  ]',
+    '}',
+  ];
+  return lines(out);
+}
+
 export const swiftEmitters = Object.freeze({
   vocab: { id: 'swift.vocab', path: `${SWIFT_DIR}/Vocab.swift`, comment: '//', uses: ['vocab'], render: renderVocab },
   metricCatalog: {
@@ -235,6 +337,13 @@ export const swiftEmitters = Object.freeze({
     comment: '//',
     uses: ['metricCatalog'],
     render: renderMetricCatalog,
+  },
+  prohibitedTerms: {
+    id: 'swift.prohibitedTerms',
+    path: `${SWIFT_DIR}/ProhibitedTerms.swift`,
+    comment: '//',
+    uses: ['prohibitedTerms'],
+    render: renderProhibitedTerms,
   },
   contractsVersion: {
     id: 'swift.contractsVersion',

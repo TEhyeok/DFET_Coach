@@ -47,7 +47,7 @@
 
 1. **게이트가 달력보다 우선한다**(PRD §12). 날짜는 잠정이고, 단계 전환·실데이터 투입·플래그 개방은 게이트 증빙이 있어야만 한다.
 2. **외부 게이트는 코딩을 막지 않는다.** 법률(G-04, G-09), 식약처(G-05a/b), IRB(G-06, G-07)가 늦어져도 합성 데이터와 에뮬레이터로 개발은 계속한다. 막히는 것은 단계 전환, 실데이터, 플래그 개방뿐이다.
-3. **검토 역량이 속도의 상한이다.** 에이전트는 코드를 빨리 만들지만, 규칙·개인정보 경로의 정독과 되돌림 판단은 소유자 한 사람이 한다. 스프린트 PR의 병합 실행은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)으로 AI에 위임했다([에이전트 권한 경계](#에이전트-권한-경계)). 모든 추정·WIP 규칙은 소유자 검토 시간을 기준으로 잡는다.
+3. **검토 역량이 속도의 상한이다.** 에이전트는 코드를 빨리 만들지만, 규칙·개인정보 경로의 정독과 되돌림 판단은 소유자 한 사람이 한다. 스프린트 PR의 병합 실행은 DEC-20 조건(CI 초록 + 적대적 리뷰 승인)으로 AI에 위임한다([에이전트 권한 경계](#에이전트-권한-경계)). DEC-20은 그것을 기록한 PR #113을 소유자가 병합한 때부터 발효한다. 모든 추정·WIP 규칙은 소유자 검토 시간을 기준으로 잡는다.
 
 ---
 
@@ -74,7 +74,7 @@
 | 구분 | 허용 | 금지 |
 |---|---|---|
 | Git | `claude/DF-NNN-<slug>`·`codex/DF-NNN-<slug>` 브랜치(스프린트 문서 초안은 `claude/sprint-NN`·`codex/sprint-NN`) 생성·푸시, PR 생성(draft 또는 Ready) | `main` 직접 푸시, 자기 PR 병합, 자동 병합(auto-merge) 설정, force-push to `main`, 태그 생성 |
-| 병합(DEC-20, 병합 담당 AI만) | 스프린트 PR의 **rebase 병합**. 조건을 모두 충족할 때만: ① CI 필수 체크 전부 초록 ② 구현 에이전트와 다른 세션의 적대적 리뷰가 승인(위험 라벨 PR은 [소유자 검토 체크](#소유자-검토-체크위험-라벨별) 표의 확인 방식을 리뷰가 대신 수행하고 결과에 적는다) ③ `needs-device-test`면 실기기 기록(V1-T09) 첨부 ④ `freeze-exception`이면 [동결 예외 절차](#동결-예외-절차) 1~3 충족 ⑤ 병합 뒤 PR에 병합 근거(체크·리뷰 링크)를 코멘트 | 스쿼시·머지 커밋 병합, 조건 미충족 병합, 필수 체크 우회(관리자 권한 병합), PRD(`docs/PRD_V1.md`) 변경·D1~D4 영향 PR 병합(소유자만), 소유자가 보류·변경 요청한 PR 병합 |
+| 병합(DEC-20, 병합 담당 AI만) | 스프린트 PR의 **rebase 병합**. 조건을 모두 충족할 때만: ① CI 필수 체크 전부 초록 ② 구현 에이전트와 다른 세션의 적대적 리뷰가 승인(위험 라벨 PR은 [소유자 검토 체크](#소유자-검토-체크위험-라벨별) 표의 확인 방식을 리뷰가 대신 수행하고 결과에 적는다) ③ `needs-device-test`면 실기기 기록(V1-T09) 첨부 ④ `freeze-exception`이면 [동결 예외 절차](#동결-예외-절차) 1~3 충족 ⑤ 병합 뒤 PR에 병합 근거(체크·리뷰 링크)를 코멘트 | 스쿼시·머지 커밋 병합, 조건 미충족 병합, 필수 체크 우회(관리자 권한 병합), PRD(`docs/PRD_V1.md`) 변경·D1~D4 영향 PR 병합(소유자만), 권한 경계를 바꾸는 PR(01 [에이전트 권한 경계](#에이전트-권한-경계), [V1-00](00_README.md#결정-기록) DEC 행, `.github/CODEOWNERS`, `.github/pull_request_template.md`, `AGENTS.md`, `CLAUDE.md` 중 하나라도 바꾸는 PR) 병합(소유자만), 소유자가 보류·변경 요청한 PR 병합 |
 | GitHub | 할당된 이슈에 완료 보고 코멘트 | **이슈 생성**, 라벨·마일스톤·Projects 수정, 저장소 설정 변경 |
 | 파일 | 작업 지시서의 '수정 허용 경로' | 지시서 밖 경로, `docs/PRD_V1.md`(수정 제안만), `trainer_ios/`(동결, DF-142 삭제 전까지 읽기만), `ios/Runner/AppDelegate.swift`(freeze-exception 지시서가 있을 때만) |
 | 비밀 | — | `.env*`, `functions/.secret.local`, `GoogleService-Info.plist` 값, 서명 인증서, API 키, 서비스 계정 키 **열람·출력·커밋**(ADR-019) |
@@ -411,7 +411,7 @@ Co-Authored-By: <에이전트 트레일러>
 - 본문 첫 줄에 `Closes #<이슈 번호>`를 넣어 병합 시 이슈가 닫히게 한다.
 - 필수 체크: [필수 체크 활성화 표](#필수-체크-활성화-표)에서 PR 생성 시점에 활성인 것. 모두 활성화된 뒤(S07 이후)의 목록은 `flutter`, `functions-and-rules`, `admin-web`, `ios-no-codesign`, `trainer-app`, `contracts`, `copy-lint`, `static-guards`, 경로 조건부 `migrations`, `docs-and-backlog`, `trainer-app-emulator-it`이다.
 - **소유자 정독 경로**(라벨 rules-change, schema-change, regulatory, privacy-impact): `firestore.rules`, `storage.rules`, `functions/src/{access,consent,privacy,summaries}/**`, `functions/scripts/migrations/**`, `contracts/prohibited-terms.v1.json`, 회원 노출 문구. 이 경로는 CODEOWNERS(GH-09)로 표시한다.
-- 병합은 **rebase 병합**이다. 스프린트 PR은 DEC-20 조건([에이전트 권한 경계](#에이전트-권한-경계)의 '병합' 행)을 모두 충족하면 병합 담당 AI가, 그 밖의 PR(PRD·D1~D4 영향, 소유자 보류 PR)은 소유자가 병합한다. 구현 에이전트의 자기 PR 병합과 자동 병합(auto-merge) 설정은 금지다. 위험 라벨 PR은 소유자가 병합 뒤라도 정독하고, 문제가 있으면 되돌림(revert) PR로 처리한다. ADR-014(스쿼시)와의 차이는 [V1-00 K-18](00_README.md#알려진-차이와-남은-일)이다.
+- 병합은 **rebase 병합**이다. 스프린트 PR은 DEC-20 조건([에이전트 권한 경계](#에이전트-권한-경계)의 '병합' 행)을 모두 충족하면 병합 담당 AI가, 그 밖의 PR(PRD·D1~D4 영향, 권한 경계를 바꾸는 PR('병합' 행 금지 열), 소유자 보류 PR)은 소유자가 병합한다. 구현 에이전트의 자기 PR 병합과 자동 병합(auto-merge) 설정은 금지다. 위험 라벨 PR은 소유자가 병합 뒤라도 정독하고, 문제가 있으면 되돌림(revert) PR로 처리한다. ADR-014(스쿼시)와의 차이는 [V1-00 K-18](00_README.md#알려진-차이와-남은-일)이다.
 - PR에 넣지 않는 것: 실데이터, 비밀, `output/`·`tmp/` 내용, 공개 URL, 배포 명령 실행 결과(배포 로그는 소유자 기록에만).
 
 ---
@@ -748,4 +748,4 @@ GitHub 템플릿: GH-01 [config.yml](../../.github/ISSUE_TEMPLATE/config.yml), G
 | v1.0 | 2026-09-24 | 최초 작성 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 백로그 도구 참조를 단일 `tool/backlog/issues.json`과 `create_github_issues.sh`(호환 진입점 `create_backlog.sh`)에 맞춤. 순수 타깃 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2). owner-action 속도 포함 여부 충돌은 00_README K-01로 이관 | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: owner-action·스파이크 점수를 약속·속도에 포함(ASM-01-16 재작성, R1), 가정 ID를 ASM-01-NN으로 변경(R10), SPRINT_01·V1-03 가정 참조 갱신, 순수 타깃 패키지 표기를 TrainerCore로 정정(R4) | — | 없음 |
-| v1.1 | 2026-09-25 | 소유자 위임 DEC-20 반영: 스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 rebase 병합(역할 표, 에이전트 권한 경계 '병합' 행, PR 규칙, 흐름 6단계, DoD D3·D12, 커밋 규칙: 스쿼시 제목 대신 PR 제목과 커밋별 `Refs:`·`Trace:`, DF 키 없는 결정·문서 PR 예외). 운영 배포·`--apply` 금지는 유지 | claude/docs-dec-2026-09-25 | 없음(개발 운영 규칙) |
+| v1.1 | 2026-09-25 | DEC-20 반영(소유자 확인 필요, PR #113 소유자 병합 시 발효). 권한 경계를 바꾸는 PR은 소유자만 병합: 스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 rebase 병합(역할 표, 에이전트 권한 경계 '병합' 행, PR 규칙, 흐름 6단계, DoD D3·D12, 커밋 규칙: 스쿼시 제목 대신 PR 제목과 커밋별 `Refs:`·`Trace:`, DF 키 없는 결정·문서 PR 예외). 운영 배포·`--apply` 금지는 유지 | claude/docs-dec-2026-09-25 | 없음(개발 운영 규칙) |

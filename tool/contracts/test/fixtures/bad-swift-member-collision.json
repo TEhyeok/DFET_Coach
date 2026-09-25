@@ -1,0 +1,14 @@
+{
+  "description": "a Swift case must not redeclare a generated enum member (vocabStatus)",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "add",
+      "path": "/enums/scale/values/-",
+      "value": "vocabStatus"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums/scale/values/2: Swift case vocabStatus for \"vocabStatus\" collides with generated member vocabStatus"
+  ]
+}

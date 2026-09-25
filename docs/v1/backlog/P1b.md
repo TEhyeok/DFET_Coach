@@ -460,6 +460,7 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
 - MVP 스프린트: S09(원래 계획 S14). 상태: 할 일
 - 왜 필요한가: 흐름 3: PostureMath 산식(CVA, 어깨 높이 차 등)
 - 지금 만든다: posture-metrics.v1 산식과 벡터 테스트 전체
+- MVP 체형 기록은 대부분 시뮬레이터 사진 가져오기 경로라 `imageRotationDeg = 0`(보정 없음, DF-204 MVP 절)이다. `computeMetrics`는 `0`을 회전 없음으로 그대로 계산하며 따로 분기하지 않는다(벡터의 0° 사례로 이미 덮인다)
 - MVP 뒤로 미룬다: 화면 강조는 CVA·어깨 높이 차만. 나머지 지표는 '참고'로만 표시(DEC-22)
 
 ---
@@ -639,7 +640,7 @@ public protocol LandmarkSuggester: Sendable {
 
 - MVP 스프린트: S11(원래 계획 S15). 상태: 할 일
 - 왜 필요한가: 흐름 3: Vision 2D 랜드마크 어댑터
-- 지금 만든다: 카드 전체 범위
+- 지금 만든다: 카드 전체 범위. 단 `LandmarkEngineInfo` 구조체와 `LandmarkEngineInfo.current`는 DF-204 MVP 절(S10)이 먼저 만들었으므로 다시 만들지 않고 쓴다. 제안 결과의 엔진 값은 Outbox #4(DF-206)로 draft의 `landmarkEngine`을 덮어쓴다(AC-DF-207.4)
 - 대비책(DF-200 결과에 따름): 시뮬레이터에서 Vision이 결과를 내지 않으면 AC-DF-207.6을 DF-200 iPhone 하네스 기록으로 대신하고, `VisionLandmarkSuggester`는 사람 미검출(`personDetected=false`)로 끝나 화면이 '지정 필요'를 보인다(AC-DF-207.3). 테스트를 skip하지 않고 조건을 PR에 적는다
 
 ---
@@ -842,7 +843,12 @@ public enum SeriesSegmenter {
 - 동의 게이트(AC-DF-204.1)는 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다: `canCapturePosture`가 false면 진입 차단, ②③이 로컬 캡처만 있으면 '동의 확인 대기'
 - 스테이션·촬영 조건은 DF-203 MVP 조각(같은 S10, 먼저 병합)을 쓴다: TR-07 진입 때 `StationProfileStore.ensureDefault`로 기본 프로필(`stationProfileId = "default-v1"`)을 받아 `createDraft(member:stationProfile:captureConditions:)`에 넘기고, `captureConditions`는 `CaptureConditionsBuilder.build(profile:clothing:)` 결과에 셔터 시점 `levelDeg`·`pitchDeg`를 더한다(AC-DF-204.5). `CaptureGateView`의 '스테이션 없음' 상태는 MVP에서 나오지 않는다(기본 프로필이 늘 있다). AC-DF-204.2의 'Given 체크리스트 완료'는 MVP에서 'Given 복장 선택 완료'로 읽고, AC-DF-204.8에서 유지할 것은 사진과 복장 선택이다
 - 센서가 없는 시뮬레이터 가져오기 경로에서는 수평 값을 읽을 수 없다. 이때 `levelDeg`·`pitchDeg`는 `0`으로 채우지 말고 `captureConditions`에서 뺀다(규칙은 `hasOnly`라 키가 없어도 통과한다). 값을 지어내지 않는다
-- `landmarkEngine`은 DF-207(S11)이 채운다. S10에는 로컬 draft의 `landmarkEngineJSON`이 비어 있어도 되며, 원격 create(DF-206, S11)는 DF-207 병합 뒤라 필수 필드가 채워진다
+- 같은 가져오기 경로에서 뷰별 `imageRotationDeg`(V1-05 views 원소의 필수 num)는 `0`으로 저장한다. 뜻은 '수평 보정을 적용하지 않고 가져온 사진을 그대로 쓴다'이며 측정값이 아니다(V1-09 §2.3 ④ `-levelDeg`는 `levelDeg`가 있을 때만 쓴다). DF-201 `computeMetrics(imageRotationDeg:)`와 DF-208 오버레이도 이 `0`을 보정 없음으로 그대로 쓰고 다른 값을 추정하지 않는다. 단위 테스트: `test_MVP_importedPhotoHasZeroRotationAndNoLevelKeys()`(가져오기 draft의 두 뷰 `imageRotationDeg == 0`, `captureConditions`에 `levelDeg`·`pitchDeg` 키 없음)
+- `landmarkEngine`은 **draft를 만들 때** 로컬 draft에 쓴다. 이 값은 Vision 실행 결과가 아니라 고정된 엔진 정보이므로 Vision을 돌리기 전에 쓸 수 있다. 런타임 순서가 이유다: V1-07 TR-07 ⑤ 저장 직후 Outbox #1 `createDocument`가 큐에 들어가고, 제안(DF-207)은 TR-08 첫 진입에서야 돈다. V1-05 §7.5 `validPostureBody`는 create에 `landmarkEngine`(map, `name == 'appleVision2D'`)을 요구하므로(DF-021 MVP 절은 §7.5를 바꾸지 않는다) 필드가 없으면 create가 거부되고 draft가 `syncFailed`로 남는다. 그래서 이 스토리가 만든다:
+  - `Sources/TrainerDomain/Posture/LandmarkSuggester.swift`에 `LandmarkEngineInfo` 구조체만(DF-207 구현 노트의 선언 그대로. 프로토콜·결과 타입은 DF-207이 같은 파일에 더한다)
+  - `Sources/PostureVision/Landmarks/LandmarkEngineInfo+Current.swift`: `LandmarkEngineInfo.current(os: OSVersionProvider)` = `{name: "appleVision2D", version: "iOS<major.minor>-r<revision>"}`(ASM-P1b-04, revision은 `VNDetectHumanBodyPoseRequest.currentRevision`). DF-207은 이 함수를 다시 만들지 않고 쓰며, 제안 실행 결과의 엔진 값(`request.revision`)을 Outbox #4로 덮어쓴다
+  - `AssessmentStore.createDraft`가 `landmarkEngineJSON`을 `LandmarkEngineInfo.current`로 채운다. 단위 테스트: `test_MVP_draftHasLandmarkEngineBeforeVision()`(가짜 OS 버전 주입, 제안 실행 전 draft의 `landmarkEngineJSON`이 `appleVision2D`·`iOS17.4-r1` 형식). 이 경우 AC-DF-204.5의 '`landmarkEngine`(DF-207 결과)'은 '`landmarkEngine`(`LandmarkEngineInfo.current`)'으로 읽는다
+  - `Sources/PostureVision/Landmarks/`는 DF-207 영역이지만 MVP에서는 DF-204(S10)가 먼저 병합되므로 이 파일 하나만 만든다(에이전트 브리프의 '고치지 않는다'는 DF-207 파일에 적용)
 - MVP 뒤로 미룬다: 스테이션 편집·선택 UI와 회차 체크리스트 나머지 세 토글(DF-203 MVP 절)
 - MVP에서 기다리지 않는 의존: DF-915(촬영 프로토콜 소유자 확정). DEC-21에 따라 v1 초안 값을 쓴다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-204.7(`posture_capture_started`·`posture_capture_done`)과 `TrainerAnalyticsTests/PostureCaptureEventsTests.swift`는 만들지 않는다
@@ -1040,6 +1046,8 @@ public enum SeriesSegmenter {
 - 지금 만든다: 카드 전체 범위에서 가림본만 뺀다. Outbox #2는 뷰마다 **두 파일**(`{view}.jpg`, `{view}_thumb.jpg`)을 올리고, #3은 `maskedThumbPath=null`로 쓴다(V1-05 §4.6 `str|null`). #5 확정 전환은 두 파일과 #3·#4 완료만 기다리고 가림본을 기다리지 않는다. AC-DF-206.5는 `front.jpg`·`front_thumb.jpg`만 대조한다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-206.4의 `save_failure_shown` 기록 부분만 뺀다. '동기화 실패'·사유·재시도 표시와 로컬 보존은 그대로다
 - 동의 ③ 철회 시 로컬 파일 삭제(DF-227 또는 카드 '대안')는 MVP 뒤다. MVP 테스트 회원은 철회 시나리오를 에뮬레이터 규칙 거부(AC-DF-206.4)로만 확인한다
+- Outbox #1 create 본문의 `landmarkEngine`은 DF-204 MVP 절대로 draft 생성 때 기록된 `LandmarkEngineInfo.current` 값이다. 매퍼(`PostureAssessmentMapper`)는 이 값을 늘 create에 넣고, 비어 있으면 create를 큐에 넣지 않고 오류로 테스트에서 드러낸다(규칙 거부로 `syncFailed`가 되게 두지 않는다). #4는 제안 실행 뒤 엔진 값을 다시 쓴다
+- AC-DF-206.1에 에뮬레이터 확인을 더한다: 촬영 직후, TR-08에 들어가기 전(제안 미실행) 동기화하면 `postureAssessments/{id}` create가 규칙(V1-05 §7.5 `validPostureBody`)을 통과해 서버에 draft가 생기고 배지가 '동기화됨'으로 간다. 테스트: `IntegrationTests/PostureSyncIT.swift`의 `test_MVP_createBeforeLandmarkSuggestionAccepted()`. 가져오기 경로 모양(`imageRotationDeg = 0`, `levelDeg`·`pitchDeg` 없음, `stationProfileId = "default-v1"`)으로 돌린다
 
 ---
 
@@ -1105,6 +1113,7 @@ public enum SeriesSegmenter {
 - MVP 스프린트: S11(원래 계획 S16). 상태: 할 일
 - 왜 필요한가: 흐름 3: TR-08 랜드마크 수동 보정
 - 지금 만든다: 카드 전체 범위(분석용 AC-DF-208.7 제외)
+- 가져오기 경로 draft는 `imageRotationDeg = 0`(보정 없음, DF-204 MVP 절)이다. 오버레이는 회전 없이 그리고 '원본 보기'의 보정각은 '수평 보정 0.0°'로 보인다. 다른 값을 추정하지 않는다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-208.7(`calibrationStartedAt`·조정 횟수 기록, DF-209 이벤트용)은 만들지 않는다
 
 ---
@@ -2132,4 +2141,4 @@ public enum ObjectiveSourceError: Error, Equatable { case permissionDenied, unav
 | v1.0 | 2026-09-24 | 최초 작성. 스파인 P1b 스토리 24개 카드화, 추가 제안 DF-227과 충돌 8건(G-P1b-1~8), 가정 ASM-P1b-01~41 | CJH(에이전트 초안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 경로(PostureMath, TrainerDomain/Series)와 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2) | CJH(AI 에이전트, 릴리스 편집) |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 경로 규칙 TrainerCore·TrainerKit(R4), 대기 회원 시드 ID·시드 스크립트 정본(R2), DF-209 경계 문제 기록(G-P1b-9, ASM-P1b-43), 리드 결정 기록(ASM-P1b-44), 덱 키 DoR(§4, K-11), 가정 ID 참조(R10) | CJH(AI 에이전트, 정합 편집) |
-| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: 체형 사진 파이프라인 MVP 절 정리(DF-205 FaceMasker만 연기·일반 썸네일 유지, DF-206 뷰당 두 파일·`maskedThumbPath=null`, DF-209 AC-DF-209.10 제외·PhotoRebaser 로컬만, DF-225 로컬 썸네일만), 분석 이벤트 AC는 MVP 뒤(DF-204·DF-206·DF-208·DF-209·DF-210·DF-215), DF-200·DF-207 Vision 대비책(시뮬레이터 실패 시 iPhone 하네스·수동 지정), 파일 머리 DEC-22 범위 안내. 리뷰 반영 3: DF-203 최소 조각을 `scope/mvp`(S10)로 넣고 MVP 절 추가(프로토콜 생성물, 기본 스테이션 `default-v1` 자동 생성, 복장 선택, 세 불리언 `false`), DF-204 MVP 절(기본 스테이션·복장, 시뮬레이터 수평 값 생략, `landmarkEngine`은 DF-207), DF-209(스테이션·조건 복사, `retestGroupId` null), DF-210(재검사 모드·사진 메뉴 제외), DF-216 S10→S11. | CJH(AI 에이전트) |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). 리뷰 반영: 체형 사진 파이프라인 MVP 절 정리(DF-205 FaceMasker만 연기·일반 썸네일 유지, DF-206 뷰당 두 파일·`maskedThumbPath=null`, DF-209 AC-DF-209.10 제외·PhotoRebaser 로컬만, DF-225 로컬 썸네일만), 분석 이벤트 AC는 MVP 뒤(DF-204·DF-206·DF-208·DF-209·DF-210·DF-215), DF-200·DF-207 Vision 대비책(시뮬레이터 실패 시 iPhone 하네스·수동 지정), 파일 머리 DEC-22 범위 안내. 리뷰 반영 3: DF-203 최소 조각을 `scope/mvp`(S10)로 넣고 MVP 절 추가(프로토콜 생성물, 기본 스테이션 `default-v1` 자동 생성, 복장 선택, 세 불리언 `false`), DF-204 MVP 절(기본 스테이션·복장, 시뮬레이터 수평 값 생략, `landmarkEngine`은 DF-207), DF-209(스테이션·조건 복사, `retestGroupId` null), DF-210(재검사 모드·사진 메뉴 제외), DF-216 S10→S11. 리뷰 반영 4: DF-204 MVP 절에서 `landmarkEngine`을 draft 생성 때 `LandmarkEngineInfo.current`로 기록(Outbox #1 create가 §7.5 `validPostureBody`를 늘 통과, 'DF-207 병합 뒤라' 문장 삭제), 가져오기 사진의 `imageRotationDeg = 0`(보정 없음, 단위 테스트), DF-206 MVP 절에 TR-08 전 create 허용 에뮬레이터 확인, DF-207·DF-201·DF-208 MVP 절에 같은 규칙. | CJH(AI 에이전트) |

@@ -6,7 +6,8 @@
 // a v2 metric needs (joint·motion·activeOrPassive, muscleGroup), so even a parsable number
 // is not a catalog metric (V1-05 §5.6). Values are never filled with 0.
 //
-// The view does not expose `diagnosis` (MIG-04) and has no write path.
+// The view does not expose `diagnosis` (MIG-04) and has no write path: the document it
+// reads is private, and no public getter returns `diagnosis` or a map that contains it.
 
 import 'package:cloud_firestore/cloud_firestore.dart' show Blob, Timestamp;
 import 'package:flutter/foundation.dart' show immutable;
@@ -59,11 +60,11 @@ final class LegacyMetricView {
 @immutable
 final class LegacySoapView {
   const LegacySoapView._({
-    required this.raw,
+    required Map<String, Object?> raw,
     required this.metrics,
     required this.legacyStatus,
     required this.completedCategories,
-  });
+  }) : _raw = raw;
 
   /// Reads a v1 document (Firestore types; `$int` millis are ints).
   factory LegacySoapView.fromMap(Map<String, dynamic> data) {
@@ -90,8 +91,8 @@ final class LegacySoapView {
   /// Display label for legacy rows and unknown v2 metric codes.
   static const String uninterpretableLabel = '해석 불가';
 
-  /// The document as read.
-  final Map<String, Object?> raw;
+  /// The document as read. Private: it holds `diagnosis`, which is never exposed (MIG-04).
+  final Map<String, Object?> _raw;
 
   /// Every `structured.metrics` row, in stored order. Never shorter than the stored list.
   final List<LegacyMetricView> metrics;
@@ -102,12 +103,12 @@ final class LegacySoapView {
   /// `structured.workflow.completedCategories` as written (`S` or `subjective` style).
   final List<String> completedCategories;
 
-  String? get trainerId => _text(raw['trainerId']);
-  String? get memberId => _text(raw['memberId']);
+  String? get trainerId => _text(_raw['trainerId']);
+  String? get memberId => _text(_raw['memberId']);
 
   /// Legacy `date` (epoch millis) as UTC.
   DateTime? get sessionDate {
-    final date = raw['date'];
+    final date = _raw['date'];
     if (date is int) {
       return DateTime.fromMillisecondsSinceEpoch(date, isUtc: true);
     }
@@ -124,7 +125,7 @@ final class LegacySoapView {
 
   /// The note was shared under v1 (status or flag). v2 does not share it again (MIG-05).
   bool get wasShared =>
-      raw['isSharedWithMember'] == true ||
+      _raw['isSharedWithMember'] == true ||
       legacyStatus == 'shared' ||
       legacyStatus == '공유됨';
 
@@ -142,8 +143,8 @@ final class LegacySoapView {
   /// Inline ink (`drawingData` bytes or `structured.subjective.nativeInkDataBase64`).
   /// Read only; v2 keeps ink in Storage (MIG-06).
   bool get hasInlineInk {
-    if (raw['drawingData'] is Blob) return true;
-    final subjective = _map(_map(raw['structured'])?['subjective']);
+    if (_raw['drawingData'] is Blob) return true;
+    final subjective = _map(_map(_raw['structured'])?['subjective']);
     final ink = subjective?['nativeInkDataBase64'];
     return ink is String && ink.isNotEmpty;
   }

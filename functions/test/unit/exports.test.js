@@ -56,7 +56,7 @@ const ADMIN_CALLABLES_VALIDATING_DATA = [
   'removeMemberFromTrainer',
 ];
 
-const synthAdminAuth = {uid: 'synthAdminA', token: {admin: true}};
+const synthAdminAuth = {uid: 'synthAdmin', token: {admin: true}};
 const synthMemberAuth = {uid: 'synthMember0001', token: {}};
 
 async function assertHttpsError(promise, code) {

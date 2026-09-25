@@ -81,6 +81,8 @@ jobs:
           channel: stable
           flutter-version: 3.38.2  # 3.47 전환은 별도 작업(위젯 테스트·deprecation·FlutterFire SPM 정렬)
           cache: true
+      - name: Runner has no trainer packages (NFR-01)
+        run: 'test -f ios/Podfile && test -f ios/Runner.xcodeproj/project.pbxproj && ! grep -REn "TrainerCore|TrainerKit|BodyPathCore" ios/Podfile ios/Runner.xcodeproj/project.pbxproj'
       - run: flutter pub get
       - run: flutter test --tags golden
       - run: flutter build ios --release --no-codesign

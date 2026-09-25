@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # 백로그 도구 시나리오 테스트(가짜 gh). 네트워크에 접근하지 않는다. CI docs-and-backlog job이 부른다.
-# 0) node:test(tool/backlog/test/*.test.mjs)와 shellcheck(있을 때)
+# 0) node:test(tool/backlog/test/*.test.mjs)와 shellcheck(로컬에서는 없으면 건너뛰고, CI=true면 없을 때 실패한다. AC-DF-002.5)
 # 1) 인자 없는 dry-run은 gh를 한 번도 부르지 않고 계획(라벨·마일스톤·이슈 수)을 출력한다(AC-DF-002.1)
 # 2) 기존 이슈 [DF-001]이 있는 상태에서 --apply 두 번: DF-001 생성 0건, 없는 키는 첫 실행에서 한 번만,
 #    두 번째 실행 생성 0건, --search 0건(AC-DF-002.2)
 # 3) 링크 블록이 #번호로 다시 쓰인다(에픽 하위 항목, 의존, 다음 단계 추가 뒤 기존 에픽)
-# 4) 검증기 통과(PRD 경로: 환경 변수 PRD, 기본 docs/PRD_V1.md), 5) issues.json 드리프트 없음
+# 4) 검증기 통과(PRD 경로: 환경 변수 PRD, 기본 docs/PRD_V1.md. CI=true면 PRD가 없을 때 실패), 5) issues.json 드리프트 없음
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tool="$(cd "$here/.." && pwd)"
@@ -27,8 +27,10 @@ echo "ok 0a node --test ($(grep -E '^# pass' "$work/node-test.txt" | tr -d '#' |
 if command -v shellcheck > /dev/null 2>&1; then
   shellcheck "$tool"/*.sh "$here"/*.sh || fail "shellcheck"
   echo "ok 0b shellcheck tool/backlog/*.sh tool/backlog/test/*.sh"
+elif [ -n "${CI:-}" ]; then
+  fail "shellcheck not installed (required in CI, AC-DF-002.5)"
 else
-  echo "skip 0b shellcheck not installed"
+  echo "skip 0b shellcheck not installed (local run only; CI fails here)"
 fi
 
 # 1) dry-run(기본값, 인자 없음). 가짜 gh를 PATH 맨 앞에 두고 호출 기록이 비어 있는지 본다
@@ -84,8 +86,10 @@ prd="${PRD:-$root/docs/PRD_V1.md}"
 if [ -f "$prd" ]; then
   node "$tool/validate_backlog.mjs" --prd "$prd" > /dev/null || fail "validator"
   echo "ok 4 validator"
+elif [ -n "${CI:-}" ]; then
+  fail "PRD not found: $prd (required in CI)"
 else
-  echo "skip 4 validator (PRD not found: $prd)"
+  echo "skip 4 validator (PRD not found: $prd; local run only, CI fails here)"
 fi
 node "$tool/build_issues.mjs" --check > /dev/null || fail "issues.json stale"
 echo "ok 5 issues.json up to date"

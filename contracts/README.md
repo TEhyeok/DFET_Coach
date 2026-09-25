@@ -75,9 +75,9 @@
 
 ```bash
 jq empty contracts/*.json
-npm ci --prefix tool                          # ajv, ajv-formats
-node tool/contracts/generate.mjs --check      # 메타 스키마(schemas/contracts-meta.schema.json) + 교차 검증 + 생성물 드리프트
-node --test 'tool/contracts/test/*.test.mjs'  # TC-DF003-01~03, TC-DF004-01~04
+npm ci --prefix tool                             # ajv, ajv-formats
+node tool/contracts/generate.mjs --check         # 메타 스키마(schemas/contracts-meta.schema.json) + 교차 검증 + 생성물 드리프트
+node --test 'tool/contracts/test/**/*.test.mjs'  # TC-DF003-01~03, TC-DF004-01~04
 ```
 
 CI `contracts` job이 위 명령을 돈다(DF-004). 생성기 동작·이름 규칙은 [tool/contracts/README.md](../tool/contracts/README.md)에 있다.

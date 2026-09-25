@@ -10,7 +10,7 @@
   "scripts": {
     "contracts:generate": "node contracts/generate.mjs",
     "contracts:check": "node contracts/generate.mjs --check",
-    "test": "node --test 'contracts/test/*.test.mjs'"
+    "test": "node --test 'contracts/test/**/*.test.mjs'"
   },
   "devDependencies": {
     "ajv": "^8.20.0",

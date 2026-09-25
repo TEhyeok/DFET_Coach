@@ -39,9 +39,9 @@ PATH="$work/bin:$PATH" bash "$tool/create_backlog.sh" --dry-run --offline > "$wo
 mut=$(grep -cE "$MUTATING" "$FAKE_GH_LOG" || true)
 [ "$mut" -eq 0 ] || fail "dry-run made $mut mutating gh calls"
 [ ! -s "$FAKE_GH_LOG" ] || fail "dry-run called gh: $(head -1 "$FAKE_GH_LOG")"
-grep -q '^== plan: labels 67, milestones 9, issues 230 ' "$work/dry.txt" || fail "dry-run plan summary"
+grep -q '^== plan: labels 67, milestones 9, issues 232 ' "$work/dry.txt" || fail "dry-run plan summary"
 cmp -s "$work/dry.txt" "$work/dry-offline.txt" || fail "--dry-run --offline differs from the default dry-run"
-echo "ok 1 dry-run makes no gh calls and prints the plan (labels 67, milestones 9, issues 230)"
+echo "ok 1 dry-run makes no gh calls and prints the plan (labels 67, milestones 9, issues 232)"
 
 # 2) apply twice. 기존 이슈 #1 [DF-001]을 심어 둔다(가짜 gh issue list가 이를 돌려준다)
 mkdir -p "$FAKE_GH_STATE"
@@ -49,18 +49,18 @@ printf '1\t[DF-001] 기존 이슈(시드)\n' > "$FAKE_GH_STATE/issues.tsv"
 args=(--apply --repo "$REPO" --delay 0 --phase P0 --owner-actions --exclude-proposals)
 PATH="$work/bin:$PATH" PROJECT_NUMBER=7 bash "$tool/create_backlog.sh" "${args[@]}" > "$work/apply1.txt"
 c1=$(grep -c '^   created #' "$work/apply1.txt" || true)
-[ "$c1" -eq 100 ] || fail "first apply created $c1 (expected 100 = 24 epics + 77 items - existing DF-001)"
+[ "$c1" -eq 102 ] || fail "first apply created $c1 (expected 102 = 24 epics + 79 items - existing DF-001)"
 grep -q '^   skip (exists #1): \[DF-001\] ' "$work/apply1.txt" || fail "existing DF-001 not skipped"
 PATH="$work/bin:$PATH" PROJECT_NUMBER=7 bash "$tool/create_backlog.sh" "${args[@]}" > "$work/apply2.txt"
 c2=$(grep -c '^   created #' "$work/apply2.txt" || true)
 [ "$c2" -eq 0 ] || fail "second apply created $c2"
-grep -q '^   result: created 0, skipped(existing) 101$' "$work/apply2.txt" || fail "second apply summary"
+grep -q '^   result: created 0, skipped(existing) 103$' "$work/apply2.txt" || fail "second apply summary"
 lists=$(grep -c "^issue list --repo $REPO --state all --limit 3000 --json number,title" "$FAKE_GH_LOG" || true)
 [ "$lists" -eq 2 ] || fail "expected one full issue list per run, got $lists"
 grep -oE '^issue create .*--title \[(DF-[0-9]{3}|EP-[0-9]{2})\]' "$FAKE_GH_LOG" | sed -E 's/.*--title \[//; s/\]$//' | sort > "$work/created-keys.txt"
 ! grep -qx 'DF-001' "$work/created-keys.txt" || fail "issue create called for existing DF-001"
 [ -z "$(uniq -d "$work/created-keys.txt")" ] || fail "issue create called twice for: $(uniq -d "$work/created-keys.txt" | tr '\n' ' ')"
-[ "$(wc -l < "$work/created-keys.txt" | tr -d ' ')" -eq 100 ] || fail "issue create calls != 100"
+[ "$(wc -l < "$work/created-keys.txt" | tr -d ' ')" -eq 102 ] || fail "issue create calls != 102"
 ! grep -q -- '--search' "$FAKE_GH_LOG" || fail "search API used"
 dups=$(cut -f2 "$FAKE_GH_STATE/issues.tsv" | sort | uniq -d | wc -l | tr -d ' ')
 [ "$dups" -eq 0 ] || fail "duplicate titles"

@@ -114,6 +114,53 @@ void main() {
           view('schema_doc_vocab').sessionDate, DateTime.utc(2026, 9, 22, 1));
     });
 
+    test('a numeric-looking legacy value stays text with no numeric reading',
+        () {
+      final v = LegacySoapView.fromMap({
+        'structured': {
+          'metrics': [
+            {
+              'type': 'rom',
+              'label': '가상 어깨 굴곡',
+              'side': 'right',
+              'value': '120.0',
+              'unit': 'deg',
+            },
+          ],
+        },
+      });
+      final m = v.metrics.single;
+      expect(m.isInterpretable, isFalse);
+      expect(m.valueText, '120.0');
+      expect(m.raw['value'], isA<String>());
+    });
+
+    test('no public getter exposes diagnosis (MIG-04)', () {
+      final f =
+          fixtures.firstWhere((f) => f.base == 'native_bridge_label_only');
+      final diagnosis = f.data['diagnosis'] as String;
+      expect(diagnosis, isNotEmpty);
+      final v = LegacySoapView.fromMap(f.data);
+      final exposed = <Object?>[
+        v.trainerId,
+        v.memberId,
+        v.sessionDate,
+        v.legacyStatus,
+        v.mappedStatus,
+        v.wasShared,
+        v.completedCategories,
+        v.normalizedCompletedCategories,
+        v.hasLinkedMember,
+        v.hasInlineInk,
+        for (final m in v.metrics) m.raw,
+        v.toString(),
+      ];
+      for (final value in exposed) {
+        expect('$value', isNot(contains(diagnosis)));
+        expect('$value', isNot(contains('diagnosis')));
+      }
+    });
+
     test('a non-map row still counts as a metric', () {
       final v = LegacySoapView.fromMap({
         'structured': {

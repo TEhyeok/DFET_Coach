@@ -246,6 +246,8 @@ test('AC-DF-010.2 TC-DF010-02 scanned files: target roots only, allow and exclud
     'trainer_app/Packages/TrainerCore/Tests/XTests/XTests.swift': 'let a = "치료"\n',
     'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ProhibitedTerms.swift': 'let a = "치료"\n',
     'trainer_app/Packages/TrainerCore/.build/checkouts/dep/A.swift': 'let a = "치료"\n',
+    'trainer_app/DerivedData/Build/DerivedSources/B.swift': 'let a = "치료"\n',
+    'trainer_app/build/C.swift': 'let a = "치료"\n',
     'ios/Runner/AppDelegate.swift': 'let a = "치료"\n',
     'lib/main.dart': "const a = '치료';\n",
     'lib/contracts/generated/vocab.g.dart': "const a = '치료';\n",

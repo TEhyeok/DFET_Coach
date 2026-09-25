@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-10 |
-| 버전 | v1.0.1 |
+| 버전 | v1.1.0 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1433,7 +1433,7 @@ jobs:
           fi
           has() { if printf '%s\n' "$files" | grep -Eq "$1"; then echo true; else echo false; fi; }
           echo "migrations=$(has '^(functions/scripts/migrations/|functions/test/migrations/|contracts/fixtures/soap_legacy)')" >> "$GITHUB_OUTPUT"
-          echo "docs=$(has '^(docs/|tool/backlog/|tool/lint/doc-headers)')" >> "$GITHUB_OUTPUT"
+          echo "docs=$(has '^(docs/|tool/backlog/|tool/lint/(doc-headers|test/doc-headers|test/fixtures/)|AGENTS\.md$|CLAUDE\.md$|\.github/workflows/ci\.yml$)')" >> "$GITHUB_OUTPUT"
 
   flutter:                    # 기존 단계 유지(dfet:.github/workflows/ci.yml:13-33)
     runs-on: ubuntu-latest
@@ -1584,7 +1584,7 @@ jobs:
         with:
           node-version: "22"
       - run: node --test tool/lint/test/doc-headers.test.mjs
-      - run: node tool/lint/doc-headers.mjs                     # 헤더 표준 + 상대 링크
+      - run: node tool/lint/doc-headers.mjs --links docs/v1     # 헤더 표준 + 상대 링크(AC-DF-001.1, .5)
       - run: node tool/backlog/build_issues.mjs --check          # issues.json 드리프트(TL-01 §6)
       - run: node tool/backlog/validate_backlog.mjs --prd docs/PRD_V1.md
       - run: bash tool/backlog/test/run.sh                        # 가짜 gh 시나리오
@@ -1994,3 +1994,4 @@ ID는 이 문서 한정이다. PRD로 올릴 때는 PRD §13.4에 따라 AS-34 �
 | v1.0 | 2026-09-24 | 최초 작성(개발 착수 기준) | — | 없음(CF-10-07 줄 번호는 PRD 개정 때 반영 제안) |
 | v1.0(릴리스 편집) | 2026-09-24 | 순수 타깃 `swift test`·픽스처 로더 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2, §3.1·§6.1·§19.4) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: 순수 타깃 5개·TrainerCore 테스트 경로(R4), 시드 담당·ID(R2), 픽스처 봉투·레거시 파일 이름을 P0 규약으로, 기대 결과 경로 `soap_legacy/expected_v2/`, XcodeGen zip(R8), docs-and-backlog 명령(TL-01 §6), static-guards 파일명(DF-011), 충돌 ID CF-10-NN(R10), ASM-10-24~26 추가 | — | 없음 |
+| v1.1.0 | 2026-09-25 | §19.3 `changes-ci`의 `docs` 경로 조건에 `tool/lint/test/`의 doc-headers 테스트·픽스처, `AGENTS.md`·`CLAUDE.md`, `.github/workflows/ci.yml`을 더하고(SPRINT_01 §7.5), `docs-and-backlog`의 린트 명령을 `--links docs/v1`로 적음(P0 DF-001 카드 AC-DF-001.5). DF-001 구현과 맞춤 | DF-001 | 없음 |

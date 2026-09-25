@@ -157,7 +157,7 @@ node tool/backlog/brief.mjs DF-005 --agent claude --slug soap-fixtures   # 배�
 node tool/backlog/brief.mjs DF-025 --allow-deferred > brief.md # 연기 항목(검토용). 없으면 exit 1
 ```
 
-DEC-22: `scope/mvp`·`scope/carryover` 항목만 지시서를 만든다. `scope/deferred` 항목은 exit 1이고, `--allow-deferred`를 주면 stderr 경고와 지시서 맨 위 '연기 항목' 경고를 달고 만든다(MVP 뒤 재계획 검토용, 구현 착수용 아님). `scope/mvp` 항목의 §4에는 [03 MVP 공통 규칙](../../docs/v1/03_RELEASE_AND_SPRINT_PLAN.md#mvp-공통-규칙)의 분석 이벤트 연기 줄이 붙고, §3 컨텍스트 팩에 03 MVP 계획이 들어간다.
+DEC-22: `scope/mvp`·`scope/carryover` 항목만 지시서를 만든다. `scope/deferred` 항목은 exit 1이고, `--allow-deferred`를 주면 stderr 경고와 지시서 맨 위 '연기 항목' 경고를 달고 만든다(MVP 뒤 재계획 검토용, 구현 착수용 아님). `scope/mvp` 항목의 §4에는 [03 MVP 공통 규칙](../../docs/v1/03_RELEASE_AND_SPRINT_PLAN.md#mvp-공통-규칙)의 1번(분석 이벤트 연기)과 6번(연기 항목에 기대지 않음) 줄이 붙고, §3 컨텍스트 팩에 03 MVP 계획이 들어간다.
 
 | 절 | 원천 |
 |---|---|
@@ -198,7 +198,7 @@ DEC-22: `scope/mvp`·`scope/carryover` 항목만 지시서를 만든다. `scope/
 
 | 버전 | 날짜 | 요약 |
 |---|---|---|
-| v1.3.0 | 2026-09-25 | DEC-22 리뷰 반영: 라벨 `scope/carryover`·`scope/deferred`(70개). `build_issues.mjs`가 연기 항목에 `scope/deferred`·스프린트 'MVP 뒤'·`plannedSprint`·본문 연기 안내를 넣고 `totals.byScope`를 더한다. `validate_backlog.mjs`가 scope/ 정확히 1, 연기 항목 스프린트, MVP 항목 `agent/` 라벨을 검사한다. `brief.mjs`는 연기 항목에 exit 1(`--allow-deferred`로 경고 달고 생성), `--sprint` 목록은 MVP·진행 중만, MVP 스토리 §4에 공통 규칙 줄. node:test 5건 추가 |
+| v1.3.0 | 2026-09-25 | DEC-22 리뷰 반영: 라벨 `scope/carryover`·`scope/deferred`(70개). `build_issues.mjs`가 연기 항목에 `scope/deferred`·스프린트 'MVP 뒤'·`plannedSprint`·본문 연기 안내를 넣고 `totals.byScope`를 더한다. `validate_backlog.mjs`가 scope/ 정확히 1, 연기 항목 스프린트, MVP 항목 `agent/` 라벨을 검사한다. `brief.mjs`는 연기 항목에 exit 1(`--allow-deferred`로 경고 달고 생성), `--sprint` 목록은 MVP·진행 중만, MVP 스토리 §4에 공통 규칙 줄. node:test 5건 추가 리뷰 반영 2: `brief.mjs` §4 MVP 공통 규칙 줄에 규칙 6(연기 항목을 호출·선행 구현하지 않고 카드 MVP 절의 대체를 따른다)을 명시. |
 | v1.2.0 | 2026-09-25 | DEC-21·DEC-22: DF-042 채택으로 채택 193·제안 15, P0 + 소유자 행동 apply 103건. 라벨 `scope/mvp`(68개)는 카드 Labels 줄에서 온다(빌더 변경 없음). `brief.mjs`가 카드 안 `### MVP 범위(DEC-22)` 절을 카드 끝으로 보지 않고 4절에 넣는다(테스트 2건 추가). run.sh 기대값 갱신 |
 | v1.1.1 | 2026-09-25 | 소유자 결정 2026-09-25(DEC-19 서울 리전 전환 DF-043·DF-942 추가)로 이슈 수 갱신: 항목 208개(채택 192), dry-run 계획 232건, P0 + 소유자 행동 apply 102건. 로직 변경 없음 |
 | v1.1.0 | 2026-09-25 | DF-002: TL-13 `brief.mjs`(작업 지시서 생성기)와 §6a 추가. `test/run.sh`가 node:test·shellcheck와 AC-DF-002.1·.2 시나리오(인자 없는 dry-run, 기존 `[DF-001]` 이슈를 둔 두 번 apply)를 그대로 돌리도록 §6 갱신. dry-run 끝에 계획 요약 줄. 검토 반영: §8 검증 명령에서 소유자 실행·운영 데이터 스크립트·비명령 낱말을 빼고, 스프린트 문서와 에이전트 라벨 불일치를 경고하며, `run.sh`가 CI에서 shellcheck·PRD 누락 시 실패 |

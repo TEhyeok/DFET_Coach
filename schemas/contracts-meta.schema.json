@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/TEhyeok/DFET_Coach/schemas/contracts-meta.schema.json",
+  "title": "D-FET contracts input meta-schema",
+  "description": "Hand-written structural schema for contracts/*.v1.json (DF-004). Normative format: docs/v1/05_DATA_MODEL_AND_RULES.md §13. Value membership (family, unit, sourceGrade, ...) and metricCode uniqueness are cross-checked against vocab by tool/contracts/generate.mjs, not duplicated here. Not a generated file and not a --check drift target.",
+  "type": "object",
+  "required": ["contract"],
+  "properties": {
+    "contract": {
+      "enum": ["metric-catalog", "vocab"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "contract": { "const": "metric-catalog" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/metricCatalog" }
+    },
+    {
+      "if": {
+        "properties": { "contract": { "const": "vocab" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/vocab" }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "description": "ASCII camelCase code (V1-05 §13 공통 규칙: 키와 코드 값은 영문 camelCase).",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$"
+    },
+    "conditionKey": {
+      "description": "Field path in dot notation, or one of the derived tokens stationProfile / nrsScale (V1-05 §13.1 조건 키 토큰).",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
+    },
+    "storyId": {
+      "type": "string",
+      "pattern": "^DF-[0-9]{3}$"
+    },
+    "identifierList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/identifier" },
+      "uniqueItems": true
+    },
+    "header": {
+      "type": "object",
+      "required": ["contract", "version", "revision", "source"],
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "revision": { "type": "integer", "minimum": 1 },
+        "source": { "type": "string", "minLength": 1, "pattern": "^[\\x20-\\x7E]+$" }
+      }
+    },
+    "metricCatalog": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "metrics", "excludedMetricCodes"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "metric-catalog" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/metric" }
+        },
+        "excludedMetricCodes": { "$ref": "#/$defs/identifierList" }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "required": [
+        "metricCode",
+        "nameKo",
+        "family",
+        "unit",
+        "decimals",
+        "scale",
+        "sideRule",
+        "allowedSourceGrades",
+        "screeningOnlySourceGrades",
+        "betaSourceGrades",
+        "reliabilityTier",
+        "improvementDirection",
+        "conditionKeys",
+        "availability",
+        "judgeAs",
+        "storage",
+        "range"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "metricCode": { "$ref": "#/$defs/identifier" },
+        "nameKo": { "type": "string", "minLength": 1 },
+        "family": { "$ref": "#/$defs/identifier" },
+        "unit": { "$ref": "#/$defs/identifier" },
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "scale": { "$ref": "#/$defs/identifier" },
+        "sideRule": { "$ref": "#/$defs/identifier" },
+        "allowedSourceGrades": {
+          "type": "array",
+          "allOf": [{ "$ref": "#/$defs/identifierList" }],
+          "minItems": 1
+        },
+        "screeningOnlySourceGrades": { "$ref": "#/$defs/identifierList" },
+        "betaSourceGrades": { "$ref": "#/$defs/identifierList" },
+        "reliabilityTier": {
+          "oneOf": [{ "$ref": "#/$defs/identifier" }, { "type": "null" }]
+        },
+        "improvementDirection": { "$ref": "#/$defs/identifier" },
+        "conditionKeys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/conditionKey" }
+        },
+        "availability": { "$ref": "#/$defs/identifier" },
+        "judgeAs": {
+          "oneOf": [{ "$ref": "#/$defs/identifier" }, { "type": "null" }]
+        },
+        "storage": {
+          "type": "object",
+          "required": ["collection", "field"],
+          "additionalProperties": false,
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+            "field": { "$ref": "#/$defs/conditionKey" }
+          }
+        },
+        "range": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["min", "minExclusive", "max", "appMin"],
+              "additionalProperties": false,
+              "properties": {
+                "min": { "type": "number" },
+                "minExclusive": { "type": "boolean" },
+                "max": { "type": "number" },
+                "appMin": { "type": "number" }
+              }
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "vocab": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "enums", "jointMotionPairs"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "vocab" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "enums": {
+          "type": "object",
+          "description": "V1-05 §13.2 enum table (33 enums). A new enum is a compatible addition (revision + 1) and must also be listed here.",
+          "required": [
+            "sourceGrade",
+            "reliabilityTier",
+            "changeStatus",
+            "reasonCode",
+            "mdcSource",
+            "improvementDirection",
+            "side",
+            "syncState",
+            "family",
+            "sideRule",
+            "availability",
+            "scale",
+            "unit",
+            "consentType",
+            "consentAction",
+            "consentChannel",
+            "soapStatus",
+            "postureStatus",
+            "measurementStatus",
+            "pendingMemberStatus",
+            "summaryStatus",
+            "postureView",
+            "clothing",
+            "fasting",
+            "timeOfDayBand",
+            "bodyCompositionSource",
+            "circumferenceProtocolId",
+            "landmarkCode",
+            "activeOrPassive",
+            "joint",
+            "motion",
+            "muscleGroup",
+            "regionCode"
+          ],
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/enum" }
+        },
+        "jointMotionPairs": { "$ref": "#/$defs/jointMotionPairs" }
+      }
+    },
+    "draftStatus": {
+      "description": "status is confirmed | draft. draft requires confirmBy; confirmed forbids it (V1-05 §13.2).",
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["confirmed", "draft"] },
+        "confirmBy": { "$ref": "#/$defs/storyId" }
+      },
+      "if": {
+        "properties": { "status": { "const": "draft" } },
+        "required": ["status"]
+      },
+      "then": { "required": ["confirmBy"] },
+      "else": { "not": { "required": ["confirmBy"] } }
+    },
+    "enum": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/draftStatus" }],
+      "required": ["status", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "status": true,
+        "confirmBy": true,
+        "values": {
+          "type": "array",
+          "allOf": [{ "$ref": "#/$defs/identifierList" }],
+          "minItems": 1
+        },
+        "labelsKo": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "jointMotionPairs": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/draftStatus" }],
+      "required": ["status", "pairs"],
+      "additionalProperties": false,
+      "properties": {
+        "status": true,
+        "confirmBy": true,
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["joint", "motions"],
+            "additionalProperties": false,
+            "properties": {
+              "joint": { "$ref": "#/$defs/identifier" },
+              "motions": {
+                "type": "array",
+                "allOf": [{ "$ref": "#/$defs/identifierList" }],
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

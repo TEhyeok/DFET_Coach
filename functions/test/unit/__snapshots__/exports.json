@@ -1,0 +1,93 @@
+{
+  "addCommunityComment": {
+    "kind": "callable",
+    "region": "asia-northeast3",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "assignMemberToTrainer": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "clinicalApi": {
+    "kind": "https",
+    "region": "asia-northeast3",
+    "platform": "gcfv2",
+    "availableMemoryMb": 512,
+    "timeoutSeconds": 120
+  },
+  "deleteOwnAccount": {
+    "kind": "callable",
+    "region": "asia-northeast3",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "deleteUserData": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "getUserDetails": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "listAllUsers": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "removeAdminClaim": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "removeMemberFromTrainer": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "removeTrainerClaim": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "setAdminClaim": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "setTrainerClaim": {
+    "kind": "callable",
+    "region": "us-central1",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  },
+  "toggleCommunityLike": {
+    "kind": "callable",
+    "region": "asia-northeast3",
+    "platform": "gcfv2",
+    "availableMemoryMb": null,
+    "timeoutSeconds": null
+  }
+}

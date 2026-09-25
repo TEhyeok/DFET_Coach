@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-07 |
-| 버전 | v1.0 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1174,7 +1174,7 @@ public final class CaptureViewModel {
 
 ```
 ┌──────────────────────────────────────────────┐
-│ [정면 ●][측면 ○ 왼쪽 옆면 ▾]    재검사 모드 ○    ✕ │ ← 상단 막대
+│ [정면 ●][측면 ○ 왼쪽 측면 ▾]    재검사 모드 ○    ✕ │ ← 상단 막대
 │  ┆  (세로 중심선, 점선)                         │
 │  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  전신 프레이밍 상자     │
 │  ┆      실루엣 가이드     ┆  (높이 90%, 발 기준선) │
@@ -1213,7 +1213,7 @@ public final class CaptureViewModel {
 
 **상태**: 동의 없음(게이트), 오프라인(촬영 가능 — 서버 확인된 동의만), 동기화 실패(TR-09·TR-03 배지), 멀티태스킹 중단, 카메라 권한 없음, 플래그 꺼짐(진입점 없음, 촬영 중 꺼지면 '닫기'만 활성).
 
-**문구 키(초안)**: `tr07.gate.consentMissing`('촬영하려면 건강정보(②)와 신체 사진(③) 동의가 모두 필요해요'), `tr07.gate.cameraPermission`('카메라 권한이 필요해요'), `tr07.gate.openSettings`('설정 열기'), `tr07.gate.multitasking`('전체 화면에서 촬영할 수 있어요'), `tr07.station.title`('촬영 스테이션'), `tr07.station.useThis`('이 설정으로 촬영'), `tr07.station.create`('프로필 만들기'), `tr07.checklist.title`('촬영 전 확인'), `tr07.checklist.clothing`('복장'), `tr07.checklist.clothing.fitted`('몸에 붙는 옷'), `tr07.checklist.clothing.regular`('일반 운동복'), `tr07.checklist.clothing.unknown`('확인 안 됨'), `tr07.checklist.barefoot`('맨발'), `tr07.checklist.markers`('이주와 귀가 보이고 C7·ASIS에 마커를 붙였어요'), `tr07.checklist.verbalConsent`('분리된 공간이고, 촬영 직전 회원에게 다시 확인했어요'), `tr07.instruction.stance`('편하게 서 주세요'), `tr07.view.front`('정면'), `tr07.view.sagittalLeft`('왼쪽 옆면'), `tr07.view.sagittalRight`('오른쪽 옆면'), `tr07.view.baselineMismatch`('기준선과 방향이 달라 비교할 수 없어요(조건 불일치)'), `tr07.guide.roll`('수평 {value}°'), `tr07.guide.pitch`('앞뒤 기울기 {value}°'), `tr07.guide.person.one`('인물 1명'), `tr07.guide.person.none`('사람이 보이지 않아요'), `tr07.guide.person.many`('여러 사람이 보여요'), `tr07.guide.light.ok`('조명 적정'), `tr07.guide.light.dark`('어두워요'), `tr07.guide.light.backlit`('역광이에요'), `tr07.guide.portraitHint`('세로로 세우면 전신이 더 크게 담겨요'), `tr07.shutter.blocked.checklist`('촬영 전 확인 4항목을 먼저 체크해 주세요'), `tr07.shutter.blocked.level`('기기를 수평으로 맞춰 주세요'), `tr07.review.use`('사용'), `tr07.review.retake`('다시 찍기'), `tr07.retest.toggle`('재검사 모드'), `tr07.retest.voluntary`('참여를 거절해도 운동 지도에 불이익이 없어요'), `tr07.retest.end`('재검사 종료').
+**문구 키(초안)**: `tr07.gate.consentMissing`('촬영하려면 건강정보(②)와 신체 사진(③) 동의가 모두 필요해요'), `tr07.gate.cameraPermission`('카메라 권한이 필요해요'), `tr07.gate.openSettings`('설정 열기'), `tr07.gate.multitasking`('전체 화면에서 촬영할 수 있어요'), `tr07.station.title`('촬영 스테이션'), `tr07.station.useThis`('이 설정으로 촬영'), `tr07.station.create`('프로필 만들기'), `tr07.checklist.title`('촬영 전 확인'), `tr07.checklist.clothing`('복장'), `tr07.checklist.clothing.fitted`('몸에 붙는 옷'), `tr07.checklist.clothing.regular`('일반 운동복'), `tr07.checklist.clothing.unknown`('확인 안 됨'), `tr07.checklist.barefoot`('맨발'), `tr07.checklist.markers`('이주와 귀가 보이고 C7·ASIS에 마커를 붙였어요'), `tr07.checklist.verbalConsent`('분리된 공간이고, 촬영 직전 회원에게 다시 확인했어요'), `tr07.instruction.stance`('편하게 서 주세요'), `tr07.view.front`('정면'), `tr07.view.sagittalLeft`('왼쪽 측면'), `tr07.view.sagittalRight`('오른쪽 측면'), `tr07.view.baselineMismatch`('기준선과 방향이 달라 비교할 수 없어요(조건 불일치)'), `tr07.guide.roll`('수평 {value}°'), `tr07.guide.pitch`('앞뒤 기울기 {value}°'), `tr07.guide.person.one`('인물 1명'), `tr07.guide.person.none`('사람이 보이지 않아요'), `tr07.guide.person.many`('여러 사람이 보여요'), `tr07.guide.light.ok`('조명 적정'), `tr07.guide.light.dark`('어두워요'), `tr07.guide.light.backlit`('역광이에요'), `tr07.guide.portraitHint`('세로로 세우면 전신이 더 크게 담겨요'), `tr07.shutter.blocked.checklist`('촬영 전 확인 4항목을 먼저 체크해 주세요'), `tr07.shutter.blocked.level`('기기를 수평으로 맞춰 주세요'), `tr07.review.use`('사용'), `tr07.review.retake`('다시 찍기'), `tr07.retest.toggle`('재검사 모드'), `tr07.retest.voluntary`('참여를 거절해도 운동 지도에 불이익이 없어요'), `tr07.retest.end`('재검사 종료').
 
 **접근성**: `tr07.shutter`, `tr07.view.front`, `tr07.view.side`, `tr07.checklist.<item>`, `tr07.retestToggle`, `tr07.station.use`, `tr07.review.use`, `tr07.review.retake`. 수평·기울기 칩은 VoiceOver로 값과 '범위 안/밖'을 읽는다. 셔터 버튼이 비활성일 때 이유를 힌트로 읽는다('기기를 수평으로 맞춰 주세요').
 
@@ -2094,3 +2094,4 @@ V1-04 §10.8 표에 화면 동작을 더한다.
 | v1.0 | 2026-09-24 | 최초 작성(TR-01~TR-15, 로그인, 흐름, syncState 표시, 이식 지도, 테스트 대응) | — | C-07-02·C-07-03·C-07-08·C-07-09는 PRD 정정 후보 |
 | v1.0(정합 패스 2) | 2026-09-24 | TodayListEntry 필드를 V1-05 §12.2에 맞춤(R5), C-07-06 해소 | — | — |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: TodayListEntry 필드·이월 규칙을 V1-05 §12.2로 정렬(R5), ASM-07-37 추가, C-07-06 해소(R4) | — | — |
+| v1.0.2 | 2026-09-25 | Sprint 01 문서 후속(PR #104): TR-07 측면 라벨을 문구 덱(V1-12, contracts `labelsKo` 정본)에 맞춰 '왼쪽 옆면' → '왼쪽 측면'(`tr07.view.sagittalLeft`·`sagittalRight`, 상단 막대) | #113 | 없음 |

@@ -164,3 +164,15 @@ jobs:
       - run: node --test 'tool/contracts/test/**/*.test.mjs'
       # ajv 메타 스키마(schemas/contracts-meta.schema.json) → 교차 검증 → 생성물 드리프트(AC-DF-004.2~.4)
       - run: node tool/contracts/generate.mjs --check
+
+  static-guards:              # DF-011. 필수 체크 이름. 워크플로 수준 paths 없음, 항상 실행(V1-01 활성화 표, ASM-01-15 기준선 고정)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      # 가드 자체 테스트: 가드별 위반 픽스처 → 해당 G번호로 실패, 기준선 줄 삭제·사유 없는 줄 → 실패(TC-DF011-01, -02)
+      - run: bash tool/lint/test/static-guards.test.sh
+      # G1~G9 grep 불변식. lib/ 결과는 tool/lint/static-guards.allow와 정확히 같아야 한다(AC-DF-011.1~.5)
+      - run: bash tool/lint/static-guards.sh

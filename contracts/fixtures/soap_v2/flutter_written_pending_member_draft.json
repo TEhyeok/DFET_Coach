@@ -1,0 +1,46 @@
+{
+  "_fixture": {
+    "id": "soap_v2/flutter_written_pending_member_draft",
+    "description": "DF-007 기록 모드: Dart SoapNoteV2Codec이 soap_v2/pending_member_draft.json의 data를 fromMap으로 읽고 toMap(target: fixture)로 다시 쓴 결과",
+    "writer": "dart",
+    "prdRefs": [
+      "AC-SOAP-06.1",
+      "F-LINK-01",
+      "§9.3",
+      "NFR-07"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 0,
+      "uninterpretable": 0
+    }
+  },
+  "path": "soap_notes/fx-note-v2-003",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": null,
+    "pendingMemberId": "fx-pending-001",
+    "sessionDate": {
+      "$ts": "2026-09-30T05:00:00Z"
+    },
+    "status": "draft",
+    "quickNote": "가상 회원 B, 첫 세션. 허리 숙일 때 뻐근하다고 말함",
+    "inkPath": "soapInk/fx-note-v2-003/1.drawing",
+    "inkRevision": {
+      "$int": 1
+    },
+    "subjective": {
+      "painNrs": null,
+      "painRegions": []
+    },
+    "legalNature": "coachingRecord",
+    "createdAt": {
+      "$serverTimestamp": true
+    },
+    "updatedAt": {
+      "$serverTimestamp": true
+    }
+  }
+}

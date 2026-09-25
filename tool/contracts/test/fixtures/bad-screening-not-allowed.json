@@ -1,0 +1,14 @@
+{
+  "description": "screeningOnlySourceGrades must be a subset of allowedSourceGrades (V1-05 §13.1)",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "add",
+      "path": "/metrics/4/screeningOnlySourceGrades/-",
+      "value": "tape"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/4/screeningOnlySourceGrades/0: \"tape\" is not in allowedSourceGrades"
+  ]
+}

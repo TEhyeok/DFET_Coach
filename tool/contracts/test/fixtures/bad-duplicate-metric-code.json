@@ -1,0 +1,14 @@
+{
+  "description": "metrics[1] reuses craniovertebralAngle (AC-DF-004.3)",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/metrics/1/metricCode",
+      "value": "craniovertebralAngle"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/1/metricCode: duplicate metricCode \"craniovertebralAngle\" (first at #/metrics/0)"
+  ]
+}

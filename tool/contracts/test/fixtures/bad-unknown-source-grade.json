@@ -1,0 +1,14 @@
+{
+  "description": "allowedSourceGrades contains a value that vocab sourceGrade does not define (SPRINT_01 004-4)",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "add",
+      "path": "/metrics/0/allowedSourceGrades/-",
+      "value": "lidarGuess"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/0/allowedSourceGrades/2: \"lidarGuess\" is not in vocab sourceGrade"
+  ]
+}

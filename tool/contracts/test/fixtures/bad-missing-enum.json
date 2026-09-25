@@ -1,0 +1,13 @@
+{
+  "description": "one of the 33 V1-05 §13.2 enums is missing",
+  "file": "vocab.v1.json",
+  "patch": [
+    {
+      "op": "remove",
+      "path": "/enums/unit"
+    }
+  ],
+  "expect": [
+    "contracts/vocab.v1.json#/enums: must have required property 'unit'"
+  ]
+}

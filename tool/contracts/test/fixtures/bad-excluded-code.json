@@ -1,0 +1,14 @@
+{
+  "description": "metrics[1] uses a PRD appendix A.4 excluded code (SPRINT_01 004-4)",
+  "file": "metric-catalog.v1.json",
+  "patch": [
+    {
+      "op": "replace",
+      "path": "/metrics/1/metricCode",
+      "value": "headForwardDistance"
+    }
+  ],
+  "expect": [
+    "contracts/metric-catalog.v1.json#/metrics/1/metricCode: \"headForwardDistance\" is listed in excludedMetricCodes"
+  ]
+}

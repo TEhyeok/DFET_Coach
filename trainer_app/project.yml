@@ -33,8 +33,8 @@ targets:
       - path: App
     dependencies:
       # The App target never links a Firebase product directly; it calls FirebaseBootstrap.configure(_:)
-      # from FirebaseData (AC-DF-008.2, V1-04 ASM-04-03). Remaining Feature*/LocalStore/DesignSystem/
-      # PostureVision products are added with their routes by DF-017 (AppShell).
+      # from FirebaseData (AC-DF-008.2, V1-04 ASM-04-03). Feature*/LocalStore/DesignSystem/PostureVision
+      # products are linked by the stories that add their screens (DF-017 routes only open placeholders).
       - package: TrainerCore
         product: TrainerContracts
       - package: TrainerCore
@@ -63,13 +63,21 @@ targets:
         OTHER_LDFLAGS: ["$(inherited)", "-ObjC"] # recommended for Firebase via SPM
         ENABLE_USER_SCRIPT_SANDBOXING: NO # the copy script reads an undeclared file; it prints no values
   DFETTrainerTests:
-    # Host-less unit tests for App-target pure code (TC-DF008-05). LaunchConfiguration.swift is compiled
-    # directly into the bundle, so the app never launches and Firebase is never configured.
+    # Host-less unit tests for App-target pure code (TC-DF008-05, TC-DF017-01..04). The pure App files are
+    # compiled directly into the bundle, so the app never launches and Firebase is never configured.
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: AppTests
       - path: App/Composition/LaunchConfiguration.swift
+      - path: App/Composition/Preview/PreviewEnvironment.swift
+      - path: App/AppShell/AppEnvironment.swift
+      - path: App/AppShell/FlagGate.swift
+      - path: App/AppShell/LayoutMode.swift
+      - path: App/AppShell/TrainerRoute.swift
+    dependencies:
+      - package: TrainerCore
+        product: TrainerDomain
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.tests

@@ -1,50 +1,194 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "config.missing.body" : {
-      "comment" : "Configuration-missing screen body (DF-008 placeholder; DF-017 owns final copy).",
+    "app.config.missing" : {
+      "comment" : "DF-017 · V1-04 §8.1 · configuration-missing screen",
       "extractionState" : "manual",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 빌드에는 앱 연결 설정이 들어 있지 않습니다. 관리자에게 문의해 주세요."
+            "value" : "앱 구성 파일이 없어 서버에 연결할 수 없습니다. 관리자에게 문의하세요."
           }
         }
       }
     },
-    "config.missing.title" : {
-      "comment" : "Configuration-missing screen title.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱 설정이 필요합니다"
-          }
-        }
-      }
-    },
-    "root.placeholder.subtitle" : {
-      "comment" : "Placeholder root subtitle until AppShell (DF-017).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "화면을 준비하고 있습니다."
-          }
-        }
-      }
-    },
-    "root.placeholder.title" : {
-      "comment" : "Placeholder root title (app name).",
+    "app.title" : {
+      "comment" : "DF-017 · app name in the sidebar title (CFBundleDisplayName)",
       "extractionState" : "manual",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "D-FET Trainer"
+          }
+        }
+      }
+    },
+    "common.close" : {
+      "comment" : "V1-12 · —",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
+          }
+        }
+      }
+    },
+    "common.comingSoon" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추후 추가 예정"
+          }
+        }
+      }
+    },
+    "common.loadFailed" : {
+      "comment" : "V1-12 · §9.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "불러오기 실패"
+          }
+        }
+      }
+    },
+    "nav.members" : {
+      "comment" : "DF-017 · §8.1 · sidebar TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원"
+          }
+        }
+      }
+    },
+    "nav.settings" : {
+      "comment" : "DF-017 · §8.1 · sidebar TR-15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
+    "nav.today" : {
+      "comment" : "DF-017 · §8.1 · sidebar TR-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘"
+          }
+        }
+      }
+    },
+    "tr02.empty" : {
+      "comment" : "V1-12 · §8.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 담당 회원이 없어요"
+          }
+        }
+      }
+    },
+    "tr03.startSession" : {
+      "comment" : "V1-12 · §6.4.1 · TR-03 entry (soapV2)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 시작"
+          }
+        }
+      }
+    },
+    "tr06.preview" : {
+      "comment" : "V1-12 · TR-06 entry (memberShare)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원 화면 미리보기"
+          }
+        }
+      }
+    },
+    "tr07.title" : {
+      "comment" : "V1-12 · TR-07 entry (bodyAssessment)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체형 촬영"
+          }
+        }
+      }
+    },
+    "tr10.title" : {
+      "comment" : "V1-12 · TR-10 entry (bodyAssessment|bodyComposition)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비교"
+          }
+        }
+      }
+    },
+    "tr11.title" : {
+      "comment" : "V1-12 · TR-11 entry (bodyComposition)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성 입력"
+          }
+        }
+      }
+    },
+    "tr12.title" : {
+      "comment" : "V1-12 · TR-12 entry (bodyComposition)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘레 입력"
+          }
+        }
+      }
+    },
+    "tr13.title" : {
+      "comment" : "V1-12 · TR-13 entry (lidarBeta)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LiDAR 관측 단면(베타)"
           }
         }
       }

@@ -13,7 +13,7 @@ final class LaunchSmokeTests: XCTestCase {
     app.launchArguments = ["--preview-empty"]
     app.launch()
     XCTAssertTrue(app.otherElements["app.root"].waitForExistence(timeout: 30))
-    XCTAssertFalse(app.otherElements["app.configMissing"].exists)
+    XCTAssertFalse(app.otherElements["app.config.missing"].exists)
   }
 
   /// §8.2 / NFR-03: without a plist and without `--preview-*` the app shows the configuration-missing
@@ -30,7 +30,7 @@ final class LaunchSmokeTests: XCTestCase {
     let app = XCUIApplication()
     app.launchArguments = []
     app.launch()
-    XCTAssertTrue(app.otherElements["app.configMissing"].waitForExistence(timeout: 30))
+    XCTAssertTrue(app.otherElements["app.config.missing"].waitForExistence(timeout: 30))
     XCTAssertFalse(app.otherElements["app.root"].exists)
   }
 }

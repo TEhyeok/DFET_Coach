@@ -1,0 +1,45 @@
+{
+  "_fixture": {
+    "id": "soap_v2/pending_member_draft",
+    "description": "대기 회원 draft 생성 페이로드. memberUid null, memberId 없음, 필기 경로, 서버 시각 자리, 통증 미입력(null)",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.1",
+      "F-LINK-01",
+      "§9.3"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 0,
+      "uninterpretable": 0
+    }
+  },
+  "path": "soap_notes/fx-note-v2-003",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": null,
+    "pendingMemberId": "fx-pending-001",
+    "sessionDate": {
+      "$ts": "2026-09-30T14:00:00+09:00"
+    },
+    "status": "draft",
+    "quickNote": "가상 회원 B, 첫 세션. 허리 숙일 때 뻐근하다고 말함",
+    "inkPath": "soapInk/fx-note-v2-003/1.drawing",
+    "inkRevision": {
+      "$int": 1
+    },
+    "subjective": {
+      "painNrs": null,
+      "painRegions": []
+    },
+    "legalNature": "coachingRecord",
+    "createdAt": {
+      "$serverTimestamp": true
+    },
+    "updatedAt": {
+      "$serverTimestamp": true
+    }
+  }
+}

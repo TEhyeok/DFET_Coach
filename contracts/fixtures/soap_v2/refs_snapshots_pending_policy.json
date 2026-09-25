@@ -1,0 +1,136 @@
+{
+  "_fixture": {
+    "id": "soap_v2/refs_snapshots_pending_policy",
+    "description": "확정 노트. objective.refs 세 종류와 불변 snapshots(changeStatus pendingPolicy), O 행 1개, exerciseAssessment·memberNote",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.1",
+      "F-SOAP-03",
+      "§7.8",
+      "§9.3"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 1,
+      "uninterpretable": 0
+    }
+  },
+  "path": "soap_notes/fx-note-v2-004",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": "fx-member-001",
+    "memberId": "fx-member-001",
+    "pendingMemberId": null,
+    "sessionDate": {
+      "$ts": "2026-10-01T10:00:00+09:00"
+    },
+    "status": "finalized",
+    "quickNote": "스쿼트 깊이가 조금 늘어남",
+    "subjective": {
+      "chiefComplaint": "허리 뻐근함은 줄었다고 함",
+      "painNrs": {
+        "$int": 2
+      },
+      "painRegions": [
+        "lowerBack"
+      ]
+    },
+    "objective": {
+      "metrics": [
+        {
+          "metricCode": "romDeg",
+          "value": 112.5,
+          "unit": "deg",
+          "side": "bilateral",
+          "sourceGrade": "trainerObserved",
+          "joint": "hip",
+          "motion": "flexion",
+          "activeOrPassive": "active"
+        }
+      ],
+      "refs": {
+        "postureAssessmentIds": [
+          "fx-posture-001"
+        ],
+        "bodyCompositionRecordIds": [
+          "fx-bodycomp-001"
+        ],
+        "circumferenceMeasurementIds": [
+          "fx-tape-001"
+        ],
+        "bodyScanIds": []
+      },
+      "snapshots": [
+        {
+          "refId": "fx-posture-001",
+          "metricCode": "craniovertebralAngle",
+          "value": 48.2,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual",
+          "changeStatus": "pendingPolicy",
+          "reasonCode": null,
+          "policyVersion": null,
+          "mdcSource": null,
+          "measuredAt": {
+            "$ts": "2026-10-01T10:05:12+09:00"
+          }
+        },
+        {
+          "refId": "fx-bodycomp-001",
+          "metricCode": "weightKg",
+          "value": 71.4,
+          "unit": "kg",
+          "side": "none",
+          "sourceGrade": "device",
+          "changeStatus": "pendingPolicy",
+          "reasonCode": null,
+          "policyVersion": null,
+          "mdcSource": null,
+          "measuredAt": {
+            "$ts": "2026-10-01T00:50:00Z"
+          }
+        },
+        {
+          "refId": "fx-tape-001",
+          "metricCode": "waistCircumference",
+          "value": 81.5,
+          "unit": "cm",
+          "side": "none",
+          "sourceGrade": "tape",
+          "changeStatus": "pendingPolicy",
+          "reasonCode": null,
+          "policyVersion": null,
+          "mdcSource": null,
+          "measuredAt": {
+            "$ts": "2026-10-01T00:55:00Z"
+          }
+        }
+      ]
+    },
+    "exerciseAssessment": {
+      "summary": "고관절 굴곡 가동 범위가 지난 세션과 비슷하게 관찰됨",
+      "observations": [
+        "하강 구간 속도가 일정함"
+      ]
+    },
+    "plan": {
+      "nextSession": "힙힌지 패턴 2세트 추가",
+      "homeExercise": "브릿지 10회 2세트"
+    },
+    "memberNote": "다음 주에는 힙힌지를 연습해요.",
+    "legalNature": "coachingRecord",
+    "isSharedWithMember": false,
+    "finalizedAt": {
+      "$ts": "2026-10-01T02:30:00Z"
+    },
+    "createdAt": {
+      "$ts": "2026-10-01T01:00:02Z"
+    },
+    "updatedAt": {
+      "$ts": "2026-10-01T02:30:00Z"
+    }
+  }
+}

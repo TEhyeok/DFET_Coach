@@ -1,0 +1,55 @@
+{
+  "_fixture": {
+    "id": "soap_v2/finalized_no_metrics",
+    "description": "확정 최소 요건(회원·날짜·한 줄·다음 계획)만 채운 v2 노트",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.3",
+      "§6.4.4"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 0,
+      "uninterpretable": 0
+    }
+  },
+  "path": "soap_notes/fx-note-v2-001",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": "fx-member-001",
+    "memberId": "fx-member-001",
+    "pendingMemberId": null,
+    "sessionDate": {
+      "$ts": "2026-09-28T01:00:00Z"
+    },
+    "status": "finalized",
+    "quickNote": "가상 회원 A, 오른쪽 어깨가 뻐근하다고 말함",
+    "objective": {
+      "metrics": [],
+      "refs": {
+        "postureAssessmentIds": [],
+        "bodyCompositionRecordIds": [],
+        "circumferenceMeasurementIds": [],
+        "bodyScanIds": []
+      },
+      "snapshots": []
+    },
+    "plan": {
+      "nextSession": "어깨 가동성 운동 이어서 진행",
+      "homeExercise": ""
+    },
+    "legalNature": "coachingRecord",
+    "isSharedWithMember": false,
+    "finalizedAt": {
+      "$ts": "2026-09-28T02:00:00Z"
+    },
+    "createdAt": {
+      "$ts": "2026-09-28T01:00:05Z"
+    },
+    "updatedAt": {
+      "$ts": "2026-09-28T02:00:00Z"
+    }
+  }
+}

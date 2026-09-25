@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import '../config/storage_bucket.dart';
 import '../models/community/community_comment.dart';
 import '../models/community/post.dart';
 
@@ -15,7 +16,7 @@ class CommunityService {
     FirebaseAuth? auth,
     FirebaseFunctions? functions,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance,
+        _storage = storage ?? appStorage(),
         _auth = auth ?? FirebaseAuth.instance,
         _functions = functions ??
             FirebaseFunctions.instanceFor(region: 'asia-northeast3');

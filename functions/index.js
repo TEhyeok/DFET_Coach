@@ -22,7 +22,7 @@ const {
 // v2 등록 어댑터((data, context) 계약 유지)는 src/shared/callable.js로 옮겼다(DF-037).
 const {functions} = require('./src/shared/callable');
 // Storage 접근은 서울 버킷 헬퍼 한 곳을 거친다(DF-043, DEC-19).
-const {appBucket} = require('./src/shared/storage');
+const {deleteAccountMedia} = require('./src/shared/storage');
 
 admin.initializeApp();
 
@@ -401,18 +401,9 @@ exports.deleteOwnAccount = functions
 
       await db.recursiveDelete(db.collection('users').doc(uid));
 
-      const bucket = appBucket(admin);
-      await bucket.deleteFiles({prefix: `requests/${uid}/`}).catch((error) => {
-        console.warn('Failed to delete request media during account deletion', error);
-      });
-      const [postFiles] = await bucket.getFiles({prefix: 'posts/'});
-      await Promise.all(
-        postFiles
-          .filter((file) => file.name.endsWith(`_${uid}.jpg`))
-          .map((file) => file.delete().catch((error) => {
-            console.warn('Failed to delete community media during account deletion', error);
-          }))
-      );
+      // 서울 버킷과 DF-043 전 업로드가 남은 기존 기본 버킷을 모두 지운다. 버킷별 실패는 기록만 하고
+      // 인증 계정 삭제까지 이어간다(G-09).
+      await deleteAccountMedia(admin, uid);
 
       await admin.auth().deleteUser(uid);
       return {success: true};

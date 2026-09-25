@@ -224,7 +224,7 @@ DF-901은 약 1.5일 걸린다고 본다([SPRINT_01 ASM-S01-01](sprints/SPRINT_0
 |---|---|
 | D1 | 모든 수용 기준(PRD AC + AC-DF)이 충족됐고, PR 본문 '수용 기준별 증빙' 표에 테스트 이름·CI 링크·스크린샷·수동 기록 중 하나가 기준마다 연결돼 있다 |
 | D2 | **PR을 만든 시점에** 아래 [필수 체크 활성화 표](#필수-체크-활성화-표)에서 활성인 체크가 모두 초록이다. 아직 만들어지지 않은 체크는 요구하지 않는다. 보고 모드 체크는 항상 통과하므로 위반 요약을 PR 본문에 붙인다. PR 템플릿에 그 시점에 활성인 체크를 적는다 |
-| D3 | 커밋 footer에 `Refs: DF-NNN`과 `Trace: <PRD ID 목록>`이 있고, 스쿼시 제목이 `<type>(<scope>): <요약> (DF-NNN)`이다 |
+| D3 | PR의 **모든 커밋**이 [커밋](#커밋) 형식을 따르고 footer에 `Refs: DF-NNN`과 `Trace: <PRD ID 목록>`이 있다(DEC-20 rebase 병합이라 커밋이 그대로 `main`에 남는다. DF 키 없는 결정·문서 PR의 예외는 커밋 절). PR 제목은 `<type>(<scope>): <요약> (DF-NNN)`이다 |
 | D4 | 같은 PR 동시 갱신 규칙을 지켰다: 스키마 → `docs/firestore_schema.md`·[V1-05](05_DATA_MODEL_AND_RULES.md)·Swift·Dart 매핑·픽스처·규칙 테스트 / 규칙 → 규칙 테스트 / 어휘 → `contracts/`와 생성물 / 화면 → [V1-07](07_TRAINER_APP_SPEC.md) 또는 [V1-08](08_MEMBER_APP_AND_ADMIN_SPEC.md) |
 | D5 | 생성물이 최신이다: `node tool/contracts/generate.mjs --check`, 트레이너 앱은 xcodegen 재생성 diff 0 |
 | D6 | 금지어 린트 통과(`node tool/lint/prohibited-terms.mjs`). 사용자 노출 문자열은 카탈로그(Swift `Localizable.xcstrings`, Flutter 기존 문자열 위치)에 있다. 회원 노출 문자열은 회원 규칙 세트(PRD 부록 C.3)도 통과 |
@@ -400,7 +400,8 @@ Co-Authored-By: <에이전트 트레일러>
 
 - scope(선택): `trainer|member|admin|functions|rules|storage|contracts|bodypath|ci|docs|mig`.
 - 에이전트 커밋은 도구가 붙이는 Co-Authored-By 트레일러를 유지한다.
-- 스쿼시 제목: `<type>(<scope>): <요약> (DF-NNN)`. 예: `feat(contracts): add metric catalog v1 (DF-003)`.
+- PR 제목: `<type>(<scope>): <요약> (DF-NNN)`. 예: `feat(contracts): add metric catalog v1 (DF-003)`. rebase 병합은 PR 제목을 커밋으로 남기지 않으므로, `main`에서의 추적은 커밋마다 붙은 `Refs:`·`Trace:` footer로 한다.
+- DF 키가 없는 결정·문서 PR(소유자 결정 기록, 문서 정합 등): `Refs:`에는 관련 DF 키가 있으면 그 키를, 없으면 결정·차이 ID(`DEC-NN`, `K-NN`)를 적고 PR 제목 끝의 `(DF-NNN)`은 생략한다. `Trace:`는 생략하지 않는다(해당 PRD ID가 없으면 `Trace: -`).
 - DEC-20 이후 스프린트 PR은 rebase 병합이라 PR의 **모든 커밋**이 그대로 `main`에 남는다. 그래서 커밋마다 위 형식과 `Refs:` footer를 지키고, 수정용 커밋(`fixup`, `wip`)은 병합 전에 정리한다.
 
 ### PR
@@ -747,4 +748,4 @@ GitHub 템플릿: GH-01 [config.yml](../../.github/ISSUE_TEMPLATE/config.yml), G
 | v1.0 | 2026-09-24 | 최초 작성 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 백로그 도구 참조를 단일 `tool/backlog/issues.json`과 `create_github_issues.sh`(호환 진입점 `create_backlog.sh`)에 맞춤. 순수 타깃 `swift test` 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2). owner-action 속도 포함 여부 충돌은 00_README K-01로 이관 | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: owner-action·스파이크 점수를 약속·속도에 포함(ASM-01-16 재작성, R1), 가정 ID를 ASM-01-NN으로 변경(R10), SPRINT_01·V1-03 가정 참조 갱신, 순수 타깃 패키지 표기를 TrainerCore로 정정(R4) | — | 없음 |
-| v1.1 | 2026-09-25 | 소유자 위임 DEC-20 반영: 스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 rebase 병합(역할 표, 에이전트 권한 경계 '병합' 행, PR 규칙, 흐름 6단계, DoD D12, 커밋 규칙). 운영 배포·`--apply` 금지는 유지 | claude/docs-dec-2026-09-25 | 없음(개발 운영 규칙) |
+| v1.1 | 2026-09-25 | 소유자 위임 DEC-20 반영: 스프린트 PR은 CI 초록 + 적대적 리뷰 승인 시 병합 담당 AI가 rebase 병합(역할 표, 에이전트 권한 경계 '병합' 행, PR 규칙, 흐름 6단계, DoD D3·D12, 커밋 규칙: 스쿼시 제목 대신 PR 제목과 커밋별 `Refs:`·`Trace:`, DF 키 없는 결정·문서 PR 예외). 운영 배포·`--apply` 금지는 유지 | claude/docs-dec-2026-09-25 | 없음(개발 운영 규칙) |

@@ -23,7 +23,7 @@ let package = Package(
     .target(name: "SyncEngine", dependencies: ["TrainerDomain"], swiftSettings: strict),  // no LocalStore (ASM-04-02)
     .target(name: "TrainerAnalytics", dependencies: ["TrainerContracts"], swiftSettings: strict),
     .testTarget(name: "TrainerContractsTests", dependencies: ["TrainerContracts"]),
-    .testTarget(name: "TrainerDomainTests", dependencies: ["TrainerDomain"]),
+    .testTarget(name: "TrainerDomainTests", dependencies: ["TrainerDomain", "TrainerContracts"]),
     .testTarget(name: "PostureMathTests", dependencies: ["PostureMath"]),
     .testTarget(name: "SyncEngineTests", dependencies: ["SyncEngine"]),
     .testTarget(name: "TrainerAnalyticsTests", dependencies: ["TrainerAnalytics"]),

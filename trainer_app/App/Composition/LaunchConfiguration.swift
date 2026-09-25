@@ -33,18 +33,30 @@ struct LaunchConfiguration: Equatable {
   /// Same as `resolve(arguments:bundle:)` with an injectable environment so tests can exercise the bundle
   /// lookup without the XCTest guard.
   static func resolve(arguments: [String], bundle: Bundle, environment: [String: String]) -> LaunchConfiguration {
+    let arguments = effectiveArguments(arguments, isDebug: isDebugBuild, environment: environment)
+    return LaunchConfiguration(
+      mode: resolve(arguments: arguments, isDebug: isDebugBuild, plistPresent: plistPresent(in: bundle)))
+  }
+
+  /// `true` only in DEBUG builds. Release code paths never parse `--preview-*` or `--use-emulator`.
+  static var isDebugBuild: Bool {
     #if DEBUG
-    let isDebug = true
+    return true
     #else
-    let isDebug = false
+    return false
     #endif
-    var arguments = arguments
-    if isDebug, environment["XCTestConfigurationFilePath"] != nil {
-      // Hosted XCTest bundles must never configure Firebase against a real project.
-      arguments.append(previewPrefix + "unit-test-host")
-    }
-    let plistPresent = bundle.url(forResource: "GoogleService-Info", withExtension: "plist") != nil
-    return LaunchConfiguration(mode: resolve(arguments: arguments, isDebug: isDebug, plistPresent: plistPresent))
+  }
+
+  /// Process arguments plus the XCTest guard: hosted XCTest bundles must never configure Firebase against a
+  /// real project, so a DEBUG process running under XCTest is forced into preview.
+  static func effectiveArguments(_ arguments: [String], isDebug: Bool, environment: [String: String]) -> [String] {
+    guard isDebug, environment["XCTestConfigurationFilePath"] != nil else { return arguments }
+    return arguments + [previewPrefix + "unit-test-host"]
+  }
+
+  /// Whether the "Copy Firebase config if present" build phase put the plist into the bundle. Never reads it.
+  static func plistPresent(in bundle: Bundle) -> Bool {
+    bundle.url(forResource: "GoogleService-Info", withExtension: "plist") != nil
   }
 
   /// Decision order (P0 DF-008 card):

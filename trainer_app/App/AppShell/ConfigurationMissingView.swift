@@ -1,26 +1,23 @@
 import SwiftUI
 
-/// Shown when the build has no Firebase configuration (`LaunchMode.misconfigured`).
-/// Never falls back to preview data (NFR-03, ADR-019 §3-3). Copy keys are finalised by DF-017.
+/// Shown for `LaunchMode.misconfigured` (no Firebase configuration in the build). Never falls back to preview data
+/// and makes no Firebase call (NFR-03, ADR-019 §3-3, AC-DF-017.6).
 struct ConfigurationMissingView: View {
   var body: some View {
-    VStack(spacing: 12) {
+    VStack(spacing: 16) {
       Image(systemName: "exclamationmark.triangle")
         .font(.system(size: 44))
         .foregroundStyle(.orange)
         .accessibilityHidden(true)
-      Text("config.missing.title")
-        .font(.title2.weight(.semibold))
-      Text("config.missing.body")
-        .font(.body)
-        .foregroundStyle(.secondary)
+      Text(String(localized: "app.config.missing"))
+        .font(.title3)
         .multilineTextAlignment(.center)
     }
     .padding(32)
     .frame(maxWidth: 560)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .accessibilityElement(children: .contain)
-    .accessibilityIdentifier("app.configMissing")
+    .accessibilityIdentifier("app.config.missing")
   }
 }
 

@@ -26,9 +26,9 @@ Node 22의 `node --test`는 디렉터리 인자를 받지 않으므로 글롭을
 
 | 소비자 | 경로 | 내용 |
 |---|---|---|
-| 트레이너 앱(Swift) | `trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/{MetricCatalog,Vocab,ContractsVersion}.swift` | `public enum X: String, Codable, CaseIterable, Sendable`, `MetricCatalog.entry(for:)`. import 없음(순수 타깃) |
+| 트레이너 앱(Swift) | `trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/{MetricCatalog,Vocab,ContractsVersion,ProhibitedTerms}.swift` | `public enum X: String, Codable, CaseIterable, Sendable`, `MetricCatalog.entry(for:)`, `ProhibitedTerms.common: [TermRule]` 등(DF-010, 규칙 데이터만. 일치 구현은 DF-120). import 없음(순수 타깃) |
 | 회원 앱(Dart) | `lib/contracts/generated/{metric_catalog,vocab,contracts_version}.g.dart` | enhanced enum `X('wire')`, `fromWire(String?)`은 모르는 값에 null(호출자가 원문 보존) |
-| Functions | `functions/src/shared/generated/contracts.js`, `json/*.json` | CommonJS, `module.exports = Object.freeze({...})`. `json/`은 입력의 바이트 동일 사본 |
+| Functions | `functions/src/shared/generated/contracts.js`, `json/*.json` | CommonJS, `module.exports = Object.freeze({...})`. `json/`은 입력의 바이트 동일 사본(`prohibited-terms.v1.json`은 사본만, P2 createMemberSummary 검사용) |
 | admin_web | `admin_web/lib/generated/contracts.ts` | `export const SOURCE_GRADES = [...] as const`, `export type SourceGrade` |
 
 모든 생성 파일의 첫 줄(`json/` 사본 제외, JSON에는 주석이 없다):
@@ -49,7 +49,7 @@ Node 22의 `node --test`는 디렉터리 인자를 받지 않으므로 글롭을
 
 ## 입력·emitter 추가
 
-`generate.mjs`의 `INPUTS`에 `{file, key, requires, emit: [...]}`를 더하고 `emitters/`에 렌더 함수를 둔다. 입력 파일이 없으면 경고를 내고 그 출력만 건너뛴다. 예정: DF-010(prohibited-terms), DF-027(feature-flags), DF-033(analytics-events, audit-actions). `contracts/fixtures/**`는 복사하지 않는다(DF-009가 직접 읽음).
+`generate.mjs`의 `INPUTS`에 `{file, key, requires, emit: [...]}`를 더하고 `emitters/`에 렌더 함수를 둔다. 입력 파일이 없으면 경고를 내고 그 출력만 건너뛴다. DF-010이 prohibited-terms를 더했다. 예정: DF-027(feature-flags), DF-033(analytics-events, audit-actions). `contracts/fixtures/**`는 복사하지 않는다(DF-009가 직접 읽음).
 
 emitter 출력 형태를 바꾸면 합성 계약 스냅샷을 갱신하고 diff를 검토한다.
 

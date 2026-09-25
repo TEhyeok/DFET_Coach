@@ -13,17 +13,19 @@ import { applyPatch, makeRoot, readJson, removeRoot, runCli, writeJson } from '.
 
 const FIXTURES = path.join(REPO_ROOT, 'tool', 'contracts', 'test', 'fixtures');
 
-// AC-DF-004.1: the ten files the generator owns for the two v1 inputs.
+// AC-DF-004.1: the files the generator owns for the v1 inputs (ten from DF-004, two from DF-010).
 const EXPECTED_OUTPUTS = [
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/MetricCatalog.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/Vocab.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ContractsVersion.swift',
+  'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ProhibitedTerms.swift',
   'lib/contracts/generated/metric_catalog.g.dart',
   'lib/contracts/generated/vocab.g.dart',
   'lib/contracts/generated/contracts_version.g.dart',
   'functions/src/shared/generated/contracts.js',
   'functions/src/shared/generated/json/metric-catalog.v1.json',
   'functions/src/shared/generated/json/vocab.v1.json',
+  'functions/src/shared/generated/json/prohibited-terms.v1.json',
   'admin_web/lib/generated/contracts.ts',
 ].sort();
 
@@ -32,6 +34,7 @@ const SOURCES = {
   'MetricCatalog.swift': ['metric-catalog.v1.json'],
   'Vocab.swift': ['vocab.v1.json'],
   'ContractsVersion.swift': ['metric-catalog.v1.json', 'vocab.v1.json'],
+  'ProhibitedTerms.swift': ['prohibited-terms.v1.json'],
   'metric_catalog.g.dart': ['metric-catalog.v1.json'],
   'vocab.g.dart': ['vocab.v1.json'],
   'contracts_version.g.dart': ['metric-catalog.v1.json', 'vocab.v1.json'],
@@ -73,7 +76,7 @@ test('TC-DF004-01 second run changes 0 bytes (deterministic output)', () => {
     const first = snapshot(root);
     const r = runCli(['--root', root]);
     assert.equal(r.code, 0, r.stderr);
-    assert.match(r.stdout, /10 generated files, 0 changed/);
+    assert.match(r.stdout, /12 generated files, 0 changed/);
     const second = snapshot(root);
     assert.deepEqual([...second.keys()], [...first.keys()]);
     for (const [rel, bytes] of first) assert.ok(bytes.equals(second.get(rel)), `${rel} changed on the second run`);
@@ -94,7 +97,7 @@ test('TC-DF004-01 second run changes 0 bytes (deterministic output)', () => {
 test('TC-DF004-01 committed generated files are up to date (--check on this checkout)', () => {
   const r = runCli(['--check']);
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /10 generated files are up to date/);
+  assert.match(r.stdout, /12 generated files are up to date/);
 });
 
 test('AC-DF-004.5 every generated file starts with the GENERATED header and input hash', () => {

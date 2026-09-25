@@ -17,6 +17,12 @@ export const RESERVED_TYPE_NAMES = Object.freeze([
   'VocabStatus',
   'JointMotionPair',
   'JointMotionPairs',
+  'ProhibitedTerms',
+  'TermRule',
+  'TermSeverity',
+  'TermBoundary',
+  'TermCausalPattern',
+  'TermAllowEntry',
 ]);
 
 // metrics[] field -> vocab enum that holds its allowed values (V1-05 §13.1).

@@ -2,7 +2,9 @@
 GH-08 PR 템플릿. 규칙의 정본: docs/v1/01_AGILE_WORKING_AGREEMENT.md ('완료 정의(DoD)', '브랜치·커밋·PR 규칙')
 - PR 하나 = 스토리 하나. 생성물을 뺀 변경 400줄 이하 권장.
 - 제목: <type>(<scope>): <요약> (DF-NNN)   예) feat(contracts): add metric catalog v1 (DF-003)
-- 에이전트는 draft로 열고, 병합은 소유자만 스쿼시로 한다.
+- 에이전트는 로컬 검증 전이면 draft, 지시서 검증 명령을 모두 통과하면 Ready로 연다. 구현 에이전트는 자기 PR을 병합하지 않는다.
+- 병합은 rebase 병합이다(DEC-20). 스프린트 PR은 CI 필수 체크 초록 + 다른 세션의 적대적 리뷰 승인 시 병합 담당 AI가, PRD·D1~D4 영향·소유자 보류 PR은 소유자가 병합한다(V1-01 '에이전트 권한 경계' 병합 행).
+- 커밋이 그대로 main에 남으므로 커밋마다 Refs:·Trace: footer를 붙이고 fixup·wip 커밋은 병합 전에 정리한다.
 - 실데이터·비밀·output/·tmp/ 내용·공개 URL·배포 명령 결과를 넣지 않는다.
 -->
 
@@ -106,10 +108,12 @@ node tool/lint/doc-headers.mjs && node tool/backlog/validate_backlog.mjs        
 
 <!-- 실제 회원 정보가 보이는 화면을 올리지 않는다 -->
 
-## 병합 전 확인(소유자)
+## 병합 전 확인(병합 담당: DEC-20 병합 담당 AI 또는 소유자)
 
 - [ ] 위 '활성인 필수 체크'가 V1-01 활성화 표와 맞고 모두 초록이다(아직 만들어지지 않은 체크는 요구하지 않음. 이 PR이 새 체크를 만든다면 그 체크도 초록)
 - [ ] 수용 기준마다 증빙이 있다(D1)
-- [ ] 위험 라벨별 검토를 했다(rules-change·schema-change·privacy-impact·regulatory는 diff 정독)
+- [ ] 위험 라벨별 검토를 했다(rules-change·schema-change·privacy-impact·regulatory는 diff 정독. AI 병합이면 적대적 리뷰가 V1-01 '소유자 검토 체크' 표의 확인을 대신 수행하고 결과에 적는다)
 - [ ] 수정 경로가 작업 지시서의 허용 경로 안이다(에이전트 PR)
-- [ ] **소유자 검토 완료** — 스쿼시 제목 `<type>(<scope>): <요약> (DF-NNN)`, 이슈 Done, Projects 필드 갱신
+- [ ] 적대적 리뷰 승인(구현 에이전트와 다른 세션). PRD·D1~D4 영향 또는 소유자 보류 PR이면 **소유자 검토 완료**
+- [ ] PR 제목 `<type>(<scope>): <요약> (DF-NNN)`, 모든 커밋에 `Refs:`·`Trace:` footer, rebase 병합(스쿼시·머지 커밋 금지)
+- [ ] 병합 뒤: 병합 근거(체크·리뷰 링크) 코멘트, 이슈 Done, Projects 필드 갱신

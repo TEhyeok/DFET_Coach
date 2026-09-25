@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-13 |
-| 버전 | v1.1 |
+| 버전 | v1.1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -60,6 +60,7 @@
 3. 의존성: `npm ci --prefix functions`, `npm ci --prefix admin_web`, `flutter pub get`.
 4. **plist 배치(소유자만, ADR-019).** DF-903에서 받은 `GoogleService-Info.plist`를 저장소 밖(예: `~/secure/dfet/trainer/`)에 보관하고, 실기기·운영 연결 빌드가 필요할 때만 `trainer_app/Config/GoogleService-Info.plist`로 복사한다. 이 경로는 `.gitignore` 대상이다(DF-034). 내용은 어디에도 붙여 넣지 않는다. 에이전트 환경에는 plist를 두지 않는다. plist가 없으면 preview 구성으로 빌드된다.
 5. 트레이너 앱 프로젝트 생성: `xcodegen generate --spec trainer_app/project.yml`(DF-008 이후). 생성된 `DFETTrainer.xcodeproj`는 커밋 대상이며 CI가 재생성 diff로 검증한다.
+6. **Storage 규칙 배포 대상 = 서울 버킷(DEC-19, DF-043).** `firebase.json`의 `storage`는 `[{"bucket", "target": "seoul", "rules": "storage.rules"}]` 형식이다. firebase-tools 15.x 에뮬레이터는 `bucket`만 있는 배열을 거부하고(`Must supply 'target' in Storage configuration`) `target`을 쓰므로, 배포와 에뮬레이터 모두 `.firebaserc`의 `targets.<프로젝트>.storage.seoul` 매핑으로 버킷을 찾는다. 운영 매핑(서울 버킷 1개)과 에뮬레이터 프로젝트(`dfet-rules-test`·`dfet-e2e`·`dfet-migrations`·`demo-dfet`) 매핑은 저장소 `.firebaserc`에 커밋돼 있다(버킷 이름은 비밀이 아니다). DF-942에서 만든 서울 버킷 이름이 저장소 값과 다르면 소유자가 `firebase target:clear storage seoul --project dfetmanage` 뒤 `firebase target:apply storage seoul <서울 버킷> --project dfetmanage`로 다시 연결하고, 같은 PR에서 `functions/src/shared/storage.js`·`lib/config/storage_bucket.dart`·`admin_web/.env.example`·`admin_web/lib/firebase-admin.ts` 대체값·`firebase.json` `bucket`을 같은 값으로 바꾼다(`npm --prefix functions test`의 `storage-bucket.test.js`가 다섯 곳이 같은지 확인한다). 새 에뮬레이터 프로젝트 ID를 CI에 추가하면 `.firebaserc`에 같은 `seoul` 매핑(`<id>`, `<id>.appspot.com`, `<id>.firebasestorage.app`)을 더한다. 매핑이 없으면 Storage 에뮬레이터가 시작하지 않는다. `flutterfire configure`로 `lib/firebase_options.dart`를 다시 만들면 `storageBucket`이 기본 버킷으로 돌아오므로 세 플랫폼 값을 `seoulStorageBucket`으로 되돌린다(`test/firebase_options_storage_bucket_test.dart`가 실패로 알린다).
 
 ### 3.2 에뮬레이터와 합성 시드
 
@@ -199,3 +200,4 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: 시드 경로·ID 정본화(R2), XcodeGen zip 고정(R8, ASM-13-04), Auth·Functions 포트 추가를 P0 시드 스토리로 이관 |
 | v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패). Flutter 3.38.2 고정과 iOS CocoaPods 빌드 명시(PR #1 CI 결과) |
 | v1.1 | 2026-09-25 | CJH(AI 에이전트) | §7 Git 금지 행동을 DEC-20(병합 담당 AI의 rebase 병합, 구현 에이전트의 자기 PR 병합 금지)에 맞춤. §7 동결 경로를 DF-930 선언(G-01 동결 선언)과 같게 넓힘 |
+| v1.1.1 | 2026-09-25 | CJH(AI 에이전트) | §3.1 6번: Storage 규칙 배포 대상 서울 버킷(`target` 형식과 `.firebaserc` 매핑, DF-043, DEC-19) |

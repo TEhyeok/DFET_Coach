@@ -1,0 +1,730 @@
+{
+  "contract": "metric-catalog",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/PRD_V1.md appendix A.1-A.2",
+  "metrics": [
+    {
+      "metricCode": "craniovertebralAngle",
+      "nameKo": "두개척추각(CVA)",
+      "family": "posture",
+      "unit": "deg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "photoManual",
+        "photoAuto"
+      ],
+      "screeningOnlySourceGrades": [
+        "photoAuto"
+      ],
+      "betaSourceGrades": [],
+      "reliabilityTier": "tier1",
+      "improvementDirection": "higherIsBetter",
+      "conditionKeys": [
+        "protocolVersion",
+        "view",
+        "captureConditions.clothing",
+        "stationProfile",
+        "device.model"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "postureAssessments",
+        "field": "metrics"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "headTiltFrontal",
+      "nameKo": "머리 기울기(정면, 참고)",
+      "family": "posture",
+      "unit": "deg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "magnitudeWithLowerSide",
+      "allowedSourceGrades": [
+        "photoManual",
+        "photoAuto"
+      ],
+      "screeningOnlySourceGrades": [
+        "photoAuto"
+      ],
+      "betaSourceGrades": [],
+      "reliabilityTier": "reference",
+      "improvementDirection": "towardZero",
+      "conditionKeys": [
+        "protocolVersion",
+        "view",
+        "captureConditions.clothing",
+        "stationProfile",
+        "device.model"
+      ],
+      "availability": "v1Reference",
+      "judgeAs": null,
+      "storage": {
+        "collection": "postureAssessments",
+        "field": "metrics"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "shoulderTiltAngle",
+      "nameKo": "어깨 높이차(견봉선 기울기각)",
+      "family": "posture",
+      "unit": "deg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "magnitudeWithHigherSide",
+      "allowedSourceGrades": [
+        "photoManual",
+        "photoAuto"
+      ],
+      "screeningOnlySourceGrades": [
+        "photoAuto"
+      ],
+      "betaSourceGrades": [],
+      "reliabilityTier": "tier1",
+      "improvementDirection": "towardZero",
+      "conditionKeys": [
+        "protocolVersion",
+        "view",
+        "captureConditions.clothing",
+        "stationProfile",
+        "device.model"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "postureAssessments",
+        "field": "metrics"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "pelvicTiltFrontal",
+      "nameKo": "골반 기울기(정면, 참고)",
+      "family": "posture",
+      "unit": "deg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "magnitudeWithHigherSide",
+      "allowedSourceGrades": [
+        "photoManual",
+        "photoAuto"
+      ],
+      "screeningOnlySourceGrades": [
+        "photoAuto"
+      ],
+      "betaSourceGrades": [],
+      "reliabilityTier": "reference",
+      "improvementDirection": "towardZero",
+      "conditionKeys": [
+        "protocolVersion",
+        "view",
+        "captureConditions.clothing",
+        "stationProfile",
+        "device.model"
+      ],
+      "availability": "v1ReferenceDefaultOff",
+      "judgeAs": null,
+      "storage": {
+        "collection": "postureAssessments",
+        "field": "metrics"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "weightKg",
+      "nameKo": "체중",
+      "family": "bodyComposition",
+      "unit": "kg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.weightKg"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 600,
+        "appMin": 0.1
+      }
+    },
+    {
+      "metricCode": "bodyFatPercent",
+      "nameKo": "체지방률",
+      "family": "bodyComposition",
+      "unit": "percent",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.bodyFatPercent"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": false,
+        "max": 100,
+        "appMin": 0
+      }
+    },
+    {
+      "metricCode": "skeletalMuscleMassKg",
+      "nameKo": "골격근량",
+      "family": "bodyComposition",
+      "unit": "kg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "higherIsBetter",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.skeletalMuscleMassKg"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 300,
+        "appMin": 0.1
+      }
+    },
+    {
+      "metricCode": "bodyFatMassKg",
+      "nameKo": "체지방량",
+      "family": "bodyComposition",
+      "unit": "kg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.bodyFatMassKg"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 600,
+        "appMin": 0.1
+      }
+    },
+    {
+      "metricCode": "bmi",
+      "nameKo": "체질량지수",
+      "family": "bodyComposition",
+      "unit": "kgPerM2",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "derived"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1",
+      "judgeAs": "weightKg",
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "derived.bmi"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 200,
+        "appMin": 0.1
+      }
+    },
+    {
+      "metricCode": "visceralFatLevel",
+      "nameKo": "내장지방 레벨",
+      "family": "bodyComposition",
+      "unit": "level",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1Optional",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.visceralFatLevel"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 100,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "totalBodyWaterL",
+      "nameKo": "체수분",
+      "family": "bodyComposition",
+      "unit": "liter",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v1Optional",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.totalBodyWaterL"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": true,
+        "max": 300,
+        "appMin": 0.1
+      }
+    },
+    {
+      "metricCode": "segmentalLeanMassKg",
+      "nameKo": "부위별 근육량",
+      "family": "bodyComposition",
+      "unit": "kg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "undefinedV2",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v2",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.segmentalLeanMassKg"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "phaseAngleDeg",
+      "nameKo": "위상각",
+      "family": "bodyComposition",
+      "unit": "deg",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "device"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "deviceModel",
+        "fasting",
+        "timeOfDayBand"
+      ],
+      "availability": "v2",
+      "judgeAs": null,
+      "storage": {
+        "collection": "bodyCompositionRecords",
+        "field": "values.phaseAngleDeg"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "waistCircumference",
+      "nameKo": "허리둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "tape",
+        "observedSection"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [
+        "observedSection"
+      ],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "hipCircumference",
+      "nameKo": "엉덩이둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "tape",
+        "observedSection"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [
+        "observedSection"
+      ],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "thighCircumference",
+      "nameKo": "허벅지 둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "leftRight",
+      "allowedSourceGrades": [
+        "tape"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion",
+        "side"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "upperArmCircumference",
+      "nameKo": "상완 둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "leftRight",
+      "allowedSourceGrades": [
+        "tape"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion",
+        "side"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "calfCircumference",
+      "nameKo": "종아리 둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "leftRight",
+      "allowedSourceGrades": [
+        "tape"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion",
+        "side"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "chestCircumference",
+      "nameKo": "가슴둘레",
+      "family": "circumference",
+      "unit": "cm",
+      "decimals": 1,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "tape"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "none",
+      "conditionKeys": [
+        "sourceGrade",
+        "protocolId",
+        "protocolVersion"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "circumferenceMeasurements",
+        "field": "valueCm"
+      },
+      "range": {
+        "min": 1,
+        "minExclusive": false,
+        "max": 400,
+        "appMin": 1
+      }
+    },
+    {
+      "metricCode": "painNrs",
+      "nameKo": "통증 NRS",
+      "family": "pain",
+      "unit": "point",
+      "decimals": 0,
+      "scale": "ratio",
+      "sideRule": "none",
+      "allowedSourceGrades": [
+        "selfReport"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": "reference",
+      "improvementDirection": "lowerIsBetter",
+      "conditionKeys": [
+        "nrsScale"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "soap_notes",
+        "field": "subjective.painNrs"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": false,
+        "max": 10,
+        "appMin": 0
+      }
+    },
+    {
+      "metricCode": "romDeg",
+      "nameKo": "관절가동범위",
+      "family": "trainerObservation",
+      "unit": "deg",
+      "decimals": 0,
+      "scale": "ratio",
+      "sideRule": "leftRightBilateral",
+      "allowedSourceGrades": [
+        "trainerObserved"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "higherIsBetter",
+      "conditionKeys": [
+        "joint",
+        "motion",
+        "activeOrPassive"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "soap_notes",
+        "field": "objective.metrics"
+      },
+      "range": null
+    },
+    {
+      "metricCode": "mmtGrade",
+      "nameKo": "근력 등급(MMT 0–5)",
+      "family": "trainerObservation",
+      "unit": "grade",
+      "decimals": 0,
+      "scale": "ordinal",
+      "sideRule": "leftRightBilateral",
+      "allowedSourceGrades": [
+        "trainerObserved"
+      ],
+      "screeningOnlySourceGrades": [],
+      "betaSourceGrades": [],
+      "reliabilityTier": null,
+      "improvementDirection": "higherIsBetter",
+      "conditionKeys": [
+        "muscleGroup",
+        "side"
+      ],
+      "availability": "v1",
+      "judgeAs": null,
+      "storage": {
+        "collection": "soap_notes",
+        "field": "objective.metrics"
+      },
+      "range": {
+        "min": 0,
+        "minExclusive": false,
+        "max": 5,
+        "appMin": 0
+      }
+    }
+  ],
+  "excludedMetricCodes": [
+    "kneeFppaSingleLegSquat",
+    "headForwardDistance",
+    "specialTestResult"
+  ]
+}

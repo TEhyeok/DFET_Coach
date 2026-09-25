@@ -13,8 +13,10 @@
 | `vocab.v1.json` | enum 33개와 `jointMotionPairs` | 부록 A.3, A.5~A.7, 부록 B | §13.2, §6.1, §6.3~§6.5 | DF-003 |
 | `feature-flags.v1.json` | 기능 플래그 키 | §6.0.2, 부록 B.7(ADR-010) | §13.3 | DF-027(예정) |
 | `audit-actions.v1.json`, `analytics-events.v1.json` | 감사 action, 분석 이벤트 허용 목록 | §5.5, F-PRIV-06.3(ADR-015) | §13.3 | DF-033(예정) |
-| `prohibited-terms.v1.json` | 금지어·대체어 | 부록 C | — | DF-010(예정) |
+| `prohibited-terms.v1.json` | 금지어·대체어 규칙 세트(common·member·trainer), 인과 패턴, 경로별 세트, 예외 경로·정확 문자열 예외 | 부록 C.1~C.3, §3.1 | — ([V1-12 §7](../docs/v1/12_COPY_ANALYTICS_AND_LINT.md#7-금지어-린트-설계)) | DF-010 |
 | `fixtures/**`, `vectors/**` | 교차 픽스처, 알고리즘 벡터 | F-SOAP-06, AC-ASM-03.x, T01~T25 | §13.4 | DF-005 외 |
+
+`prohibited-terms.v1.json`은 `tool/lint/prohibited-terms.mjs`(copy-lint)가 직접 읽는다. 바꾸는 PR에는 `regulatory` 라벨을 달고 [V1-12 §7.13](../docs/v1/12_COPY_ANALYTICS_AND_LINT.md#713-예외-추가규칙-변경-절차) 절차를 따른다. `allowEntries`에 넣을 수 있는 실제 문장은 PRD §3.1 고지 원문뿐이다(DF-010).
 
 ## 공통 규칙(V1-05 §13 요약)
 

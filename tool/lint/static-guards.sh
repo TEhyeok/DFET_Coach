@@ -20,6 +20,10 @@
 #   G8 print                 print( / debugPrint( in Sources/FirebaseData and Sources/SyncEngine                 AC-DF-011.3
 #   G9 raw record collection 'soap_notes' 'postureAssessments' 'bodyCompositionRecords'
 #                            'circumferenceMeasurements' 'bodyScans' as a string or path segment in lib/         AC-DF-011.4
+#   W1 workflow secrets      tool/lint/check-workflow-secrets.sh on .github/workflows/trainer-app.yml: the Firebase
+#                            config is injected only on main push / workflow_dispatch, never printed, never uploaded,
+#                            and always removed (DF-034). Runs when the tree has .github/workflows/ (the repository;
+#                            the synthetic self-test trees have none); a workflows dir without trainer-app.yml exits 2 AC-DF-034.3
 #
 # Baseline (tool/lint/static-guards.allow). Every line is `<GuardID> <path> # <reason>`, per guard + file, no line
 # numbers (V1-10 §16.2). Findings must equal the baseline exactly: an unlisted finding fails, and an entry that no
@@ -34,7 +38,8 @@ export LC_ALL=C
 
 usage() { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
 ALLOW=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -140,6 +145,23 @@ scan G8 "$SWIFT" '' '(^|[^A-Za-z0-9_])(print|debugPrint)[[:space:]]*\(' '' "$TK/
 # G9 (AC-DF-011.4, AC-VIZ-06.1)
 scan G9 '' '' "['\"/](soap_notes|postureAssessments|bodyCompositionRecords|circumferenceMeasurements|bodyScans)['\"/]" '' lib
 
+# W1 (AC-DF-034.3, NFR-02). Not baselinable: any finding fails.
+workflow_fail=0
+workflow_note=""
+if [ -d "$ROOT/.github/workflows" ]; then
+  if [ ! -f "$ROOT/.github/workflows/trainer-app.yml" ]; then
+    echo "static-guards: .github/workflows/trainer-app.yml missing (update W1 in tool/lint/static-guards.sh)" >&2
+    exit 2
+  fi
+  wf_rc=0
+  (cd "$ROOT" && bash "$HERE/check-workflow-secrets.sh" .github/workflows/trainer-app.yml) || wf_rc=$?
+  case "$wf_rc" in
+    0) workflow_note=", W1 workflow secrets OK" ;;
+    1) workflow_fail=1 ;;
+    *) echo "static-guards: check-workflow-secrets.sh failed (exit $wf_rc)" >&2; exit 2 ;;
+  esac
+fi
+
 # Baseline parsing (AC-DF-011.5)
 errors=0
 : > "$TMP/allow_keys"
@@ -194,9 +216,9 @@ while IFS= read -r key; do
 done < "$TMP/stale"
 
 baselined=$(( $(wc -l < "$TMP/findings") - violations ))
-if [ "$violations" -gt 0 ] || [ "$stale" -gt 0 ] || [ "$errors" -gt 0 ]; then
-  echo "static-guards: FAIL: $violations violation(s), $stale stale baseline entr(y/ies), $errors malformed baseline line(s)"
+if [ "$violations" -gt 0 ] || [ "$stale" -gt 0 ] || [ "$errors" -gt 0 ] || [ "$workflow_fail" -gt 0 ]; then
+  echo "static-guards: FAIL: $violations violation(s), $stale stale baseline entr(y/ies), $errors malformed baseline line(s), $workflow_fail workflow secret check failure(s)"
   [ "$violations" -eq 0 ] || echo "static-guards: fix the code; baseline entries are only for pre-existing uses with a removal story or owner decision (ASM-P0-25)"
   exit 1
 fi
-echo "static-guards: OK: 9 guards, 0 violations, $baselined baselined finding(s) in $(wc -l < "$TMP/allowed" | tr -d ' ') file(s)"
+echo "static-guards: OK: 9 guards, 0 violations, $baselined baselined finding(s) in $(wc -l < "$TMP/allowed" | tr -d ' ') file(s)$workflow_note"

@@ -1,0 +1,85 @@
+{
+  "_fixture": {
+    "id": "soap_v2/swift_written_draft_rom_mmt_pain",
+    "description": "DF-009 기록 모드: 테스트가 만든 Swift SoapNoteV2 모델(soap_v2/draft_rom_mmt_pain.json과 같은 의미)을 SoapNoteV2Codec.encode(target: .fixture)로 쓴 결과",
+    "writer": "swift",
+    "prdRefs": [
+      "AC-SOAP-06.1",
+      "F-SOAP-06.1",
+      "§9.3",
+      "NFR-07"
+    ],
+    "expect": {
+      "roundTrip": "identical",
+      "metricCount": 2,
+      "uninterpretable": 0
+    }
+  },
+  "path": "soap_notes/fx-note-v2-002",
+  "data": {
+    "schemaVersion": 2,
+    "trainerId": "fx-trainer-001",
+    "authorUid": "fx-trainer-001",
+    "memberUid": "fx-member-001",
+    "memberId": "fx-member-001",
+    "pendingMemberId": null,
+    "sessionDate": {
+      "$ts": "2026-09-29T01:00:00Z"
+    },
+    "status": "draft",
+    "quickNote": "가상 회원 A, 팔을 옆으로 들 때 오른쪽 어깨가 불편하다고 말함",
+    "subjective": {
+      "chiefComplaint": "오른쪽 어깨를 들 때 불편하다고 함",
+      "painNrs": {
+        "$int": 4
+      },
+      "painRegions": [
+        "shoulderRight"
+      ]
+    },
+    "objective": {
+      "metrics": [
+        {
+          "metricCode": "romDeg",
+          "value": 110,
+          "unit": "deg",
+          "side": "right",
+          "sourceGrade": "trainerObserved",
+          "joint": "shoulder",
+          "motion": "flexion",
+          "activeOrPassive": "active"
+        },
+        {
+          "metricCode": "mmtGrade",
+          "value": {
+            "$int": 4
+          },
+          "unit": "grade",
+          "side": "right",
+          "sourceGrade": "trainerObserved",
+          "muscleGroup": "shoulderAbductors",
+          "note": "가상 관찰 메모"
+        }
+      ],
+      "refs": {
+        "postureAssessmentIds": [],
+        "bodyCompositionRecordIds": [],
+        "circumferenceMeasurementIds": [],
+        "bodyScanIds": []
+      },
+      "snapshots": []
+    },
+    "plan": {
+      "nextSession": "어깨 외전 가동성 다시 확인",
+      "homeExercise": "벽 짚고 팔 올리기 10회"
+    },
+    "legalNature": "coachingRecord",
+    "isSharedWithMember": false,
+    "createdAt": {
+      "$ts": "2026-09-29T01:00:03Z"
+    },
+    "updatedAt": {
+      "$ts": "2026-09-29T01:40:00Z"
+    }
+  }
+}

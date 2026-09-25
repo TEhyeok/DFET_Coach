@@ -75,7 +75,9 @@
 
 ```bash
 jq empty contracts/*.json
-node --test 'tool/contracts/test/*.test.mjs'   # TC-DF003-01~03 (Node 22 내장 모듈만 사용)
+npm ci --prefix tool                          # ajv, ajv-formats
+node tool/contracts/generate.mjs --check      # 메타 스키마(schemas/contracts-meta.schema.json) + 교차 검증 + 생성물 드리프트
+node --test 'tool/contracts/test/*.test.mjs'  # TC-DF003-01~03, TC-DF004-01~04
 ```
 
-DF-004가 병합되면 `node tool/contracts/generate.mjs --check`(ajv 메타 스키마 `schemas/contracts-meta.schema.json` 검증 포함)가 CI `contracts` job에서 함께 돈다.
+CI `contracts` job이 위 명령을 돈다(DF-004). 생성기 동작·이름 규칙은 [tool/contracts/README.md](../tool/contracts/README.md)에 있다.

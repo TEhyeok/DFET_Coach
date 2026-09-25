@@ -12,7 +12,10 @@
 //   [Present]: a Dart null field means the key is absent, `Present(null)` means the key
 //   is present with null.
 // - An `objective.metrics` row is either [ParsedSoapMetric] or [UnparsedSoapMetric]
-//   (F-SOAP-06.2). A row is never dropped.
+//   (F-SOAP-06.2). A row is never dropped: an element that is not a map is an
+//   [UnparsedSoapMetric] too, so `metrics.length` equals the stored length.
+// - An `objective.snapshots` element that is not a map is kept in place as
+//   [ObjectiveSnapshot.element].
 
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:flutter/foundation.dart' show immutable;
@@ -282,8 +285,7 @@ sealed class SoapMetricV2 {
     Map<String, Object?> extra,
   }) = ParsedSoapMetric;
 
-  const factory SoapMetricV2.unparsed(Map<String, Object?> raw) =
-      UnparsedSoapMetric;
+  const factory SoapMetricV2.unparsed(Object? raw) = UnparsedSoapMetric;
 
   /// False for rows shown as 'uninterpretable' (해석 불가).
   bool get isInterpretable;
@@ -374,12 +376,17 @@ final class ParsedSoapMetric extends SoapMetricV2 with _ValueEquality {
 final class UnparsedSoapMetric extends SoapMetricV2 with _ValueEquality {
   const UnparsedSoapMetric(this.raw);
 
-  /// The original row, written back unchanged.
-  final Map<String, Object?> raw;
+  /// The original row, written back unchanged. Normally a map; any other stored element
+  /// (a string, a number, null, a list) is kept as it is so the row count never shrinks.
+  final Object? raw;
 
-  /// The raw `metricCode`, if it is a string.
+  /// Whether the stored row is a map.
+  bool get isMapRow => raw is Map;
+
+  /// The raw `metricCode`, if the row is a map and the code is a string.
   String? get metricCodeWire {
-    final code = raw['metricCode'];
+    final row = raw;
+    final code = row is Map ? row['metricCode'] : null;
     return code is String ? code : null;
   }
 
@@ -421,6 +428,7 @@ final class ObjectiveRefs with _ValueEquality {
 @immutable
 final class ObjectiveSnapshot with _ValueEquality {
   const ObjectiveSnapshot({
+    this.element,
     this.refId,
     this.metricCode,
     this.value,
@@ -450,8 +458,16 @@ final class ObjectiveSnapshot with _ValueEquality {
   final SoapTimestamp? measuredAt;
   final Map<String, Object?> extra;
 
+  /// Set only when the stored element is not a map: the element as stored (possibly
+  /// `Present(null)`), written back unchanged. Every other field is then null.
+  final Present<Object>? element;
+
+  /// Whether the stored element was a map that could be read field by field.
+  bool get isReadable => element == null;
+
   @override
   List<Object?> get _props => [
+        element,
         refId,
         metricCode,
         value,

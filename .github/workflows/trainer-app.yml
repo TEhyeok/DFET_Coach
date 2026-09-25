@@ -52,8 +52,15 @@ jobs:
     if: needs.changes-trainer.outputs.app == 'true'
     runs-on: macos-15
     timeout-minutes: 60
+    # DF-034 (ADR-019, NFR-02). Only a boolean reaches the job env: a step `if` cannot read its own step env, and the
+    # secret value itself stays in the injection step's env so no xcodebuild step (which dumps its environment into
+    # script-phase logs) ever holds it. Checked by tool/lint/check-workflow-secrets.sh (AC-DF-034.3).
+    env:
+      TRAINER_PLIST_CONFIGURED: ${{ secrets.TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64 != '' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Firebase config is git-ignored (AC-DF-034.1)
+        run: git check-ignore trainer_app/Config/GoogleService-Info.plist
       - name: Toolchain versions
         run: xcodebuild -version && swift --version && xcrun simctl list runtimes
       - name: Install pinned XcodeGen (ASM-S01-09)
@@ -92,8 +99,34 @@ jobs:
           xcodebuild build -project trainer_app/DFETTrainer.xcodeproj -scheme DFETTrainer \
             -configuration Release -destination 'generic/platform=iOS' \
             -clonedSourcePackagesDirPath trainer_app/.spm CODE_SIGNING_ALLOWED=NO | tee build/release.log
-      - uses: actions/upload-artifact@v4
-        if: failure()
+      # AC-DF-034.2: pull_request never injects (same-repo PRs can read repository secrets, so the event decides).
+      # Every step above ran without the plist; the two steps below add a Release build with it on main and manual runs.
+      - name: Inject Firebase config (main push and manual runs only)
+        id: inject-firebase-config
+        if: ${{ env.TRAINER_PLIST_CONFIGURED == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch') }}
+        env:
+          PLIST_B64: ${{ secrets.TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64 }}
+        run: |
+          set +x
+          printf '%s' "$PLIST_B64" | base64 --decode > trainer_app/Config/GoogleService-Info.plist
+      - name: Release build with Firebase config
+        if: ${{ steps.inject-firebase-config.outcome == 'success' }}
+        # Incremental on top of the plist-less Release build: only the copy script phase has new work. The check only
+        # tests that the bundle holds the file; nothing reads or prints it.
+        run: |
+          xcodebuild build -project trainer_app/DFETTrainer.xcodeproj -scheme DFETTrainer \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -clonedSourcePackagesDirPath trainer_app/.spm CODE_SIGNING_ALLOWED=NO -quiet
+          bundled=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Release-iphoneos/*.app/GoogleService-Info.plist' -type f)
+          test -n "$bundled"
+      - name: Remove Firebase config
+        if: always()
+        run: |
+          rm -f trainer_app/Config/GoogleService-Info.plist
+          find "$HOME/Library/Developer/Xcode/DerivedData" -path '*.app/GoogleService-Info.plist' -type f -delete 2>/dev/null || true
+      - name: Upload test results (pull_request only, never after injection)
+        if: ${{ failure() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
         with:
           name: trainer-app-results
           path: |

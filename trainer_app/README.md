@@ -43,7 +43,8 @@ xcodebuild build -project trainer_app/DFETTrainer.xcodeproj -scheme DFETTrainer 
 ```
 
 The same steps run in `.github/workflows/trainer-app.yml` (job `trainer-app`), which only runs when
-`trainer_app/**`, `contracts/**` or the workflow file changes.
+`trainer_app/**`, `contracts/**` or the workflow file changes. On `main` and manual runs it also injects the
+Firebase config; see [CI injection](#ci-injection-githubworkflowstrainer-appyml-job-trainer-app).
 
 ## Launch modes (`App/Composition/LaunchConfiguration.swift`)
 
@@ -94,14 +95,37 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |
 | `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06) |
 
-## GoogleService-Info.plist rules (ADR-019)
+## GoogleService-Info.plist rules (ADR-019, DF-034)
 
-- Never commit it. `trainer_app/.gitignore` ignores `Config/GoogleService-Info.plist`.
+- Never commit it. Both `trainer_app/.gitignore` and the root `.gitignore` ignore `Config/GoogleService-Info.plist`;
+  `git check-ignore trainer_app/Config/GoogleService-Info.plist` prints the path (AC-DF-034.1).
 - `project.yml` does **not** reference the plist. The app target's "Copy Firebase config if present" build phase
-  copies it into the bundle only when it exists, so builds without it (CI, agents) still succeed.
-- The owner keeps the file outside the repository and copies it into `Config/` only for device or production builds.
-  CI injection from the `TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64` secret is added by DF-034.
+  copies it into the bundle only when it exists, so builds without it (CI, agents) still succeed and launch in
+  `misconfigured` mode.
 - AI agents never create, open or print this file.
+
+### Local placement (owner only)
+
+1. Download `GoogleService-Info.plist` for the iOS app `kr.co.dfet.trainer` from the Firebase console (project
+   settings, registered by DF-903). Keep the original outside the repository, e.g. `~/secure/dfet/trainer/`.
+2. Only for a device or production-connected build, copy it to `trainer_app/Config/GoogleService-Info.plist`.
+   Do not paste its contents anywhere (chat, issues, logs).
+3. Never commit it. Before committing, `git status --short trainer_app/Config` must list nothing new; remove the copy
+   when you are done (`rm trainer_app/Config/GoogleService-Info.plist`).
+
+### CI injection (`.github/workflows/trainer-app.yml`, job `trainer-app`)
+
+| Item | Value |
+|---|---|
+| Repository secret | `TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64`: the plist, base64-encoded on one line. The owner registers it after DF-903, e.g. `base64 -i ~/secure/dfet/trainer/GoogleService-Info.plist \| gh secret set TRAINER_GOOGLE_SERVICE_INFO_PLIST_B64` (reads stdin, prints nothing) |
+| Job env | `TRAINER_PLIST_CONFIGURED` = whether the secret is non-empty (a boolean, never the value) |
+| When it injects | `push` to `main` and `workflow_dispatch`, and only when the secret is set. `pull_request` (same-repo or fork) never injects: GitHub exposes secrets to same-repo PRs, so the event decides (AC-DF-034.2) |
+| What runs with it | Tests and the plist-less Release build run first on every event. After injection, one extra Release build checks that the bundle contains the file |
+| Leak guards | The secret is only in the injection step's own env (xcodebuild steps never hold it); `set +x`; `base64 --decode` straight into the file; no step prints it; test results are uploaded only on `pull_request`; an `if: always()` step deletes the file and its bundle copy |
+| Static check | `bash tool/lint/check-workflow-secrets.sh .github/workflows/trainer-app.yml` (C1 gate, C2 no printing, C3 PR-only artifacts, C4 cleanup). `tool/lint/static-guards.sh` runs it as W1 in the required `static-guards` job (AC-DF-034.3) |
+| Owner log check (AC-DF-034.5) | After the first injecting `main` run: `gh run view <run-id> --log \| grep -cF "$KEY"` for the plist's `API_KEY` and `GOOGLE_APP_ID` values (kept in shell variables, never written down) must both print `0`; record only "0 hits", the run ID and the time in `docs/v1/evidence/G-02.md` |
+
+Without the secret (forks, agents, before DF-903) the job still passes: every build runs without the plist.
 
 ## Relationship to `trainer_ios/`
 

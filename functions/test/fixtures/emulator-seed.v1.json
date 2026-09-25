@@ -1,0 +1,103 @@
+{
+  "_seed": {
+    "id": "emulator-seed.v1",
+    "description": "통합·개발 공용 합성 시드 기본 파일(DF-042). 가상 트레이너 2명, 가상 관리자 1명, 가상 회원 3명, synthTrainerA 담당 0001·0002, 회원 0001의 ①②③ 동의 상태, appConfig/features 8키. P1a 추가분(published 동의 문서 5종, SYNTHpending00000001)은 DF-107이 더한다",
+    "writer": "synthetic",
+    "projectId": "demo-dfet",
+    "refs": ["AC-DF-042.1", "V1-10 §5.2", "V1-10 §5.4", "V1-05 §4.1", "V1-05 §4.2", "V1-05 §4.12", "V1-05 §4.17"]
+  },
+  "auth": [
+    {"uid": "synthTrainerA", "email": "synthTrainerA@example.invalid", "displayName": "가상 트레이너 A", "claims": {"trainer": true}},
+    {"uid": "synthTrainerB", "email": "synthTrainerB@example.invalid", "displayName": "가상 트레이너 B", "claims": {"trainer": true}},
+    {"uid": "synthAdmin", "email": "synthAdmin@example.invalid", "displayName": "가상 관리자", "claims": {"admin": true}},
+    {"uid": "synthMember0001", "email": "synthMember0001@example.invalid", "displayName": "가상회원 가", "claims": {}},
+    {"uid": "synthMember0002", "email": "synthMember0002@example.invalid", "displayName": "가상회원 나", "claims": {}},
+    {"uid": "synthMember0003", "email": "synthMember0003@example.invalid", "displayName": "가상회원 다", "claims": {}}
+  ],
+  "firestore": [
+    {
+      "path": "trainers/synthTrainerA",
+      "data": {
+        "trainerId": "synthTrainerA",
+        "memberIds": ["synthMember0001", "synthMember0002"],
+        "approvalStatus": "approved",
+        "displayName": "가상 트레이너 A",
+        "email": "synthTrainerA@example.invalid",
+        "specialty": "",
+        "grantedBy": "synthAdmin",
+        "createdAt": {"$serverTimestamp": true},
+        "updatedAt": {"$serverTimestamp": true}
+      }
+    },
+    {
+      "path": "trainers/synthTrainerB",
+      "data": {
+        "trainerId": "synthTrainerB",
+        "memberIds": [],
+        "approvalStatus": "approved",
+        "displayName": "가상 트레이너 B",
+        "email": "synthTrainerB@example.invalid",
+        "specialty": "",
+        "grantedBy": "synthAdmin",
+        "createdAt": {"$serverTimestamp": true},
+        "updatedAt": {"$serverTimestamp": true}
+      }
+    },
+    {
+      "path": "users/synthMember0001",
+      "data": {
+        "role": "user",
+        "displayName": "가상회원 가",
+        "email": "synthMember0001@example.invalid",
+        "trainerId": "synthTrainerA",
+        "assignedTrainerId": "synthTrainerA",
+        "trainerAssignedAt": {"$serverTimestamp": true},
+        "createdAt": {"$serverTimestamp": true}
+      }
+    },
+    {
+      "path": "users/synthMember0002",
+      "data": {
+        "role": "user",
+        "displayName": "가상회원 나",
+        "email": "synthMember0002@example.invalid",
+        "trainerId": "synthTrainerA",
+        "assignedTrainerId": "synthTrainerA",
+        "trainerAssignedAt": {"$serverTimestamp": true},
+        "createdAt": {"$serverTimestamp": true}
+      }
+    },
+    {
+      "path": "users/synthMember0003",
+      "data": {
+        "role": "user",
+        "displayName": "가상회원 다",
+        "email": "synthMember0003@example.invalid",
+        "createdAt": {"$serverTimestamp": true}
+      }
+    },
+    {
+      "path": "memberConsentStates/synthMember0001",
+      "data": {
+        "required": {"granted": true, "documentVersion": "required--1.0", "updatedAt": {"$serverTimestamp": true}, "recordId": "SYNTHconsentRec00000"},
+        "healthData": {"granted": true, "documentVersion": "healthData--1.0", "updatedAt": {"$serverTimestamp": true}, "recordId": "SYNTHconsentRec00001"},
+        "bodyImaging": {"granted": true, "documentVersion": "bodyImaging--1.0", "updatedAt": {"$serverTimestamp": true}, "recordId": "SYNTHconsentRec00002"},
+        "updatedAt": {"$serverTimestamp": true},
+        "schemaVersion": 1
+      }
+    },
+    {
+      "path": "appConfig/features",
+      "data": {
+        "gut": false,
+        "blood": false,
+        "insights": false,
+        "soapV2": true,
+        "bodyComposition": true,
+        "bodyAssessment": false,
+        "memberShare": false,
+        "lidarBeta": false
+      }
+    }
+  ]
+}

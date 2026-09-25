@@ -1,6 +1,6 @@
 // DF-004 emitter tests: TC-DF004-04 (Swift `none` escaping, Dart fromWire null) on the real contracts,
 // and per-emitter snapshots on a small synthetic contract that exercises escaping, drafts and pairs.
-// Update snapshots after an intended emitter change with: UPDATE_SNAPSHOTS=1 node --test 'tool/contracts/test/*.test.mjs'
+// Update snapshots after an intended emitter change with: UPDATE_SNAPSHOTS=1 node --test 'tool/contracts/test/**/*.test.mjs'
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';

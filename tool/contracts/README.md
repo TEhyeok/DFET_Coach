@@ -3,22 +3,24 @@
 `contracts/*.v1.json`(단일 원본, ADR-005)을 검증하고 네 소비자 코드로 생성한다. 입력 형식의 규범 명세는 [V1-05 §13](../../docs/v1/05_DATA_MODEL_AND_RULES.md#13-contracts-json-형식), 변경 절차는 [contracts/README.md](../../contracts/README.md)다.
 
 ```bash
-npm ci --prefix tool                          # ajv, ajv-formats (tool/package.json)
-node tool/contracts/generate.mjs              # 검증 후 생성물 쓰기(바뀐 파일만)
-node tool/contracts/generate.mjs --check      # 검증 후 디스크와 비교. 다르면 exit 1과 파일 목록(CI contracts job)
-node --test 'tool/contracts/test/*.test.mjs'  # DF-003 값 테스트 + DF-004 생성기 테스트
+npm ci --prefix tool                             # ajv, ajv-formats (tool/package.json)
+node tool/contracts/generate.mjs                 # 검증 후 생성물 쓰기(바뀐 파일만)
+node tool/contracts/generate.mjs --check         # 검증 후 디스크와 비교. 다르면 exit 1과 파일 목록(CI contracts job)
+node --test 'tool/contracts/test/**/*.test.mjs'  # DF-003 값 테스트 + DF-004 생성기 테스트
 ```
 
-Node 22의 `node --test`는 디렉터리 인자를 받지 않으므로 글롭을 따옴표로 넘긴다.
+Node 22의 `node --test`는 디렉터리 인자를 받지 않으므로 글롭을 따옴표로 넘긴다(`node --test tool/contracts/test/`는 실패한다). 하위 디렉터리의 테스트도 돌도록 `**`를 쓴다([10_TEST_PLAN §19.3](../../docs/v1/10_TEST_PLAN.md)과 같음).
 
 ## 처리 순서
 
-1. **메타 스키마 검증**: `schemas/contracts-meta.schema.json`(JSON Schema 2020-12, 손으로 작성, 생성물 아님). 필수 필드, 추가 필드 금지, `draft`면 `confirmBy` 필수, V1-05 §13.2의 enum 33개 존재.
-2. **교차 검증**(메타 스키마 통과 뒤): metricCode 중복, `excludedMetricCodes`와 겹침, `family`·`unit`·`sourceGrade` 등 값이 vocab에 있는지, `screeningOnly`·`beta` ⊂ `allowed`, `judgeAs`가 다른 metricCode인지, `labelsKo` 키 = `values`, `jointMotionPairs`가 vocab `joint`·`motion` 안인지.
+1. **메타 스키마 검증**: `schemas/contracts-meta.schema.json`(JSON Schema 2020-12, 손으로 작성, 생성물 아님). 필수 필드, 추가 필드 금지, `draft`면 `confirmBy` 필수, V1-05 §13.2의 enum 33개 존재, §13.2 표에 ●인 enum 27개의 `labelsKo` 필수, `conditionKeys`는 §13.1 조건 키 토큰만(`algorithmVersion` 제외, ASM-05-42).
+2. **교차 검증**(메타 스키마 통과 뒤): metricCode 중복, `excludedMetricCodes`와 겹침, `family`·`unit`·`sourceGrade` 등 값이 vocab에 있는지, `screeningOnly`·`beta` ⊂ `allowed`, `judgeAs`가 다른 metricCode인지, `range`가 `min ≤ appMin ≤ max`인지, `labelsKo` 키 = `values`, `jointMotionPairs`가 vocab `joint`·`motion` 안인지, enum마다 Dart·Swift 식별자가 이스케이프 뒤에도 겹치지 않는지(`name` → `nameValue`와 실제 `nameValue`, Swift `vocabStatus`·`allCases` 멤버와 같은 case).
+
+   아직 없는 검사: V1-05 §13.2·ASM-05-18의 rules 파일 enum 리터럴과 vocab 비교는 구현되지 않았다(후속 이슈). DF-003 값 테스트(`vocab.test.mjs`, `catalog.test.mjs`)는 값 목록·개수·라벨 문구까지 확인하므로 CI `contracts` job에서 같이 돈다.
 3. **생성**: 메모리에서 모든 출력을 만든다. 입력 순서를 보존하고 LF, 2칸 들여쓰기, 끝 줄바꿈 하나.
 4. **쓰기 또는 `--check`**: 생성 디렉터리 네 곳은 생성기가 통째로 소유한다. 생성기가 만들지 않는 파일이 있으면 `--check`에서 `unexpected`로 보고하고, 쓰기 모드에서는 지운다.
 
-오류 메시지는 `contracts/<file>#<JSON 포인터>: <내용>` 형식이다. 종료 코드: 0 정상, 1 검증 오류·드리프트, 2 사용법·내부 오류.
+오류 메시지는 `contracts/<file>#<JSON 포인터>: <내용>` 형식이다. 종료 코드: 0 정상, 1 검증 오류·드리프트, 2 사용법·내부 오류(`--root` 값이 없을 때 포함).
 
 ## 생성물
 
@@ -52,5 +54,5 @@ Node 22의 `node --test`는 디렉터리 인자를 받지 않으므로 글롭을
 emitter 출력 형태를 바꾸면 합성 계약 스냅샷을 갱신하고 diff를 검토한다.
 
 ```bash
-UPDATE_SNAPSHOTS=1 node --test 'tool/contracts/test/*.test.mjs'
+UPDATE_SNAPSHOTS=1 node --test 'tool/contracts/test/**/*.test.mjs'
 ```

@@ -21,6 +21,8 @@ const {
 } = require('./src/clinical/ingestion');
 // v2 등록 어댑터((data, context) 계약 유지)는 src/shared/callable.js로 옮겼다(DF-037).
 const {functions} = require('./src/shared/callable');
+// Storage 접근은 서울 버킷 헬퍼 한 곳을 거친다(DF-043, DEC-19).
+const {appBucket} = require('./src/shared/storage');
 
 admin.initializeApp();
 
@@ -399,7 +401,7 @@ exports.deleteOwnAccount = functions
 
       await db.recursiveDelete(db.collection('users').doc(uid));
 
-      const bucket = admin.storage().bucket();
+      const bucket = appBucket(admin);
       await bucket.deleteFiles({prefix: `requests/${uid}/`}).catch((error) => {
         console.warn('Failed to delete request media during account deletion', error);
       });

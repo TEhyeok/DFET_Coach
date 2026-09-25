@@ -4,6 +4,9 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
+// DF-043: storageBucket pins the Seoul bucket (DEC-19). Re-apply after `flutterfire configure`.
+import 'config/storage_bucket.dart';
+
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
 /// Example:
@@ -51,7 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:1011088994661:android:7b256f3f8c19223d5df18c',
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
-    storageBucket: 'dfetmanage.firebasestorage.app',
+    storageBucket: seoulStorageBucket,
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -59,7 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:1011088994661:ios:58e7f0262c084e555df18c',
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
-    storageBucket: 'dfetmanage.firebasestorage.app',
+    storageBucket: seoulStorageBucket,
     androidClientId:
         '1011088994661-fajhfegjbdd39hnk71mqi9074rqjcjvo.apps.googleusercontent.com',
     iosClientId:
@@ -73,6 +76,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1011088994661',
     projectId: 'dfetmanage',
     authDomain: 'dfetmanage.firebaseapp.com',
-    storageBucket: 'dfetmanage.firebasestorage.app',
+    storageBucket: seoulStorageBucket,
   );
 }

@@ -107,6 +107,7 @@ function tables(text) {
 }
 
 // ---------- 카드 ----------
+const MVP_HEADING = /^### MVP 범위\(DEC-22\)\s*$/;
 function findCard(key) {
   const files = [];
   const src = item.sourceDoc?.split('#')[0];
@@ -116,7 +117,8 @@ function findCard(key) {
     const ls = read(file).split('\n');
     const s = ls.findIndex((l) => l.startsWith(`### ${key} `));
     if (s < 0) continue;
-    let e = ls.findIndex((l, i) => i > s && (/^---\s*$/.test(l) || /^#{1,3} /.test(l)));
+    // '### MVP 범위(DEC-22)'는 카드 안의 절이다(02 §3 scope/mvp). 카드 끝으로 보지 않는다.
+    let e = ls.findIndex((l, i) => i > s && (/^---\s*$/.test(l) || (/^#{1,3} /.test(l) && !MVP_HEADING.test(l))));
     if (e < 0) e = ls.length;
     return { file, lines: ls.slice(s, e) };
   }
@@ -135,6 +137,7 @@ const section = {};
 {
   let cur = null;
   for (const line of card.lines.slice(1)) {
+    if (MVP_HEADING.test(line)) { cur = 'mvp'; section.mvp = []; continue; }
     const m = labelRe.exec(line);
     if (m) {
       cur = Object.keys(SECTION_LABELS).find((k) => SECTION_LABELS[k] === m[1]);
@@ -435,6 +438,7 @@ push(
   `- 금지 경로(열지도 않음): 비밀 파일, output/, tmp/, 회원 데이터. 수정 금지: docs/PRD_V1.md${sInfo.forbidden ? `, ${absolutize(sInfo.forbidden, sFile)}` : ''}${sInfo.lane?.forbidden ? `, 레인 ${sInfo.lane.name} 쓰기 금지 경로 ${absolutize(sInfo.lane.forbidden, sFile)}` : ''}`,
 );
 if (opts.sprint) push(`- 같은 스프린트(${opts.sprint})의 다른 에이전트 작업(건드리지 않음):`, ...(others.length ? others : ['  - 없음']));
+if (section.mvp) push('', 'MVP 범위(DEC-22, 카드 원문). \'MVP 뒤로 미룬다\'에 적힌 것은 만들지 않는다:', '', section.mvp);
 push(
   '',
   '카드의 에이전트 브리프(소유자 작성):',

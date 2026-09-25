@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-02-OA |
-| 버전 | v1.1 |
+| 버전 | v1.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -100,7 +100,7 @@
 | Priority | must |
 | Area | ci |
 | Gate | G-01 |
-| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `size/XS` `gate/G-01` `agent/human` |
+| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `size/XS` `gate/G-01` `agent/human` `scope/mvp` |
 | Depends on | - |
 | PRD refs | MIG-01, D13, G-01, RISK-04 |
 
@@ -162,7 +162,7 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Priority | must |
 | Area | ci |
 | Gate | G-02 |
-| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `size/XS` `gate/G-02` `agent/human` |
+| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `size/XS` `gate/G-02` `agent/human` `scope/mvp` |
 | Depends on | - |
 | PRD refs | §10.2.4, G-02, NFR-02, NFR-09 |
 
@@ -173,6 +173,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **완료 증빙.** `docs/v1/evidence/G-02.md`: '등록됨'과 일시, App Attest 등록 확인, plist 관리 방식 결정. 앱 ID·API 키 값은 적지 않는다.
 
 **늦을 때.** 최신 10-02. 늦으면 DF-034·DF-012가 같은 폭으로 밀린다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S01. 상태: 소유자 대기
+- 왜 필요한가: kr.co.dfet.trainer 앱 등록과 plist(실제 Firebase 연결)
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -216,7 +222,7 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Priority | must |
 | Area | ci |
 | Gate | G-02 |
-| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `gate/G-02` `agent/human` |
+| Labels | `type/task` `owner-action` `area/ci` `phase/P0` `prio/must` `gate/G-02` `agent/human` `scope/mvp` |
 | Depends on | DF-903, DF-942 |
 | PRD refs | G-02, §10.2.4 |
 
@@ -225,6 +231,13 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **막는 것 / 막지 않는 것.** G-02 증빙(DF-012·DF-013의 실계정 확인). **코딩 차단: 아니요.**
 
 **완료 증빙.** G-02.md에 '가상 담당 관계 준비됨'. 계정 이메일·uid는 적지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S02. 상태: 소유자 대기
+- 왜 필요한가: 소유자 계정에 trainer claim 부여
+- 지금 만든다: 서울 `(default)` 재생성 뒤 소유자 계정 1개에 `trainer` claim
+- MVP 뒤로 미룬다: 운영 가상 회원 시드(테스트 회원은 앱에서 대기 회원으로 만든다)
 
 ---
 
@@ -241,7 +254,7 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Priority | must |
 | Area | storage |
 | Gate | G-03 |
-| Labels | `type/task` `owner-action` `area/storage` `phase/P0` `prio/must` `gate/G-03` `agent/human` |
+| Labels | `type/task` `owner-action` `area/storage` `phase/P0` `prio/must` `gate/G-03` `agent/human` `scope/mvp` |
 | Depends on | DF-942 |
 | PRD refs | §9.5, S-09, G-03 |
 
@@ -250,6 +263,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **막는 것 / 막지 않는 것.** DF-038(S-09 실환경 확인), DF-023의 운영 동작. **코딩 차단: 아니요**(에뮬레이터 S-01~S-08은 권한 없이 동작).
 
 **완료 증빙.** G-03.md에 부여 일시. 실패 시 대안은 DF-038이 ADR-007에 기록한다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S03. 상태: 소유자 대기
+- 왜 필요한가: Storage 서비스 계정의 Firestore 교차 조회 권한(Storage 규칙이 firestore.get을 쓰므로 MVP에 포함)
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -731,12 +750,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Epic | EP-00 소유자 행동·외부 게이트 트랙 |
 | Type | owner-action |
 | Phase | P1a |
-| Sprint | S09(한계 S12, 12-18) |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S09(한계 S12, 12-18) |
 | Points | 0 |
 | Priority | must |
 | Area | admin-web |
 | Gate | G-04, G-09, G-05a, G-03 |
-| Labels | `type/task` `owner-action` `area/admin-web` `phase/P1a` `prio/must` `gate/G-03` `gate/G-04` `gate/G-05a` `gate/G-09` `flag/soapV2` `flag/bodyComposition` `agent/human` |
+| Labels | `type/task` `owner-action` `area/admin-web` `phase/P1a` `prio/must` `gate/G-03` `gate/G-04` `gate/G-05a` `gate/G-09` `flag/soapV2` `flag/bodyComposition` `agent/human` `scope/mvp` |
 | Depends on | DF-908, DF-909, DF-910, DF-924, DF-038 |
 | PRD refs | §12.3 순서 1, G-04, G-09, G-05a, G-03 |
 
@@ -747,6 +766,14 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **완료 증빙.** `docs/v1/evidence/flags-soapV2.md`, `flags-bodyComposition.md`: 전제 확인 체크리스트와 개방 일시.
 
 **늦을 때.** 게이트가 미충족이면 연기하고 합성 데이터 개발을 계속한다. 자체 사용 시작일과 P1a 종료 검토(DF-927)를 같은 폭만큼 민다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S09). 상태: 소유자 대기
+- 왜 필요한가: 서울 `appConfig/features`의 soapV2·bodyComposition을 켜야 규칙 featureOn()이 쓰기를 허용한다
+- 지금 만든다: **소유자 결정 필요**: 테스트 회원만 쓰는 MVP 확인 동안 서울 `appConfig/features`의 `soapV2`·`bodyComposition`을 true로 둔다. 실회원 데이터는 넣지 않는다
+- MVP 뒤로 미룬다: 실회원 대상 개방(G-03·G-04·G-05a·G-09 증빙 뒤, 원래 카드 절차)
+- MVP에서 기다리지 않는 의존: DF-908·DF-909·DF-910·DF-924(외부 게이트·이관). 테스트 데이터 전용 개방에만 면제하며, 실데이터 전에는 모두 필요
 
 ---
 
@@ -833,12 +860,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Epic | EP-00 소유자 행동·외부 게이트 트랙 |
 | Type | owner-action |
 | Phase | P1b |
-| Sprint | S17 |
+| Sprint | S11(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S17 |
 | Points | 0 |
 | Priority | must |
 | Area | admin-web |
 | Gate | - |
-| Labels | `type/task` `owner-action` `area/admin-web` `phase/P1b` `prio/must` `flag/bodyAssessment` `agent/human` |
+| Labels | `type/task` `owner-action` `area/admin-web` `phase/P1b` `prio/must` `flag/bodyAssessment` `agent/human` `scope/mvp` |
 | Depends on | DF-927, DF-209 |
 | PRD refs | §12.3 순서 2 |
 
@@ -847,6 +874,14 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **막는 것 / 막지 않는 것.** 운영에서의 체형 촬영. **코딩 차단: 아니요**(미개방 시 P1b 기능은 DEBUG 오버라이드로 검증).
 
 **완료 증빙.** `docs/v1/evidence/flags-bodyAssessment.md`.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S11(원래 계획 S17). 상태: 소유자 대기
+- 왜 필요한가: 서울 `appConfig/features`의 bodyAssessment(체형 쓰기 규칙 조건)
+- 지금 만든다: **소유자 결정 필요**: 테스트 회원만 쓰는 MVP 확인 동안 `bodyAssessment`를 true로 둔다
+- MVP 뒤로 미룬다: 실회원 대상 개방(원래 카드 절차)
+- MVP에서 기다리지 않는 의존: DF-927(P1a 종료 검토)
 
 ---
 
@@ -883,12 +918,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Epic | EP-00 소유자 행동·외부 게이트 트랙 |
 | Type | owner-action |
 | Phase | P1a |
-| Sprint | S08 |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S08 |
 | Points | 1(size/XS) |
 | Priority | must |
 | Area | rules |
 | Gate | G-03 |
-| Labels | `type/task` `owner-action` `area/rules` `area/storage` `area/functions` `phase/P1a` `prio/must` `size/XS` `gate/G-03` `agent/human` `rules-change` |
+| Labels | `type/task` `owner-action` `area/rules` `area/storage` `area/functions` `phase/P1a` `prio/must` `size/XS` `gate/G-03` `agent/human` `rules-change` `scope/mvp` |
 | Depends on | DF-022, DF-035, DF-023, DF-024, DF-025, DF-043 |
 | PRD refs | G-03, ADR-014 |
 
@@ -897,6 +932,14 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 **막는 것 / 막지 않는 것.** 운영에서의 P1a 기능 동작 전체, DF-924. **코딩 차단: 아니요**(개발은 에뮬레이터).
 
 **완료 증빙.** G-03.md에 태그, R·S 100% CI 링크, 배포 체크리스트.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S08). 상태: 소유자 대기
+- 왜 필요한가: 규칙·Storage 규칙·인덱스·Functions(recordConsent)를 서울에 배포
+- 지금 만든다: `firebase deploy --project dfetmanage --only firestore:rules,firestore:indexes,storage,functions:recordConsent`(태그 기준, 소유자 실행)
+- MVP 뒤로 미룬다: 접근 키 동기화(DF-025) 등 MVP 밖 함수
+- MVP에서 기다리지 않는 의존: DF-025(uid 회원 접근 키, MVP 밖)
 
 ---
 
@@ -1163,7 +1206,7 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | Priority | must |
 | Area | privacy |
 | Gate | G-09 |
-| Labels | `type/task` `owner-action` `area/privacy` `area/storage` `phase/P0` `prio/must` `size/XS` `gate/G-09` `agent/human` `privacy-impact` |
+| Labels | `type/task` `owner-action` `area/privacy` `area/storage` `phase/P0` `prio/must` `size/XS` `gate/G-09` `agent/human` `privacy-impact` `scope/mvp` |
 | Depends on | - |
 | PRD refs | G-09, Q-08, AS-19, §9.7 |
 
@@ -1186,6 +1229,12 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 
 **남은 소유자 결정.** 미사용 Enterprise DB 2개(`default`, `dfet`, `asia-east1`)의 유지·삭제(비용), 미국 기본 버킷의 테스트 파일 정리([V1-00 K-17](../00_README.md#알려진-차이와-남은-일)). 운영 DB가 비게 되므로 MIG-02 실사(DF-907)와 MIG-03~07 적용(DF-924)의 운영 대상 범위를 S04 계획 전에 다시 본다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S01. 상태: 소유자 대기
+- 왜 필요한가: 운영 Firestore `(default)`를 서울로 재생성, 서울 Storage 버킷 생성·연결(DEC-19)
+- 지금 만든다: 카드 전체 범위
+
 ## 4. 가정(ASM-OA-NN)
 
 | ID | 가정 | 근거 | 틀리면 |
@@ -1204,3 +1253,4 @@ P1a 이후 스토리 이슈는 각 단계 첫 계획 회의에서 `--phase <단�
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 속도 포함 규칙(R1), 가정 ID 참조(R10) |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: §0 점수 줄에 owner-action 점수의 약속·속도 포함 명시(R1), ASM-OA-04 근거를 01 ASM-01-11로 정정(R10), ASM-OA-05 추가 |
 | v1.1 | 2026-09-25 | CJH(AI 에이전트, 소유자 결정 기록) | 소유자 결정 2026-09-25 반영: DEC-19 서울 리전 전환 [DF-942](#df-942) 카드 추가(S01, 1점), DF-905·DF-906·DF-909 의존에 DF-942, DF-931 의존에 DF-043, DF-908 보류(S03 발송 계획, 최신 10-30), DF-930 증빙 링크, §1·§2 표 갱신. DF-942에 재생성 사전 확인과 중단 규칙(이름 있는 DB 금지, DEC-19·DF-043 재개), 테스트 데이터 전제의 소유자 확인·데이터 중단 규칙·삭제 전 필수 내보내기(SPRINT_01 §11 위험 행과 정합), DF-909 늦을 때에 DF-908 이월 시 분리 |
+| v1.2 | 2026-09-25 | CJH(AI 에이전트) | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기). DF-925·DF-929 MVP 범위(테스트 회원 전용 플래그 개방)는 소유자 결정이 필요하다 |

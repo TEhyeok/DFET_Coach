@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-02 |
-| 버전 | v1.1 |
+| 버전 | v1.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -64,8 +64,8 @@
 
 ### 1.4 규모 요약
 
-- 전체 192건: story 131, chore 17, spike 4, owner-action 40. 합계 464점(V2 6건은 미추정 0점).
-- 이 수치에는 단계 파일이 올린 추가 제안 16건(20점, §8.8)이 들어 있지 않다. 채택 전까지 합계·용량 계산에서 뺀다(ASM-02-13). 모두 채택하면 208건·484점이다.
+- 전체 193건: story 131, chore 18, spike 4, owner-action 40. 합계 465점(V2 6건은 미추정 0점). DF-042는 2026-09-25 DEC-21로 채택해 포함했다.
+- 이 수치에는 단계 파일이 올린 추가 제안 15건(19점, §8.8)이 들어 있지 않다. 채택 전까지 합계·용량 계산에서 뺀다(ASM-02-13). 모두 채택하면 208건·484점이다.
 - 단계별 건수와 점수는 §7.1, 에픽별은 §6에 있다.
 - P0~P1b에 걸린 PRD F-/AC- ID(공통 규칙 C-·AC-C-, AC-IA, AC-A11Y 포함)는 모두 한 개 이상의 스토리에 대응한다(§9.2). 이월·보류 ID는 사유와 대상 스토리를 함께 적었다(§9.3).
 
@@ -119,6 +119,7 @@ PRD로 올릴 가정·질문은 PRD §13.4에 따라 AS-34, Q-25부터 번호를
 | `flag/` | soapV2, bodyComposition, bodyAssessment, memberShare, lidarBeta | 0 이상 | 산출물이 플래그 뒤에 숨는 경우(ADR-010) |
 | `agent/` | claude, codex, human | 0 또는 1 | 스프린트 계획에서 배정. TrainerKit 타깃이 겹치지 않게 한다 |
 | `status/` | ready, blocked, needs-decision | 0 또는 1 | ready는 DoR 충족. Projects Status 필드와 함께 쓴다 |
+| `scope/` | mvp | 0 또는 1 | [DEC-22](00_README.md#결정-기록) 1인 알파 MVP 범위 항목. 카드 Labels 줄에 적고 카드에 `### MVP 범위(DEC-22)` 절(지금 만들 것·미룰 것·기다리지 않는 의존)을 둔다. 없는 항목은 MVP 뒤로 연기한다([03 MVP 계획](03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)) |
 | 위험 표시 | freeze-exception, regulatory, privacy-impact, schema-change, rules-change, needs-device-test | 0 이상 | 소유자가 diff를 직접 읽어야 병합할 수 있는 PR 표시 |
 
 위험 표시를 반드시 붙이는 경우:
@@ -230,7 +231,7 @@ PRD로 올릴 가정·질문은 PRD §13.4에 따라 AS-34, Q-25부터 번호를
 | 에픽 | 이름 | 목표 | PRD 근거 | 단계 | 점수 | 건수 | 단계별 건수 |
 |---|---|---|---|---|---|---|---|
 | EP-00 | 소유자 행동·외부 게이트 트랙 | G-01~G-10 증빙, 법률·식약처·IRB 제출, 콘솔·스토어·배포·이관 실행, 플래그 개방, 단계 종료 검토를 병렬 트랙으로 운영한다(코딩 비차단) | §12.2 G-01~G-10, §12.3, §12.7, D13, MIG-01, MIG-02, Q-04, Q-05, Q-07, Q-08, Q-09, Q-10, Q-21, Q-22, Q-24 | P0~P3 | 15 | 40 | P0 16, P1a 9, P1b 3, P2 8, P3 4 |
-| EP-01 | 저장소 기준선·CI·백로그 도구 | 문서군 병합, 백로그 도구, 정적 가드, 에뮬레이터 통합 CI, TestFlight 워크플로를 갖춘다 | §12.5, MIG-01, NFR-03, NFR-11, G-02 | P0~P1a | 10 | 6 | P0 4, P1a 2 |
+| EP-01 | 저장소 기준선·CI·백로그 도구 | 문서군 병합, 백로그 도구, 정적 가드, 에뮬레이터 통합 CI, TestFlight 워크플로를 갖춘다 | §12.5, MIG-01, NFR-03, NFR-11, G-02 | P0~P1a | 11 | 7 | P0 5, P1a 2 |
 | EP-02 | 계약·어휘 단일 원본 | contracts/(부록 A·B·C, §5.5, §9.7)와 생성기, SOAP v2 스키마·픽스처, Dart·Swift 코덱 교차 왕복을 완성한다 | F-SOAP-06, §9.3, 부록 A, 부록 B, §5.5, §9.7, AC-SOAP-06.1~06.3 | P0 | 16 | 7 | P0 7 |
 | EP-03 | 보안 규칙·Storage·인덱스 | firestore.rules v2와 새 컬렉션 규칙, storage.rules, 인덱스를 R-01~R-31, S-01~S-09로 검증한다(G-03) | §9.4, §9.5, §9.6, G-03, M-G4, R-01~R-31, S-01~S-09 | P0 | 22 | 8 | P0 8 |
 | EP-04 | 접근 키·식별 백엔드 | uid 담당 관계 단일 진실원, syncRecordAccessKeys, Functions 공통 구조, 관리자 claim 통일 | F-LINK-03, F-LINK-05.4, §10.6, §10.7, NFR-16, R-06, R-07, R-23, RISK-10 | P0~P1a | 11 | 4 | P0 3, P1a 1 |
@@ -253,7 +254,7 @@ PRD로 올릴 가정·질문은 PRD §13.4에 따라 AS-34, Q-25부터 번호를
 | EP-21 | 판정 엔진·정책 운영 | evaluateChange 단일 구현(T01~T25), 스냅샷·요약 연동, MDC 밴드·배지, AD-04 | §7.3~§7.9, F-VIZ-01(P3), F-VIZ-03(P3), F-VIZ-06.3, AC-SOAP-03.5, AD-04, G-06, G-08 | P3 | 21 | 5 | P3 5 |
 | EP-22 | 센터 출시·Runner 트레이너 제거 | 역할 claim 분리, App Check 강제, MIG-09 제거, 운영·사고 대응, 1.0 출시 | MIG-09, NFR-09, §6.7.0, §10.7, §12.1 P3, G-10 | P3 | 15 | 6 | P3 6 |
 | EP-23 | V2 보류 | 재검토 조건만 기록하고 스프린트에 넣지 않는다 | F-BC-04, F-BC-05, F-SOAP-08, Q-14, G-07, Q-03, D4 | V2 | 0 | 6 | V2 6 |
-| 합계 | | | | | 464 | 192 | |
+| 합계 | | | | | 465 | 193 | |
 
 에픽 완료 기준:
 
@@ -267,17 +268,17 @@ PRD로 올릴 가정·질문은 PRD §13.4에 따라 AS-34, Q-25부터 번호를
 
 | 단계(키 대역) | 건수 | 점수 | 그중 owner-action 건수·점수 | 카드 파일 |
 |---|---|---|---|---|
-| P0 | 55 | 106 | 16건 · 6점 | [backlog/P0.md](backlog/P0.md) |
+| P0 | 56 | 107 | 16건 · 6점 | [backlog/P0.md](backlog/P0.md) |
 | P1a | 48 | 124 | 9건 · 3점 | [backlog/P1a.md](backlog/P1a.md) |
 | P1b | 27 | 79 | 3건 · 1점 | [backlog/P1b.md](backlog/P1b.md) |
 | P2 | 41 | 116 | 8건 · 2점 | [backlog/P2_P3.md](backlog/P2_P3.md) |
 | P3 | 15 | 39 | 4건 · 3점 | [backlog/P2_P3.md](backlog/P2_P3.md) |
 | V2 | 6 | 0 | 0건 · 0점 | [backlog/V2.md](backlog/V2.md) |
-| 합계 | 192 | 464 | 40건 · 15점 | |
+| 합계 | 193 | 465 | 40건 · 15점 | |
 
 owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIONS_AND_GATES.md](backlog/OWNER_ACTIONS_AND_GATES.md)에 있다.
 
-이 표와 §7.2·§7.3은 **채택된 항목만** 센다. 추가 제안 16건(DF-041, DF-042, DF-143, DF-144, DF-227, DF-333, DF-335~DF-338, DF-391, DF-506~DF-508, DF-940, DF-941)은 채택 전이라 빠져 있다. 채택했을 때의 단계·마일스톤·스프린트 합계는 [§8.8.2](#882-채택-시-적재-영향미리-계산)에 있다(ASM-02-13).
+이 표와 §7.2·§7.3은 **채택된 항목만** 센다. 추가 제안 15건(DF-041, DF-143, DF-144, DF-227, DF-333, DF-335~DF-338, DF-391, DF-506~DF-508, DF-940, DF-941)은 채택 전이라 빠져 있다. DF-042는 2026-09-25 DEC-21로 채택해 포함했다. 채택했을 때의 단계·마일스톤·스프린트 합계는 [§8.8.2](#882-채택-시-적재-영향미리-계산)에 있다(ASM-02-13).
 
 ### 7.2 마일스톤 대응
 
@@ -285,7 +286,7 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 
 | 마일스톤 | GitHub 제목 | 목표(잠정) | 배정 건수 | 배정 점수 | 종료 기준 요지 |
 |---|---|---|---|---|---|
-| MS-P0 | P0 정리·기반 | S05, 2026-10-30 | 47 | 85 | G-01·G-02·G-03, SOAP v2 교차 왕복, copy-lint 차단 모드, MIG-02 보고서, MIG-03 dry-run 멱등, 플래그 5키 false, DF-926 |
+| MS-P0 | P0 정리·기반 | S05, 2026-10-30 | 48 | 86 | G-01·G-02·G-03, SOAP v2 교차 왕복, copy-lint 차단 모드, MIG-02 보고서, MIG-03 dry-run 멱등, 플래그 5키 false, DF-926 |
 | MS-P1a | P1a 알파-기록 | S15, 2027-01-08(기능 완성 S14 12-31) | 56 | 145 | M-01 텍스트 평균 10초 미만, 유실 0, 2주 이상 자체 사용, trainer_ios 삭제, DF-927 |
 | MS-P1b | P1b 알파-평가 | S18, 2027-01-29 | 27 | 79 | TR-07~TR-10·O 자동 불러오기, M-04a/b·M-03·M-05 측정, M-G5 검토, DF-928 |
 | MS-P2 | P2 베타 | S26, 2027-03-26 | 41 | 116 | G-05b, 공유·해제 E2E, M-06·07·09·10, trainerWorkspaces 0건, DF-936 |
@@ -295,6 +296,8 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 게이트 마일스톤(MS-G04-G09, MS-G06, MS-G07a)은 이슈를 배정하지 않는 추적용 마일스톤이다. 정의는 [03_RELEASE_AND_SPRINT_PLAN.md](03_RELEASE_AND_SPRINT_PLAN.md)에 있다.
 
 ### 7.3 스프린트 적재
+
+> **DEC-22(2026-09-25) 뒤 이 절의 표는 보존용이다.** 아래 표는 DEC-22 이전의 전체 v1 계획(P0~P3)이다. DEC-22로 `scope/mvp` 항목의 스프린트를 MVP 계획으로 옮겨 §8 색인의 스프린트 값과 다르고, DF-042 채택(S03 +1)도 반영하지 않았다. 지금 적재는 [§7.4](#74-mvp-적재dec-22)와 [03 MVP 계획](03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)이 정본이다. `scope/mvp`가 없는 항목의 스프린트 값은 이 표의 옛 계획이며, MVP 종료 검토 뒤 다시 계획한다.
 
 약속 점수는 §8 색인에서 다시 계산해 스파인 계획과 일치함을 확인했다. 용량은 20점 × 작업일 ÷ 5로 계산했다. S19 이후는 여러 주를 묶은 잠정 계획이고 2027년 설 연휴는 정부 고시 확인 뒤 확정한다(ASM-02-12). P2·P3 묶음의 약속점이 용량보다 낮은 것은 아직 스토리를 세분하지 않았기 때문이며, 해당 단계 진입 전 스프린트 계획([templates/SPRINT_PLAN.md](templates/SPRINT_PLAN.md), V1-T04)에서 1주 단위로 다시 나누고 채운다. 추가 제안(§8.8)은 이 표에 넣지 않았다. 2026-09-25 소유자 결정(DEC-19 리전 전환, DF-908 보류)으로 S01은 DF-908 대신 DF-942(같은 1점), S02는 DF-043(+1), S03은 DF-908(+1)을 받아 S02·S03이 약속 한도를 1점씩 넘는다. 버퍼(10%)를 미리 배정하지 않는 [03 §10.1](03_RELEASE_AND_SPRINT_PLAN.md#101-스프린트-버퍼)의 예외이며, 소유자 확인과 되돌림 규칙(S02는 DF-043을 S03으로, S03은 DF-908을 S04~S05로)은 [V1-00 K-19](00_README.md#알려진-차이와-남은-일)에 있다. 모두 채택하면 S03 20, S04 19, S05 19, S14 14, S15 18, S16 18, S18 18, S19-S20 26, S21-S22 33, S23-S24 32, S25-S26 36, S27-S29 25, S30-S32 18이 된다(§8.8.2).
 
@@ -325,11 +328,33 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | S27-S29 | 03-29 ~ 04-16 | 15 | 60 | 23 | 7 | P3 | 판정 엔진·밴드·배지, AD-04, G-08 |
 | S30-S32 | 04-19 ~ 05-07 | 14(05-05 어린이날) | 56 | 16 | 8 | P3 | 역할 분리, App Check 강제, Runner 트레이너 제거, 1.0 |
 
+### 7.4 MVP 적재(DEC-22)
+
+[DEC-22](00_README.md#결정-기록)(2026-09-25)의 1인 알파 MVP 범위만 센다. `scope/mvp` 라벨 항목은 65건·185점이다: 완료 7건·16점(DF-001~005, DF-008, DF-901), S01 소유자 대기 2건·2점(DF-903, DF-942), S02~S12 배정 56건·167점. 정본 목록과 흐름별 설명은 [03 MVP 계획](03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)에 있다. 약속 한도는 [§4.3](#43-용량과-보정)과 같은 용량 × 0.9(S02는 K-19 예외 그대로)이고, 진행 중인 MVP 외 항목(DF-007·DF-010·DF-011)은 이미 PR이 열려 있어 마친다.
+
+| 스프린트 | 기간 | 작업일 | 약속 한도 | 약속점(MVP + 진행 중 MVP 외) | MVP 항목 | 진행 중(MVP 외, 마친다) | 목표 |
+|---|---|---|---|---|---|---|---|
+| S02 | 10-05~10-09 | 3 | 11 | 7 + 5 | DF-006(진행 중), DF-009, DF-034, DF-043, DF-905(소유자) | DF-007, DF-010 | 새 컬렉션 스키마, Swift SOAP v2 코덱, plist 비추적, 서울 버킷 명시 |
+| S03 | 10-12~10-16 | 5 | 18 | 17 + 1 | DF-017(진행 중), DF-020(진행 중), DF-021(진행 중), DF-037(진행 중), DF-038, DF-042, DF-906(소유자) | DF-011 | AppShell, 규칙 v2·새 컬렉션 규칙, Functions 공통 구조, 에뮬레이터 시드 |
+| S04 | 10-19~10-23 | 5 | 18 | 16 | DF-012, DF-022, DF-023, DF-024, DF-027, DF-035 | - | claim 로그인, 규칙·Storage 규칙 테스트, 인덱스, 플래그 키 |
+| S05 | 10-26~10-30 | 5 | 18 | 17 | DF-013, DF-014, DF-016, DF-039, DF-104, DF-108 | - | 회원 로드, LocalStore, DesignSystem, FirebaseData, 대기(테스트) 회원 등록 |
+| S06 | 11-02~11-06 | 5 | 18 | 15 | DF-015, DF-018, DF-107, DF-109 | - | SyncEngine, 설정 기초, 에뮬레이터 통합 CI, recordConsent(MVP 범위) |
+| S07 | 11-09~11-13 | 5 | 18 | 16 | DF-110, DF-113, DF-116, DF-118, DF-925(소유자), DF-931(소유자) | - | 동의 기록(MVP 범위), 회원 목록, **흐름 1** Live·필기 업로드. 소유자: 서울 배포·플래그 |
+| S08 | 11-16~11-20 | 5 | 18 | 18 | DF-114, DF-120, DF-121, DF-122, DF-200 | - | **흐름 1** Review·O 행·확정, **흐름 4** 타임라인, Vision 가능성 확인 |
+| S09 | 11-23~11-27 | 5 | 18 | 16 | DF-123, DF-127, DF-128, DF-201 | - | **흐름 1** addendum, **흐름 2** 신체조성·결과지, **흐름 3** PostureMath |
+| S10 | 11-30~12-04 | 5 | 18 | 16 | DF-129, DF-130, DF-204, DF-216 | - | **흐름 2** 줄자 둘레, **흐름 4** 차트 규칙·seriesBreak, **흐름 3** 촬영 |
+| S11 | 12-07~12-11 | 5 | 18 | 14 | DF-205, DF-206, DF-207, DF-208, DF-929(소유자) | - | **흐름 3** EXIF 제거·업로드 큐·Vision 어댑터·랜드마크 보정. 소유자: bodyAssessment |
+| S12 | 12-14~12-18 | 5 | 18 | 15 | DF-209, DF-210, DF-215, DF-225 | - | **흐름 3** 확정·결과, **흐름 4** 추이 차트·체형 타임라인 |
+| S13 | 12-21~12-24 | 4 | 14 | 0 | - | - | MVP 종료: 데모 체크리스트(시뮬레이터 + 에뮬레이터 → 서울), 버퍼. 새 항목 없음 |
+
+- 같은 스프린트 안 의존은 [§4.2](#42-크기포인트)대로 허용한다(예: S05 DF-108←DF-013, S12 DF-215←DF-209). MVP 항목이 MVP 밖 항목을 기다리지 않도록, 그런 의존은 카드의 'MVP에서 기다리지 않는 의존'에 적었다: DF-109←DF-025·DF-032, DF-121←DF-916, DF-204←DF-203, DF-931←DF-025, DF-925←DF-908·DF-909·DF-910·DF-924, DF-929←DF-927. 색인의 의존 값은 바꾸지 않았다(MVP 뒤 전체 계획의 정본).
+- `scope/mvp`가 없는 채택 항목(128건)은 MVP 뒤로 연기한다. 스프린트 값은 §7.3의 옛 계획 그대로이며 MVP 종료 검토 뒤 다시 계획한다.
+
 ## 8. 전체 스토리 색인
 
 열 설명: **유형**은 story/chore/spike/owner-action, **점**은 §4.2, **우선**은 §4.1, **의존**은 먼저 병합(또는 완료)돼야 하는 키, **PRD 추적**은 커밋 `Trace:`와 이슈 `trace`에 넣는 ID다. 카드 전문은 단계 파일에 있다.
 
-### 8.1 P0 정리·기반 (39건, 100점) — 카드: [backlog/P0.md](backlog/P0.md)
+### 8.1 P0 정리·기반 (40건, 101점) — 카드: [backlog/P0.md](backlog/P0.md)
 
 | 키 | 제목 | 유형 | 에픽 | 영역 | 단계 | 스프린트 | 점 | 우선 | 의존 | PRD 추적 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -344,13 +369,13 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | DF-009 | Swift SOAP v2 코덱(TrainerDomain)과 교차 왕복 테스트를 구현한다 | story | EP-02 | trainer-app | P0 | S02 | 3 | must | DF-008, DF-005, DF-004 | F-SOAP-06.1~06.3, AC-SOAP-06.1~06.3, NFR-07 |
 | DF-010 | prohibited-terms.v1.json과 copy-lint(보고 모드)를 도입한다 | story | EP-06 | ci | P0 | S02 | 3 | must | DF-004 | F-PRIV-06.3, 부록 C.1~C.3, C-06, AC-C-06.1 |
 | DF-011 | static-guards.sh로 grep 불변식을 CI에 건다 | chore | EP-01 | ci | P0 | S03 | 1 | must | DF-008 | NFR-03, NFR-11, AC-SOAP-01.9, AC-SOAP-05.8, AC-VIZ-06.1, AC-LINK-03.3 |
-| DF-012 | trainer claim 로그인과 claim 회수 잠금을 구현한다(FeatureAuth·AuthService) | story | EP-05 | trainer-app | P0 | S04 | 3 | must | DF-017, DF-903 | NFR-02, NFR-08, G-02 |
+| DF-012 | trainer claim 로그인과 claim 회수 잠금을 구현한다(FeatureAuth·AuthService) | story | EP-05 | trainer-app | P0 | S04 | 3 | must | DF-017, DF-903, DF-042 | NFR-02, NFR-08, G-02 |
 | DF-013 | trainers/{uid} 리스너와 users 청크 조회로 담당 회원을 불러온다(TR-02 기초) | story | EP-05 | trainer-app | P0 | S05 | 3 | must | DF-012, DF-020 | F-LINK-03.2, TR-02, NFR-02, §9.6, G-02 |
-| DF-014 | LocalStore SwiftData 스키마 v1과 파일 보호를 만든다 | story | EP-05 | trainer-app | P0 | S06 | 3 | must | DF-009 | §10.2.3, NFR-04, NFR-17, F-SOAP-01.5, AS-32 |
-| DF-015 | SyncEngine Outbox 순서·백오프·syncState 계산을 구현한다 | story | EP-05 | trainer-app | P0 | S07 | 5 | must | DF-014 | NFR-05, NFR-06, C-05, AC-C-05.1, AC-SOAP-01.4, §6.0.3, M-G3 |
-| DF-016 | DesignSystem 기초 토큰과 SyncStateBadge·SourceGradeChip·MetricRow·EmptyState를 만든다 | story | EP-05 | design | P0 | S06 | 3 | must | DF-008, DF-039 | §6.0.3, §8.5, F-VIZ-07.1, F-VIZ-07.7, C-01, Q-10 |
+| DF-014 | LocalStore SwiftData 스키마 v1과 파일 보호를 만든다 | story | EP-05 | trainer-app | P0 | S05 | 3 | must | DF-009 | §10.2.3, NFR-04, NFR-17, F-SOAP-01.5, AS-32 |
+| DF-015 | SyncEngine Outbox 순서·백오프·syncState 계산을 구현한다 | story | EP-05 | trainer-app | P0 | S06 | 5 | must | DF-014 | NFR-05, NFR-06, C-05, AC-C-05.1, AC-SOAP-01.4, §6.0.3, M-G3 |
+| DF-016 | DesignSystem 기초 토큰과 SyncStateBadge·SourceGradeChip·MetricRow·EmptyState를 만든다 | story | EP-05 | design | P0 | S05 | 3 | must | DF-008, DF-039 | §6.0.3, §8.5, F-VIZ-07.1, F-VIZ-07.7, C-01, Q-10 |
 | DF-017 | AppShell(NavigationSplitView, TR 라우트, DI, --preview-*, 플래그 진입점 숨김)을 만든다 | story | EP-05 | trainer-app | P0 | S03 | 3 | must | DF-008 | §8.1, AC-IA-02, NFR-03, NFR-12 |
-| DF-018 | TR-15 설정 기초(실제 로그아웃, 미동기 경고, 큐 상태·재시도, 버전)를 구현한다 | story | EP-05 | trainer-app | P0 | S07 | 2 | must | DF-015, DF-012 | TR-15, NFR-08, NFR-06 |
+| DF-018 | TR-15 설정 기초(실제 로그아웃, 미동기 경고, 큐 상태·재시도, 버전)를 구현한다 | story | EP-05 | trainer-app | P0 | S06 | 2 | must | DF-015, DF-012 | TR-15, NFR-08, NFR-06 |
 | DF-020 | firestore.rules v2 헬퍼(canWriteFor, hasConsent, featureOn)와 soap_notes v2 규칙을 작성한다 | story | EP-03 | rules | P0 | S03 | 5 | must | DF-006, DF-901 | §9.4, §9.3, F-PRIV-06.1, F-LINK-03.1, F-SOAP-04.3, R-01~R-04, R-08, R-09, R-13, R-21, R-24 |
 | DF-021 | 새 컬렉션 규칙(체형·신체조성·둘레·bodyScans·대기 회원·동의·요약·권리·opsMetrics·정책)을 작성한다 | story | EP-03 | rules | P0 | S03 | 5 | must | DF-006 | §9.2, §9.4, F-LINK-01.2~01.3, F-LINK-01.7, F-ASM-04.3, F-BC-03.2, AC-ASM-04.2, AC-ASM-06.4 |
 | DF-022 | 규칙 테스트 R-01~R-13, R-21, R-23, R-24(SOAP·담당 관계)를 작성한다 | story | EP-03 | rules | P0 | S04 | 3 | must | DF-020 | R-01~R-13, R-21, R-23, R-24, AC-LINK-03.1, AC-LINK-03.2, AC-SOAP-04.1~04.3, AC-PRIV-06.1, G-03 |
@@ -358,7 +383,7 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | DF-024 | §9.6 복합 인덱스를 firestore.indexes.json에 추가한다 | chore | EP-03 | rules | P0 | S04 | 1 | must | DF-020, DF-021 | §9.6 |
 | DF-025 | syncRecordAccessKeys와 assign/remove 수정(④ 인계, 감사 handover)을 구현한다 | story | EP-04 | functions | P0 | S05 | 5 | must | DF-037, DF-021 | F-LINK-03.4~03.6, F-LINK-05.4, F-LINK-01.6, §10.6, AD-01, RISK-10, R-06 |
 | DF-026 | 관리자 판정 네 벌 현황을 확인하고 claim 통일 설계를 확정한다 | spike | EP-04 | functions | P0 | S06 | 1 | should | DF-907 | §9.4 isAdmin, §10.7, R-23, MIG-02 |
-| DF-027 | 플래그 5키를 contracts·zod·example·Dart·Swift에 추가하고 AD-07 화면을 확장한다 | story | EP-07 | admin-web | P0 | S05 | 3 | must | DF-004 | §6.0.2, §12.3, AD-07, AC-IA-02, §10.7 |
+| DF-027 | 플래그 5키를 contracts·zod·example·Dart·Swift에 추가하고 AD-07 화면을 확장한다 | story | EP-07 | admin-web | P0 | S04 | 3 | must | DF-004 | §6.0.2, §12.3, AD-07, AC-IA-02, §10.7 |
 | DF-028 | Runner 트레이너 규제 문구와 diagnosis 자동 채움을 동결 예외로 제거한다 | story | EP-06 | trainer-app | P0 | S04 | 2 | must | DF-010, DF-930 | MIG-04, §3.4-3, §3.4-4, F-PRIV-06.1, MIG-09 |
 | DF-029 | 회원 앱 가이드·온보딩 등 4개 파일 문구를 교체한다 | story | EP-06 | member-app | P0 | S04 | 1 | must | DF-010 | MIG-04, §3.4-8, RISK-01 |
 | DF-030 | MIG-02 읽기 전용 실사 스크립트를 작성한다 | story | EP-13 | functions | P0 | S04 | 2 | must | DF-037 | MIG-02, §11.3 |
@@ -369,8 +394,9 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | DF-035 | 규칙 테스트 R-14~R-20, R-22, R-25~R-31(측정·동의·대기 회원·플래그)을 작성한다 | story | EP-03 | rules | P0 | S04 | 3 | must | DF-021 | R-14~R-20, R-22, R-25~R-31, AC-BC-01.1, AC-BC-01.4, AC-PRIV-01.1, AC-PRIV-02.1, AC-LINK-01.1~01.3, AC-LINK-01.6, AC-ASM-06.4, AC-ASM-06.5, G-03 |
 | DF-037 | Functions shared 구조(region, callable 어댑터 이전, errors, audit)를 만든다 | chore | EP-04 | functions | P0 | S03 | 2 | must | DF-901 | NFR-16, §10.6 |
 | DF-038 | Storage 교차 서비스 firestore.get 규칙을 실환경에서 확인한다 | spike | EP-03 | storage | P0 | S03 | 1 | must | DF-906, DF-043 | §9.5 설계 근거, S-09, G-03 |
-| DF-039 | AppDelegate.swift 이식 대상을 모듈별 줄 범위로 확정한다(보관 브랜치 tip 기준) | spike | EP-05 | trainer-app | P0 | S06 | 2 | must | DF-901 | §10.2.2, §6.4.5, §6.4.6, §10.3, RISK-03 |
+| DF-039 | AppDelegate.swift 이식 대상을 모듈별 줄 범위로 확정한다(보관 브랜치 tip 기준) | spike | EP-05 | trainer-app | P0 | S05 | 2 | must | DF-901 | §10.2.2, §6.4.5, §6.4.6, §10.3, RISK-03 |
 | DF-040 | copy-lint를 차단 모드로 전환한다(출시 앱 문자열 포함) | chore | EP-06 | ci | P0 | S05 | 1 | must | DF-028, DF-029 | F-PRIV-06.3, AC-C-06.1, M-G1, §12.1 P0 종료 |
+| DF-042 | 에뮬레이터 합성 데이터 시드 스크립트를 만든다(가상 트레이너·회원·동의 상태·플래그·claim) | chore | EP-01 | ci | P0 | S03 | 1 | must | DF-901 | G-02, §10.2.4, §12.5, NFR-02 |
 | DF-043 | 서울 Storage 버킷과 Firestore 위치를 앱·admin_web·Functions·firebase.json에 명시한다(DEC-19) | chore | EP-03 | storage | P0 | S02 | 1 | must | DF-942 | Q-08, G-09, §9.5, §9.7, NFR-16 |
 
 ### 8.2 P1a 알파-기록 (39건, 121점) — 카드: [backlog/P1a.md](backlog/P1a.md)
@@ -379,31 +405,31 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 |---|---|---|---|---|---|---|---|---|---|---|
 | DF-100 | MIG-03 적용 준비: v1 쓰기 영구 차단 규칙 PR과 롤백 리허설(MIG-11) | story | EP-13 | functions | P1a | S08 | 3 | must | DF-031, DF-022 | MIG-03, MIG-11, R-21, §11.12 |
 | DF-101 | 관리자 판정을 custom claim admin으로 통일한다(규칙·Storage·callable·admin_web) | story | EP-04 | rules | P1a | S09 | 3 | must | DF-026 | §9.4 isAdmin 통일, §10.7, R-23, ADR-018 |
-| DF-104 | FirebaseData RemoteWriter·BinaryUploader·CallableClient와 퍼시스턴스 설정을 구현한다 | story | EP-05 | trainer-app | P1a | S06 | 3 | must | DF-014 | §10.2.3, NFR-04, NFR-05, NFR-07, F-SOAP-04.8, ADR-007 |
-| DF-107 | trainer-app-emulator-it CI와 오류 주입 하네스를 만든다 | story | EP-01 | ci | P1a | S07 | 3 | must | DF-015, DF-104 | §12.5, NFR-04~NFR-06, C-05, AC-C-05.1, ADR-013 |
-| DF-108 | TR-14 대기 회원 최소 등록(만 14세 확인)을 구현한다 | story | EP-09 | trainer-app | P1a | S07 | 3 | must | DF-013, DF-016 | F-LINK-01.1, F-LINK-01.2, F-LINK-01.4, F-LINK-01.8, AC-LINK-01.2, AC-LINK-01.6, TR-14, AS-22 |
-| DF-109 | recordConsent와 memberConsentStates 파생·서명 저장을 구현한다 | story | EP-08 | functions | P1a | S07 | 5 | must | DF-025, DF-032, DF-107 | F-PRIV-01.4, F-PRIV-02.1, F-PRIV-02.2, F-PRIV-03.2, F-PRIV-03.3, F-PRIV-03.6, AC-PRIV-02.1, AC-PRIV-03.1, R-28 |
-| DF-110 | TR-14 동의 카드·유형별 선택·서명 패드를 구현한다(대기·가입 회원) | story | EP-08 | trainer-app | P1a | S08 | 5 | must | DF-108, DF-109 | F-PRIV-01.1~01.3, F-PRIV-03.1, F-PRIV-03.6, AC-PRIV-01.3, AC-PRIV-03.2, M-08, TR-14 |
+| DF-104 | FirebaseData RemoteWriter·BinaryUploader·CallableClient와 퍼시스턴스 설정을 구현한다 | story | EP-05 | trainer-app | P1a | S05 | 3 | must | DF-014 | §10.2.3, NFR-04, NFR-05, NFR-07, F-SOAP-04.8, ADR-007 |
+| DF-107 | trainer-app-emulator-it CI와 오류 주입 하네스를 만든다 | story | EP-01 | ci | P1a | S06 | 3 | must | DF-015, DF-104 | §12.5, NFR-04~NFR-06, C-05, AC-C-05.1, ADR-013 |
+| DF-108 | TR-14 대기 회원 최소 등록(만 14세 확인)을 구현한다 | story | EP-09 | trainer-app | P1a | S05 | 3 | must | DF-013, DF-016 | F-LINK-01.1, F-LINK-01.2, F-LINK-01.4, F-LINK-01.8, AC-LINK-01.2, AC-LINK-01.6, TR-14, AS-22 |
+| DF-109 | recordConsent와 memberConsentStates 파생·서명 저장을 구현한다 | story | EP-08 | functions | P1a | S06 | 5 | must | DF-025, DF-032, DF-107 | F-PRIV-01.4, F-PRIV-02.1, F-PRIV-02.2, F-PRIV-03.2, F-PRIV-03.3, F-PRIV-03.6, AC-PRIV-02.1, AC-PRIV-03.1, R-28 |
+| DF-110 | TR-14 동의 카드·유형별 선택·서명 패드를 구현한다(대기·가입 회원) | story | EP-08 | trainer-app | P1a | S07 | 5 | must | DF-108, DF-109 | F-PRIV-01.1~01.3, F-PRIV-03.1, F-PRIV-03.6, AC-PRIV-01.3, AC-PRIV-03.2, M-08, TR-14 |
 | DF-111 | 오프라인 현장 동의를 Outbox 첫 항목으로 두고 awaitingConsent를 처리한다 | story | EP-08 | trainer-app | P1a | S09 | 3 | must | DF-110, DF-015 | F-PRIV-03.7, AC-PRIV-03.3, NFR-05, AS-32 |
 | DF-112 | 동의 철회 즉시 처리와 현장 철회 UI를 구현한다 | story | EP-08 | functions | P1a | S10 | 3 | must | DF-109, DF-110 | F-PRIV-02.3, F-PRIV-03.3, 철회 처리표, NFR-17, AC-PRIV-02.2 |
-| DF-113 | TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가)을 완성한다 | story | EP-09 | trainer-app | P1a | S08 | 2 | must | DF-108, DF-013 | TR-02, F-LINK-01.2, F-LINK-03.2, §8.4 |
-| DF-114 | TR-03 회원 상세 헤더와 통합 타임라인 목록(종류 필터, 커서 페이지네이션)을 구현한다 | story | EP-12 | trainer-app | P1a | S11 | 3 | must | DF-016, DF-013, DF-113, DF-116 | F-VIZ-05.1, F-VIZ-05.2(P1a), F-VIZ-05.4, F-VIZ-05.6, F-VIZ-05.7, AC-VIZ-05.1, AC-VIZ-05.2, AC-VIZ-05.4, TR-03, F-SOAP-04.5 |
+| DF-113 | TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가)을 완성한다 | story | EP-09 | trainer-app | P1a | S07 | 2 | must | DF-108, DF-013 | TR-02, F-LINK-01.2, F-LINK-03.2, §8.4 |
+| DF-114 | TR-03 회원 상세 헤더와 통합 타임라인 목록(종류 필터, 커서 페이지네이션)을 구현한다 | story | EP-12 | trainer-app | P1a | S08 | 3 | must | DF-016, DF-013, DF-113, DF-116 | F-VIZ-05.1, F-VIZ-05.2(P1a), F-VIZ-05.4, F-VIZ-05.6, F-VIZ-05.7, AC-VIZ-05.1, AC-VIZ-05.2, AC-VIZ-05.4, TR-03, F-SOAP-04.5 |
 | DF-115 | logRecordAccess와 TR-03 진입 감사 기록을 구현한다 | story | EP-08 | functions | P1a | S11 | 2 | must | DF-114, DF-037 | F-PRIV-05.1, F-PRIV-05.3, AC-PRIV-05.2 |
-| DF-116 | TR-04 Live(캔버스 60% 이상, 한 줄 입력, '기록 완료' 1탭, 이어쓰기·새 세션 선택)를 구현한다 | story | EP-10 | trainer-app | P1a | S08 | 5 | must | DF-015, DF-016, DF-017, DF-039, DF-113 | F-SOAP-01.1, F-SOAP-01.2, F-SOAP-01.5, F-SOAP-01.6, F-SOAP-01.8, F-SOAP-01.9, AC-SOAP-01.1~01.3, AC-SOAP-01.6, AC-SOAP-01.9, AC-IA-03, NFR-15 |
+| DF-116 | TR-04 Live(캔버스 60% 이상, 한 줄 입력, '기록 완료' 1탭, 이어쓰기·새 세션 선택)를 구현한다 | story | EP-10 | trainer-app | P1a | S07 | 5 | must | DF-015, DF-016, DF-017, DF-039, DF-113 | F-SOAP-01.1, F-SOAP-01.2, F-SOAP-01.5, F-SOAP-01.6, F-SOAP-01.8, F-SOAP-01.9, AC-SOAP-01.1~01.3, AC-SOAP-01.6, AC-SOAP-01.9, AC-IA-03, NFR-15 |
 | DF-117 | NRS 빠른 입력과 2D 바디맵 칩을 이식한다(영문 regionCode, 빨강 제거) | story | EP-10 | trainer-app | P1a | S09 | 3 | must | DF-116, DF-916 | F-SOAP-01.3, F-SOAP-02.3, F-VIZ-04.1, F-VIZ-04.2, F-VIZ-04.5, AC-SOAP-01.7, AC-SOAP-02.7, AC-VIZ-04.1, AC-VIZ-04.4 |
-| DF-118 | 필기 개정본을 Storage soapInk에 업로드하고 inkRevision을 기록한다 | story | EP-10 | trainer-app | P1a | S09 | 3 | must | DF-116, DF-023, DF-104 | F-SOAP-01.7, AC-SOAP-01.5, AC-SOAP-02.1, NFR-05, S-01~S-04 |
+| DF-118 | 필기 개정본을 Storage soapInk에 업로드하고 inkRevision을 기록한다 | story | EP-10 | trainer-app | P1a | S07 | 3 | must | DF-116, DF-023, DF-104 | F-SOAP-01.7, AC-SOAP-01.5, AC-SOAP-02.1, NFR-05, S-01~S-04 |
 | DF-119 | Live 동의 게이트, 핵심 지표 3~5개, 빠른 추가 예약 칩을 구현한다 | story | EP-10 | trainer-app | P1a | S09 | 2 | must | DF-116, DF-110 | F-SOAP-01.4, F-SOAP-01.10, F-SOAP-01.11, AC-SOAP-01.8 |
-| DF-120 | TR-05 Review S/A/P 카드, 회원에게 남길 한 줄, 금지어 인라인 경고를 구현한다 | story | EP-10 | trainer-app | P1a | S09 | 3 | must | DF-116, DF-010 | F-SOAP-02.1~02.3, F-SOAP-02.7, F-SOAP-02.8, F-SOAP-02.10, AC-SOAP-02.1, AC-SOAP-02.8, F-PRIV-06.1 |
-| DF-121 | Review O typed 행(metricCode enum, AROM 기본, MMT, 미완성 행)을 구현한다 | story | EP-10 | trainer-app | P1a | S10 | 5 | must | DF-120, DF-916 | F-SOAP-02.4, F-SOAP-02.5, F-SOAP-02.6, AC-SOAP-02.2~02.6, Q-23 |
-| DF-122 | 확정 최소 요건 체크리스트와 확정·확정 대기를 구현한다 | story | EP-10 | trainer-app | P1a | S10 | 5 | must | DF-121, DF-015 | F-SOAP-02.9, F-SOAP-04.1, F-SOAP-04.2, §6.4.4, AC-SOAP-04.5, M-11, AS-26 |
-| DF-123 | addendum, draft 삭제, auditSoapFinalized 트리거를 구현한다 | story | EP-10 | trainer-app | P1a | S10 | 3 | must | DF-122 | F-SOAP-04.3~04.8, F-PRIV-07.3, AC-SOAP-04.1~04.4, AC-SOAP-04.6, R-08, R-09 |
+| DF-120 | TR-05 Review S/A/P 카드, 회원에게 남길 한 줄, 금지어 인라인 경고를 구현한다 | story | EP-10 | trainer-app | P1a | S08 | 3 | must | DF-116, DF-010 | F-SOAP-02.1~02.3, F-SOAP-02.7, F-SOAP-02.8, F-SOAP-02.10, AC-SOAP-02.1, AC-SOAP-02.8, F-PRIV-06.1 |
+| DF-121 | Review O typed 행(metricCode enum, AROM 기본, MMT, 미완성 행)을 구현한다 | story | EP-10 | trainer-app | P1a | S08 | 5 | must | DF-120, DF-916 | F-SOAP-02.4, F-SOAP-02.5, F-SOAP-02.6, AC-SOAP-02.2~02.6, Q-23 |
+| DF-122 | 확정 최소 요건 체크리스트와 확정·확정 대기를 구현한다 | story | EP-10 | trainer-app | P1a | S08 | 5 | must | DF-121, DF-015 | F-SOAP-02.9, F-SOAP-04.1, F-SOAP-04.2, §6.4.4, AC-SOAP-04.5, M-11, AS-26 |
+| DF-123 | addendum, draft 삭제, auditSoapFinalized 트리거를 구현한다 | story | EP-10 | trainer-app | P1a | S09 | 3 | must | DF-122 | F-SOAP-04.3~04.8, F-PRIV-07.3, AC-SOAP-04.1~04.4, AC-SOAP-04.6, R-08, R-09 |
 | DF-124 | 이전 노트 이어쓰기와 기본 빠른 문구 칩을 구현한다 | story | EP-10 | trainer-app | P1a | S10 | 2 | should | DF-121 | F-SOAP-07.1(P1a), F-SOAP-07.2, F-SOAP-07.3, AC-SOAP-07.1, AC-SOAP-07.2 |
 | DF-125 | TR-01 오늘 세션 보드(로컬 목록·이월, 동기화 대기, Review 미확정, 세션 수 보고)를 구현한다 | story | EP-10 | trainer-app | P1a | S11 | 3 | must | DF-116, DF-122 | TR-01, AC-IA-05, M-02, AS-21 |
 | DF-126 | TrainerAnalytics 허용 목록 전송기와 M-01·M-02 이벤트를 구현한다(DebugSink) | story | EP-10 | analytics | P1a | S08 | 2 | must | DF-033, DF-116 | §5.5, NFR-10, F-SOAP-01.12, M-01, M-01b, M-02, AC-SOAP-01.10 |
-| DF-127 | TR-11 신체조성 입력(값 폼, 필수 메타, 범위·교차 검증, BMI 파생)을 구현한다 | story | EP-11 | trainer-app | P1a | S11 | 5 | must | DF-109, DF-016, DF-104, DF-121, DF-114 | F-BC-01.1~01.4, F-BC-03.1~03.3, AC-BC-01.1~01.5, AC-BC-03.1, AC-BC-03.2, AC-BC-03.4, AC-PRIV-01.1, R-14, R-17, R-27 |
-| DF-128 | 결과지 사진 첨부, '정정', 기기 변경 경고를 구현한다 | story | EP-11 | trainer-app | P1a | S11 | 3 | must | DF-127, DF-118 | F-BC-02.1, F-BC-02.3, F-BC-03.4, F-BC-03.5, AC-BC-03.3, AC-BC-03.5 |
-| DF-129 | TR-12 줄자 둘레(기본 허리·엉덩이, 부위 추가, 반복 3회, side·landmarkNote 규칙)를 구현한다 | story | EP-11 | trainer-app | P1a | S12 | 5 | must | DF-127 | F-ASM-06.1~06.6, AC-ASM-06.1~06.5, R-26, R-29 |
-| DF-130 | Swift 공통 차트 규칙(SeriesTrendChart, 출처 칩, '산정 준비 중', 보간 금지)과 TR-11 미니 추이를 구현한다 | story | EP-12 | design | P1a | S12 | 3 | must | DF-016, DF-128 | F-VIZ-07.1~07.9, C-01~C-04, AC-VIZ-07.1~07.5, AC-C-01.1, AC-C-02.1, AC-C-03.1, AC-C-03.2, AC-C-04.1, A-02, A-03 |
+| DF-127 | TR-11 신체조성 입력(값 폼, 필수 메타, 범위·교차 검증, BMI 파생)을 구현한다 | story | EP-11 | trainer-app | P1a | S09 | 5 | must | DF-109, DF-016, DF-104, DF-121, DF-114 | F-BC-01.1~01.4, F-BC-03.1~03.3, AC-BC-01.1~01.5, AC-BC-03.1, AC-BC-03.2, AC-BC-03.4, AC-PRIV-01.1, R-14, R-17, R-27 |
+| DF-128 | 결과지 사진 첨부, '정정', 기기 변경 경고를 구현한다 | story | EP-11 | trainer-app | P1a | S09 | 3 | must | DF-127, DF-118 | F-BC-02.1, F-BC-02.3, F-BC-03.4, F-BC-03.5, AC-BC-03.3, AC-BC-03.5 |
+| DF-129 | TR-12 줄자 둘레(기본 허리·엉덩이, 부위 추가, 반복 3회, side·landmarkNote 규칙)를 구현한다 | story | EP-11 | trainer-app | P1a | S10 | 5 | must | DF-127 | F-ASM-06.1~06.6, AC-ASM-06.1~06.5, R-26, R-29 |
+| DF-130 | Swift 공통 차트 규칙(SeriesTrendChart, 출처 칩, '산정 준비 중', 보간 금지)과 TR-11 미니 추이를 구현한다 | story | EP-12 | design | P1a | S10 | 3 | must | DF-016, DF-128 | F-VIZ-07.1~07.9, C-01~C-04, AC-VIZ-07.1~07.5, AC-C-01.1, AC-C-02.1, AC-C-03.1, AC-C-03.2, AC-C-04.1, A-02, A-03 |
 | DF-131 | Flutter source_grade_chip과 series_trend_chart 공통 규칙을 구현한다 | story | EP-12 | member-app | P1a | S12 | 2 | should | DF-004 | F-VIZ-07.1, F-VIZ-07.2, F-VIZ-07.6, AC-VIZ-07.1, AC-VIZ-07.3, §6.5.8 |
 | DF-132 | deleteMemberCascade 통합 삭제 루틴으로 두 삭제 경로를 합친다 | story | EP-08 | functions | P1a | S12 | 5 | must | DF-037, DF-021 | F-PRIV-04.1~04.4, §9.7 삭제 범위표, AC-PRIV-04.1 |
 | DF-133 | purgeExpiredRecords(철회 파기, 대기 회원 취소·만료, 보유기간 경과)를 구현한다 | story | EP-08 | functions | P1a | S13 | 3 | must | DF-132, DF-112 | §9.7 보존 정책, F-PRIV-02.3, F-LINK-01.5, AC-LINK-01.4, AC-LINK-01.5, AC-PRIV-02.2, AC-PRIV-02.3, Q-24 |
@@ -421,21 +447,21 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 
 | 키 | 제목 | 유형 | 에픽 | 영역 | 단계 | 스프린트 | 점 | 우선 | 의존 | PRD 추적 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| DF-200 | Apple Vision 2D 랜드마크를 대상 iPad에서 정확도·좌우 매핑·지연으로 확인한다 | spike | EP-14 | trainer-app | P1b | S12 | 2 | must | DF-008 | F-ASM-02.1, F-ASM-02.7, AC-ASM-02.3, Q-18, AS-12, NFR-15, RISK-02 |
-| DF-201 | PostureMath 산식과 posture-metrics.v1 벡터를 구현한다 | story | EP-14 | trainer-app | P1b | S14 | 5 | must | DF-003, DF-009 | F-ASM-02.5, F-ASM-03.1~03.6, AC-ASM-02.4, AC-ASM-02.5, AC-ASM-03.1~03.4, AC-ASM-03.6, 부록 A.3 |
+| DF-200 | Apple Vision 2D 랜드마크를 대상 iPad에서 정확도·좌우 매핑·지연으로 확인한다 | spike | EP-14 | trainer-app | P1b | S08 | 2 | must | DF-008 | F-ASM-02.1, F-ASM-02.7, AC-ASM-02.3, Q-18, AS-12, NFR-15, RISK-02 |
+| DF-201 | PostureMath 산식과 posture-metrics.v1 벡터를 구현한다 | story | EP-14 | trainer-app | P1b | S09 | 5 | must | DF-003, DF-009 | F-ASM-02.5, F-ASM-03.1~03.6, AC-ASM-02.4, AC-ASM-02.5, AC-ASM-03.1~03.4, AC-ASM-03.6, 부록 A.3 |
 | DF-203 | 스테이션 프로필과 회차 체크리스트 4항목을 구현한다 | story | EP-14 | trainer-app | P1b | S15 | 3 | must | DF-014, DF-915 | F-ASM-01.2, F-ASM-01.3, AC-ASM-01.2, AC-ASM-01.3 |
-| DF-204 | TR-07 촬영(정면·측면, roll·pitch 게이트, 인물·조명 검출, 동의 ②③ 게이트)을 구현한다 | story | EP-14 | trainer-app | P1b | S15 | 5 | must | DF-203, DF-110 | F-ASM-01.1, F-ASM-01.4, F-ASM-01.5, AC-ASM-01.1, AC-ASM-01.2, AC-ASM-01.3, AC-PRIV-01.2, M-04a |
-| DF-205 | EXIF·GPS 제거, 얼굴 가림 썸네일, 재촬영 폐기, 앱 전용 저장을 구현한다 | story | EP-14 | trainer-app | P1b | S16 | 3 | must | DF-204 | F-ASM-01.6, F-ASM-01.7, F-ASM-01.10, AC-ASM-01.4, AC-ASM-01.6, NFR-17 |
-| DF-206 | 체형 draft 오프라인 저장과 사진 업로드 큐·확정 대기 표시를 구현한다 | story | EP-14 | trainer-app | P1b | S16 | 3 | must | DF-204, DF-015 | F-ASM-01.8, AC-ASM-01.5, AC-ASM-04.5, NFR-05, S-01~S-04 |
-| DF-207 | PostureVision LandmarkSuggester(Vision 2D) 어댑터와 엔진 기록을 구현한다 | story | EP-14 | trainer-app | P1b | S15 | 3 | must | DF-200, DF-201 | F-ASM-02.1, F-ASM-02.2, F-ASM-02.7, AC-ASM-02.3, NFR-15 |
-| DF-208 | TR-08 랜드마크 보정(확대 핀, 1px 방향 버튼, auto/확정 모양, '지정 필요')을 구현한다 | story | EP-14 | trainer-app | P1b | S16 | 5 | must | DF-207 | F-ASM-02.3~02.6, F-VIZ-02.2, F-VIZ-02.8, AC-ASM-02.1, AC-ASM-02.2, AC-VIZ-02.1, AC-VIZ-02.2, A-04, M-04b |
-| DF-209 | 체형 확정, 새 버전(supersedesId), voided, 기준선 규칙을 구현한다 | story | EP-14 | trainer-app | P1b | S17 | 5 | must | DF-208, DF-206 | F-ASM-04.1~04.4, F-ASM-04.6, AC-ASM-04.1~04.4, AS-33 |
-| DF-210 | TR-09 결과 화면과 자세 편위 표를 구현한다('산정 준비 중') | story | EP-15 | trainer-app | P1b | S17 | 3 | must | DF-209, DF-130 | F-VIZ-01.1~01.6, F-ASM-03.7, AC-VIZ-01.1~01.5, AC-ASM-03.5, AC-C-03.1 |
+| DF-204 | TR-07 촬영(정면·측면, roll·pitch 게이트, 인물·조명 검출, 동의 ②③ 게이트)을 구현한다 | story | EP-14 | trainer-app | P1b | S10 | 5 | must | DF-203, DF-110 | F-ASM-01.1, F-ASM-01.4, F-ASM-01.5, AC-ASM-01.1, AC-ASM-01.2, AC-ASM-01.3, AC-PRIV-01.2, M-04a |
+| DF-205 | EXIF·GPS 제거, 얼굴 가림 썸네일, 재촬영 폐기, 앱 전용 저장을 구현한다 | story | EP-14 | trainer-app | P1b | S11 | 3 | must | DF-204 | F-ASM-01.6, F-ASM-01.7, F-ASM-01.10, AC-ASM-01.4, AC-ASM-01.6, NFR-17 |
+| DF-206 | 체형 draft 오프라인 저장과 사진 업로드 큐·확정 대기 표시를 구현한다 | story | EP-14 | trainer-app | P1b | S11 | 3 | must | DF-204, DF-015 | F-ASM-01.8, AC-ASM-01.5, AC-ASM-04.5, NFR-05, S-01~S-04 |
+| DF-207 | PostureVision LandmarkSuggester(Vision 2D) 어댑터와 엔진 기록을 구현한다 | story | EP-14 | trainer-app | P1b | S11 | 3 | must | DF-200, DF-201 | F-ASM-02.1, F-ASM-02.2, F-ASM-02.7, AC-ASM-02.3, NFR-15 |
+| DF-208 | TR-08 랜드마크 보정(확대 핀, 1px 방향 버튼, auto/확정 모양, '지정 필요')을 구현한다 | story | EP-14 | trainer-app | P1b | S11 | 5 | must | DF-207 | F-ASM-02.3~02.6, F-VIZ-02.2, F-VIZ-02.8, AC-ASM-02.1, AC-ASM-02.2, AC-VIZ-02.1, AC-VIZ-02.2, A-04, M-04b |
+| DF-209 | 체형 확정, 새 버전(supersedesId), voided, 기준선 규칙을 구현한다 | story | EP-14 | trainer-app | P1b | S12 | 5 | must | DF-208, DF-206 | F-ASM-04.1~04.4, F-ASM-04.6, AC-ASM-04.1~04.4, AS-33 |
+| DF-210 | TR-09 결과 화면과 자세 편위 표를 구현한다('산정 준비 중') | story | EP-15 | trainer-app | P1b | S12 | 3 | must | DF-209, DF-130 | F-VIZ-01.1~01.6, F-ASM-03.7, AC-VIZ-01.1~01.5, AC-ASM-03.5, AC-C-03.1 |
 | DF-211 | 회원 요청에 따른 사진 한 장 삭제(새 버전, 지표 유지)를 구현한다 | story | EP-14 | trainer-app | P1b | S16 | 2 | should | DF-206 | F-ASM-01.9, AC-ASM-01.7 |
 | DF-212 | 재검사 모드 retestGroupId 태깅과 동의 ⑤·연구 동의서 게이트를 구현한다 | story | EP-14 | trainer-app | P1b | S17 | 3 | must | DF-209 | F-ASM-05.1~05.3, AC-ASM-05.1, AC-ASM-05.2, R-16, G-06 |
 | DF-214 | TR-10 나란히·겹쳐 보기(표시 전용 정렬, 조건 불일치 배너, 동의 ③ 게이트)를 구현한다 | story | EP-15 | trainer-app | P1b | S17 | 5 | must | DF-209, DF-216 | F-VIZ-02.1, F-VIZ-02.3~02.7, AC-VIZ-02.3~02.5 |
-| DF-215 | TR-10 추이 차트(seriesBreak, 날짜 척도, L/R, 툴팁, noComparison)를 구현한다 | story | EP-15 | trainer-app | P1b | S18 | 5 | must | DF-216, DF-130, DF-209 | F-VIZ-03.1~03.4, F-VIZ-03.7~03.10, F-ASM-04.6, AC-VIZ-03.1~03.3, AC-VIZ-03.5, AC-VIZ-03.6 |
-| DF-216 | conditionKey 비교와 seriesBreak·seriesKey 분할을 Swift·Dart 공통 규칙으로 구현한다 | story | EP-15 | contracts | P1b | S15 | 3 | must | DF-201, DF-003 | §7.4, F-VIZ-03.3, F-BC-03.4, ADR-009 |
+| DF-215 | TR-10 추이 차트(seriesBreak, 날짜 척도, L/R, 툴팁, noComparison)를 구현한다 | story | EP-15 | trainer-app | P1b | S12 | 5 | must | DF-216, DF-130, DF-209 | F-VIZ-03.1~03.4, F-VIZ-03.7~03.10, F-ASM-04.6, AC-VIZ-03.1~03.3, AC-VIZ-03.5, AC-VIZ-03.6 |
+| DF-216 | conditionKey 비교와 seriesBreak·seriesKey 분할을 Swift·Dart 공통 규칙으로 구현한다 | story | EP-15 | contracts | P1b | S10 | 3 | must | DF-201, DF-003 | §7.4, F-VIZ-03.3, F-BC-03.4, ADR-009 |
 | DF-217 | Review O 자동 불러오기 후보 선택과 refs·snapshots(pendingPolicy) 저장을 구현한다 | story | EP-15 | trainer-app | P1b | S18 | 5 | must | DF-209, DF-127, DF-129, DF-122 | F-SOAP-03.1~03.5, F-SOAP-03.8, F-SOAP-03.9, F-ASM-04.5, AC-SOAP-03.1, AC-SOAP-03.2, AC-SOAP-03.4, AC-SOAP-03.6, AC-SOAP-03.7, AS-23 |
 | DF-218 | 스냅샷 '원본 변경됨' 표시와 draft 재불러오기를 구현한다 | story | EP-15 | trainer-app | P1b | S18 | 2 | must | DF-217 | F-SOAP-03.6, F-SOAP-03.7, AC-SOAP-03.3 |
 | DF-219 | 통증 NRS 추이(0~10 고정축, 배지 없음)를 구현한다 | story | EP-15 | trainer-app | P1b | S16 | 2 | should | DF-130, DF-117 | F-VIZ-04.4, AC-VIZ-04.3, §7.6 |
@@ -443,7 +469,7 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | DF-221 | clinical config에 bodyChange kind 검증을 추가한다 | story | EP-07 | admin-web | P1b | S16 | 3 | must | DF-004 | §10.7 정책 kind, §7.3, R-25 |
 | DF-223 | P1b 실기기 촬영 프로토콜 테스트와 Instruments 성능 측정을 수행한다 | chore | EP-14 | trainer-app | P1b | S18 | 2 | must | DF-209 | §12.5 iPad 실기기 촬영, NFR-12, NFR-15, M-04a, M-04b |
 | DF-224 | M-05 재평가 판정 가능 비율(조건 사유)을 opsMetrics에 추가한다 | story | EP-15 | analytics | P1b | S18 | 2 | could | DF-137, DF-216 | M-05, §5.3 |
-| DF-225 | TR-03 타임라인에 체형평가 이벤트(썸네일·기준선·주요 지표 2개)를 추가한다 | story | EP-12 | trainer-app | P1b | S17 | 2 | must | DF-114, DF-209 | F-VIZ-05.1, F-VIZ-05.4, AC-VIZ-05.2 |
+| DF-225 | TR-03 타임라인에 체형평가 이벤트(썸네일·기준선·주요 지표 2개)를 추가한다 | story | EP-12 | trainer-app | P1b | S12 | 2 | must | DF-114, DF-209 | F-VIZ-05.1, F-VIZ-05.4, AC-VIZ-05.2 |
 | DF-226 | TR-07~TR-10 상태 매트릭스 스냅샷과 접근성 감사를 추가한다 | story | EP-14 | trainer-app | P1b | S18 | 2 | must | DF-214, DF-215 | AC-IA-01, AC-A11Y-01~03, §8.4 |
 
 ### 8.4 P2 베타 (33건, 114점) — 카드: [backlog/P2_P3.md](backlog/P2_P3.md)
@@ -541,13 +567,13 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | DF-922 | TestFlight 내부 그룹과 App Store Connect 설정을 마친다 | owner-action | EP-00 | ci | P1a | S08 | 0 | must | DF-904 | §12.1, AS-DEV-08 |
 | DF-923 | BodyPath 패키지 CI 읽기 자격을 설정한다 | owner-action | EP-00 | ci | P2 | S23-S24 | 0 | must | - | §10.4.2, AS-DEV-03 |
 | DF-924 | MIG-03~06 적용과 MIG-07 기기 확인을 운영에서 실행한다 | owner-action | EP-00 | functions | P1a | S09 | 1 | must | DF-100, DF-907, DF-931 | MIG-03~MIG-07, MIG-11, R-21 |
-| DF-925 | soapV2·bodyComposition 플래그를 연다(P1a 진입) | owner-action | EP-00 | admin-web | P1a | S09 | 0 | must | DF-908, DF-909, DF-910, DF-924, DF-038 | §12.3 순서 1, G-04, G-09, G-05a, G-03 |
+| DF-925 | soapV2·bodyComposition 플래그를 연다(P1a 진입) | owner-action | EP-00 | admin-web | P1a | S07 | 0 | must | DF-908, DF-909, DF-910, DF-924, DF-038 | §12.3 순서 1, G-04, G-09, G-05a, G-03 |
 | DF-926 | P0 단계 종료 검토를 한다 | owner-action | EP-00 | docs | P0 | S05 | 0 | must | DF-901, DF-903, DF-904, DF-905, DF-906, DF-907, DF-007, DF-009, DF-012, DF-013, DF-022, DF-023, DF-027, DF-031, DF-035, DF-038, DF-040 | §12.7, G-01, G-02, G-03 |
 | DF-927 | P1a 단계 종료 검토를 한다 | owner-action | EP-00 | docs | P1a | S15 | 0 | must | DF-141, DF-140, DF-142, DF-107, DF-925 | §12.1 P1a 종료, M-01, M-02, M-08, M-11, M-G1, M-G3 |
 | DF-928 | P1b 단계 종료 검토를 한다 | owner-action | EP-00 | docs | P1b | S18 | 0 | must | DF-223, DF-226 | §12.1 P1b 종료, M-03, M-04a, M-04b, M-05, M-G5 |
-| DF-929 | bodyAssessment 플래그를 연다 | owner-action | EP-00 | admin-web | P1b | S17 | 0 | must | DF-927, DF-209 | §12.3 순서 2 |
+| DF-929 | bodyAssessment 플래그를 연다 | owner-action | EP-00 | admin-web | P1b | S11 | 0 | must | DF-927, DF-209 | §12.3 순서 2 |
 | DF-930 | Runner 내장 트레이너 동결을 선언한다 | owner-action | EP-00 | docs | P0 | S01 | 0 | must | - | MIG-09, D2 |
-| DF-931 | 규칙·Storage 규칙·인덱스·Functions를 태그 기준으로 운영에 배포한다 | owner-action | EP-00 | rules | P1a | S08 | 1 | must | DF-022, DF-035, DF-023, DF-024, DF-025, DF-043 | G-03, ADR-014 |
+| DF-931 | 규칙·Storage 규칙·인덱스·Functions를 태그 기준으로 운영에 배포한다 | owner-action | EP-00 | rules | P1a | S07 | 1 | must | DF-022, DF-035, DF-023, DF-024, DF-025, DF-043 | G-03, ADR-014 |
 | DF-932 | Firestore·Storage Data Access 감사 로그를 켠다 | owner-action | EP-00 | privacy | P1a | S08 | 0 | must | - | F-PRIV-05.3, AC-PRIV-05.2 |
 | DF-933 | 로그 기반 알림 정책(이메일)을 설정한다 | owner-action | EP-00 | functions | P1a | S12 | 0 | should | DF-134 | F-PRIV-04.4, F-PRIV-07.4, AS-DEV-13 |
 | DF-934 | memberShare 플래그를 연다(P2) | owner-action | EP-00 | admin-web | P2 | S23-S24 | 0 | must | DF-919, DF-306, DF-307, DF-316 | §12.3 순서 3, G-05b |
@@ -582,7 +608,6 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 | 키 | 제목 | 유형 | 에픽 | 영역 | 단계 | 제안 스프린트 | 점 | 우선 | 의존 | PRD 추적 | 상태 | 결정 시점 | 채택 시 함께 바꿀 것 | 카드 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | DF-041 | copy-lint 보고 결과의 나머지 위반을 정리한다(회원 앱·Flutter 폴백 트레이너·admin_web) | story | EP-06 | member-app | P0 | S04 | 2 | must | DF-010 | F-PRIV-06.1, F-PRIV-06.3, §3.4-2, §3.4-8, 부록 C.1, 부록 C.3, AC-C-06.1, MIG-04 | 채택 대기 | S03 계획(10-12) | DF-040 의존에 DF-041 추가. S04가 20점이 되므로 DF-024(1)를 S05로 이월 | [P0](backlog/P0.md#df-041) |
-| DF-042 | 에뮬레이터 합성 데이터 시드 스크립트를 만든다(가상 트레이너·회원·동의 상태·플래그·claim) | chore | EP-01 | ci | P0 | S03 | 1 | must | DF-901 | G-02, §10.2.4, §12.5, NFR-02 | 채택 대기 | S03 계획(10-12) | DF-012 의존에 DF-042 추가. 기각 시 DF-012를 5점으로 올림 | [P0](backlog/P0.md#df-042) |
 | DF-143 | 로컬 보존 정리의 백그라운드 실행과 파기된 바이너리 재다운로드를 구현한다 | story | EP-05 | trainer-app | P1a | S15 | 1 | must | DF-118, DF-111 | NFR-17, §9.5 | 채택 대기 | S14 계획(12-28) | S15가 18점(약속 한도)이 됨 | [P1a](backlog/P1a.md) |
 | DF-144 | 이관 문서(migratedFrom)의 읽기 전용 표시와 '레거시 원문 보기'를 구현한다 | story | EP-13 | trainer-app | P1a | S14 | 1 | must | DF-114, DF-123 | §9.3, MIG-03, MIG-04, F-SOAP-06.2, §3.4 | 채택 대기 | S14 계획(12-28). MIG-03 적용(DF-924, S09) 뒤 이관 문서가 보이므로 앞당겨 결정해도 됨 | S14가 14점(약속 한도)이 됨 | [P1a](backlog/P1a.md) |
 | DF-227 | 체형평가 원격 조회 저장소와 사진 바이트 캐시를 구현한다(동의 ③ 게이트, 철회 시 로컬 삭제) | story | EP-14 | trainer-app | P1b | S16 | 2 | must | DF-206 | F-VIZ-02.7, AC-VIZ-02.5, NFR-17, F-PRIV-02.3, F-SOAP-03.9, §9.5, §9.6, C-05 | 채택 대기 | S15 계획(2027-01-04) | DF-211(should, 2)을 S16에서 S18로, DF-224(could, 2)를 S18에서 S19-S20으로 옮김. 기각 시 범위를 DF-214·DF-206에 나눔 | [P1b](backlog/P1b.md) |
@@ -600,11 +625,13 @@ owner-action 항목의 카드는 단계 파일이 아니라 [backlog/OWNER_ACTIO
 - DF-940: DF-934 의존에 DF-940을 추가한다.
 - DF-941: DF-314 의존에 DF-941을 추가한다. 운영 확인만 막히고 코딩은 가짜 서명기로 진행한다.
 
+DF-042는 2026-09-25 [DEC-21](00_README.md#결정-기록)로 **채택**해 §8.1(S03, 1점)로 옮기고 DF-012 의존에 더했다(운영 규칙 3). 나머지 제안 15건은 [DEC-21](00_README.md#결정-기록)에 따라 MVP에 필요하지 않아 'MVP 뒤 결정'으로 둔다(상태 `채택 대기` 유지, 결정 시점은 MVP 종료 검토 뒤 각 단계 진입 계획).
+
 DF-334는 P2_P3 작성자가 검토한 뒤 쓰지 않기로 한 키다. DF-019, DF-036과 같이 빈 키로 둔다.
 
 #### 8.8.2 채택 시 적재 영향(미리 계산)
 
-제안 16건이 모두 채택되고 각 카드의 재배치 제안까지 따른다고 가정한 값이다. 한 건만 채택하면 해당 행만 바꾼다.
+DEC-22 이전 전체 계획 기준 값이다(보존). DF-042는 채택됐고, 남은 제안 15건은 MVP 뒤 결정이다. 제안 16건(DF-042 포함)이 모두 채택되고 각 카드의 재배치 제안까지 따른다고 가정한 값이다. 한 건만 채택하면 해당 행만 바꾼다.
 
 | 스프린트 | 현재 약속점 | 추가 | 재배치 뒤 | 약속 한도 | 재배치 제안 |
 |---|---|---|---|---|---|
@@ -626,13 +653,13 @@ P2·P3 묶음의 약속 한도는 묶음 용량의 90%로 계산했다(§7.3 용
 
 | 단계 | 현재 건수·점수 | 채택 시 | 마일스톤 | 현재 → 채택 시 |
 |---|---|---|---|---|
-| P0 | 55건 · 106점 | 57건 · 109점 | MS-P0 | 47건 85점 → 49건 88점 |
+| P0 | 56건 · 107점(DF-042 채택 반영) | 57건 · 109점 | MS-P0 | 48건 86점 → 49건 88점 |
 | P1a | 48건 · 124점 | 50건 · 126점 | MS-P1a | 56건 145점 → 58건 147점 |
 | P1b | 27건 · 79점 | 28건 · 81점 | MS-P1b | 27건 79점 → 28건 81점 |
 | P2 | 41건 · 116점 | 48건 · 127점 | MS-P2 | 41건 116점 → 48건 127점 |
 | P3 | 15건 · 39점 | 16건 · 41점 | MS-P3 | 15건 39점 → 16건 41점 |
 | V2 | 6건 · 0점 | 9건 · 0점 | MS-V2 | 6건 → 9건 |
-| 합계 | 192건 · 464점 | 208건 · 484점 | | owner-action 40건 15점 → 42건 16점 |
+| 합계 | 193건 · 465점 | 208건 · 484점 | | owner-action 40건 15점 → 42건 16점 |
 
 - DF-041·DF-042는 MS-P0, DF-143·DF-144는 MS-P1a, DF-227은 MS-P1b, DF-333·335~338·940·941은 MS-P2, DF-391은 MS-P3, DF-506~508은 MS-V2에 배정한다.
 - 이동 항목(DF-024, DF-211, DF-224, DF-323)은 마일스톤이 바뀌지 않는다. 단, DF-224는 S19-S20으로 가도 키 대역 P1b와 마일스톤 MS-P1b를 유지하고, P1b 종료 검토(DF-928)에서 이월로 기록한다.
@@ -1580,3 +1607,4 @@ flowchart LR
 | v1.0(정합 패스 2) | 2026-09-24 | 카드가 더한 의존 6건을 §8 색인에 반영(R3), ASM-02-14(R1)·ASM-02-15(R3) 추가, 설 연휴 추정 정정 | CJH(AI 에이전트) |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: R1·R3·R9 결정 반영(속도에 owner-action·스파이크 포함, 카드 의존 색인 반영, 제안 합계 제외 확정), 설 연휴 추정 03과 일치 | CJH(AI 에이전트) |
 | v1.1 | 2026-09-25 | 소유자 결정 2026-09-25 반영: DEC-19 서울 리전 전환 항목 DF-043(chore, S02, 1점)·DF-942(owner-action, S01, 1점) 추가, 의존 추가(DF-038←DF-043, DF-905·DF-906·DF-909←DF-942, DF-931←DF-043), DF-908을 S01에서 S03으로(보류). 합계 192건·464점, §6·§7·§8.8.2·§9.4 재계산 | CJH(AI 에이전트) |
+| v1.2 | 2026-09-25 | DEC-21·DEC-22(MVP 범위, 소유자 확인 필요: PR #113 소유자 병합 시 발효): DF-042 채택(§8.1 S03, DF-012 의존 추가, 193건·465점, 제안 15건·19점), 라벨 `scope/mvp`(§3), MVP 항목 스프린트 재배치(색인 스프린트 열), §7.3을 DEC-22 이전 계획으로 보존 표시, §7.4 MVP 적재 추가, §8.8 나머지 제안은 MVP 뒤 결정 | CJH(AI 에이전트) |

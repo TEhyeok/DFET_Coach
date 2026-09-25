@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-02-P1a |
-| 버전 | v1.0 |
+| 버전 | v1.1 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -493,11 +493,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-05 트레이너 앱 기반 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S06 (2026-11-02~11-06) |
+| Sprint | S05(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S06 (2026-11-02~11-06) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `scope/mvp` |
 | Depends on | DF-014 |
 | PRD refs | §10.2.3, NFR-04, NFR-05, NFR-06, NFR-07, F-SOAP-04.8, AC-SOAP-04.6, §9.5 '링크 정책', ADR-002, ADR-007 |
 
@@ -552,6 +552,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — P0 DF-015 카드의 프로토콜 정의를 그대로 옮겨 쓰고 시그니처를 바꾸지 않는다(추가 메서드 3개만). SDK 호출부를 어댑터 뒤에 두고 매핑·무결성·createIfAbsent 테스트부터 작성한다. `FirebaseData` 밖은 프로토콜 파일과 앱 진입 1곳만 고친다. `getDownloadURL`을 쓰지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S05(원래 계획 S06). 상태: 할 일
+- 왜 필요한가: FirebaseData RemoteWriter·BinaryUploader·CallableClient. 동기화의 원격 쪽
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-107 trainer-app-emulator-it CI와 오류 주입 하네스를 만든다
@@ -561,11 +567,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-01 저장소 기준선·CI·백로그 도구 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S07 (2026-11-09~11-13) |
+| Sprint | S06(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S07 (2026-11-09~11-13) |
 | Points | 3 |
 | Priority | must |
 | Area | ci |
-| Labels | `type/story` `area/ci` `area/trainer-app` `phase/P1a` `prio/must` `size/M` |
+| Labels | `type/story` `area/ci` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `scope/mvp` |
 | Depends on | DF-015, DF-104 |
 | PRD refs | §12.5 '트레이너 앱 단위·UI', NFR-04, NFR-05, NFR-06, C-05, AC-C-05.1, AC-SOAP-01.3, AC-SOAP-01.4, M-G3, ADR-013 |
 
@@ -619,6 +625,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — 먼저 `firebase.json`에 auth·functions 에뮬레이터 항목이 있는지 확인하고(없으면 추가), 시드 파일에 P1a 데이터와 변형 파일을 더한 뒤 `firebase emulators:exec --project demo-dfet`로 적재를 확인한다. `seed-emulator.js` 자체는 고치지 않는다(필요하면 막힘으로 보고). 그다음 `EmulatorHarness`와 `FaultInjection`을 만들고 `RulesRejectionIT` 하나를 초록으로 만든 뒤 나머지 시나리오를 더한다. 운영 프로젝트 ID나 실제 plist를 쓰지 않는다. `trainer_app/App/**`와 `TrainerKit/Sources/**`는 고치지 않는다(테스트 전용 훅이 필요하면 막힘으로 보고).
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S06(원래 계획 S07). 상태: 할 일
+- 왜 필요한가: trainer-app 에뮬레이터 통합 CI. '에뮬레이터로 동기화' 증빙
+- 지금 만든다: 통합 CI job, P1a 시드 추가분(게시된 테스트 동의 문서, 대기 회원), 동기화 정상 경로와 오류 주입
+
 ---
 
 ### DF-108 TR-14 대기 회원 최소 등록(만 14세 확인)을 구현한다
@@ -628,11 +640,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-09 대기 회원 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S07 (2026-11-09~11-13) |
+| Sprint | S05(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S07 (2026-11-09~11-13) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `privacy-impact` `scope/mvp` |
 | Depends on | DF-013, DF-016 |
 | PRD refs | F-LINK-01.1, F-LINK-01.2, F-LINK-01.4, F-LINK-01.8, AC-LINK-01.2, AC-LINK-01.6, TR-14, AS-22, §9.2 `pendingMembers`, R-30, R-31 |
 
@@ -683,6 +695,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `AgeGate`와 페이로드 키 테스트부터 작성한다(순수 타깃, macOS `swift test`). 이어서 등록 화면을 만들고 동의 라우트로 넘기되, 동의 화면 자체는 DF-110 범위이므로 라우트 대상이 없으면 `common.comingSoon` 자리 표시로 둔다. `NativeMemberRegistrationSheet`의 이메일·아바타·첫 SOAP·`member-UUID` 경로는 옮기지 않는다. 같은 스프린트의 DF-109(Functions)·DF-015(SyncEngine) 경로를 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S05(원래 계획 S07). 상태: 할 일
+- 왜 필요한가: TR-14 대기 회원 최소 등록(만 14세 확인). MVP의 테스트 회원 생성 경로
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-109 recordConsent와 memberConsentStates 파생·서명 저장을 구현한다
@@ -692,11 +710,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-08 동의·개인정보 핵심 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S07 (2026-11-09~11-13) |
+| Sprint | S06(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S07 (2026-11-09~11-13) |
 | Points | 5 |
 | Priority | must |
 | Area | functions |
-| Labels | `type/story` `area/functions` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` |
+| Labels | `type/story` `area/functions` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `scope/mvp` |
 | Depends on | DF-025, DF-032, DF-107(같은 스프린트: P1a 시드 데이터 PR만 선행, §4.2) |
 | PRD refs | F-PRIV-01.4, F-PRIV-02.1, F-PRIV-02.2, F-PRIV-03.2, F-PRIV-03.3, F-PRIV-03.6, AC-PRIV-02.1, AC-PRIV-03.1, AC-PRIV-03.2, R-20, R-28, §9.2 `consentRecords`·`memberConsentStates`, §9.5 `consentSignatures`, §9.7 `consentChanged`, §10.6 |
 
@@ -782,6 +800,14 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `deriveConsentState`와 `validateRequest` 단위 테스트부터 작성한다(Node `node:test`). 이어서 e2e 테스트를 DF-107 시드 위에 쓰고 handler를 구현한다. `firestore.rules`·`storage.rules`는 고치지 않는다(규칙은 DF-021·DF-023이 이미 클라이언트 쓰기를 막는다). 같은 스프린트의 DF-108(트레이너 앱)·DF-015(SyncEngine) 경로를 건드리지 않는다. 서명 원본이나 base64를 로그에 남기지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S06(원래 계획 S07). 상태: 할 일
+- 왜 필요한가: recordConsent와 memberConsentStates 파생. 규칙 hasConsent()가 이 문서를 보므로, 없으면 테스트 회원의 SOAP·측정·사진 쓰기가 모두 거부된다
+- 지금 만든다: 대기 회원 대상 recordConsent(①②③ 동의 기록, 상태 파생), 서명 없이 기록(`signaturePath` null, 05 §4.11 허용), 게시된 테스트 동의 문서 버전 검사. 서울용 테스트 동의 문서 게시 스크립트(기본 dry-run, `--apply --project dfetmanage`는 소유자만 실행)
+- MVP 뒤로 미룬다: 서명 PNG 저장, uid 회원 경로와 접근 키 동기화(DF-025), 철회(DF-112), 감사 기록 확장
+- MVP에서 기다리지 않는 의존: DF-025(uid 회원 접근 키, MVP 밖), DF-032(AD-03 화면 대신 시드·게시 스크립트로 테스트 동의 문서를 만든다)
+
 ---
 
 ### DF-110 TR-14 동의 카드·유형별 선택·서명 패드를 구현한다(대기·가입 회원)
@@ -791,11 +817,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-08 동의·개인정보 핵심 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S08 (2026-11-16~11-20) |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S08 (2026-11-16~11-20) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `regulatory` |
+| Labels | `type/story` `area/trainer-app` `area/privacy` `phase/P1a` `prio/must` `size/L` `privacy-impact` `regulatory` `scope/mvp` |
 | Depends on | DF-108, DF-109 |
 | PRD refs | F-PRIV-01.1, F-PRIV-01.2, F-PRIV-01.3, F-PRIV-03.1, F-PRIV-03.6, AC-PRIV-01.3, AC-PRIV-03.2, F-LINK-01.5, M-08, TR-14, §5.5 `onboarding_consent_completed` |
 
@@ -851,6 +877,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-108·DF-109(S07) [x] R4 5점 [x] R5 [x] R6 `FeatureConsent/Consent/**`, `TrainerDomain/Consent/**`, `FirebaseData/FirestoreConsentService.swift` [x] R7 privacy-impact·regulatory [x] R8 시드 문서 5종 [ ] R9 [x] R10 실기기 서명 감도는 DF-140에서 확인
 
 **에이전트 브리프** — `ConsentFlowRules`(순수)와 그 단위 테스트부터 만든다. 이어서 `FirestoreConsentService`의 쿼리·리스너를 만들고, 카드·서명 화면을 스냅샷 테스트와 함께 작성한다. 제출은 Outbox 등록까지만 하고 callable 호출은 SyncEngine에 맡긴다(직접 호출 금지). 묶음 동의 버튼이나 기본 선택을 만들지 않는다. 같은 스프린트의 DF-116(FeatureSOAP)·DF-113(FeatureMembers) 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
+- 왜 필요한가: 테스트 회원 등록 때 동의 ①②③을 기록하는 화면
+- 지금 만든다: 대기 회원 등록 직후 동의 유형별 선택(①②③)과 recordConsent 호출, 결과 상태 칩
+- MVP 뒤로 미룬다: 서명 패드, 가입(uid) 회원 흐름, 동의 문서 전문 표시의 법률 문구(G-04 뒤)
 
 ---
 
@@ -990,11 +1023,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-09 대기 회원 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S08 (2026-11-16~11-20) |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S08 (2026-11-16~11-20) |
 | Points | 2 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/S` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/S` `scope/mvp` |
 | Depends on | DF-108, DF-013 |
 | PRD refs | TR-02, F-LINK-01.2, F-LINK-01.5, F-LINK-03.2, §8.4(TR-02 행), NFR-11, AC-IA-02 |
 
@@ -1042,6 +1075,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — 검색 필터와 목록 결합 로직을 순수 함수로 먼저 만들고 단위 테스트한다. TR-03 셸은 헤더와 '세션 시작' 버튼만 두고 타임라인·Metric Row를 만들지 않는다(DF-114). `FeatureSOAP`를 import하지 않고 `onStartSession` 클로저만 받는다. 화면은 DesignSystem 컴포넌트(DF-016)만 쓰고 새 색을 만들지 않는다. 같은 스프린트의 DF-110(FeatureConsent)·DF-116(FeatureSOAP) 경로를 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
+- 왜 필요한가: TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가)
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-114 TR-03 회원 상세 헤더와 통합 타임라인 목록(종류 필터, 커서 페이지네이션)을 구현한다
@@ -1051,11 +1090,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-12 타임라인·공통 시각화 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S11 (2026-12-07~12-11) |
+| Sprint | S08(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S11 (2026-12-07~12-11) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/rules` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `flag/bodyComposition` |
+| Labels | `type/story` `area/trainer-app` `area/rules` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `flag/bodyComposition` `scope/mvp` |
 | Depends on | DF-016, DF-013, DF-113(TR-03 셸), DF-116(세션 시작 흐름) |
 | PRD refs | F-VIZ-05.1, F-VIZ-05.2(P1a), F-VIZ-05.4, F-VIZ-05.6, F-VIZ-05.7, AC-VIZ-05.1, AC-VIZ-05.2, AC-VIZ-05.4, TR-03, F-SOAP-04.5, C-01, AC-C-01.2, §9.6, NFR-15 |
 
@@ -1116,6 +1155,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-016(S06)·DF-013(S05)·DF-113·DF-116(S08) [x] R4 [x] R5 [x] R6 `FeatureMembers/Detail/**`, `TrainerDomain/Timeline/**`, `FirebaseData/FirestoreTimelineService.swift`, `firestore.indexes.json`, 규칙 테스트 1파일 [x] R7 인덱스 변경(rules-change 아님, 소유자 확인) [x] R8 시드 60건 생성 도우미 [ ] R9 [x] R10 성능 측정은 DF-140
 
 **에이전트 브리프** — `TimelineMerger`(순수)와 단위 테스트부터 작성하고, 규칙 쿼리 테스트로 인덱스 목록을 확정한 뒤 `firestore.indexes.json`을 고친다. 화면은 그다음이다. `firestore.rules`는 고치지 않는다(쿼리가 증명되지 않으면 막힘 보고). 같은 스프린트의 DF-127·128(FeatureBodyComposition)·DF-125(FeatureToday) 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S08(원래 계획 S11). 상태: 할 일
+- 왜 필요한가: 흐름 4: TR-03 회원 상세 헤더와 통합 타임라인
+- 지금 만든다: 카드 전체 범위
+- 참고: TR-03 진입 감사(DF-115)는 MVP 밖
 
 ---
 
@@ -1178,11 +1224,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S08 (2026-11-16~11-20) |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S08 (2026-11-16~11-20) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `needs-device-test` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `needs-device-test` `scope/mvp` |
 | Depends on | DF-015, DF-016, DF-017, DF-039, DF-113(같은 스프린트: TR-03 셸의 '세션 시작' 진입점, §4.2) |
 | PRD refs | F-SOAP-01.1, F-SOAP-01.2, F-SOAP-01.5, F-SOAP-01.6, F-SOAP-01.8, F-SOAP-01.9, AC-SOAP-01.1~01.3, AC-SOAP-01.6, AC-SOAP-01.9, AC-IA-03, §6.4.1 M1, NFR-12, NFR-15, TR-04 |
 
@@ -1246,6 +1292,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-015(S07)·DF-016·DF-039(S06)·DF-017(S03), DF-113(S08, UI 경로 TC-116-12만) [x] R4 5점 [x] R5 [x] R6 `FeatureSOAP/Live/**`, `DesignSystem/Pencil/**`, `TrainerDomain/SOAP/SoapNoteStore.swift`, `TrainerDomain/SOAP/QuickNoteLimit.swift`, `SyncEngine/Stores/SoapNoteStoreImpl.swift`, `App/AppShell/SessionFlowCoordinator.swift`, `App/Composition/Preview/Seeds/p1a-basic.json` [x] R7 영향 없음 [x] R8 시드 회원 [ ] R9 [x] R10 needs-device-test(DF-140)
 
 **에이전트 브리프** — DF-039 이식표에서 TR-04 행과 반례 목록을 먼저 읽는다. `SoapNoteStore` Live 메서드와 `sameDayDraft`를 단위 테스트로 먼저 고정한 뒤, `PencilCanvas`와 Live 화면을 만든다. NRS·바디맵·핵심 지표·빠른 추가 칩은 빈 슬롯 뷰만 두고 구현하지 않는다(DF-117·119). 확인창·시트를 추가하지 않는다. 같은 스프린트의 DF-110(FeatureConsent)·DF-113(FeatureMembers)·DF-126(TrainerAnalytics) 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S08). 상태: 할 일
+- 왜 필요한가: SOAP 흐름 1: TR-04 Live(Pencil 캔버스, 한 줄 입력, '기록 완료')
+- 지금 만든다: 카드 전체 범위
+- 참고: 카드대로 NRS·바디맵·핵심 지표·빠른 추가 칩 자리는 빈 슬롯으로 둔다(DF-117·119는 MVP 밖). 분석 이벤트(DF-126)는 MVP 밖
 
 ---
 
@@ -1319,11 +1372,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S09 (2026-11-23~11-27) |
+| Sprint | S07(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S09 (2026-11-23~11-27) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/soapV2` |
+| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `scope/mvp` |
 | Depends on | DF-116, DF-023, DF-104 |
 | PRD refs | F-SOAP-01.7, AC-SOAP-01.5, AC-SOAP-02.1, NFR-05, §9.5 `soapInk` 경로·'필기 revision', S-01~S-04, §9.2 '문서 크기와 배열 상한' |
 
@@ -1370,6 +1423,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-116(S08)·DF-023(S04)·DF-104(S06) [x] R4 [x] R5 [x] R6 `SyncEngine/Ink/**`, IT 1파일, Live 모델 1곳 [x] R7 영향 없음 [x] R8 합성 PKDrawing [ ] R9 [x] R10 해당 없음
 
 **에이전트 브리프** — `InkRevisionManager`의 개정 번호·Outbox 항목 생성 단위 테스트부터 작성한다. 그다음 `InkUploadIT`로 순서·삭제·재적재를 확인한다. `storage.rules`와 `FirebaseData`의 업로더(DF-104)는 고치지 않는다. 같은 스프린트의 DF-117(DesignSystem)·DF-119·DF-120 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S07(원래 계획 S09). 상태: 할 일
+- 왜 필요한가: 필기 개정본을 Storage soapInk에 올리고 inkRevision 기록
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -1436,11 +1495,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S09 (2026-11-23~11-27) |
+| Sprint | S08(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S09 (2026-11-23~11-27) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `regulatory` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `regulatory` `scope/mvp` |
 | Depends on | DF-116, DF-010 |
 | PRD refs | F-SOAP-02.1, F-SOAP-02.2, F-SOAP-02.3, F-SOAP-02.7, F-SOAP-02.8, F-SOAP-02.10, AC-SOAP-02.1, AC-SOAP-02.5, AC-SOAP-02.8, F-PRIV-06.1, §3.4, 부록 C, TR-05 |
 
@@ -1490,6 +1549,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `ProhibitedTermMatcher`와 인코더 키 테스트부터 작성한다(순수). 그다음 Review 화면 골격을 만들되 O 표와 확정 체크리스트 자리는 빈 슬롯으로 둔다(DF-121·122). diagnosis·'진단/이슈'류 입력을 어떤 형태로도 만들지 않는다. 같은 스프린트의 DF-117(DesignSystem 컴포넌트 수정 금지, 재사용만)·DF-118·DF-119 경로를 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S08(원래 계획 S09). 상태: 할 일
+- 왜 필요한가: SOAP 흐름 1: TR-05 Review S/A/P 카드
+- 지금 만든다: S/A/P 카드와 금지어 인라인 경고
+- MVP 뒤로 미룬다: '회원에게 남길 한 줄'은 입력칸만 두고 공유 경로는 만들지 않는다(공유는 P2)
+
 ---
 
 ### DF-121 Review O typed 행(metricCode enum, AROM 기본, MMT, 미완성 행)을 구현한다
@@ -1499,11 +1565,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S10 (2026-11-30~12-04) |
+| Sprint | S08(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S10 (2026-11-30~12-04) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `regulatory` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `regulatory` `scope/mvp` |
 | Depends on | DF-120, DF-916 |
 | PRD refs | F-SOAP-02.4, F-SOAP-02.5, F-SOAP-02.6, AC-SOAP-02.2, AC-SOAP-02.3, AC-SOAP-02.4, AC-SOAP-02.6, §9.3 `objective.metrics[]`, 부록 A.1·A.2·A.5·A.6, Q-14, Q-23, §3.4 6번 |
 
@@ -1555,6 +1621,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `ObjectiveRowValidator`와 숫자 파서의 표 테스트를 먼저 완성한다(순수, macOS). 그다음 O 표 UI를 DF-120의 빈 슬롯에 붙인다. 같은 스프린트에서 DF-122가 `FinalizeRequirements`를 병렬로 만들므로 `TrainerDomain/SOAP/Finalize*`와 체크리스트 뷰 파일은 건드리지 않는다. PROM 선택지를 만들지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S08(원래 계획 S10). 상태: 할 일
+- 왜 필요한가: SOAP 흐름 1: Review O typed 행(AROM 기본, MMT)
+- 지금 만든다: 카드 전체 범위
+- MVP에서 기다리지 않는 의존: DF-916(부록 A.5~A.7 코드 확정): DEC-21에 따라 부록 초안 코드로 진행하고 소유자 확정은 MVP 뒤
+
 ---
 
 ### DF-122 확정 최소 요건 체크리스트와 확정·확정 대기를 구현한다
@@ -1564,11 +1637,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S10 (2026-11-30~12-04) |
+| Sprint | S08(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S10 (2026-11-30~12-04) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/soapV2` `scope/mvp` |
 | Depends on | DF-121, DF-015 |
 | PRD refs | F-SOAP-02.9, F-SOAP-04.1, F-SOAP-04.2, §6.4.2 상태 모델, §6.4.4, AC-SOAP-04.5, AC-SOAP-02.4, M-11, AS-26, §5.5 `soap_review_finalized`, C-05 |
 
@@ -1618,6 +1691,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — 1일차에 `FinalizeRequirements`와 표 테스트를 DF-121과 병렬로 만든다(DF-009의 모델만 사용). DF-121이 병합되면 제외 행 연결과 확정 흐름, `PendingFinalizeIT`를 붙인다. 서버 커밋 확인 전에는 로컬에서 '확정됨'으로 바꾸지 않는다. `firestore.rules`는 고치지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S08(원래 계획 S10). 상태: 할 일
+- 왜 필요한가: SOAP 흐름 1: 확정 최소 요건과 확정·확정 대기
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-123 addendum, draft 삭제, auditSoapFinalized 트리거를 구현한다
@@ -1627,11 +1706,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-10 SOAP Live·Review·확정 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S10 (2026-11-30~12-04) |
+| Sprint | S09(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S10 (2026-11-30~12-04) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/functions` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `area/functions` `phase/P1a` `prio/must` `size/M` `flag/soapV2` `privacy-impact` `scope/mvp` |
 | Depends on | DF-122 |
 | PRD refs | F-SOAP-04.3~04.8, F-PRIV-07.3, AC-SOAP-04.1~04.4, AC-SOAP-04.6, R-08, R-09, §9.3 `addenda`, §9.7 `soapFinalized`, §5.5 `soap_addendum_created` |
 
@@ -1680,6 +1759,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-122 같은 스프린트 뒤순서(§4.2) [x] R4 [x] R5 [x] R6 `FeatureSOAP/Note/**`, `TrainerDomain/SOAP/AddendumDraft.swift`, `SoapNoteStoreImpl`의 addendum·delete 메서드, `functions/src/privacy/auditSoapFinalized.js` [x] R7 privacy-impact [x] R8 합성 finalized 노트 [ ] R9 [x] R10 해당 없음
 
 **에이전트 브리프** — Functions 트리거와 e2e(TC-123-07)는 DF-122와 무관하므로 먼저 끝낸다. 앱 쪽은 DF-122 병합 뒤 노트 보기 → addendum 작성 → draft 삭제 순서로 만든다. 삭제는 Storage 파일을 먼저, 문서를 나중에 지운다(부모가 없으면 Storage 규칙이 거부한다). 같은 스프린트의 DF-121·DF-124 파일을 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S09(원래 계획 S10). 상태: 할 일
+- 왜 필요한가: SOAP 흐름 1: addendum과 draft 삭제
+- 지금 만든다: addendum, draft 삭제
+- MVP 뒤로 미룬다: auditSoapFinalized 감사 트리거(감사는 MVP 밖)
 
 ---
 
@@ -1880,11 +1966,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-11 신체조성·줄자 둘레 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S11 (2026-12-07~12-11) |
+| Sprint | S09(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S11 (2026-12-07~12-11) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `privacy-impact` `scope/mvp` |
 | Depends on | DF-109, DF-016, DF-104, DF-121(`NumberParser`, S10), DF-114(같은 스프린트: TR-03 헤더에 진입점 추가, §4.2) |
 | PRD refs | F-BC-01.1~01.4, F-BC-03.1~03.3, AC-BC-01.1~01.5, AC-BC-03.1, AC-BC-03.2, AC-BC-03.4, AC-PRIV-01.1, R-14, R-17, R-27, §9.2 `bodyCompositionRecords`, §5.5 `bodycomp_record_saved`, TR-11 |
 
@@ -1946,6 +2032,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `BodyCompositionValidator`, `TimeOfDayBand`, `BMICalculator` 표 테스트를 먼저 완성한다(순수, macOS). 그다음 Store와 입력 시트를 만든다. `users` 문서를 읽는 코드를 만들지 않는다. 결과지 사진·정정·추이는 만들지 않는다(DF-128·130). 같은 스프린트의 DF-125 경로를 건드리지 않고, DF-114 경로는 DF-114 병합 뒤 `MemberDetailView.swift` 헤더의 `tr03.measureMenu` 추가만 한다(별도 작은 PR).
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S09(원래 계획 S11). 상태: 할 일
+- 왜 필요한가: 흐름 2: TR-11 신체조성 수기 입력
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-128 결과지 사진 첨부, '정정', 기기 변경 경고를 구현한다
@@ -1955,11 +2047,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-11 신체조성·줄자 둘레 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S11 (2026-12-07~12-11) |
+| Sprint | S09(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S11 (2026-12-07~12-11) |
 | Points | 3 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `privacy-impact` |
+| Labels | `type/story` `area/trainer-app` `area/storage` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `privacy-impact` `scope/mvp` |
 | Depends on | DF-127, DF-118 |
 | PRD refs | F-BC-02.1, F-BC-02.3, F-BC-03.4, F-BC-03.5, AC-BC-03.3, AC-BC-03.5, §7.4 신체조성 조건 키, §9.5 `bodyCompositionRecords/{recordId}/report.*` |
 
@@ -2009,6 +2101,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `ImageSanitizer`와 `SeriesSegmenter` 표 테스트부터 작성한다(순수). 그다음 기록 보기·정정·사진 첨부를 만든다. 합성 테스트 이미지에 실제 결과지나 개인정보를 쓰지 않는다. `storage.rules`는 고치지 않는다. 추이 차트 렌더링은 DF-130 범위다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S09(원래 계획 S11). 상태: 할 일
+- 왜 필요한가: 흐름 2: 결과지 사진 첨부·정정·기기 변경 경고
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-129 TR-12 줄자 둘레(기본 허리·엉덩이, 부위 추가, 반복 3회, side·landmarkNote 규칙)를 구현한다
@@ -2018,11 +2116,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-11 신체조성·줄자 둘레 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S12 (2026-12-14~12-18) |
+| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S12 (2026-12-14~12-18) |
 | Points | 5 |
 | Priority | must |
 | Area | trainer-app |
-| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` |
+| Labels | `type/story` `area/trainer-app` `phase/P1a` `prio/must` `size/L` `flag/bodyComposition` `scope/mvp` |
 | Depends on | DF-127 |
 | PRD refs | F-ASM-06.1~06.6, AC-ASM-06.1~06.5, R-26, R-29, §9.2 `circumferenceMeasurements`, 부록 A.1(둘레 코드·side 규칙), TR-12 |
 
@@ -2078,6 +2176,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **에이전트 브리프** — `TapeRowValidator` 표 테스트(경계값 포함)를 먼저 쓰고, 페이로드 생성과 Store를 만든 뒤 시트 UI를 붙인다. LiDAR 관측 단면(`observedSection`)·`referenceTapeCm` 연결은 만들지 않는다(P2 DF-322). 같은 스프린트의 DF-130(DesignSystem 차트)·DF-132(Functions) 경로를 건드리지 않는다.
 
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S10(원래 계획 S12). 상태: 할 일
+- 왜 필요한가: 흐름 2: TR-12 줄자 둘레 반복 입력
+- 지금 만든다: 카드 전체 범위
+
 ---
 
 ### DF-130 Swift 공통 차트 규칙(SeriesTrendChart, 출처 칩, '산정 준비 중', 보간 금지)과 TR-11 미니 추이를 구현한다
@@ -2087,11 +2191,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | Epic | EP-12 타임라인·공통 시각화 |
 | Type | story |
 | Phase | P1a |
-| Sprint | S12 (2026-12-14~12-18) |
+| Sprint | S10(MVP 계획, DEC-22, [03 MVP 계획](../03_RELEASE_AND_SPRINT_PLAN.md#mvp-계획dec-22)). 원래 계획: S12 (2026-12-14~12-18) |
 | Points | 3 |
 | Priority | must |
 | Area | design |
-| Labels | `type/story` `area/design` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` |
+| Labels | `type/story` `area/design` `area/trainer-app` `phase/P1a` `prio/must` `size/M` `flag/bodyComposition` `scope/mvp` |
 | Depends on | DF-016, DF-128 |
 | PRD refs | F-VIZ-07.1~07.9, C-01~C-04, AC-VIZ-07.1~07.5, AC-C-01.1, AC-C-02.1, AC-C-03.1, AC-C-03.2, AC-C-04.1, AC-BC-03.3(렌더 부분), A-02, A-03, AC-A11Y-03, §6.5.0 |
 
@@ -2147,6 +2251,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 **DoR** — [x] R1 [x] R2 [x] R3 DF-016(S06)·DF-128(S11) [x] R4 [x] R5 [x] R6 `DesignSystem/Charts/**`, `FeatureBodyComposition/Record/BodyCompositionMiniTrend.swift`, static-guards 규칙 1개 [x] R7 영향 없음 [x] R8 합성 시계열 [ ] R9 [x] R10 해당 없음
 
 **에이전트 브리프** — 차트 모델 변환(`SeriesChartModel` 만들기)과 거부 규칙을 단위 테스트로 먼저 고정한 뒤 Swift Charts 뷰와 스냅샷을 만든다. 판정·MDC 값·밴드를 코드에 두지 않는다(ADR-009). 같은 스프린트의 DF-129(Tape)·DF-131(Flutter)·DF-132(Functions) 경로를 건드리지 않는다.
+
+### MVP 범위(DEC-22)
+
+- MVP 스프린트: S10(원래 계획 S12). 상태: 할 일
+- 왜 필요한가: 흐름 4: Swift 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 신체조성·둘레 미니 추이
+- 지금 만든다: 카드 전체 범위
 
 ---
 
@@ -3047,3 +3157,4 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 | v1.0(검토 반영) | 2026-09-24 | 시드 경로·ID·에뮬레이터 포트를 V1-10과 통일(§5.4, DF-107, AC-DF-107.7), 문구 키를 덱 이름으로 정리하고 덱 추가 요청 표 신설(§5.3), DF-116 진입점을 TR-03 셸(DF-113)로 바꾸고 입력 한도 규칙 확정(AC-DF-116.4·116.8), DF-114·DF-127·DF-129 진입점 기준 추가, 누락 의존 보강(DF-109·114·116·127), ASM-P1a-48~50, CF-20~22 | — | 없음 |
 | v1.0(릴리스 편집) | 2026-09-24 | 이슈 JSON 참조를 `tool/backlog/issues.json`으로, 순수 타깃 경로를 `Packages/TrainerCore`로 고침(LocalStore는 TrainerKit) | — | 없음 |
 | v1.0.1(정합 패스 2) | 2026-09-24 | 교차 정합성 조정: Outbox kind·LocalPendingMemberDraft·FilterPreference(R5), DF-114 인덱스 2개, syncRecordAccessKeysCore 호출, MIG-08 ①을 DF-100으로, 경로 표(R4), CF-18·19·20·22 갱신, 가정 ID 참조(R10), ASM-P1a-51 | — | 없음 |
+| v1.1 | 2026-09-25 | DEC-22 MVP 범위(소유자 확인 필요, PR #113): MVP 항목 카드에 `scope/mvp` 라벨과 `### MVP 범위(DEC-22)` 절(지금 만들 것, 미룰 것, 기다리지 않는 의존), MVP 계획에 따라 Sprint 값 변경(원래 계획 병기) | #113 | 없음 |

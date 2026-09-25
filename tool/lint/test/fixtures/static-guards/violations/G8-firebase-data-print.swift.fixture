@@ -1,0 +1,3 @@
+func upload(path: String) {
+  print("uploaded \(path)")
+}

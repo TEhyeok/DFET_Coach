@@ -1,0 +1,1 @@
+payload["nativeInkDataBase64"] = ink.base64EncodedString()

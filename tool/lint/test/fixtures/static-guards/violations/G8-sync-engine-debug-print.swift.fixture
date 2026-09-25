@@ -1,0 +1,3 @@
+func drain(_ state: Int) {
+  Swift.debugPrint(state)
+}

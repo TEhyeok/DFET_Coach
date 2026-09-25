@@ -1,0 +1,4 @@
+import FirebaseCore
+import FirebaseData
+
+enum G1AppViolation {}

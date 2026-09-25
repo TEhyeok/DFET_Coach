@@ -1,0 +1,5 @@
+final a = FirebaseFirestore.instance.collection('soap_notes');
+final b = FirebaseFirestore.instance.collection("postureAssessments");
+final c = FirebaseFirestore.instance.collectionGroup('bodyCompositionRecords');
+final d = FirebaseFirestore.instance.collection('trainers/$uid/circumferenceMeasurements');
+final e = FirebaseFirestore.instance.collection('bodyScans');

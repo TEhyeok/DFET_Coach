@@ -1,0 +1,3 @@
+import FirebaseFirestore
+
+public enum G1CoreViolation {}

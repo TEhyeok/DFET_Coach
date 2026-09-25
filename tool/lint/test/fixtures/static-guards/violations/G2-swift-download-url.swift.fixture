@@ -1,0 +1,3 @@
+func photoLink(_ ref: StorageReference) async throws -> URL {
+  try await ref.downloadURL()
+}

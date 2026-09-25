@@ -1,0 +1,3 @@
+func photoLink(_ ref: StorageReference) {
+  ref.downloadURL { url, _ in _ = url }
+}

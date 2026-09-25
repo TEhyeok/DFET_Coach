@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "node --check index.js && find src -name '*.js' -print0 | xargs -0 -n1 node --check",
     "test": "node --test test/clinical.test.js \"test/unit/**/*.test.js\"",
-    "test:rules": "node --test test/firestore-rules.test.js",
+    "test:rules": "node --test --test-concurrency=1 test/firestore-rules.test.js \"test/rules/**/*.test.js\"",
     "test:e2e": "node --test test/clinical-emulator-e2e.js",
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",

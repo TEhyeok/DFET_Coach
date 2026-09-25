@@ -131,7 +131,7 @@ bash tool/backlog/test/run.sh                                     # node:test + 
 bash tool/backlog/create_backlog.sh --dry-run --offline > /dev/null
 ```
 
-docs-and-backlog CI job(DF-001)이 위 네 명령을 실행한다. DF-002는 `ci.yml`을 고치지 않는다(SPRINT_01 §7.6 002-4). P0 DF-002 카드 AC-DF-002.5의 `node --test tool/backlog/test/`와 `shellcheck`는 `test/run.sh` 안에서 돈다.
+docs-and-backlog CI job(DF-001)이 위 네 명령을 실행한다. DF-002는 `ci.yml`을 고치지 않는다(SPRINT_01 §7.6 002-4). P0 DF-002 카드 AC-DF-002.5의 `node --test 'tool/backlog/test/*.test.mjs'`와 `shellcheck`는 `test/run.sh` 안에서 돈다.
 
 `test/run.sh`가 확인하는 것:
 

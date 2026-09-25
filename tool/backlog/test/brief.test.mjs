@@ -84,7 +84,7 @@ test('brief verification commands include the card commands and never --apply or
     'node tool/backlog/validate_backlog.mjs --prd docs/PRD_V1.md tool/backlog/issues.json',
     'bash tool/backlog/test/run.sh',
     'bash tool/backlog/create_backlog.sh --dry-run --offline',
-    'node --test tool/backlog/test/*.test.mjs',
+    "node --test 'tool/backlog/test/*.test.mjs'", // 카드 AC-DF-002.5(따옴표 글롭, PR #109 문서 후속)
   ]) assert.ok(cmds.includes(c), `has: ${c}`);
   assert.ok(cmds.every((c) => !/--apply|firebase deploy|\bgh /.test(c)), cmds.join('\n'));
 });

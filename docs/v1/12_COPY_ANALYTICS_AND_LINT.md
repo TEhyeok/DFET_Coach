@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.1 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -541,6 +541,11 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `condition.clothing` | 복장 | trainer | P1b | §7.4 |  |
 | `condition.station` | 촬영 스테이션 | trainer | P1b | §7.4 |  |
 | `condition.side` | 측면 | trainer | P1a | §7.4 |  |
+| `reliabilityTier.tier1` | 1등급 | trainer | P1a | 부록 B, DF-003 | contracts `labelsKo`(PR #104). 트레이너 화면은 tier1에 칩을 달지 않는다(V1-07) |
+| `measurementStatus.active` | 유효 | trainer | P1a | 부록 B, DF-003 | contracts `labelsKo`(PR #104) |
+| `circumferenceProtocolId.waistMidpoint` | 갈비뼈 하단–장골능 중간점 | trainer | P1a | 부록 A.1, DF-003 | contracts `labelsKo`(PR #104). |
+| `circumferenceProtocolId.hipMaximum` | 최대 둔부 둘레 | trainer | P1a | 부록 A.1, DF-003 | 같음 |
+| `circumferenceProtocolId.custom` | 직접 지정(기준점 메모) | trainer | P1a | 부록 A.1, DF-003 | 같음 |
 
 #### 회원 문장 세트(부록 B.8 정본)
 
@@ -2180,3 +2185,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0(검토 반영) | 2026-09-24 | :1548(보관 브랜치 전용) DF-028 범위 제외, `main` :613 추가(X-06), §7.12 Runner 행 `main` 줄 번호 | - | 없음 |
 | v1.0(정합 패스 2) | 2026-09-24 | 06 가정 ID 참조 ASM-06-NN(R10), markSummaryViewed 소유·호출 화면(R5) | - | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: V1-06 가정 참조 ASM-06-04(R10), `markSummaryViewed` 소유 DF-335·호출 MB-02·MB-04(R5), X-06 후속 반영 표시 | - | 없음 |
+| v1.0.2 | 2026-09-25 | Sprint 01 문서 후속(PR #104): contracts `labelsKo`에만 있던 라벨 5키(`reliabilityTier.tier1`, `measurementStatus.active`, `circumferenceProtocolId.*`)를 문구 덱에 추가 | #113 | 없음 |

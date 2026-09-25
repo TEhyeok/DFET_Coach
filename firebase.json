@@ -41,6 +41,14 @@
     "runtime": "nodejs22"
   },
   "emulators": {
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 19099
+    },
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5001
+    },
     "firestore": {
       "host": "127.0.0.1",
       "port": 18080

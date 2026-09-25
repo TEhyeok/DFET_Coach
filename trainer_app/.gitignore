@@ -1,0 +1,10 @@
+# trainer_app local build output (DF-008)
+DerivedData/
+.spm/
+build/
+.build/
+.swiftpm/
+# Local packages resolve through the app project; its Package.resolved is the only pinned copy (ASM-S01-06).
+Packages/*/Package.resolved
+# Firebase app config: never tracked. Owner places it locally; CI injects it from a secret (ADR-019, DF-034).
+Config/GoogleService-Info.plist

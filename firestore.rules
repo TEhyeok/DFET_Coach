@@ -114,6 +114,18 @@ service cloud.firestore {
 
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
 
+    // V1-05 §7.2 헬퍼 중 DF-020이 미사용이라 넣지 않은 것(V1-05 §7.3 'DF-020 구현과 이 초안의 차이', DF-021)
+    function numIn(v, lo, hi) { return v is number && v >= lo && v <= hi; }
+    function numPosMax(v, hi) { return v is number && v > 0 && v <= hi; }
+
+    // create 이후 바꿀 수 없는 식별·출처 키
+    function identityUnchanged() {
+      return !changed().hasAny([
+        'trainerId', 'authorUid', 'enteredBy', 'memberUid', 'pendingMemberId',
+        'schemaVersion', 'legalNature', 'createdAt', 'source', 'sourceGrade'
+      ]);
+    }
+
     // create 공통: 원 기록 컬렉션
     function rawRecordCreateBase(schemaVersion) {
       return isTrainer()
@@ -467,8 +479,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 트레이너는 승인·활성 bodyChange 정책만 읽는다(PRD §9.4, V1-05 §7.9, R-25, DF-021).
+    // 트레이너 list는 kind·status·active 세 조건을 모두 where에 넣어야 규칙이 증명한다.
     match /insightPolicyVersions/{versionId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || (
+        isTrainer()
+        && resource.data.kind == 'bodyChange'
+        && resource.data.status == 'approved'
+        && resource.data.active == true);
       allow write: if false;
     }
 
@@ -482,6 +500,321 @@ service cloud.firestore {
     }
 
     match /auditLogs/{auditId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ===== D-FET v1 새 컬렉션 (PRD §9.2·§9.4, V1-05 §7.4~§7.9, DF-021) =====
+    // 원 기록 컬렉션은 isAdmin()을 읽기 조건에 넣지 않는다(R-23). 관리자는 admin_web 서버(Admin SDK)로 읽는다.
+    // bodyScans(P2, lidarBeta)는 MVP 뒤라 블록을 두지 않는다. 기본 거부로 모든 클라이언트 접근이 막힌다(R-22).
+
+    // --- Pending Members (P1a, V1-05 §7.4) ---
+    match /pendingMembers/{pendingMemberId} {
+      function pendingCreateKeys() {
+        return ['trainerId', 'displayName', 'sex', 'birthYear', 'ageConfirmed14', 'status',
+                'schemaVersion', 'createdAt', 'updatedAt'];
+      }
+      function validPendingProfile(d) {
+        return strRange(d.displayName, 1, 40)
+          && d.sex in ['female', 'male', 'unspecified']
+          && d.birthYear is int
+          && d.birthYear >= 1900
+          && d.birthYear <= request.time.year() - 14;                       // R-31, ASM-P0-20
+      }
+
+      allow read: if isAccessTrainer(resource.data);                        // R-05
+
+      // 필수 9키만. heightCm·연락처·서버 필드(inviteCodeId, promotedUid, promotedAt)는 불가(AC-LINK-01.2)
+      allow create: if isTrainer()
+        && incoming().keys().hasOnly(pendingCreateKeys())
+        && incoming().keys().hasAll(pendingCreateKeys())
+        && incoming().trainerId == request.auth.uid
+        && incoming().ageConfirmed14 == true
+        && incoming().status == 'pending'
+        && incoming().schemaVersion == 1
+        && isServerTime('createdAt') && isServerTime('updatedAt')
+        && validPendingProfile(incoming());
+
+      allow update: if isAccessTrainer(resource.data)
+        && resource.data.status == 'pending'
+        && changed().hasOnly(['displayName', 'sex', 'birthYear', 'heightCm',
+                              'heightMeasuredAt', 'status', 'updatedAt'])  // trainerId 불변
+        && incoming().status in ['pending', 'cancelled']
+        && isServerTime('updatedAt')
+        && validPendingProfile(incoming())
+        && (!changed().hasAny(['heightCm', 'heightMeasuredAt'])
+            || (hasConsent(pendingMemberId, 'healthData')                   // R-30
+                && numIn(incoming().heightCm, 100, 250)
+                && measuredAtOk(incoming().heightMeasuredAt)));
+
+      allow delete: if false;                                               // 파기는 서버
+    }
+
+    // --- Posture Assessments (규칙 P0, 사용 P1b, V1-05 §7.5) ---
+    match /postureAssessments/{assessmentId} {
+      function postureKeys() {
+        return ['memberUid', 'pendingMemberId', 'trainerId', 'authorUid', 'capturedAt',
+                'protocolVersion', 'stationProfileId', 'landmarkEngine', 'device',
+                'captureConditions', 'views', 'metrics', 'status', 'isBaseline',
+                'supersedesId', 'retestGroupId', 'legalNature', 'schemaVersion',
+                'createdAt', 'updatedAt'];
+      }
+      function postureDraftEditable() {
+        return ['capturedAt', 'protocolVersion', 'stationProfileId', 'landmarkEngine',
+                'device', 'captureConditions', 'views', 'metrics', 'status',
+                'isBaseline', 'supersedesId', 'retestGroupId', 'updatedAt'];
+      }
+      function validPostureBody(d) {
+        return measuredAtOk(d.capturedAt)
+          && strRange(d.protocolVersion, 1, 32)
+          && strRange(d.stationProfileId, 1, 64)
+          && d.landmarkEngine is map && d.landmarkEngine.keys().hasOnly(['name', 'version'])
+          && d.landmarkEngine.name == 'appleVision2D'
+          && d.device is map && d.device.keys().hasOnly(['model', 'osVersion'])
+          && d.captureConditions is map
+          && d.captureConditions.keys().hasOnly(['clothing', 'barefoot', 'markersPlaced',
+               'verbalConsentCheck', 'cameraHeightCm', 'cameraDistanceM', 'levelDeg', 'pitchDeg'])
+          && d.views is list && d.views.size() <= 3
+          && optListMax(d, 'metrics', 30)
+          && d.isBaseline is bool;
+      }
+      function needsResearch(d) { return d.get('retestGroupId', null) != null; }
+
+      allow read: if isAccessTrainer(resource.data);
+
+      // 문서 조회 수: trainers 또는 pendingMembers, memberConsentStates(②③⑤ 같은 문서), appConfig/features = 3
+      allow create: if rawRecordCreateBase(1)
+        && incoming().keys().hasOnly(postureKeys())
+        && incoming().authorUid == request.auth.uid
+        && incoming().status == 'draft'
+        && validPostureBody(incoming())
+        && canWriteFor(incoming())
+        && hasConsent(memberKeyOf(incoming()), 'healthData')               // R-15
+        && hasConsent(memberKeyOf(incoming()), 'bodyImaging')              // R-15
+        && (!needsResearch(incoming())
+            || hasConsent(memberKeyOf(incoming()), 'research'))            // R-16
+        && featureOn('bodyAssessment');
+
+      allow update: if isAccessTrainer(resource.data)
+        && canWriteFor(resource.data)
+        && identityUnchanged()
+        && isServerTime('updatedAt')
+        && (
+          // draft: 측정 필드 편집, draft→confirmed(metrics 1개 이상)
+          (resource.data.status == 'draft'
+            && changed().hasOnly(postureDraftEditable())
+            && incoming().status in ['draft', 'confirmed']
+            && validPostureBody(incoming())
+            && (incoming().status == 'draft'
+                || incoming().get('metrics', []).size() >= 1)
+            && hasConsent(memberKeyOf(resource.data), 'healthData')
+            && hasConsent(memberKeyOf(resource.data), 'bodyImaging')
+            && (!('retestGroupId' in changed()) || !needsResearch(incoming())
+                || hasConsent(memberKeyOf(resource.data), 'research')))
+          ||
+          // confirmed: voided 전환, 기준선 토글만(측정값·랜드마크 불변, AC-ASM-04.2)
+          (resource.data.status == 'confirmed'
+            && changed().hasOnly(['status', 'isBaseline', 'updatedAt'])
+            && incoming().status in ['confirmed', 'voided']
+            && incoming().isBaseline is bool)
+        );                                                                  // voided: 모두 거부
+
+      allow delete: if isAccessTrainer(resource.data)
+        && canWriteFor(resource.data)
+        && resource.data.status == 'draft';
+    }
+
+    // --- Body Composition Records (P1a, V1-05 §7.6) ---
+    match /bodyCompositionRecords/{recordId} {
+      // 서버 전용(v2) externalId, idempotencyKey, rawPath와 voidedAt, voidReason은 create 화이트리스트에 없다.
+      function bcKeys() {
+        return ['memberUid', 'pendingMemberId', 'trainerId', 'enteredBy', 'source',
+                'sourceGrade', 'deviceModel', 'measuredAt', 'fasting', 'timeOfDayBand',
+                'values', 'derived', 'reportPhotoPath', 'status', 'legalNature',
+                'schemaVersion', 'createdAt', 'updatedAt'];
+      }
+      // 키별 명시. 측정하지 않은 키는 두지 않는다(0 금지), bodyFatPercent만 0 허용(R-17, R-27)
+      function validValues(v) {
+        return v is map && v.size() >= 1
+          && v.keys().hasOnly(['weightKg', 'bodyFatPercent', 'bodyFatMassKg',
+                               'skeletalMuscleMassKg', 'visceralFatLevel', 'totalBodyWaterL'])
+          && (!('weightKg' in v) || numPosMax(v.weightKg, 600))
+          && (!('bodyFatPercent' in v) || numIn(v.bodyFatPercent, 0, 100))
+          && (!('bodyFatMassKg' in v) || numPosMax(v.bodyFatMassKg, 600))
+          && (!('skeletalMuscleMassKg' in v) || numPosMax(v.skeletalMuscleMassKg, 300))
+          && (!('visceralFatLevel' in v) || numPosMax(v.visceralFatLevel, 100))
+          && (!('totalBodyWaterL' in v) || numPosMax(v.totalBodyWaterL, 300));
+      }
+      function validDerived(d) {
+        return d.get('derived', null) == null
+          || (d.derived is map
+              && d.derived.keys().hasOnly(['bmi', 'heightCmUsed', 'heightMeasuredAt', 'sourceGrade'])
+              && d.derived.sourceGrade == 'derived'
+              && numPosMax(d.derived.bmi, 200)
+              && numIn(d.derived.heightCmUsed, 100, 250)
+              && d.derived.heightMeasuredAt is timestamp);
+      }
+      function validReportPath(p) {
+        return p is string && p.matches('bodyCompositionRecords/' + recordId + '/report[.](jpg|heic)');
+      }
+
+      allow read: if isAccessTrainer(resource.data);
+
+      allow create: if rawRecordCreateBase(1)
+        && incoming().keys().hasOnly(bcKeys())
+        && incoming().keys().hasAll(['enteredBy', 'source', 'sourceGrade', 'deviceModel',
+                                     'measuredAt', 'fasting', 'timeOfDayBand', 'values',
+                                     'status'])                             // AC-BC-01.1
+        && incoming().enteredBy == request.auth.uid
+        && incoming().source == 'manualEntry'
+        && incoming().sourceGrade == 'device'
+        && strRange(incoming().deviceModel, 1, 64)                         // R-17
+        && measuredAtOk(incoming().measuredAt)
+        && incoming().fasting in ['yes', 'no', 'unknown']
+        && incoming().timeOfDayBand in ['morning', 'midday', 'evening']
+        && validValues(incoming().values)
+        && validDerived(incoming())
+        && incoming().get('reportPhotoPath', null) == null
+        && incoming().status == 'active'
+        && canWriteFor(incoming())
+        && hasConsent(memberKeyOf(incoming()), 'healthData')               // R-14
+        && featureOn('bodyComposition');
+
+      // active일 때만: reportPhotoPath(null→값 한 번), status→voided(voidedAt·voidReason 함께). 값 변경 불가(F-BC-03.5)
+      allow update: if isAccessTrainer(resource.data)
+        && canWriteFor(resource.data)
+        && resource.data.status == 'active'
+        && changed().hasOnly(['reportPhotoPath', 'status', 'voidedAt', 'voidReason', 'updatedAt'])
+        && isServerTime('updatedAt')
+        && (!('reportPhotoPath' in changed())
+            || (resource.data.get('reportPhotoPath', null) == null
+                && validReportPath(incoming().reportPhotoPath)
+                && hasConsent(memberKeyOf(resource.data), 'healthData')))
+        && (!changed().hasAny(['status', 'voidedAt', 'voidReason'])
+            || (incoming().status == 'voided'
+                && isServerTime('voidedAt')
+                && strRange(incoming().voidReason, 1, 200)));
+
+      allow delete: if false;
+    }
+
+    // --- Circumference Measurements (tape P1a, observedSection P2, V1-05 §7.7) ---
+    match /circumferenceMeasurements/{measurementId} {
+      function circKeys() {
+        return ['memberUid', 'pendingMemberId', 'trainerId', 'authorUid', 'metricCode', 'side',
+                'valueCm', 'sourceGrade', 'protocolId', 'protocolVersion', 'landmarkNote',
+                'conditionsNote', 'measuredAt', 'trialIndex', 'scanId', 'referenceTapeCm',
+                'validationStatus', 'isBeta', 'status', 'legalNature', 'schemaVersion',
+                'createdAt', 'updatedAt'];
+      }
+      function validSide(d) {
+        return (d.metricCode in ['waistCircumference', 'hipCircumference', 'chestCircumference']
+                  && d.side == 'none')
+          || (d.metricCode in ['thighCircumference', 'upperArmCircumference', 'calfCircumference']
+                  && d.side in ['left', 'right']);                          // AC-ASM-06.1
+      }
+      function validCircBody(d) {
+        return validSide(d)
+          && numIn(d.valueCm, 1, 400)
+          && d.protocolId in ['waistMidpoint', 'hipMaximum', 'custom']
+          && strRange(d.protocolVersion, 1, 32)
+          && (d.protocolId != 'custom' || strRange(d.get('landmarkNote', null), 1, 500))   // R-26
+          && (d.get('landmarkNote', null) == null || strRange(d.landmarkNote, 1, 500))
+          && optStrMax(d, 'conditionsNote', 500)
+          && measuredAtOk(d.measuredAt)
+          && d.trialIndex is int && d.trialIndex >= 1 && d.trialIndex <= 3
+          && (d.get('referenceTapeCm', null) == null || numIn(d.referenceTapeCm, 1, 400))
+          && d.status == 'active';
+      }
+      function tapeRules(d) {
+        return d.sourceGrade == 'tape'
+          && d.isBeta == false
+          && d.validationStatus == 'validated'                              // ASM-05-08
+          && d.get('scanId', null) == null
+          && featureOn('bodyComposition');                                  // R-29
+      }
+      function observedSectionRules(d) {
+        return d.sourceGrade == 'observedSection'
+          && d.isBeta == true
+          && d.validationStatus == 'unvalidated'
+          && d.get('scanId', null) is string
+          && d.get('memberUid', null) is string                             // 대기 회원 불가(F-LINK-01.7)
+          && hasConsent(memberKeyOf(d), 'bodyImaging')
+          && featureOn('lidarBeta');                                        // R-22
+      }
+
+      allow read: if isAccessTrainer(resource.data);
+
+      allow create: if rawRecordCreateBase(1)
+        && incoming().keys().hasOnly(circKeys())
+        && incoming().authorUid == request.auth.uid
+        && validCircBody(incoming())
+        && (tapeRules(incoming()) || observedSectionRules(incoming()))
+        && canWriteFor(incoming())
+        && hasConsent(memberKeyOf(incoming()), 'healthData');
+
+      allow update: if isAccessTrainer(resource.data)
+        && canWriteFor(resource.data)
+        && resource.data.status == 'active'
+        && changed().hasOnly(['status', 'voidedAt', 'voidReason', 'updatedAt'])
+        && incoming().status == 'voided'
+        && isServerTime('voidedAt') && isServerTime('updatedAt')
+        && strRange(incoming().voidReason, 1, 200);
+
+      allow delete: if false;
+    }
+
+    // --- 서버 작성·읽기 전용 컬렉션(V1-05 §7.9). 클라이언트 쓰기는 모두 거부(R-20, AC-PRIV-02.1) ---
+
+    // 소비자본 요약(P2, 서버 작성). 회원 list는 where memberUid == uid(R-11, R-12)
+    match /memberSummaries/{summaryId} {
+      allow read: if isAuth() && (
+        resource.data.memberUid == request.auth.uid
+        || isAccessTrainer(resource.data));
+      allow write: if false;
+    }
+
+    // 동의 기록(P1a, append-only, 서버 작성)
+    match /consentRecords/{recordId} {
+      allow read: if isAuth() && (
+        resource.data.get('subjectUid', null) == request.auth.uid
+        || (resource.data.get('subjectUid', null) != null
+            && isAssignedTrainer(resource.data.subjectUid))                 // R-28
+        || isAdmin()
+        || (resource.data.get('pendingMemberId', null) != null
+            && isPendingOwner(resource.data.pendingMemberId)));
+      allow write: if false;
+    }
+
+    // 동의 상태(P1a, 서버 파생). 문서 ID가 회원 키(uid 또는 pendingMemberId)
+    match /memberConsentStates/{memberKey} {
+      allow read: if isAuth() && (
+        memberKey == request.auth.uid
+        || isAssignedTrainer(memberKey)
+        || isAdmin()
+        || isPendingOwner(memberKey));
+      allow write: if false;
+    }
+
+    // 동의서 버전(관리자 서버 작성). 회원 list는 where status == 'published'
+    match /consentDocumentVersions/{versionId} {
+      allow read: if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow write: if false;
+    }
+
+    // 초대 코드(P2, 서버 전용)
+    match /inviteCodes/{codeHash} {
+      allow read, write: if false;
+    }
+
+    // 권리 요청(P1a, callable이 작성)
+    match /rightsRequests/{requestId} {
+      allow read: if isAuth() && (resource.data.memberUid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // 운영 지표(P1a, 서버 전용, 식별자·건강 값 없음)
+    match /opsMetrics/{isoWeek} {
       allow read: if isAdmin();
       allow write: if false;
     }

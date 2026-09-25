@@ -1,0 +1,141 @@
+{
+  "_fixture": {
+    "id": "soap_legacy/flutter_rom_mmt_test_general",
+    "description": "Flutter 편집기(SoapNote.toFirestore) 어휘 rom·mmt·test·general, 파싱 실패 value(110-120, 4+), status complete, completedCategories 전체 단어 표기",
+    "writer": "synthetic",
+    "prdRefs": [
+      "AC-SOAP-06.2",
+      "MIG-03",
+      "§11.4"
+    ],
+    "expect": {
+      "legacyMetricCount": 4
+    }
+  },
+  "path": "soap_notes/fx-note-legacy-001",
+  "data": {
+    "trainerId": "fx-trainer-001",
+    "trainerName": "가상 트레이너 A",
+    "memberId": "fx-member-001",
+    "memberName": "가상 회원 A",
+    "memberEmail": "member-a@example.invalid",
+    "date": {
+      "$int": 1789952400000
+    },
+    "visitType": "initial",
+    "setting": "field",
+    "diagnosis": "",
+    "bodyRegion": "어깨",
+    "caseStatus": "active",
+    "subjective": "오른쪽 어깨를 들 때 불편하다고 함",
+    "painSite": "오른쪽 어깨",
+    "painPattern": "팔을 들 때",
+    "painNow": {
+      "$int": 3
+    },
+    "painBest": null,
+    "painWorst": {
+      "$int": 5
+    },
+    "observation": "어깨 올릴 때 보상 움직임 관찰",
+    "rom": "",
+    "mmt": "",
+    "neurologicalTests": "",
+    "specialTests": "",
+    "functionalTests": "",
+    "assessment": "어깨 가동성 운동 필요",
+    "shortTermGoal": "팔 올리기 편하게",
+    "longTermGoal": "",
+    "treatmentPlan": "어깨 가동성 운동",
+    "homeExercise": "벽 짚고 팔 올리기",
+    "nextPlan": "가동 범위 다시 확인",
+    "isSharedWithMember": true,
+    "structured": {
+      "subjective": {
+        "chiefComplaint": "오른쪽 어깨를 들 때 불편하다고 함",
+        "painSite": "오른쪽 어깨",
+        "painPattern": "팔을 들 때",
+        "painNow": {
+          "$int": 3
+        },
+        "painBest": null,
+        "painWorst": {
+          "$int": 5
+        }
+      },
+      "objective": {
+        "observation": "어깨 올릴 때 보상 움직임 관찰",
+        "neurologicalTests": "",
+        "specialTests": "",
+        "functionalTests": ""
+      },
+      "assessment": {
+        "problemList": "어깨 가동성 운동 필요",
+        "shortTermGoal": "팔 올리기 편하게",
+        "longTermGoal": ""
+      },
+      "plan": {
+        "treatmentPlan": "어깨 가동성 운동",
+        "homeExercise": "벽 짚고 팔 올리기",
+        "nextPlan": "가동 범위 다시 확인"
+      },
+      "metrics": [
+        {
+          "type": "rom",
+          "label": "어깨 굴곡",
+          "side": "우",
+          "value": "110-120",
+          "unit": "deg",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "mmt",
+          "label": "어깨 외전근",
+          "side": "우",
+          "value": "4+",
+          "unit": "grade",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "test",
+          "label": "한 발 서기",
+          "side": "",
+          "value": "25",
+          "unit": "score",
+          "score": null,
+          "note": ""
+        },
+        {
+          "type": "general",
+          "label": "컨디션",
+          "side": "",
+          "value": "",
+          "unit": "",
+          "score": null,
+          "note": "가상 메모: 수면 부족"
+        }
+      ],
+      "workflow": {
+        "status": "complete",
+        "completedCategories": [
+          "meta",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "sharing"
+        ],
+        "riskLevel": "low",
+        "followUpDate": null
+      }
+    },
+    "createdAt": {
+      "$int": 1789952700000
+    },
+    "updatedAt": {
+      "$int": 1789956600000
+    }
+  }
+}

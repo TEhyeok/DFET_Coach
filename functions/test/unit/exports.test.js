@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const test = require('node:test');
 const {describeExport, describeExports} = require('./_exportSnapshot');
+const {FIRESTORE_TRIGGER_REGION, REGION} = require('../../src/shared/region');
 
 const SNAPSHOT = require('./__snapshots__/exports.json');
 
@@ -33,6 +34,14 @@ const LEGACY_EXPORTS = [
   ...LEGACY_SEOUL_CALLABLES,
   ...LEGACY_SEOUL_HTTPS,
 ];
+
+// Exports added after DF-037. Every new export must be listed here; each must register in REGION
+// (asia-northeast3) through src/shared/region.js (AC-DF-037.1, TC-DF037-02).
+const NEW_EXPORTS = Object.freeze([]);
+
+// Firestore triggers run in the database location, not necessarily REGION (ASM-P0-10). List each new
+// trigger export here; it must then register in FIRESTORE_TRIGGER_REGION instead of REGION.
+const FIRESTORE_TRIGGER_EXPORTS = Object.freeze([]);
 
 // Admin-gated legacy callables that validate `data` before touching Firebase Admin APIs.
 // Calling them with an admin token and empty data proves `data` still arrives as the first argument.
@@ -113,5 +122,29 @@ test('TC-DF037-01 AC-DF-037.2 legacy callables receive request.data as data: emp
       indexExports[name].run({data: {}, auth: synthMemberAuth}),
       'invalid-argument'
     );
+  }
+});
+
+test('TC-DF037-02 AC-DF-037.1 every export is either a pinned legacy export or listed in NEW_EXPORTS', () => {
+  const unlisted = Object.keys(indexExports).filter(
+    (name) => !LEGACY_EXPORTS.includes(name) && !NEW_EXPORTS.includes(name)
+  );
+  assert.deepEqual(unlisted, [], 'add new exports to NEW_EXPORTS in test/unit/exports.test.js');
+  for (const name of NEW_EXPORTS) {
+    assert.ok(!LEGACY_EXPORTS.includes(name), `${name} is a legacy export`);
+    assert.ok(name in indexExports, `NEW_EXPORTS lists ${name} but index.js does not export it`);
+  }
+  for (const name of FIRESTORE_TRIGGER_EXPORTS) {
+    assert.ok(NEW_EXPORTS.includes(name), `${name} must also be listed in NEW_EXPORTS`);
+  }
+});
+
+test('TC-DF037-02 AC-DF-037.1 new exports register in asia-northeast3 (triggers: FIRESTORE_TRIGGER_REGION)', () => {
+  assert.equal(REGION, 'asia-northeast3');
+  for (const name of NEW_EXPORTS) {
+    const endpoint = indexExports[name].__endpoint;
+    const isTrigger = FIRESTORE_TRIGGER_EXPORTS.includes(name);
+    assert.deepEqual(endpoint.region, [isTrigger ? FIRESTORE_TRIGGER_REGION : REGION], name);
+    assert.equal(Boolean(endpoint.eventTrigger), isTrigger, `${name}: trigger list and kind disagree`);
   }
 });

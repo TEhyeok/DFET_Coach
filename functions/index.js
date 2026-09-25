@@ -13,39 +13,19 @@
 
 const admin = require('firebase-admin');
 const {FieldValue} = require('firebase-admin/firestore');
-const {
-  HttpsError,
-  onCall,
-  onRequest,
-} = require('firebase-functions/v2/https');
+const {onRequest} = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const {
   createClinicalApiHandler,
   parseKeyMap,
 } = require('./src/clinical/ingestion');
+// v2 등록 어댑터((data, context) 계약 유지)는 src/shared/callable.js로 옮겼다(DF-037).
+const {functions} = require('./src/shared/callable');
 
 admin.initializeApp();
 
 const ingestionHmacKeys = defineSecret('INGEST_HMAC_KEYS');
 const isFunctionsEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
-
-function callable(handler, options = undefined) {
-  const adapted = (request) => handler(request.data, {auth: request.auth});
-  return options ? onCall(options, adapted) : onCall(adapted);
-}
-
-// 기존 구현의 (data, context) 계약을 유지하면서 등록 런타임만 v2로 전환한다.
-const functions = {
-  https: {
-    HttpsError,
-    onCall: (handler) => callable(handler),
-  },
-  region: (region) => ({
-    https: {
-      onCall: (handler) => callable(handler, {region}),
-    },
-  }),
-};
 
 exports.clinicalApi = onRequest(
   {

@@ -1,0 +1,575 @@
+{
+  "contract": "vocab",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/PRD_V1.md appendix A.3-A.7, B",
+  "enums": {
+    "sourceGrade": {
+      "status": "confirmed",
+      "values": [
+        "tape",
+        "device",
+        "photoManual",
+        "photoAuto",
+        "observedSection",
+        "modelEstimate",
+        "aiAppearance",
+        "selfReport",
+        "trainerObserved",
+        "derived"
+      ],
+      "labelsKo": {
+        "tape": "줄자 실측",
+        "device": "기기 측정",
+        "photoManual": "사진 측정(확정)",
+        "photoAuto": "사진 자동 추정(스크리닝)",
+        "observedSection": "관측 단면(실측 대조 전)",
+        "modelEstimate": "모델 추정",
+        "aiAppearance": "AI 외형(실측 아님)",
+        "selfReport": "자기 보고",
+        "trainerObserved": "트레이너 관찰",
+        "derived": "파생값"
+      }
+    },
+    "reliabilityTier": {
+      "status": "confirmed",
+      "values": [
+        "tier1",
+        "reference",
+        "beta"
+      ],
+      "labelsKo": {
+        "tier1": "1등급",
+        "reference": "참고",
+        "beta": "베타"
+      }
+    },
+    "changeStatus": {
+      "status": "confirmed",
+      "values": [
+        "meaningfulImprovement",
+        "withinError",
+        "meaningfulDecline",
+        "indeterminate",
+        "pendingPolicy"
+      ],
+      "labelsKo": {
+        "meaningfulImprovement": "의미 있는 개선",
+        "withinError": "유지(오차 범위 내)",
+        "meaningfulDecline": "의미 있는 악화",
+        "indeterminate": "판정 불가",
+        "pendingPolicy": "산정 준비 중"
+      }
+    },
+    "reasonCode": {
+      "status": "confirmed",
+      "values": [
+        "conditionMismatch",
+        "deviceChanged",
+        "protocolChanged",
+        "noMdc",
+        "noComparison",
+        "referenceMetric",
+        "betaMetric"
+      ],
+      "labelsKo": {
+        "conditionMismatch": "조건 불일치",
+        "deviceChanged": "기기 변경",
+        "protocolChanged": "프로토콜 변경",
+        "noMdc": "MDC 미확보",
+        "noComparison": "비교할 측정 없음",
+        "referenceMetric": "참고 지표",
+        "betaMetric": "베타 지표"
+      }
+    },
+    "mdcSource": {
+      "status": "confirmed",
+      "values": [
+        "literature",
+        "inHouse"
+      ],
+      "labelsKo": {
+        "literature": "문헌값(자체 재검사 전)",
+        "inHouse": "자체 MDC"
+      }
+    },
+    "improvementDirection": {
+      "status": "confirmed",
+      "values": [
+        "higherIsBetter",
+        "lowerIsBetter",
+        "towardZero",
+        "none"
+      ]
+    },
+    "side": {
+      "status": "confirmed",
+      "values": [
+        "none",
+        "left",
+        "right",
+        "bilateral"
+      ],
+      "labelsKo": {
+        "none": "—",
+        "left": "왼쪽",
+        "right": "오른쪽",
+        "bilateral": "양측"
+      }
+    },
+    "syncState": {
+      "status": "confirmed",
+      "values": [
+        "localSaved",
+        "syncing",
+        "synced",
+        "syncFailed",
+        "awaitingConsent"
+      ],
+      "labelsKo": {
+        "localSaved": "기기에 저장됨",
+        "syncing": "동기화 중",
+        "synced": "동기화됨",
+        "syncFailed": "동기화 실패",
+        "awaitingConsent": "동의 확인 대기"
+      }
+    },
+    "family": {
+      "status": "confirmed",
+      "values": [
+        "posture",
+        "bodyComposition",
+        "circumference",
+        "pain",
+        "trainerObservation"
+      ]
+    },
+    "sideRule": {
+      "status": "confirmed",
+      "values": [
+        "none",
+        "leftRight",
+        "leftRightBilateral",
+        "magnitudeWithLowerSide",
+        "magnitudeWithHigherSide",
+        "undefinedV2"
+      ]
+    },
+    "availability": {
+      "status": "confirmed",
+      "values": [
+        "v1",
+        "v1Reference",
+        "v1ReferenceDefaultOff",
+        "v1Optional",
+        "v2"
+      ]
+    },
+    "scale": {
+      "status": "confirmed",
+      "values": [
+        "ratio",
+        "ordinal"
+      ]
+    },
+    "unit": {
+      "status": "confirmed",
+      "values": [
+        "deg",
+        "kg",
+        "percent",
+        "kgPerM2",
+        "level",
+        "liter",
+        "cm",
+        "point",
+        "grade"
+      ],
+      "labelsKo": {
+        "deg": "°",
+        "kg": "kg",
+        "percent": "%",
+        "kgPerM2": "kg/m²",
+        "level": "레벨",
+        "liter": "L",
+        "cm": "cm",
+        "point": "점",
+        "grade": "등급"
+      }
+    },
+    "consentType": {
+      "status": "confirmed",
+      "values": [
+        "required",
+        "healthData",
+        "bodyImaging",
+        "sharing",
+        "research"
+      ],
+      "labelsKo": {
+        "required": "① 서비스 이용 필수 동의",
+        "healthData": "② 건강정보 수집·이용",
+        "bodyImaging": "③ 신체 사진·영상·3D 정보",
+        "sharing": "④ 후임 담당 트레이너 인계",
+        "research": "⑤ 가명처리 연구 참여"
+      }
+    },
+    "consentAction": {
+      "status": "confirmed",
+      "values": [
+        "grant",
+        "withdraw"
+      ],
+      "labelsKo": {
+        "grant": "동의",
+        "withdraw": "동의 철회"
+      }
+    },
+    "consentChannel": {
+      "status": "confirmed",
+      "values": [
+        "memberApp",
+        "trainerDeviceInPerson"
+      ],
+      "labelsKo": {
+        "memberApp": "회원 앱",
+        "trainerDeviceInPerson": "트레이너 기기에서 현장 동의"
+      }
+    },
+    "soapStatus": {
+      "status": "confirmed",
+      "values": [
+        "draft",
+        "finalized"
+      ],
+      "labelsKo": {
+        "draft": "작성 중",
+        "finalized": "확정됨"
+      }
+    },
+    "postureStatus": {
+      "status": "confirmed",
+      "values": [
+        "draft",
+        "confirmed",
+        "voided"
+      ],
+      "labelsKo": {
+        "draft": "작성 중",
+        "confirmed": "확정됨",
+        "voided": "무효 처리됨"
+      }
+    },
+    "measurementStatus": {
+      "status": "confirmed",
+      "values": [
+        "active",
+        "voided"
+      ],
+      "labelsKo": {
+        "active": "유효",
+        "voided": "무효 처리됨"
+      }
+    },
+    "pendingMemberStatus": {
+      "status": "confirmed",
+      "values": [
+        "pending",
+        "promoted",
+        "cancelled",
+        "expired"
+      ],
+      "labelsKo": {
+        "pending": "대기",
+        "promoted": "승격됨",
+        "cancelled": "취소됨",
+        "expired": "만료됨"
+      }
+    },
+    "summaryStatus": {
+      "status": "confirmed",
+      "values": [
+        "shared",
+        "revoked"
+      ],
+      "labelsKo": {
+        "shared": "공유됨",
+        "revoked": "해제됨"
+      }
+    },
+    "postureView": {
+      "status": "confirmed",
+      "values": [
+        "front",
+        "sagittalLeft",
+        "sagittalRight"
+      ],
+      "labelsKo": {
+        "front": "정면",
+        "sagittalLeft": "왼쪽 측면",
+        "sagittalRight": "오른쪽 측면"
+      }
+    },
+    "clothing": {
+      "status": "draft",
+      "confirmBy": "DF-915",
+      "values": [
+        "fitted",
+        "regular",
+        "unknown"
+      ],
+      "labelsKo": {
+        "fitted": "몸에 붙는 옷",
+        "regular": "일반 운동복",
+        "unknown": "확인 안 됨"
+      }
+    },
+    "fasting": {
+      "status": "confirmed",
+      "values": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "labelsKo": {
+        "yes": "공복",
+        "no": "공복 아님",
+        "unknown": "모름"
+      }
+    },
+    "timeOfDayBand": {
+      "status": "confirmed",
+      "values": [
+        "morning",
+        "midday",
+        "evening"
+      ],
+      "labelsKo": {
+        "morning": "오전(11시 전)",
+        "midday": "낮(11~17시)",
+        "evening": "저녁(17시 이후)"
+      }
+    },
+    "bodyCompositionSource": {
+      "status": "confirmed",
+      "values": [
+        "manualEntry",
+        "inbodyApi",
+        "healthKit"
+      ]
+    },
+    "circumferenceProtocolId": {
+      "status": "confirmed",
+      "values": [
+        "waistMidpoint",
+        "hipMaximum",
+        "custom"
+      ],
+      "labelsKo": {
+        "waistMidpoint": "갈비뼈 하단–장골능 중간점",
+        "hipMaximum": "최대 둔부 둘레",
+        "custom": "직접 지정(기준점 메모)"
+      }
+    },
+    "landmarkCode": {
+      "status": "confirmed",
+      "values": [
+        "tragusLeft",
+        "tragusRight",
+        "c7",
+        "earLeft",
+        "earRight",
+        "acromionLeft",
+        "acromionRight",
+        "asisLeft",
+        "asisRight"
+      ],
+      "labelsKo": {
+        "tragusLeft": "왼쪽 이주",
+        "tragusRight": "오른쪽 이주",
+        "c7": "C7(제7경추 가시돌기)",
+        "earLeft": "왼쪽 귀",
+        "earRight": "오른쪽 귀",
+        "acromionLeft": "왼쪽 견봉",
+        "acromionRight": "오른쪽 견봉",
+        "asisLeft": "왼쪽 ASIS(위앞엉덩뼈가시)",
+        "asisRight": "오른쪽 ASIS(위앞엉덩뼈가시)"
+      }
+    },
+    "activeOrPassive": {
+      "status": "draft",
+      "confirmBy": "DF-916",
+      "values": [
+        "active",
+        "passive"
+      ],
+      "labelsKo": {
+        "active": "AROM(능동)",
+        "passive": "PROM(수동)"
+      }
+    },
+    "joint": {
+      "status": "draft",
+      "confirmBy": "DF-916",
+      "values": [
+        "cervicalSpine",
+        "thoracicSpine",
+        "lumbarSpine",
+        "shoulder",
+        "elbow",
+        "wrist",
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "labelsKo": {
+        "cervicalSpine": "목(경추)",
+        "thoracicSpine": "등(흉추)",
+        "lumbarSpine": "허리(요추)",
+        "shoulder": "어깨",
+        "elbow": "팔꿈치",
+        "wrist": "손목",
+        "hip": "엉덩관절",
+        "knee": "무릎",
+        "ankle": "발목"
+      }
+    },
+    "motion": {
+      "status": "draft",
+      "confirmBy": "DF-916",
+      "values": [
+        "flexion",
+        "extension",
+        "abduction",
+        "adduction",
+        "horizontalAbduction",
+        "horizontalAdduction",
+        "internalRotation",
+        "externalRotation",
+        "lateralFlexion",
+        "rotation",
+        "dorsiflexion",
+        "plantarflexion",
+        "inversion",
+        "eversion"
+      ],
+      "labelsKo": {
+        "flexion": "굽힘",
+        "extension": "폄",
+        "abduction": "벌림",
+        "adduction": "모음",
+        "horizontalAbduction": "수평 벌림",
+        "horizontalAdduction": "수평 모음",
+        "internalRotation": "안쪽 돌림",
+        "externalRotation": "바깥쪽 돌림",
+        "lateralFlexion": "옆으로 굽힘",
+        "rotation": "돌림",
+        "dorsiflexion": "발등굽힘",
+        "plantarflexion": "발바닥굽힘",
+        "inversion": "안쪽 번짐",
+        "eversion": "바깥쪽 번짐"
+      }
+    },
+    "muscleGroup": {
+      "status": "draft",
+      "confirmBy": "DF-916",
+      "values": [
+        "neckFlexors",
+        "neckExtensors",
+        "shoulderFlexors",
+        "shoulderAbductors",
+        "shoulderInternalRotators",
+        "shoulderExternalRotators",
+        "elbowFlexors",
+        "elbowExtensors",
+        "trunkFlexors",
+        "trunkExtensors",
+        "hipFlexors",
+        "hipExtensors",
+        "hipAbductors",
+        "hipAdductors",
+        "kneeExtensors",
+        "kneeFlexors",
+        "ankleDorsiflexors",
+        "anklePlantarflexors"
+      ],
+      "labelsKo": {
+        "neckFlexors": "목 굽힘근",
+        "neckExtensors": "목 폄근",
+        "shoulderFlexors": "어깨 굽힘근",
+        "shoulderAbductors": "어깨 벌림근",
+        "shoulderInternalRotators": "어깨 안쪽 돌림근",
+        "shoulderExternalRotators": "어깨 바깥쪽 돌림근",
+        "elbowFlexors": "팔꿈치 굽힘근",
+        "elbowExtensors": "팔꿈치 폄근",
+        "trunkFlexors": "몸통 굽힘근",
+        "trunkExtensors": "몸통 폄근",
+        "hipFlexors": "엉덩관절 굽힘근",
+        "hipExtensors": "엉덩관절 폄근",
+        "hipAbductors": "엉덩관절 벌림근",
+        "hipAdductors": "엉덩관절 모음근",
+        "kneeExtensors": "무릎 폄근",
+        "kneeFlexors": "무릎 굽힘근",
+        "ankleDorsiflexors": "발목 발등굽힘근",
+        "anklePlantarflexors": "발목 발바닥굽힘근"
+      }
+    },
+    "regionCode": {
+      "status": "draft",
+      "confirmBy": "DF-916",
+      "values": [
+        "head",
+        "neck",
+        "shoulderLeft",
+        "shoulderRight",
+        "upperBack",
+        "lowerBack",
+        "chest",
+        "abdomen",
+        "elbowLeft",
+        "elbowRight",
+        "wristHandLeft",
+        "wristHandRight",
+        "hipLeft",
+        "hipRight",
+        "thighLeft",
+        "thighRight",
+        "kneeLeft",
+        "kneeRight",
+        "calfLeft",
+        "calfRight",
+        "ankleFootLeft",
+        "ankleFootRight"
+      ],
+      "labelsKo": {
+        "head": "머리",
+        "neck": "목",
+        "shoulderLeft": "왼쪽 어깨",
+        "shoulderRight": "오른쪽 어깨",
+        "upperBack": "등 위쪽",
+        "lowerBack": "허리",
+        "chest": "가슴",
+        "abdomen": "배",
+        "elbowLeft": "왼쪽 팔꿈치",
+        "elbowRight": "오른쪽 팔꿈치",
+        "wristHandLeft": "왼쪽 손목·손",
+        "wristHandRight": "오른쪽 손목·손",
+        "hipLeft": "왼쪽 엉덩이",
+        "hipRight": "오른쪽 엉덩이",
+        "thighLeft": "왼쪽 허벅지",
+        "thighRight": "오른쪽 허벅지",
+        "kneeLeft": "왼쪽 무릎",
+        "kneeRight": "오른쪽 무릎",
+        "calfLeft": "왼쪽 종아리",
+        "calfRight": "오른쪽 종아리",
+        "ankleFootLeft": "왼쪽 발목·발",
+        "ankleFootRight": "오른쪽 발목·발"
+      }
+    }
+  },
+  "jointMotionPairs": {
+    "status": "draft",
+    "confirmBy": "DF-916",
+    "pairs": []
+  }
+}

@@ -3,12 +3,12 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-13 |
-| 버전 | v1.1.1 |
+| 버전 | v1.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
 | 근거 PRD 절 | [PRD_V1](../PRD_V1.md) §10.2(트레이너 앱 구조), §10.2.4(G-02 구성), §12.5(테스트 전략), §13.4(가정·질문 번호), NFR-02, NFR-03, NFR-11 |
-| 관련 에픽·스토리 | EP-01 / DF-001(에이전트 진입 문서), DF-002(백로그 도구), DF-008(trainer_app 골격), DF-034(plist 주입), DF-107(에뮬레이터 통합), DF-903·DF-905(소유자 준비) |
+| 관련 에픽·스토리 | EP-01 / DF-001(에이전트 진입 문서), DF-002(백로그 도구), DF-008(trainer_app 골격), DF-039(이식 필독 범위), DF-034(plist 주입), DF-107(에뮬레이터 통합), DF-903·DF-905(소유자 준비) |
 | 변경 규칙 | [문서 변경](01_AGILE_WORKING_AGREEMENT.md#문서-변경) |
 
 ## 목차
@@ -19,6 +19,7 @@
 - [4. 명령 모음](#4-명령-모음)
 - [5. AI 에이전트 진입 문서](#5-ai-에이전트-진입-문서)
 - [6. 컨텍스트 팩(영역별 필독)](#6-컨텍스트-팩영역별-필독)
+  - [6.1 이식 스토리 '필독 원본 줄 범위'(DF-039)](#61-이식-스토리-필독-원본-줄-범위df-039)
 - [7. 금지 행동과 비밀·실데이터 규칙](#7-금지-행동과-비밀실데이터-규칙)
 - [8. 병렬 배정과 PR 증빙](#8-병렬-배정과-pr-증빙)
 - [9. 흔한 실패와 대응](#9-흔한-실패와-대응)
@@ -134,7 +135,7 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 |---|---|---|
 | trainer-app(골격·모듈) | [V1-04](04_ARCHITECTURE.md)의 저장소 배치·TrainerKit 모듈·의존 그래프, [ADR-001](adr/ADR-001-independent-trainer-app.md), [ADR-002](adr/ADR-002-local-first-swiftdata-outbox.md) | [ADR-019](adr/ADR-019-config-and-secrets.md), [V1-10 §10](10_TEST_PLAN.md#10-트레이너-앱-테스트) |
 | trainer-app(화면) | [V1-07](07_TRAINER_APP_SPEC.md)의 해당 TR 절, [V1-12](12_COPY_ANALYTICS_AND_LINT.md) 문구 키, `docs/v1/data/copy_ko.json` | PRD §6의 해당 F-ID, §8.4 상태 매트릭스 |
-| trainer-app(이식) | DF-039 이식표, 카드의 원본 줄 범위와 반례 | 보관 브랜치 `archive/trainer-ui-2026-09` tip([00_README 이식 기준선](00_README.md#이식-기준선)) |
+| trainer-app(이식) | [§6.1](#61-이식-스토리-필독-원본-줄-범위df-039)의 스토리 블록, [V1-07 §7.1](07_TRAINER_APP_SPEC.md#71-dfetiosrunnerappdelegateswift--트레이너-앱모듈별-책임과-이식-원본-줄-범위) 모듈별 이식표(DF-039), [V1-07 §7.4](07_TRAINER_APP_SPEC.md#74-옮기지-않을-결함prd-103646--이-문서-추가) 반례 | 보관 브랜치 `archive/trainer-ui-2026-09` tip `82c6ee9`([00_README 이식 기준선](00_README.md#이식-기준선)) |
 | contracts | [ADR-005](adr/ADR-005-soap-schema-v2-contracts.md), [V1-05](05_DATA_MODEL_AND_RULES.md) contracts JSON 스키마 절, [V1-10 §6](10_TEST_PLAN.md#6-계약교차-클라이언트-테스트) | PRD 부록 A·B |
 | rules·storage | [V1-05](05_DATA_MODEL_AND_RULES.md) 규칙 설계·R/S 테스트 설계, [V1-10 §7](10_TEST_PLAN.md#7-보안-규칙storage-테스트), [ADR-003](adr/ADR-003-uid-identity-pending-members.md), [ADR-007](adr/ADR-007-storage-binaries-lidar-local.md) | PRD §9.4·§9.5 |
 | functions | [V1-06](06_API_SPEC.md) 해당 함수 계약, [ADR-017](adr/ADR-017-functions-structure.md), [V1-10 §8](10_TEST_PLAN.md#8-functions-단위e2e-테스트) | [ADR-011](adr/ADR-011-consent-model.md)(동의), PRD §9.7(삭제 범위) |
@@ -145,6 +146,121 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | 이관 | [V1-11](11_MIGRATION_RUNBOOK.md) 해당 MIG 절, [V1-10 §12](10_TEST_PLAN.md#12-이관-테스트) | PRD §11 |
 | ci·backlog 도구 | [V1-10 §19](10_TEST_PLAN.md#19-ci-워크플로), [TL-01](../../tool/backlog/README.md), [ADR-014](adr/ADR-014-branching-release.md) | — |
 | bodypath(P2) | [ADR-012](adr/ADR-012-bodypath-result-package.md), [V1-10 §3.7](10_TEST_PLAN.md#37-bodypathcorebodypath-저장소-p2-준비) | PRD §10.4 |
+
+### 6.1 이식 스토리 '필독 원본 줄 범위'(DF-039)
+
+P1a 이식 스토리의 작업 지시서([V1-T08](templates/AGENT_BRIEF.md)) 3절(컨텍스트 팩)에 아래 블록을 그대로 붙인다. 에이전트는 9,657줄 파일 전체를 읽지 않고 블록의 범위만 연다.
+
+- 원본은 보관 브랜치 `archive/trainer-ui-2026-09` tip `82c6ee9b4c95e9622fc1c44111ddc20ee9f68941`의 `ios/Runner/AppDelegate.swift`다([00_README 이식 기준선](00_README.md#이식-기준선)). `main`의 같은 경로(8,800줄, 동결)는 줄 번호가 달라 쓰지 않는다.
+- 보관 브랜치는 원격에 없다(DEC-09). 원본을 직접 열 수 있는 곳은 소유자 Mac의 로컬 저장소뿐이다. 원격 에이전트(Codex 클라우드 등)는 이 블록과 [V1-07 §7.1](07_TRAINER_APP_SPEC.md#71-dfetiosrunnerappdelegateswift--트레이너-앱모듈별-책임과-이식-원본-줄-범위)의 '가져올 것·바꿀 것' 열만으로 구현하고, 원본 대조가 필요하면 소유자 Mac의 Claude Code에 배정한다(§8).
+- 범위 끝은 닫는 `}` 줄이다. 한 범위 읽기: `git show 82c6ee9b:ios/Runner/AppDelegate.swift | sed -n '<시작>,<끝>p'`.
+- '옮기지 말 것'의 괄호는 막는 가드·테스트 ID다(정본 [V1-07 §7.4](07_TRAINER_APP_SPEC.md#74-옮기지-않을-결함prd-103646--이-문서-추가)). 블록과 V1-07이 다르면 V1-07을 따른다.
+
+**DF-016 DesignSystem 기초 토큰·컴포넌트**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- :9602-9657 DfetSemanticColor·DfetColor·Color/UIColor hex 확장 → DesignSystem/Tokens/TrainerColor.swift (구조만, 값은 Q-10 전 기본값)
+- :8304-8323 NativeHealthColor (중립 텍스트·경계선 값 참고)
+- :872-904 NativeEmptyState → DesignSystem/Components/EmptyState.swift (행동 버튼 슬롯 추가)
+- :3682-3716 saveStatusLabel·saveStatusColor → Components/SyncStateBadge.swift (로컬/서버 구분 착상만)
+- :7507-7546 NativeStatusCapsule·NativeLegend (캡슐 모양 참고)
+옮기지 말 것
+- :3688-3689 '로컬 저장됨', :3707-3708 초록 '저장됨' (TC-DF016-03, TC-X-SYNC-02)
+- :5937-6881 아바타·멤모지 (NFR-11, G7/TC-X-GUARD-06)
+- :7308-7350 NativeRiskItem 위험도 라벨 (TC-119-04)
+- :9433-9600 중복 컴포넌트(PencilCanvasView·SegmentedPicker·StatusPill·버튼 스타일)
+정본: V1-07 §7.1.1, §7.4
+```
+
+**DF-116 TR-04 Live**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- :8325-9431 NativeSoapWorkspaceView 레이아웃 중 topToolbar :8467-8531, handwritingWorkspace :8670-8703, inspector :8934-9022 → FeatureSOAP/Live/
+- :4063-4091 handwritingPanel, :4576-4613 handwritingToolBar, :8910-8932 pencilToolbar → Live 캔버스·PencilToolbar(캔버스 밖 하단)
+- :5765-5826 NativeTrainerPencilCanvasView → DesignSystem/Pencil/PencilCanvas.swift (drawingPolicy = .default)
+- :5828-5846 NativePaperLines → DesignSystem/Pencil/PaperLines.swift
+- :3130-3366 NativeCompositionSafeTextField·NativeHangulComposer (ASM-07-09 조건부. DF-016이 옮겼으면 재사용)
+- :3682-3716, :4905-4917 저장 상태 문구·saveSession (상태 전이 착상만)
+옮기지 말 것
+- :3835-3861 syncPayload — :3838 native_ ID (G4, R-24, TC-X-SYNC-14), :3839 로컬 UUID (G3), :3844 diagnosis (R-04), :3858 base64 (G5), 모두 TC-116-06
+- :9024-9047 save() — :9026·:9044 base64 (G5), :9031 diagnosis (R-04)
+- :8958 '진단/이슈' 입력, :8713-8721 legacySoapFields (copy-lint C1-01·C1-03)
+- :3368-3527, :3776-3818 UserDefaults 초안 (ADR-002, 리뷰)
+- :4780-4814 visualizationPanel, :8854-8908 share·visualization workspace (AC-VIZ-04.4)
+- :4914 실패 시 '저장됨' (TC-X-SYNC-02), :5775 drawingPolicy .anyInput (리뷰)
+- 다른 파일: dfet:trainer_ios/DFETTrainer/Features/SOAP/SOAPWorkspaceView.swift:11 필기 미연결 (TC-116-03), dfet:lib/services/firestore_service.dart:660(main :657) set 저장 (TC-X-SYNC-14)
+정본: V1-07 §7.1.1·§7.1.2, §7.4
+```
+
+**DF-117 NRS·2D 바디맵**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- :5126-5155 NativePainScaleView → DesignSystem/Pain/PainScale.swift (let value: Int(:5127) → Binding<Int?>, 재탭 = 미입력)
+- :5257-5301 bodySilhouette (NativeBodyMapView :5203-5349 안, 현재 호출되지 않는 2D 실루엣) → DesignSystem/BodyMap/
+- :4653-4685 painAndRestrictionPanel (배치 참고) → FeatureSOAP/Live/PainQuickInputPanel.swift
+옮기지 말 것
+- :5182-5201 NativePainBodyRegionCatalog 한글 키·증상('두통' :5184) → contracts regionCode (TC-117-02)
+- :5218-5220 SceneKit 내장, :5351-5507 NativeMusclePainSceneView (P2 DF-328. TC-117-04)
+- :5228 '3D 근육 통증 맵', :5233 '근육 세그먼트를 빨간색' (TC-117-03)
+- :5324-5327 빨강 선택 배지 (TC-117-05)
+- :4780-4814 visualizationPanel (Live 차트 금지, TC-117-04)
+정본: V1-07 §7.1.1·§7.1.2, §7.4 #21·#24
+```
+
+**DF-113 TR-02 회원 목록·TR-03 셸**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- :2519-2541 memberListButton → FeatureMembers/List/MemberRow.swift (아바타 → 이니셜, '대기' 배지·동의 칩 추가)
+- :2147-2183 memberHeader → FeatureMembers/Detail/MemberDetailView.swift 셸 헤더
+- :2185-2269 profileRail (배치 참고), :2040-2560 NativeTrainerMembersDetail 전체 골격
+- :872-904 NativeEmptyState (DF-016 EmptyState로 사용)
+옮기지 말 것
+- :7923-8302 NativeTrainerMember·Payload — member-UUID :8117 (G3), UserDefaults 저장 :8138-8150
+- :2474-2503 아바타 갱신, :5937-6881 멤모지 (NFR-11, G7, AC-DF-113.4)
+- :2271-2325, :2543-2560 평가 결과 색 배지, :2327-2388 program 관리 (AS-21)
+- :2447-2459 datesWithDrafts (avatarSeed·UserDefaults 초안 키)
+- 다른 파일: dfet:trainer_ios/DFETTrainer/Domain/TrainerMember.swift:43-49 tapback.co (G7)
+정본: V1-07 §7.1.3, §7.1.9
+```
+
+**DF-125 TR-01 오늘 세션 보드**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- :906-1237 NativeTrainerSessionBoardDetail 골격 → FeatureToday/TodayBoardView.swift
+  - :988-1010 dashboardHeader, :1067-1081·:1182-1237 quickRecordPanel·quickRecordButton, :1134-1180 recentNotesPanel
+- :1879-2038 NativeTrainerSummaryDetail (카드 배치 참고)
+옮기지 말 것
+- :1012-1065 todaySchedulePanel, :924-932 일정 집계, :1239-1528 schedule 모델 (AS-21, TC-DF017-03)
+- :1094-1132 alertsPanel, :934-946 위험도 기반 재평가·알림 수, :1729-1877 alerts, :1530-1727 program (TC-125-06, TC-DF017-03)
+- :1083-1092 progressPanel, :1957 NativeLineChart 대시보드
+- 다른 파일: dfet:trainer_ios/DFETTrainer/Features/Summary/ProductivityTrainerExampleView.swift 데모 보드
+정본: V1-07 §7.1.4, §7.1.9
+```
+
+**DF-110 TR-14 동의 카드·서명 패드**
+
+```text
+필독 원본 줄 범위 — archive/trainer-ui-2026-09 @ 82c6ee9b : ios/Runner/AppDelegate.swift
+가져올 것
+- 동의 카드·서명 흐름은 원본 없음(신규). 서명 패드는 :5765-5826 NativeTrainerPencilCanvasView 구성만 참고(서명 패드만 .anyInput, V1-07 §3.12)
+- 등록 시트 :2562-3128(body :2585-2695, registrationField :2999-3024)은 DF-108 범위. 동의 단계로 넘기는 자리만 확인
+옮기지 말 것
+- :2808-2854 등록 시 SOAP 입력 (동의 ② 전 건강정보 수집 금지)
+- :2856-2908 programOptions·programPicker ('자세 교정'·'재활 트레이닝'·'체형 교정' :2857, copy-lint C1-05·C1-06)
+- :3027-3075 save() 로컬 UUID 회원 (G3)
+- :2697-2784, :3078-3128 아바타 선택·자동 아바타 (NFR-11)
+정본: V1-07 §7.1.6
+```
 
 ## 7. 금지 행동과 비밀·실데이터 규칙
 
@@ -201,3 +317,4 @@ DF-001이 저장소의 `AGENTS.md`와 `CLAUDE.md` 끝에 아래 절을 붙인다
 | v1.0.2 | 2026-09-25 | CJH(AI 에이전트) | firebase-tools 15.x 이상 필수 명시(14.x는 functions v7 에뮬레이터 로드 실패). Flutter 3.38.2 고정과 iOS CocoaPods 빌드 명시(PR #1 CI 결과) |
 | v1.1 | 2026-09-25 | CJH(AI 에이전트) | §7 Git 금지 행동을 DEC-20(병합 담당 AI의 rebase 병합, 구현 에이전트의 자기 PR 병합 금지)에 맞춤. §7 동결 경로를 DF-930 선언(G-01 동결 선언)과 같게 넓힘 |
 | v1.1.1 | 2026-09-25 | CJH(AI 에이전트) | §3.1 6번: Storage 규칙 배포 대상 서울 버킷(`target` 형식과 `.firebaserc` 매핑, DF-043, DEC-19), 회원 앱 `appStorage()`, 계정 삭제의 기존 기본 버킷 정리 |
+| v1.2 | 2026-09-26 | CJH(AI 에이전트, DF-039) | §6.1 추가: P1a 이식 스토리(DF-016, DF-116, DF-117, DF-113, DF-125, DF-110)의 V1-T08용 '필독 원본 줄 범위' 블록(보관 브랜치 tip `82c6ee9` 기준, 반례별 가드·테스트 ID). §6 표 trainer-app(이식) 행을 V1-07 §7.1·§7.4 링크로 갱신 |

@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-07 |
-| 버전 | v1.0.2 |
+| 버전 | v1.0.3 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -38,6 +38,7 @@
    - 5.1 SOAP 편집기(Live→Review→Share) · 5.2 체형 촬영·보정 흐름 · 5.3 현장 동의 흐름 · 5.4 대기 회원→초대→승격 · 5.5 오프라인 시나리오 · 5.6 로그아웃·claim 회수
 6. [syncState 표시 규칙](#6-syncstate-표시-규칙)
 7. [이식 지도(PORTING MAP)](#7-이식-지도porting-map)
+   - 7.1 AppDelegate.swift → 트레이너 앱(모듈별 책임과 이식 원본 줄 범위, 이식 제외 목록) · 7.2 trainer_ios → 트레이너 앱 · 7.3 BodyPath → 트레이너 앱 · 7.4 옮기지 않을 결함
 8. [테스트 대응](#8-테스트-대응)
 9. [가정(ASM-07-NN)·PRD/스파인 충돌](#9-가정asm-07-nnprd스파인-충돌)
 10. [변경 이력](#10-변경-이력)
@@ -76,7 +77,7 @@
 
 ### 1.3 코드 근거 기준선
 
-- `dfet:경로:줄`은 DFET_Coach 저장소 `feature/integrated-care-2026` 작업 트리(2026-09-24)에서 파일을 직접 열어 확인했다. `dfet:ios/Runner/AppDelegate.swift`는 **작업 트리 9,657줄 기준**이다. 이 파일은 미커밋 변경(+975/-118)이 있어 G-01(DF-901) 뒤 보관 브랜치 `archive/trainer-ui-2026-09` tip과 줄 번호가 달라질 수 있다. 이식 PR은 DF-039의 이식표(보관 브랜치 tip 해시 기준)로 줄 번호를 다시 맞춘다(ASM-07-01).
+- `dfet:경로:줄`은 DFET_Coach 저장소 `feature/integrated-care-2026` 작업 트리(2026-09-24)에서 파일을 직접 열어 확인했다. `dfet:ios/Runner/AppDelegate.swift`는 **작업 트리 9,657줄 기준**이다. DF-039가 2026-09-26 보관 브랜치 `archive/trainer-ui-2026-09` tip `82c6ee9`에서 다시 확인했고 줄 번호가 같았다([§7.1.0](#710-기준선과-읽는-법)). `main`의 AppDelegate(8,800줄)는 줄 번호가 다르므로 이식 원본으로 쓰지 않는다(ASM-07-01).
 - `bodypath:경로:줄`은 BodyPath 저장소(`TEhyeok/BodyPath`, 비공개) 2026-09-24 작업 트리 기준이다.
 - 개발·테스트·스크린샷 데이터는 모두 합성이다(가상 회원 `synthMember0001` 등, V1-05 §16 시드와 같은 표기). 실데이터, `output/`, `tmp/`, 비밀 파일은 열지 않는다.
 
@@ -1838,74 +1839,179 @@ V1-04 §10.8 표에 화면 동작을 더한다.
 
 ## 7 이식 지도(PORTING MAP)
 
-이식 기준선은 MIG-01 보관 브랜치 tip이다(DF-901, DF-039). 아래 줄 번호는 2026-09-24 작업 트리에서 직접 확인했다(ASM-07-01). '처리' 값: **유지**(구조를 거의 그대로 옮김), **재작성**(동작·레이아웃만 참고하고 새로 씀), **참고**(개념·문구만), **폐기**(옮기지 않음).
+이식 기준선은 MIG-01 보관 브랜치 `archive/trainer-ui-2026-09`의 tip 커밋 `82c6ee9b4c95e9622fc1c44111ddc20ee9f68941`이다([V1-00 이식 기준선](00_README.md#이식-기준선)). §7.1과 §7.4의 `dfet:ios/Runner/AppDelegate.swift` 줄 번호는 DF-039가 2026-09-26 이 tip에서 다시 확인했다. '처리' 값: **유지**(구조를 거의 그대로 옮김), **재작성**(동작·레이아웃만 참고하고 새로 씀), **참고**(개념·문구만), **폐기**(옮기지 않음).
 
-### 7.1 dfet:ios/Runner/AppDelegate.swift → 트레이너 앱
+### 7.1 dfet:ios/Runner/AppDelegate.swift → 트레이너 앱(모듈별 책임과 이식 원본 줄 범위)
 
-| 원본 타입·영역 | 줄 | 대상(타깃/파일) | 처리 | 비고·결함 |
+#### 7.1.0 기준선과 읽는 법
+
+| 항목 | 값 |
+|---|---|
+| 보관 브랜치 / tip | `archive/trainer-ui-2026-09` / `82c6ee9b4c95e9622fc1c44111ddc20ee9f68941`(로컬 전용, 원격에 없음. DEC-09) |
+| 확인 일자 | 2026-09-26(DF-039) |
+| 파일 길이 | 9,657줄. 2026-09-24 작업 트리 판과 줄 번호가 같다(G-01: 스냅샷과 tip의 차이는 `.gitignore`·`tool/*.py`뿐). 최상위 선언 줄(`@main`·`@objc class`·타입·프로토콜·확장) 99개를 추출했고, 카드 DF-039에 적힌 작업 트리 시작 줄 23개와 이 절의 이전 판(2026-09-24 작업 트리) 시작 줄이 모두 tip과 일치했다 |
+| 경계 추출 | `git show 82c6ee9b:ios/Runner/AppDelegate.swift \| grep -n "^private struct \|^private enum \|^struct \|^enum "`(카드 명령). `private final class`·`extension`·`@objc class`도 함께 셌다 |
+| 원본 읽기 | `git show 82c6ee9b:ios/Runner/AppDelegate.swift \| sed -n '8325,9431p'`처럼 표의 범위만 읽는다. 9,657줄 전체를 읽지 않는다 |
+| 범위 표기 | `:시작-끝`. 끝은 타입·멤버를 닫는 `}` 줄이다(뒤 빈 줄 제외). 이전 문서·카드의 `:8325-9432`처럼 끝이 한 줄 큰 값은 뒤 빈 줄을 포함한 같은 범위다 |
+| 쓰지 않는 판 | `main`의 `ios/Runner/AppDelegate.swift`(8,800줄, 동결)는 이식 원본이 아니다. 규제 문구 수정(DF-028)만 `main` 줄 번호를 쓴다([V1-11](11_MIGRATION_RUNBOOK.md)) |
+
+아래 모듈별 표(§7.1.1~§7.1.7)가 이식 PR의 원본 범위다. 표에 없는 타입은 §7.1.8 전체 처리표와 §7.1.9 이식 제외 목록을 본다. 반례는 §7.4, 이식 스토리별 '필독 원본 줄 범위' 블록은 [V1-13 §6.1](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md#61-이식-스토리-필독-원본-줄-범위df-039)에 있다.
+
+#### 7.1.1 DesignSystem
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `DfetSemanticColor`, `DfetColor`, `Color`·`UIColor` hex 확장 | :9602-9657 | `DesignSystem/Tokens/TrainerColor.swift` | 의미 색 4종(primary·success·warning·danger) 구조, hex 초기화 확장 | 값은 Q-10 전 기본값(중립 회색·브랜드 블루, DEC-21). success(초록)는 `synced`·완료 표시 전용, danger는 오류 텍스트 전용 | F-VIZ-07.7, AC-DF-016.2 |
+| `NativeHealthColor` | :8304-8323 | `DesignSystem/Tokens/TrainerColor.swift`(참고) | 중립 텍스트·경계선 계열 값 | `green`을 '저장됨'에 쓰던 용도(:3707-3708)와 `red` 선택 표시(:5324-5327)를 옮기지 않음 | AC-DF-016.2, F-VIZ-04.2 |
+| `NativeEmptyState` | :872-904 | `DesignSystem/Components/EmptyState.swift` | 제목·설명·SF Symbol 세로 배치 | 행동 버튼 슬롯 1개, 문구는 키로 | §8.4 빈 상태, AC-DF-113.3, AC-DF-125.6 |
+| `NativeStatusCapsule`, `NativeLegend` | :7507-7546 | `DesignSystem/Components/SyncStateBadge.swift`(참고) | 캡슐 모양·범례 배치 | 문구·색은 syncState 5상태(`sync.*` 키) | AC-DF-016.1, F-SOAP-01.6 |
+| `saveStatusLabel`·`saveStatusColor`(`NativeTrainerSoapDetail` 안) | :3682-3716 | `DesignSystem/Components/SyncStateBadge.swift` | 로컬/서버를 나눠 보여 주는 상태 목록 | '로컬 저장됨'(:3688-3689)·초록 '저장됨'(:3707-3708) → '기기에 저장됨'·'동기화 중'·'동기화됨'·'동기화 실패'·'동의 확인 대기' | AC-DF-016.1, AC-SOAP-01.4, C-05 |
+| `NativeChecklistRow` | :5157-5180 | `DesignSystem/Components/ChecklistRow.swift` | 행 구조 | — | TR-05 확정 체크리스트 |
+| `NativeSegmentedPicker` | :5509-5539 | `DesignSystem/Components/SegmentedPicker.swift` | 구현 | 중복 구현 `SegmentedPicker`(:9518-9550)는 옮기지 않고 하나로 | — |
+| `NativeFieldRow` | :5695-5718 | `DesignSystem/Components/FieldRow.swift` | 구현 | — | — |
+| `NativeSoapTextBox`, `NativeSoapStepCard` | :5541-5652 | `DesignSystem/Components/SectionCard.swift` | 카드 외곽·제목 배치 | 부제·자리표시 문구는 가져오지 않음(§7.4 #22) | §3.4, 부록 C |
+| `NativeCompositionSafeTextField`, `NativeHangulComposer`, `String` 확장 | :3130-3366 | `DesignSystem/Input/CompositionSafeTextField.swift`(조건부) | `UITextField` 래퍼, 조합 중(marked text) 커밋 보류 | 기본은 SwiftUI `TextField`. iPadOS 17에서 조합 깨짐이 재현될 때만 이식(ASM-07-09) | F-SOAP-01.2, AC-DF-116.8 |
+| `NativePainScaleView` | :5126-5155 | `DesignSystem/Pain/PainScale.swift` | 0–10 버튼 행 | `let value: Int`(:5127) → `Binding<Int?>`, 선택 값을 다시 누르면 미입력 | F-SOAP-01.3, AC-SOAP-01.7, AC-DF-117.1 |
+| `NativeBodyMapView` | :5203-5349 | `DesignSystem/BodyMap/BodyMapView.swift`, `BodyMapRegionShapes.swift` | 2D 실루엣 `bodySilhouette`(:5257-5301, 현재 호출되지 않음)를 앞면 출발점으로 | SceneKit 내장(:5218-5220) 제거, '3D 근육 통증 맵'(:5228)·'근육 세그먼트를 빨간색'(:5233) 폐기, 빨강 배지(:5324-5327) → 중립 순차 톤+빗금, 키는 contracts `regionCode` | F-VIZ-04.1, F-VIZ-04.2, AC-VIZ-04.1, AC-DF-117.2~117.5 |
+| `NativeTrainerPencilCanvasView` | :5765-5826 | `DesignSystem/Pencil/PencilCanvas.swift` | `PKCanvasView` 래퍼, 도구 적용 | `drawingPolicy = .anyInput`(:5775) → `.default`(ASM-07-10), 도면을 뷰 모델 저장에 바인딩 | F-SOAP-01.1, F-SOAP-01.5, AC-DF-116.3 |
+| `NativePaperLines` | :5828-5846 | `DesignSystem/Pencil/PaperLines.swift` | 그대로 | — | F-SOAP-01.1 |
+| `handwritingToolBar`(SOAP 상세), `pencilToolbar`(워크스페이스) | :4576-4613, :8910-8932 | `DesignSystem/Pencil/PencilToolbar.swift` | 펜·형광펜·지우개·되돌리기 구성 | 캔버스 밖 하단, 캔버스 위 겹침 0 | AC-SOAP-01.1, AC-DF-116.1 |
+| `NativeDFETLogoMark` | :847-870 | `DesignSystem/Brand/DFETLogoMark.swift` | 로고 도형 | — | 로그인(FeatureAuth) |
+
+#### 7.1.2 FeatureSOAP
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeSoapWorkspaceView` | :8325-9431 | `FeatureSOAP/Live/LiveSessionView.swift`, `Review/ReviewView.swift` | 캔버스 중심 레이아웃(아래 세부) | Live·Review 분리, diagnosis 없음 | F-SOAP-01.1, AC-DF-116.1 |
+| ├ `topToolbar` | :8467-8531 | `Live/LiveHeaderBar.swift` | 회원·날짜·상태 배치 | 상태는 `SyncStateBadge` | AC-IA-03, AC-DF-116.6 |
+| ├ `sidebar`, `workspace`, `workspaceContent` | :8533-8668 | App `AppShell/SessionFlowCover.swift`(참고) | 분할 비율 | Live 안에 회원 목록 사이드바를 두지 않음 | TR-04 |
+| ├ `handwritingWorkspace` | :8670-8703 | `Live/LiveSessionView.swift` 캔버스 영역 | 캔버스·줄지 배치 | 캔버스 면적 60% 이상, 컨트롤 겹침 0 | AC-SOAP-01.1, AC-DF-116.1 |
+| ├ `inspector` | :8934-9022 | `Live/LiveSideRail.swift` | 오른쪽 좁은 패널 | '진단/이슈' 입력(:8958) 폐기, NRS·바디맵·지표는 빈 슬롯 | AC-DF-116.2, §3.4 |
+| ├ 빠른 추가 `addPainMarker` … `addExerciseEntry` | :9049-9082 | Review 빈 행 예약(참고) | 버튼 착상 | 값 없는 라벨 삽입 대신 Review O 행 예약 | F-SOAP-02 |
+| `NativeTrainerSoapDetail` | :3529-4945 | `FeatureSOAP/Live/`, `Review/` | 아래 세부 | 위험도·UserDefaults 초안·`syncPayload` 폐기 | F-SOAP-01~05 |
+| ├ 상태 변수 | :3530-3555 | `LiveSessionModel`, `ReviewViewModel` | 필드 목록 착상 | `riskLevel`(:3548) 폐기 | F-SOAP-01.11 |
+| ├ `soapWorkspace`, `soapDateBar` | :3934-4061 | `Review/ReviewView.swift`(세션일 선택) | 날짜 막대 | 날짜 = `sessionDate`, 같은 날 여러 세션 허용 | F-SOAP-01.8 |
+| ├ `handwritingPanel` | :4063-4091 | `Live/LiveSessionView.swift` | 캔버스 패널 | — | F-SOAP-01.1 |
+| ├ `structuredSoapPanel`, `selectedSoapEditor`, 부제·자리표시 | :4093-4162, :4702-4741, :4315-4331 | `Review/SubjectiveCard.swift`, `Review/Objective/ObjectiveTable.swift`, `Review/AssessmentCard.swift`, `Review/PlanCard.swift` | S/O/A/P 전환 구조 | 'special test'·'임상 판단, 위험도'·'치료계획'(:4317-4328, :4707-4726) 폐기, O는 typed 행 | §3.4, 부록 C, F-SOAP-02 |
+| ├ `painAndRestrictionPanel` | :4653-4685 | `Live/PainQuickInputPanel.swift` | NRS·부위 배치 | `PainScale`·`BodyMapView` 재사용(Live·Review 공용) | AC-DF-117.7 |
+| ├ `metricInspector` | :4816-4903 | `Review/Objective/ObjectiveRowEditor.swift`(참고) | 입력 흐름 | 문자열 ROM/MMT 목록 → typed O 행 | F-SOAP-06, AC-SOAP-06.2 |
+| ├ `saveSession` | :4905-4917 | `LiveSessionModel`(참고) | 상태 전이 순서('서버 동기화 중' :4911) | 실패 시 '저장됨'(:4914) 폐기 → `syncFailed` | C-05, AC-SOAP-01.4 |
+| `NativeMusclePainSceneView` | :5351-5507 | `Review/PainSchematicAuxView.swift`(P2, DF-328) | SceneKit 절차 도형(`SCNCapsule` :5444) | '통증 부위(도식)', 해부학 모델 아님. P1a에 없음 | F-VIZ-04.1 |
+
+#### 7.1.3 FeatureMembers
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeTrainerMembersDetail` | :2040-2560 | `FeatureMembers/List/MemberListView.swift`, `Detail/MemberDetailView.swift` | 목록+상세 2단 구조(아래 세부) | 데이터는 `MemberDirectory`(`trainers/{uid}`·`users` 청크·`pendingMembers`) | TR-02, TR-03, F-LINK-03.2 |
+| ├ `memberListButton` | :2519-2541 | `List/MemberRow.swift` | 행 레이아웃 | 아바타 → `InitialAvatar`, '대기' 배지·동의 칩 추가 | AC-DF-113.1, AC-DF-113.2, NFR-11 |
+| ├ `memberHeader` | :2147-2183 | `Detail/MemberHeaderView.swift` | 헤더 배치 | '프로그램 · 부위' 부제 대신 표시명·'대기' 배지·동의 칩·`tr03.startSession` | AC-DF-113.8 |
+| ├ `profileRail` | :2185-2269 | `Detail/MemberDetailView.swift`(참고) | 정보 칸 배치 | 프로그램·위험도 표시 없음 | F-SOAP-01.11 |
+| ├ `memberTimelinePanel`, `datesWithDrafts` | :2395-2436, :2447-2459 | `Timeline/TimelineView.swift`(DF-114) | 날짜별 목록 착상 | UserDefaults 초안 키·`avatarSeed` 키 폐기, 원 기록 쿼리는 `trainerId == uid` | F-VIZ-05, AC-LINK-03.3 |
+| ├ `evaluationPanel`, `assessmentRow` | :2271-2325, :2543-2560 | — | — | 결과 색 배지 폐기(앱은 판정하지 않음) | ADR-009 |
+| ├ `managementPanel` | :2327-2388 | — | — | program 관리 폐기 | AS-21 |
+| ├ `updateSelectedMemberAvatar`, `autoAssignSelectedMemberAvatar` | :2474-2503 | — | — | 폐기 | NFR-11, AC-DF-113.4 |
+| `NativeMemberSoapGrassView` | :6883-6945 | `Timeline/DensityStripView.swift`(P2) | 날짜 칸 격자 | 날짜별 존재 여부만, 단색 명도, 초록 금지 | F-VIZ-05.3 |
+
+#### 7.1.4 FeatureToday
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeTrainerSessionBoardDetail` | :906-1237 | `FeatureToday/TodayBoardView.swift` | 보드 골격(아래 세부) | 일정·알림·위험도 계산 폐기 | TR-01, AC-IA-05 |
+| ├ `dashboardHeader` | :988-1010 | `TodayBoardView.swift` 헤더 | 날짜·요약 배치 | 요약 수치는 '동기화 대기 n건'·'Review 미확정' 수 | AC-DF-125.2 |
+| ├ `todayScheduleItems`, `completedScheduleCount`, `todaySchedulePanel` | :924-932, :1012-1065 | `TodayListSection.swift`(참고) | 목록 행 배치 | 일정 모델 폐기 → 기기 로컬 '오늘' 목록(이월) | AS-21, AC-DF-125.1 |
+| ├ `quickRecordPanel`, `quickRecordButton` | :1067-1081, :1182-1237 | `TodayBoardView.swift` 세션 시작 | 회원 탭 → 기록 착상 | `onStartSession(MemberKey)` → TR-04 시작 흐름(DF-116) | AC-DF-125.7 |
+| ├ `recentNotesPanel` | :1134-1180 | `ReviewQueueSection.swift` | 최근 노트 행 | 'Review 미확정' 목록(로컬·서버 draft 병합) | AC-DF-125.3 |
+| ├ `progressPanel` | :1083-1092 | — | — | 완료율 폐기 | — |
+| ├ `alertsPanel`, `reevaluationCount`, `alertCount` | :1094-1132, :934-946 | — | — | 알림·위험도 기반 재평가 수 폐기. 재평가 칸은 '추후 추가 예정' | AS-21, AC-DF-125.5 |
+| `NativeTrainerSummaryDetail` | :1879-2038 | `DailySessionCountCard.swift`(참고) | 카드 배치 | 완료율·평균 통증 대시보드(`NativeLineChart` :1957) 폐기 | M-02, AC-DF-125.4 |
+
+#### 7.1.5 FeatureSettings
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeTrainerSettingsDetail` | :5049-5106 | `FeatureSettings/SettingsView.swift` | 섹션 목록 구조, 로그아웃 버튼 자리(:5072) | '모드: 게스트'(:5059) 등 고정 값 행 폐기. 로그아웃은 signOut·리스너 해제·캐시 삭제 순서, 동기화 대기열 진입 추가 | NFR-08, AC-DF-018.1~018.3, TR-15 |
+| `NativeSettingsRow` | :5108-5124 | `FeatureSettings/SettingsView.swift` 안 행 뷰 | 제목·값 행 | — | TR-15 |
+| `logoutToLoginButton`(`NativeTrainerHomeView` 안) | :755-786 | `SettingsView.swift`(참고) | 버튼 배치 | MethodChannel `nativeTrainerLogout`(:146) 폐기 | NFR-08 |
+
+#### 7.1.6 FeatureConsent
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 TrainerKit 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeMemberRegistrationSheet` | :2562-3128 | `FeatureConsent/Registration/PendingMemberRegistrationView.swift` | 시트 폼 구조(`body` :2585-2695) | 입력은 V1-05 §4.3 대기 회원 필드(표시명·성별·출생연도·만 14세 확인)만 | TR-14, AC-DF-108.1 |
+| ├ `registrationField` | :2999-3024 | `Registration/` 입력 행 | 라벨+필드 | — | AC-DF-108.6 |
+| ├ `save()` | :3027-3075 | — | — | 로컬 UUID 회원 생성 폐기 → `pendingMembers/{자동ID}` create(Outbox) | F-LINK-03.3, AC-DF-108.3 |
+| ├ `programOptions`, `programPicker` | :2856-2858, :2868-2908 | — | — | '자세 교정'·'재활 트레이닝'·'체형 교정'(:2857) 폐기, program 없음 | §3.4, AS-21 |
+| ├ `bodyRegionPicker` | :2910-2989 | — | — | 등록 때 부위를 받지 않음 | F-LINK-01.1 |
+| ├ `selectedRegistrationSoapEditor`, `soapCompletionPercent` | :2808-2854 | — | — | 등록 때 SOAP 입력 폐기(동의 ② 전 건강정보 없음) | F-PRIV-01.1, AC-PRIV-03.2 |
+| ├ `avatarPickerCard`, `autoAssignAvatarForRegistration`, `resolvedAvatarImageDataForSave` | :2697-2784, :3078-3128 | — | — | 폐기(연락처·사진 접근 없음) | NFR-11 |
+| (동의 카드·서명 패드) | 원본 없음 | `Consent/ConsentFlowView.swift`, `ConsentCardView.swift`, `SignaturePadView.swift` | 서명 패드는 `PencilCanvas` 구성 참고 | 서명 패드만 `.anyInput`(§3.12) | F-PRIV-01~03, AC-DF-110.1~110.9 |
+
+#### 7.1.7 AppShell(App 타깃, 참고)
+
+| 원본 타입 | tip 기준 줄 범위 | 대상 파일 | 가져올 것 | 바꿀 것 | 관련 F-/AC- |
+|---|---|---|---|---|---|
+| `NativeTrainerHomeView` | :371-845 | `trainer_app/App/AppShell/TrainerShellView.swift` | NavigationSplitView 골격(`sidebar` :617-672, `detail` :674-753) | compact 분기 760pt(:412) → [§3.3](#33-레이아웃-폭-규칙), UserDefaults 로드(:403-405)·워크스페이스 채널 동기화(:443-525) 폐기 | AC-IA-02, NFR-12 |
+| `NativeTrainerRoute` | :7876-7921 | `trainer_app/App/AppShell/TrainerRoute.swift` | 라우트 enum 형태 | 9개(:7877-7885) 중 schedule·program·alerts(:7880, :7882, :7884) 없음. V1-04 §8.3 라우트 | AS-21, AC-DF-017(TC-DF017-03) |
+
+#### 7.1.8 전체 타입 처리표(tip)
+
+| 원본 타입·영역 | tip 줄 | 대상(타깃/파일) | 처리 | 비고·결함 |
 |---|---|---|---|---|
-| `AppDelegate` 채널 구성, 표시 함수, MethodChannel 동기화(`saveNativeTrainerWorkspace`, `saveNativeTrainerSoapNote`) | :10-370 (채널 이름 :30-31, 동기화 :164-197) | App `DFETTrainerApp.swift`, `AppDelegate.swift` | 폐기 | MethodChannel 저장 경로 폐기(PRD §10.2.1). 새 앱은 FirebaseData 직접 |
-| `NativeTrainerHomeView` | :371-846 (compact 분기 :412-413, 상세 라우팅 :674-750) | App `AppShell/TrainerShellView.swift` | 재작성 | 760pt 임계값(:412)은 [§3.3](#33-레이아웃-폭-규칙)으로 대체. UserDefaults 회원·일정 로드(:403-405) 폐기 |
-| `NativeDFETLogoMark` | :847-871 | DesignSystem `Brand/DFETLogoMark.swift` | 참고 | 로그인 화면 |
-| `NativeEmptyState` | :872-905 | DesignSystem `Components/EmptyState.swift` | 유지 | 행동 버튼 하나 추가 |
-| `NativeTrainerSessionBoardDetail` | :906-1238 (`dashboardHeader` :988, 일정 패널 :1012-1066, `quickRecordPanel` :1067-1082, `progressPanel` :1083, 알림 패널 :1094-1133, `recentNotesPanel` :1134-1181) | FeatureToday `TodayBoardView.swift` | 재작성 | 일정·알림 패널 폐기(AS-21). `alertCount`·`reevaluationCount`(:934-946)의 위험도 기반 계산 폐기 |
-| `NativeTrainerScheduleStatus`/`Item`/`Detail`/`Form` | :1239-1529 | — | 폐기 | AS-21. TR-01 로컬 목록으로 대체 |
-| `NativeTrainerProgramDetail`/`Form` | :1530-1728 | — | 폐기 | AS-21 |
-| `NativeTrainerAlert`/`AlertsDetail` | :1729-1878 | — | 폐기 | AS-21 |
-| `NativeTrainerSummaryDetail` | :1879-2039 (`NativeLineChart` 사용 :1957) | FeatureToday(참고) | 참고 | 완료율·평균 통증 대시보드는 v1 지표 아님 |
-| `NativeTrainerMembersDetail` | :2040-2561 (`memberHeader` :2147, `profileRail` :2185, `evaluationPanel` :2271, `managementPanel` :2327, `memberTimelinePanel` :2395, 아바타 :2474-2504, `memberListButton` :2519, `assessmentRow` :2543) | FeatureMembers `List/`, `Detail/` | 재작성 | `evaluationPanel`·`assessmentRow`의 결과 색 배지 폐기, `datesWithDrafts`의 avatarSeed 키(:2447-2459) 폐기, 아바타 폐기(NFR-11) |
-| `NativeMemberRegistrationSheet` | :2562-3129 | FeatureConsent `Registration/` | 참고(UI만) | 로컬 UUID 회원 생성 `save()` :3027-3077 폐기, 프로그램 선택지 '자세 교정'·'재활 트레이닝'·'체형 교정'(:2856-2858) 폐기, 등록 시 SOAP 입력(:2808-2848) 폐기 |
-| `NativeCompositionSafeTextField`, `NativeHangulComposer`, `String` 확장 | :3130-3367 | DesignSystem `Input/CompositionSafeTextField.swift` | 검토 후 유지 | DF-039에서 iPadOS 17 기본 필드로 조합 문제가 재현될 때만(ASM-07-09) |
-| `NativeSoapDailyDraft`/`Payload`/`DraftStore` | :3368-3528 | LocalStore `LocalSoapDraft` | 폐기 | UserDefaults 초안, riskLevel(:3371), 문자열 ROM/MMT 목록(:3377-3378) |
-| `NativeTrainerSoapDetail` | :3529-4946 | FeatureSOAP `Live/`, `Review/` | 재작성 | 아래 세부 |
-| ├ 상태 변수 | :3530-3555 (`riskLevel` :3548) | `LiveSessionViewModel`, `ReviewViewModel` | 재작성 | 위험도 폐기(F-SOAP-01.11) |
-| ├ `saveStatusLabel`/`Color` | :3682-3717 | DesignSystem `SyncStateBadge` | 참고 | 로컬/서버 구분 문구가 출발점(F-SOAP-01.6). '저장됨'(:3688-3689) 표기와 초록 '저장됨'(:3707-3708) 폐기 |
-| ├ `persistCurrentDraft`, `loadActiveDraft` | :3776-3834 | LocalStore | 폐기 | UserDefaults |
-| ├ `syncPayload` | :3835-3861 | — | **폐기** | `native_<seed>_<date>` ID :3838, 로컬 UUID memberId :3839, `createdAtMillis`=날짜 :3843, diagnosis 자동 채움 :3844, riskLevel :3848, 필기 base64 :3858 |
-| ├ `riskLevelForPain` | :3899-3904 | — | 폐기 | F-SOAP-01.11 |
-| ├ `soapWorkspace`, `soapDateBar` | :3934-4062 | FeatureSOAP(참고) | 참고 | 날짜 막대는 Review 세션일 선택기로 |
-| ├ `handwritingPanel`, `handwritingToolBar` | :4063-4092, :4576-4614 | FeatureSOAP `Live/`, DesignSystem `PencilToolbar` | 재작성 | 도구는 캔버스 밖 하단 |
-| ├ `structuredSoapPanel`, `selectedSoapEditor` | :4093-4163, :4702-4742 | FeatureSOAP `Review/*Card.swift` | 재작성 | 문구 'special test'(:4317, :4326, :4707-4708), '임상 판단·위험도'(:4318, :4327, :4716-4717), '치료계획'(:4319, :4328, :4725-4726) 폐기 |
-| ├ `painAndRestrictionPanel` | :4653-4686 | FeatureSOAP `Live/LiveSideRail.swift` | 재작성 | NRS는 `PainScale` |
-| ├ `sharePanel` | :4752-4779 | FeatureShare(P2, 참고) | 참고 | v1 P1a에 없음 |
-| ├ `visualizationPanel` | :4780-4815 | — | 폐기 | Live 차트 금지(AC-VIZ-04.4) |
-| ├ `metricInspector` | :4816-4904 | FeatureSOAP `Review/Objective/`(참고) | 참고 | 문자열 ROM/MMT → typed O 행 |
-| └ `saveSession` | :4905-4918 | — | 폐기 | 서버 실패 시 '저장됨'(:4914) 표시 → C-05 위반 |
-| `NativeTrainerReportsDetail` | :4947-5048 | FeatureInsights `Compare/`(레이아웃 참고) | 참고 | `NativeLineChart` 사용(:5010) |
-| `NativeTrainerSettingsDetail`, `NativeSettingsRow` | :5049-5125 | FeatureSettings | 재작성 / `SettingsRow` 유지 | '모드: 게스트'(:5059) 등 고정 값 폐기 |
-| `NativePainScaleView` | :5126-5156 | DesignSystem `Input/PainScale.swift` | 유지 | 선택 해제 = 미입력(nil) 추가, 기본 선택값 0(:5127 `let value: Int`) 제거 |
-| `NativeChecklistRow` | :5157-5181 | DesignSystem `Components/ChecklistRow.swift` | 유지 | TR-05 체크리스트 |
-| `NativePainBodyRegionCatalog` | :5182-5202 | — | 폐기 | 한글 키·증상 혼합('두통' :5184). contracts `regionCode`(A.7) |
-| `NativeBodyMapView` | :5203-5350 | DesignSystem `BodyMap/BodyMapView.swift` | 재작성 | SceneKit 뷰 내장(:5218-5220) 분리, 제목 '3D 근육 통증 맵'(:5228)·'근육 세그먼트를 빨간색'(:5233) 폐기, 빨강 배지(:5324-5327) 제거. 2D 실루엣 `bodySilhouette`(:5257-5302, 현재 호출되지 않는 코드)를 앞면 출발점으로, 뒷면 신규 |
-| `NativeMusclePainSceneView` | :5351-5508 (`SCNCapsule` :5444) | FeatureSOAP `Review/PainSchematicAuxView.swift`(P2, DF-328) | 재작성 | '통증 부위(도식)' 라벨, 해부학 모델 아님 |
-| `NativeSegmentedPicker` | :5509-5540 | DesignSystem `Components/SegmentedPicker.swift` | 유지 | 중복 구현 `SegmentedPicker` :9518과 통합 |
+| `AppDelegate` 채널 구성, 표시 함수, MethodChannel 동기화(`loadNativeTrainerWorkspace`, `saveNativeTrainerWorkspace`, `saveNativeTrainerSoapNote`) | :10-369 (채널 이름 :31, :66, 동기화 클로저 :159-199) | App `DFETTrainerApp.swift`, `AppDelegate.swift` | 폐기 | MethodChannel 저장 경로 폐기(PRD §10.2.1). 새 앱은 FirebaseData 직접 |
+| `NativeTrainerHomeView` | :371-845 | App `AppShell/TrainerShellView.swift` | 재작성 | §7.1.7 |
+| `NativeDFETLogoMark` | :847-870 | DesignSystem `Brand/DFETLogoMark.swift` | 참고 | 로그인 화면 |
+| `NativeEmptyState` | :872-904 | DesignSystem `Components/EmptyState.swift` | 유지 | 행동 버튼 하나 추가 |
+| `NativeTrainerSessionBoardDetail` | :906-1237 | FeatureToday `TodayBoardView.swift` | 재작성 | §7.1.4 |
+| `NativeTrainerScheduleStatus`/`Item`/`Detail`/`Form` | :1239-1528 | — | 폐기 | AS-21. TR-01 로컬 목록으로 대체 |
+| `NativeTrainerProgramDetail`/`Form` | :1530-1727 | — | 폐기 | AS-21 |
+| `NativeTrainerAlert`/`AlertsDetail` | :1729-1877 | — | 폐기 | AS-21 |
+| `NativeTrainerSummaryDetail` | :1879-2038 | FeatureToday(참고) | 참고 | 완료율·평균 통증 대시보드는 v1 지표 아님 |
+| `NativeTrainerMembersDetail` | :2040-2560 | FeatureMembers `List/`, `Detail/` | 재작성 | §7.1.3 |
+| `NativeMemberRegistrationSheet` | :2562-3128 | FeatureConsent `Registration/` | 참고(UI만) | §7.1.6 |
+| `NativeCompositionSafeTextField`, `NativeHangulComposer`, `String` 확장 | :3130-3366 | DesignSystem `Input/CompositionSafeTextField.swift` | 검토 후 유지 | iPadOS 17 기본 필드로 조합 문제가 재현될 때만(ASM-07-09) |
+| `NativeSoapDailyDraft`/`Payload`/`DraftStore` | :3368-3527 | LocalStore `LocalSoapDraft` | 폐기 | UserDefaults 초안(§7.1.9), riskLevel(:3371), 문자열 ROM/MMT 목록(:3377-3378) |
+| `NativeTrainerSoapDetail` | :3529-4945 | FeatureSOAP `Live/`, `Review/` | 재작성 | §7.1.2. `persistCurrentDraft`·`loadActiveDraft`(:3776-3818), `syncPayload`(:3835-3861), `riskLevelForPain`(:3899-3903), `sharePanel`(:4752-4778, P2 참고), `visualizationPanel`(:4780-4814, Live 차트 금지 AC-VIZ-04.4)은 옮기지 않음 |
+| `NativeTrainerReportsDetail` | :4947-5047 | FeatureInsights `Compare/`(레이아웃 참고) | 참고 | `NativeLineChart` 사용(:5010) |
+| `NativeTrainerSettingsDetail`, `NativeSettingsRow` | :5049-5124 | FeatureSettings | 재작성 / 행 유지 | §7.1.5 |
+| `NativePainScaleView` | :5126-5155 | DesignSystem `Pain/PainScale.swift` | 유지 | 미입력(nil) 추가 |
+| `NativeChecklistRow` | :5157-5180 | DesignSystem `Components/ChecklistRow.swift` | 유지 | TR-05 체크리스트 |
+| `NativePainBodyRegionCatalog` | :5182-5201 | — | 폐기 | 한글 키·증상 혼합('두통' :5184). contracts `regionCode`(A.7) |
+| `NativeBodyMapView` | :5203-5349 | DesignSystem `BodyMap/BodyMapView.swift` | 재작성 | §7.1.1 |
+| `NativeMusclePainSceneView` | :5351-5507 | FeatureSOAP `Review/PainSchematicAuxView.swift`(P2, DF-328) | 재작성 | '통증 부위(도식)' 라벨, 해부학 모델 아님 |
+| `NativeSegmentedPicker` | :5509-5539 | DesignSystem `Components/SegmentedPicker.swift` | 유지 | 중복 `SegmentedPicker` :9518-9550과 통합 |
 | `NativeSoapTextBox`, `NativeSoapStepCard` | :5541-5652 | DesignSystem `Components/SectionCard.swift` | 재작성 | — |
-| `NativeShareLine` | :5653-5669 | FeatureShare(P2, 참고) | 참고 | — |
-| `NativeProgressMetric` | :5670-5694 | — | 폐기 | 완료율·목표 진행 지표는 v1 범위 밖 |
-| `NativeFieldRow` | :5695-5719 | DesignSystem `Components/FieldRow.swift` | 유지 | — |
-| `NativeMetricEntryList` | :5720-5764 | — | 폐기 | 문자열 목록 → typed O 행 |
-| `NativeTrainerPencilCanvasView` | :5765-5827 (`drawingPolicy = .anyInput` :5775) | DesignSystem `Pencil/PencilCanvas.swift` | 유지 | `drawingPolicy = .default`(ASM-07-10), 도면 바인딩을 뷰 모델 저장과 연결(반례 trainer_ios 미연결) |
-| `NativePaperLines` | :5828-5847 | DesignSystem `Pencil/PaperLines.swift` | 유지 | — |
-| `NativeStudioBackdrop`, `NativeBlueHeroCard` | :5848-5936 | — | 폐기 | 장식 그라데이션(dfet:design.md:41) |
-| 아바타·Memoji·이미지 선택(`NativeMemojiAvatar` … `NativeContactImagePicker`) | :5937-6882 | DesignSystem `Components/InitialAvatar.swift`(신규) | 폐기 | NFR-11. 연락처·사진 보관함 접근 없음 |
-| `NativeMemberSoapGrassView` | :6883-6946 | FeatureMembers `Timeline/DensityStripView.swift`(P2) | 재작성 | 날짜별 존재만, 단색 명도, 초록 금지(F-VIZ-05.3) |
-| 대시보드 카드(`NativeHeroMetric` :6947 … `NativeModeCard` :7572) | :6947-7592 | — | 대부분 폐기 | `NativeRiskItem`(:7308) 위험도 금지, `NativeStatusCapsule`(:7507)·`NativeLegend`(:7532)는 `SyncStateBadge`·차트 범례 참고 |
-| `NativeLineChart` | :7593-7742 | DesignSystem `SeriesTrendChart`(Swift Charts) | 폐기 | 순번 x축, 통증·완료율 혼합 |
-| `NativeSoapAnalytics` | :7743-7875 | — | 폐기 | 값이 없을 때 평균 통증 '0' 반환(:7785-7790) → C-04 위반. NRS 추이는 finalized 노트 쿼리로 |
-| `NativeTrainerRoute` | :7876-7922 | App `AppShell/TrainerRoute.swift` | 재작성 | 9개 → V1-04 §8.3 라우트. schedule·program·alerts 없음 |
-| `NativeTrainerMember`, `registeredFromSoap`, `NativeTrainerMemberPayload` | :7923-8303 (`member-UUID` :8117, subtitle '프로그램 · 부위' :8112) | — | **폐기** | 로컬 UUID 회원 키(F-LINK-03.3, AC-SOAP-01.9) |
-| `NativeHealthColor` | :8304-8324 | DesignSystem `Tokens/`(참고) | 참고 | Q-10 전 기본값만 |
-| `NativeSoapWorkspaceView` | :8325-9432 | FeatureSOAP `Live/`·`Review/` 레이아웃 출발점 | 재작성 | 아래 세부 |
-| ├ `topToolbar`, `sidebar`, `workspace` | :8467-8669 | `LiveHeaderBar`, 세션 흐름 | 참고 | — |
-| ├ `handwritingWorkspace` | :8670-8704 | `LiveSessionView` 캔버스 영역 | 재작성 | — |
-| ├ `legacySoapFields` | :8713-8722 | — | 폐기 | 'A. 평가 … 임상 판단, 위험도'(:8716), 'P … 치료/운동 계획'(:8717) |
-| ├ `shareWorkspace`, `visualizationWorkspace` | :8854-8909 | — | 폐기 | Live에 공유·차트 없음 |
-| ├ `pencilToolbar` | :8910-8933 | `PencilToolbar` | 참고 | — |
-| ├ `inspector` | :8934-9023 | `LiveSideRail`(참고) | 재작성 | '진단/이슈' 입력(:8958) **폐기**(MIG-04) |
-| ├ `save()` | :9024-9048 | — | **폐기** | 필기 base64(:9026, :9044), diagnosis(:9031) |
-| └ 빠른 추가(`addPainMarker` … `addExerciseEntry`) | :9049-9083 | `ReservedSlot` | 참고 | 값 없는 라벨 추가 대신 Review 빈 행 예약 |
-| `PencilCanvasView`, `CanvasLines`, `SegmentedPicker`, `StatusPill`, `PrimaryButtonStyle`, `SecondaryButtonStyle` | :9433-9601 | DesignSystem | 폐기(중복) | 위 유지 컴포넌트 하나로 통합 |
+| `NativeShareLine` | :5653-5668 | FeatureShare(P2, 참고) | 참고 | — |
+| `NativeProgressMetric` | :5670-5693 | — | 폐기 | 완료율·목표 진행 지표는 v1 범위 밖 |
+| `NativeFieldRow` | :5695-5718 | DesignSystem `Components/FieldRow.swift` | 유지 | — |
+| `NativeMetricEntryList` | :5720-5763 | — | 폐기 | 문자열 목록 → typed O 행 |
+| `NativeTrainerPencilCanvasView` | :5765-5826 | DesignSystem `Pencil/PencilCanvas.swift` | 유지 | `drawingPolicy = .default`(ASM-07-10), 도면 바인딩을 뷰 모델 저장과 연결(반례 trainer_ios 미연결) |
+| `NativePaperLines` | :5828-5846 | DesignSystem `Pencil/PaperLines.swift` | 유지 | — |
+| `NativeStudioBackdrop`, `NativeBlueHeroCard` | :5848-5935 | — | 폐기 | 장식 그라데이션(dfet:design.md:41) |
+| 아바타·Memoji·이미지 선택(`NativeMemojiAvatar` … `NativeContactImagePicker`) | :5937-6881 | DesignSystem `Components/InitialAvatar.swift`(신규) | 폐기 | §7.1.9 |
+| `NativeMemberSoapGrassView` | :6883-6945 | FeatureMembers `Timeline/DensityStripView.swift`(P2) | 재작성 | 날짜별 존재만, 단색 명도, 초록 금지(F-VIZ-05.3) |
+| 대시보드 카드(`NativeHeroMetric` :6947 … `NativeModeCard` :7572) | :6947-7591 | — | 대부분 폐기 | `NativeRiskItem`(:7308-7350) 위험도 금지, `NativeStatusCapsule`(:7507)·`NativeLegend`(:7532)는 `SyncStateBadge`·차트 범례 참고 |
+| `NativeLineChart` | :7593-7741 | DesignSystem `SeriesTrendChart`(Swift Charts) | 폐기 | 순번 x축, 통증·완료율 혼합 |
+| `NativeSoapAnalytics` | :7743-7874 | — | 폐기 | 값이 없을 때 평균 통증 '0' 반환(:7785-7790) → C-04 위반. NRS 추이는 finalized 노트 쿼리로 |
+| `NativeTrainerRoute` | :7876-7921 | App `AppShell/TrainerRoute.swift` | 재작성 | §7.1.7 |
+| `NativeTrainerMember`(`registeredFromSoap` :8097-8136), `NativeTrainerMemberPayload` | :7923-8302 (`member-UUID` :8117, subtitle '프로그램 · 부위' :8112) | — | **폐기** | §7.1.9 |
+| `NativeHealthColor` | :8304-8323 | DesignSystem `Tokens/`(참고) | 참고 | Q-10 전 기본값만 |
+| `NativeSoapWorkspaceView` | :8325-9431 | FeatureSOAP `Live/`·`Review/` 레이아웃 출발점 | 재작성 | §7.1.2. `legacySoapFields`(:8713-8721, 'A. 평가 … 임상 판단, 위험도' :8716, 'P … 치료/운동 계획' :8717), `shareWorkspace`·`visualizationWorkspace`(:8854-8908), `save()`(:9024-9047, 필기 base64 :9026·:9044, diagnosis :9031)는 옮기지 않음 |
+| `PencilCanvasView`, `CanvasLines`, `SegmentedPicker`, `StatusPill`, `PrimaryButtonStyle`, `SecondaryButtonStyle` | :9433-9600 | DesignSystem | 폐기(중복) | 위 유지 컴포넌트 하나로 통합 |
 | `DfetSemanticColor`, `DfetColor`, `Color`/`UIColor` hex 확장 | :9602-9657 | DesignSystem `Tokens/` | 참고 | Q-10 전 기본값 |
+
+#### 7.1.9 이식 제외 목록(tip)
+
+V1-04 §6.4 반례 열과 같은 목록이다. 이식 PR은 아래 범위를 새 앱으로 옮기지 않는다. 보관 브랜치의 같은 코드는 고치지 않는다(병합하지 않는다).
+
+| 대상 | tip 줄 | 이유 | 막는 수단 |
+|---|---|---|---|
+| 아바타·멤모지·이미지 선택 | 타입 :5937-6881(`NativeMemojiAvatar` … `NativeContactImagePicker`). 사용처 :2474-2503(회원 상세), :2697-2784·:3078-3128(등록 시트) | NFR-11. 연락처·사진 보관함 접근과 외부 아바타 없음. 로컬 이니셜만 | static-guards G7 `tapback.co`(TC-X-GUARD-06), AC-DF-113.4 |
+| program | `NativeTrainerProgramDetail`/`Form` :1530-1727, 라우트 `case program` :7882, 등록 선택지 :2856-2908, `managementPanel` :2327-2388 | AS-21, 규제 문구(§7.4 #22) | TC-DF017-03(금지 라우트 없음), copy-lint C1-05·C1-06 |
+| alerts | `NativeTrainerAlert`/`AlertsDetail` :1729-1877, 라우트 `case alerts` :7884, `alertsPanel` :1094-1132, `alertCount` :940-946 | AS-21 | TC-DF017-03, TC-125-06 |
+| schedule | `NativeTrainerSchedule*` :1239-1528(UserDefaults 키 :1310), 라우트 `case schedule` :7880, `todaySchedulePanel` :1012-1065 | AS-21(TR-01 로컬 '오늘' 목록으로 축소) | TC-DF017-03 |
+| 로컬 UUID 회원 | `NativeTrainerMember`·`NativeTrainerMemberPayload` :7923-8302(`registeredFromSoap` :8097-8136, `member-\(UUID…)` :8117, UserDefaults 저장 :8138-8150, 키 :8173), 등록 `save()` :3027-3075, `syncPayload` memberId :3839 | F-LINK-03.3, AC-SOAP-01.9 | static-guards G3(TC-X-GUARD-04) |
+| UserDefaults 초안 | `NativeSoapDailyDraft` … `NativeSoapDraftStore` :3368-3527(키 접두 :3472), `draftStoragePrefix` :3565, `persistCurrentDraft`·`loadActiveDraft` :3776-3818 | ADR-002(편집 원본은 SwiftData `LocalSoapDraft`) | 리뷰 체크(가드 없음. V1-01 DoD 이식 항목) |
+| 채널 동기화 | `AppDelegate` :10-369(채널 :31·:66, 동기화 클로저 :159-199), `NativeTrainerHomeView` 워크스페이스 동기화 :443-525, `syncPayload` :3835-3861, 워크스페이스 `save()` :9024-9047 | PRD §10.2.1(MethodChannel 저장 폐기), NFR-05, NFR-07 | static-guards G4 `native_`·G5 `inkDataBase64`(TC-X-GUARD-04), TC-116-06 |
 
 ### 7.2 trainer_ios → 트레이너 앱
 
@@ -1934,32 +2040,36 @@ V1-04 §10.8 표에 화면 동작을 더한다.
 | `BodyMeasurementRecord` | MeasurementRecord.swift:28-47 | BodyPathResult DTO 청사진(P2) | 참고 | takenAt·Subject 연결 없음(:28-41) → G-07a |
 | `MeasurementSectionPlot` | bodypath:ios/BodyScan/BodyScan/Views/BodyMeasurementView.swift:322-357 | BodyPathCoreUI(P2) → TR-13 | 유지(추출) | 색 주입, 닫히지 않은 윤곽 주황(:342) 유지 |
 
-### 7.4 옮기지 않을 결함(PRD §10.3 + 이 문서 추가)
+### 7.4 옮기지 않을 결함(PRD §10.3·§6.4.6 + 이 문서 추가)
 
-| # | 결함 | 근거 | 새 앱 규칙 | 막는 수단 |
-|---|---|---|---|---|
-| 1 | 결과와 무관한 '저장됨', 오류 print만 | dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:177-191; FirebaseTrainerRepository.swift:104 | NFR-06, C-05 | `SyncStateBadge`는 SyncStatusProvider만 렌더, static-guards `print(` in FirebaseData |
-| 2 | 지표가 비면 데모 문장으로 교체 | TrainerStore.swift:263-266 | NFR-07 | AC-SOAP-06.3 픽스처 |
-| 3 | 저장마다 createdAt 덮어쓰기 | FirebaseTrainerRepository.swift:95 | NFR-07 | AC-SOAP-04.6 |
-| 4 | signOut이 Firebase signOut 미호출 | TrainerStore.swift:160-165 | NFR-08 | `LogoutIT` |
-| 5 | tapback.co 외부 아바타 | TrainerMember.swift:43-49 | NFR-11 | static-guards `tapback.co` |
-| 6 | isSharedWithMember true 고정 | FirebaseTrainerRepository.swift:94; dfet:lib/widgets/shells/trainer_shell.dart:565 | D9, §9.3 | static-guards, R 규칙 |
-| 7 | 필기가 초안에 연결되지 않음 | dfet:trainer_ios/DFETTrainer/Features/SOAP/SOAPWorkspaceView.swift:11 | F-SOAP-01, NFR-05 | AC-SOAP-01.5 |
-| 8 | 필기 base64 인라인 | dfet:ios/Runner/AppDelegate.swift:3858 | NFR-05 | static-guards `nativeInkDataBase64`·`drawingData` |
-| 9 | `native_<seed>_<date>` 같은 날 덮어쓰기 | AppDelegate.swift:3838 | NFR-07 | R-24, AC-SOAP-01.6 |
-| 10 | diagnosis 자동 채움 | AppDelegate.swift:3844 | §3.4, F-PRIV-06 | R-04, AC-SOAP-02.5 |
-| 11 | 로컬 UUID 회원 키 | AppDelegate.swift:3839, :8117 | F-LINK-03 | static-guards `member-`+UUID |
-| 12 | enum rawValue 한글·대문자 | dfet:trainer_ios/DFETTrainer/Domain/SoapModels.swift:4-8 | F-SOAP-06 | contracts 생성 enum |
-| 13 | 기본 저장소 PreviewTrainerRepository | TrainerStore.swift:37 | NFR-03 | `LaunchConfiguration` Release 분기 |
-| 14 | 차트 x축 하드코딩 | dfet:trainer_ios/DFETTrainer/DesignSystem/ChartsAndPencil.swift:20-26 | F-VIZ-03 | `SeriesTrendChart` 날짜 축 스냅샷 |
-| 15(추가) | 두 번째 SOAP 편집기도 필기 base64·diagnosis 저장 | AppDelegate.swift:9026, :9031, :9044 | NFR-05, F-PRIV-06 | 같은 static-guards. PRD §10.3에는 :3858·:3844만 있음 |
-| 16(추가) | 위험도 라벨(안정/주의/고위험) | AppDelegate.swift:3548, :3899-3904; `NativeRiskItem` :7308 | F-SOAP-01.11 | copy-lint '고위험', 리뷰 체크 |
-| 17(추가) | 값이 없을 때 평균 통증 '0' | AppDelegate.swift:7785-7790 | C-04 | `SeriesTrendChart` nil 처리 테스트 |
-| 18(추가) | 서버 동기화 실패 시 '저장됨' 표시 | AppDelegate.swift:4914 | C-05 | 결함 1과 같음 |
-| 19(추가) | 바디맵 빨강·'근육' 표현 | AppDelegate.swift:5228, :5233, :5324-5327 | F-VIZ-04.2, AC-VIZ-04.1 | copy-lint '근육'(트레이너 바디맵 문자열), 스냅샷 |
-| 20(추가) | 규제 문구(special test, 임상 판단, 치료계획, 자세 교정, 재활 트레이닝, 체형 교정, 진단/이슈) | AppDelegate.swift:2857, :4317-4328, :4707-4726, :8716-8717, :8958 | §3.4, 부록 C | copy-lint 차단 모드(DF-040). Runner 쪽 수정은 DF-028 |
-| 21(추가) | Pencil `drawingPolicy = .anyInput` | AppDelegate.swift:5775 | [§3.12](#312-입력-공통한글숫자pencil) | `PencilCanvas` 기본값 테스트 |
-| 22(추가) | 2D 실루엣이 호출되지 않고 SceneKit만 표시 | AppDelegate.swift:5218-5220, :5257-5302 | F-VIZ-04.1(P1a 2D) | TR-04 뷰 트리에 SceneKit 없음 테스트 |
+근거 줄은 이식 기준선 tip `82c6ee9`에서 2026-09-26 다시 확인했다(DF-039). `dfet:trainer_ios/**`는 tip과 `main`이 같은 파일이다. `dfet:lib/**`는 MIG-01에서 `main` 쪽이 바뀌어 `main` 줄 번호를 괄호에 함께 적었다(동결 경로 수정·기준선 가드는 `main` 줄 번호로 읽는다). '막는 수단'의 G1~G9는 `tool/lint/static-guards.sh` 가드 ID(DF-011)이고 괄호 안은 V1-10 §16.2 테스트 ID다. 'PRD 행' 열은 PRD 표의 행 번호다(§10.3은 # 열, §6.4.6은 위에서부터 센 순번).
+
+| # | PRD 행 | 결함 | tip 기준 근거 | 새 앱 규칙 | 막는 수단(가드·테스트 ID) |
+|---|---|---|---|---|---|
+| 1 | §10.3 #1, §6.4.6 7행 | 결과와 무관한 '저장됨'(450ms 뒤), 오류 print만 | dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:177-191; dfet:trainer_ios/DFETTrainer/Data/FirebaseTrainerRepository.swift:104 | NFR-06, C-05 | G8 `print(`(TC-X-GUARD-07), TC-X-SYNC-02, TC-X-SYNC-07, TC-DF016-03('저장됨' 단독 키 0) |
+| 2 | §10.3 #2, §6.4.6 8행 | 지표가 비면 데모 문장 초안으로 교체 | TrainerStore.swift:263-266(PRD §6.4.6의 :263-264는 같은 블록의 앞 두 줄) | NFR-07 | TC-X-XC-05, TC-DF009-05(데모 문장 리터럴 0) |
+| 3 | §10.3 #3, §6.4.6 10행 | 저장마다 createdAt 덮어쓰기 | FirebaseTrainerRepository.swift:95 | NFR-07, AC-SOAP-04.6 | TC-X-SYNC-13 |
+| 4 | §10.3 #4 | signOut이 Firebase signOut 미호출 | TrainerStore.swift:160-165 | NFR-08 | TC-DF018-01, TC-DF018-03 |
+| 5 | §10.3 #5 | uid seed로 tapback.co 외부 아바타 | dfet:trainer_ios/DFETTrainer/Domain/TrainerMember.swift:43-49(URL :48) | NFR-11 | G7 `tapback.co`(TC-X-GUARD-06), AC-DF-113.4 |
+| 6 | §10.3 #6, §6.4.6 6행 | isSharedWithMember true 고정 | FirebaseTrainerRepository.swift:94; dfet:lib/widgets/shells/trainer_shell.dart:565(`main` :381) | D9, §9.3, AC-SOAP-05.8 | G6 `isSharedWithMember…true`(TC-X-GUARD-05). `lib/` 쪽은 동결 경로이며 DF-387에서 제거 |
+| 7 | §10.3 #7, §6.4.6 5행 | 필기가 초안에 연결되지 않아 미저장(`@State drawing`) | dfet:trainer_ios/DFETTrainer/Features/SOAP/SOAPWorkspaceView.swift:11 | F-SOAP-01, NFR-05, AC-SOAP-01.5 | TC-116-03(재실행 후 필기 유지), TC-X-SYNC-01 |
+| 8 | §10.3 #8, §6.4.6 4행 | 필기 base64 문서 인라인(`inkDataBase64`) | dfet:ios/Runner/AppDelegate.swift:3858 | NFR-05, §9.2 | G5 inline ink key(TC-X-GUARD-04), TC-116-06 |
+| 9 | §10.3 #9, §6.4.6 2행 | `native_<seed>_<date>` 같은 날 덮어쓰는 ID와 `set` 저장 | AppDelegate.swift:3838; dfet:lib/services/firestore_service.dart:660(`main` :657) | NFR-07, AC-SOAP-01.6 | G4 `"native_`(TC-X-GUARD-04), R-24, TC-X-SYNC-14, TC-116-06 |
+| 10 | §10.3 #10, §6.4.6 1행 | diagnosis에 회원 부제목('프로그램 · 부위') 자동 채움 | AppDelegate.swift:3844(부제 생성 :8112) | §3.4, F-PRIV-06, AC-SOAP-02.5 | R-04(diagnosis create·update 거부), TC-116-06(금지 키 거부) |
+| 11 | §10.3 #11, §6.4.6 3행 | 회원 식별자로 로컬 UUID seed(`member-\(UUID…)`) | AppDelegate.swift:3839, :8117 | F-LINK-03, AC-SOAP-01.9 | G3 member-UUID(TC-X-GUARD-04) |
+| 12 | §10.3 #12 | enum rawValue 한글·대문자 | dfet:trainer_ios/DFETTrainer/Domain/SoapModels.swift:4-8, :34-36 | F-SOAP-06 | TC-DF009-04(한글 rawValue 미사용), TC-X-XC-08(contracts 생성 enum 드리프트 0) |
+| 13 | §10.3 #13 | 기본 저장소 PreviewTrainerRepository | TrainerStore.swift:37 | NFR-03 | TC-DF017-01(Release에서 preview 무시), TC-X-FLAG-05 |
+| 14 | §10.3 #14 | 차트 x축 프리뷰 날짜 하드코딩 | dfet:trainer_ios/DFETTrainer/DesignSystem/ChartsAndPencil.swift:20-26(라벨 :21) | F-VIZ-03 | TC-130-03(날짜 비례 x축 스냅샷) |
+| 15 | §6.4.6 9행 | 알 수 없는 metric type을 조용히 버림 | FirebaseTrainerRepository.swift:263-266 | F-SOAP-06.2, AC-SOAP-06.2 | TC-X-XC-03, TC-X-XC-04 |
+| 16 | §6.4.6 11행 | 하드코딩 예시 문장으로 미리 채움 | SoapModels.swift:111-119 | AC-SOAP-06.3 | TC-X-XC-05, TC-DF009-05 |
+| 17(추가) | — | 두 번째 SOAP 편집기도 필기 base64·diagnosis 저장 | AppDelegate.swift:9026, :9031, :9044 | NFR-05, F-PRIV-06 | G5(TC-X-GUARD-04), R-04, TC-116-06. PRD §10.3에는 :3858·:3844만 있음 |
+| 18(추가) | — | 위험도 라벨(안정/주의/고위험) | AppDelegate.swift:3548, :3899-3903; `NativeRiskItem` :7308-7350 | F-SOAP-01.11 | TC-119-04(위험도 라벨 없음, MVP 뒤), 리뷰 체크. '고위험'은 copy-lint 규칙에 없음 |
+| 19(추가) | — | 값이 없을 때 평균 통증 '0' | AppDelegate.swift:7785-7790 | C-04 | TC-130-01(등급 없는 점 제외), TC-130-03(누락 무점) |
+| 20(추가) | — | 서버 동기화 실패 시 '저장됨' 표시 | AppDelegate.swift:4914 | C-05 | #1과 같음(TC-X-SYNC-02) |
+| 21(추가) | — | 바디맵 빨강·'근육' 표현 | AppDelegate.swift:5228, :5233, :5324-5327 | F-VIZ-04.2, AC-VIZ-04.1 | TC-117-03(copy-lint `region.*`·`bodyMap.*`), TC-117-05(빨강 없음 스냅샷) |
+| 22(추가) | — | 규제 문구(special test, 임상 판단, 치료계획, 자세 교정, 재활 트레이닝, 체형 교정, 진단/이슈) | AppDelegate.swift:2857, :4317-4328, :4707-4726, :8716-8717, :8958 | §3.4, 부록 C | copy-lint C1-01(진단), C1-03(치료), C1-05(교정), C1-06(재활) 차단 모드(DF-040). 'special test'·'임상 판단'은 규칙에 없어 리뷰 체크. Runner 쪽 수정은 DF-028(`main` 줄 번호) |
+| 23(추가) | — | Pencil `drawingPolicy = .anyInput` | AppDelegate.swift:5775 | [§3.12](#312-입력-공통한글숫자pencil) | 리뷰 체크(`PencilCanvas` 기본값 단위 테스트는 DF-116 카드에 아직 없음) |
+| 24(추가) | — | 2D 실루엣이 호출되지 않고 SceneKit만 표시 | AppDelegate.swift:5218-5220, :5257-5301 | F-VIZ-04.1(P1a 2D) | TC-117-04(TR-04 뷰 트리 검사), 리뷰 체크(SceneKit 뷰 0) |
 
 ---
 
@@ -2030,7 +2140,7 @@ V1-04 §10.8 표에 화면 동작을 더한다.
 
 | ID | 가정 | 관련 PRD Q-/AS- | 틀리면 |
 |---|---|---|---|
-| ASM-07-01 | AppDelegate.swift 줄 번호는 작업 트리(9,657줄) 기준이며, 이식 PR은 DF-039가 만든 보관 브랜치 tip 기준 이식표로 다시 맞춘다 | §0.2, MIG-01 #7, RISK-03 | 이 문서 §7.1 줄 번호만 고친다 |
+| ASM-07-01 | AppDelegate.swift 줄 번호는 보관 브랜치 tip `82c6ee9`(9,657줄) 기준이다. DF-039(2026-09-26)가 작업 트리 판과 같음을 확인했다. 이식 PR은 §7.1 표의 tip 범위를 쓴다 | §0.2, MIG-01 #7, RISK-03 | 이 문서 §7.1 줄 번호만 고친다 |
 | ASM-07-02 | `soapV2=false`여도 기존 SOAP은 TR-05 읽기 전용으로 열린다 | AS-18 | TR-03 SOAP 행에서 원문 보기만 |
 | ASM-07-03 | v1에는 '추후 추가 예정' 진입점을 두지 않는다(schedule·program·alerts는 라우트 자체가 없음). §8.4의 TR-01·TR-15 'O'는 컴포넌트 단위 스냅샷으로 대신한다 | AS-21, §8.4 | 진입점을 두고 화면 스냅샷 추가 |
 | ASM-07-04 | narrow 경계는 창 폭 700pt, SOAP·보정 wide 경계는 1180pt, 홈 1120pt | NFR-12, Q-10 | `LayoutClass.from(width:)` 상수만 조정 |
@@ -2095,3 +2205,4 @@ V1-04 §10.8 표에 화면 동작을 더한다.
 | v1.0(정합 패스 2) | 2026-09-24 | TodayListEntry 필드를 V1-05 §12.2에 맞춤(R5), C-07-06 해소 | — | — |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: TodayListEntry 필드·이월 규칙을 V1-05 §12.2로 정렬(R5), ASM-07-37 추가, C-07-06 해소(R4) | — | — |
 | v1.0.2 | 2026-09-25 | Sprint 01 문서 후속(PR #104): TR-07 측면 라벨을 문구 덱(V1-12, contracts `labelsKo` 정본)에 맞춰 '왼쪽 옆면' → '왼쪽 측면'(`tr07.view.sagittalLeft`·`sagittalRight`, 상단 막대) | #113 | 없음 |
+| v1.0.3 | 2026-09-26 | DF-039: §7.1을 보관 브랜치 tip `82c6ee9` 기준 '모듈별 책임과 이식 원본 줄 범위'로 재구성(§7.1.0 기준선, 모듈 6개+AppShell 대응표, 전체 처리표, 이식 제외 목록). 범위 끝을 닫는 `}` 줄로 정정. §7.4를 PRD §10.3 14행·§6.4.6 11행과 대응시키고 가드·테스트 ID 연결. §1.3·ASM-07-01 갱신 | — | 없음(PRD 줄 번호는 tip과 같음. §6.4.6 :263-264 → :263-266 표기 차이만) |

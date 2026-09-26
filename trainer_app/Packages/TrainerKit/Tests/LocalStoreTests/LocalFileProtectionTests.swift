@@ -71,10 +71,38 @@ final class LocalFileProtectionTests: XCTestCase {
     ModelFactory.insertOneOfEach(into: context, trainerUid: Synthetic.trainerA, tag: "A1")
     try context.save()
 
-    XCTAssertTrue(FileManager.default.fileExists(atPath: location.storeURL.path))
-    try assertCompleteProtection(location.storeURL)
-    try assertExcludedFromBackup(location.storeURL)
+    // The SQLite sidecars exist while the container is open and get the same attributes as the store.
+    let storeFiles = storeFileURLs(location)
+    XCTAssertEqual(storeFiles.map(\.lastPathComponent),
+                   ["LocalStore.store", "LocalStore.store-wal", "LocalStore.store-shm"])
+    for fileURL in storeFiles {
+      try assertCompleteProtection(fileURL)
+      try assertExcludedFromBackup(fileURL)
+    }
     try assertExcludedFromBackup(location.rootURL)
+    withExtendedLifetime(container) {}
+  }
+
+  func test_TC_DF014_03_AC_DF_014_3_retentionReappliesProtectionToStoreFilesOnEveryRun() throws {
+    let location = try makeLocation()
+    let container = try LocalStoreContainer.make(location: location, protection: recorder.protection)
+    let context = ModelContext(container)
+    ModelFactory.insertOneOfEach(into: context, trainerUid: Synthetic.trainerA, tag: "A1")
+    try context.save()
+    // As if SQLite recreated the sidecars during the session: nothing requested for them since opening.
+    recorder.clear()
+
+    let store = LocalBinaryStore(location: location, protection: recorder.protection)
+    let report = try LocalRetention(context: context, binaryStore: store, trainerUid: Synthetic.trainerA)
+      .purge(now: Synthetic.now)
+
+    XCTAssertFalse(report.storeProtectionFailed)
+    let storeFiles = storeFileURLs(location)
+    XCTAssertEqual(storeFiles.count, 3)
+    for fileURL in storeFiles {
+      try assertCompleteProtection(fileURL)
+      try assertExcludedFromBackup(fileURL)
+    }
   }
 
   func test_TC_DF014_03_rejectsUnsafeExtensionsAndRelativePaths() throws {
@@ -99,6 +127,13 @@ final class LocalFileProtectionTests: XCTestCase {
   }
 
   // MARK: - Assertions
+
+  private func storeFileURLs(_ location: LocalStoreLocation) -> [URL] {
+    let directory = location.storeURL.deletingLastPathComponent()
+    return ["", "-wal", "-shm"]
+      .map { directory.appendingPathComponent(LocalStoreLocation.storeFileName + $0, isDirectory: false) }
+      .filter { FileManager.default.fileExists(atPath: $0.path) }
+  }
 
   private func assertCompleteProtection(_ url: URL, file: StaticString = #filePath, line: UInt = #line) throws {
     #if os(iOS)

@@ -19,8 +19,12 @@ public enum LocalStoreError: Error, Equatable, Sendable {
 /// ```
 /// Application Support/TrainerKit/<trainerKey>/
 /// ├─ LocalStore.store (+ -wal, -shm)
-/// └─ Binaries/<kind folder>/…
+/// └─ Binaries/<kind folder>/<binary UUID>.<ext>
 /// ```
+///
+/// Binaries are flat per kind, named by their `LocalBinary.id`, not V1-04 §9.2's per-entity folders
+/// (`ink/<noteId>/<inkRevision>.png`, …): the `LocalBinary` row is the one index from entity to file, and a flat
+/// name needs no entity id at write time. Recorded as a Deviation with a V1-04 §9.2 doc follow-up (DF-014).
 ///
 /// `trainerKey` is the first 16 hex digits of SHA-256(uid) so the uid itself never appears in a path (NFR-10).
 /// Logging out deletes the whole partition.
@@ -118,17 +122,33 @@ public enum LocalStoreContainer {
     return container
   }
 
+  /// Re-applies complete protection and backup exclusion to the partition's store files that exist now.
+  ///
+  /// SwiftData cannot pass `NSPersistentStoreFileProtectionKey`, and SQLite may delete and recreate `-wal`/`-shm`
+  /// during a session with Core Data's default class (`completeUntilFirstUserAuthentication`). Whether a recreated
+  /// sidecar inherits the directory's `.complete` class is unverified (needs-device-test, ASM-P0-29), so
+  /// `LocalRetention.purge(now:)` calls this on every foreground entry. Backup exclusion is also inherited from the
+  /// excluded partition directory.
+  @discardableResult
+  public static func protectStoreFiles(location: LocalStoreLocation) throws -> [URL] {
+    try protectStoreFiles(at: location.storeURL, protection: .system)
+  }
+
   /// Applies complete protection and backup exclusion to the SQLite store and its sidecar files that exist.
-  /// Sidecars created later inherit the directory's protection class.
-  static func protectStoreFiles(at storeURL: URL, protection: LocalFileProtection) throws {
+  /// Returns the files it protected.
+  @discardableResult
+  static func protectStoreFiles(at storeURL: URL, protection: LocalFileProtection) throws -> [URL] {
     let directory = storeURL.deletingLastPathComponent()
     let name = storeURL.lastPathComponent
+    var protected: [URL] = []
     for fileName in [name, name + "-wal", name + "-shm"] {
       let fileURL = directory.appendingPathComponent(fileName, isDirectory: false)
       if FileManager.default.fileExists(atPath: fileURL.path) {
         try protection.protectFile(fileURL)
+        protected.append(fileURL)
       }
     }
+    return protected
   }
 }
 

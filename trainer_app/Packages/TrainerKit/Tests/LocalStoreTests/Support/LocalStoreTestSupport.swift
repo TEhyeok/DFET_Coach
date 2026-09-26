@@ -84,6 +84,12 @@ final class ProtectionRecorder: @unchecked Sendable {
     }
   }
 
+  func clear() {
+    lock.lock()
+    requested.removeAll()
+    lock.unlock()
+  }
+
   func requestedProtection(of url: URL) -> FileProtectionType? {
     lock.lock()
     defer { lock.unlock() }

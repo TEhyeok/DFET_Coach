@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-04 |
-| 버전 | v1.0 |
+| 버전 | v1.0.2 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -51,7 +51,7 @@
   - 화면(TR-01~TR-15) 동작: [V1-07 트레이너 앱 명세](07_TRAINER_APP_SPEC.md). 회원 앱·관리자 화면: [V1-08](08_MEMBER_APP_AND_ADMIN_SPEC.md).
   - 산식·판정: [V1-09 알고리즘](09_ALGORITHMS_SPEC.md). 테스트 층·케이스: [V1-10 테스트 계획](10_TEST_PLAN.md). 금지어·분석 이벤트: [V1-12](12_COPY_ANALYTICS_AND_LINT.md). 로컬 환경 명령: [V1-13](13_DEV_ENVIRONMENT_AND_AGENT_PLAYBOOK.md).
   - 결정의 근거와 대안: [adr/](adr/) ADR-001~ADR-019([§24](#24-adr-색인)).
-- **코드 근거 표기.** `dfet:경로:줄`, `bodypath:경로:줄`. 줄 번호는 2026-09-24 작업 트리 기준이며 이 문서 작성 시 파일을 직접 열어 확인했다. `dfet:ios/Runner/AppDelegate.swift`는 작업 트리 9,657줄 기준이고, MIG-01 뒤에는 보관 브랜치 tip 해시(이식 기준선)를 따른다(PRD §0.2).
+- **코드 근거 표기.** `dfet:경로:줄`, `bodypath:경로:줄`. 줄 번호는 2026-09-24 작업 트리 기준이며 이 문서 작성 시 파일을 직접 열어 확인했다. `dfet:ios/Runner/AppDelegate.swift`는 보관 브랜치 tip `82c6ee9`(이식 기준선, 9,657줄) 기준이다. DF-039가 2026-09-26 작업 트리 판과 줄 번호가 같음을 확인했다(PRD §0.2).
 - **AI 에이전트가 읽는 법.** 스토리 하나를 맡으면 ① [§7 모듈 의존 규칙](#7-모듈-의존-규칙)에서 수정 허용 타깃을 확인하고 ② 해당 절(§9~§18)의 경로·시그니처를 따르며 ③ [§23 NFR 대응표](#23-nfr-대응표)의 검증 방법을 PR 증빙에 붙인다.
 
 ---
@@ -428,19 +428,23 @@ schemes:
 
 ### 6.4 이식 대응 요약
 
-기술 스파인 `trainerModules.portedFrom`이 정본이다. 에이전트가 원본을 열 때의 진입점만 요약한다(보관 브랜치 tip 기준으로 줄 번호가 바뀌면 DF-039 이식표를 따른다).
+기술 스파인 `trainerModules.portedFrom`이 정본이다. 에이전트가 원본을 열 때의 진입점만 요약한다. `dfet:ios/Runner/AppDelegate.swift` 줄 번호는 보관 브랜치 `archive/trainer-ui-2026-09` tip `82c6ee9` 기준이다(DF-039, 2026-09-26 확인). 모듈별 전체 대응표는 [V1-07 §7.1](07_TRAINER_APP_SPEC.md#71-dfetiosrunnerappdelegateswift--트레이너-앱모듈별-책임과-이식-원본-줄-범위), 반례와 막는 가드·테스트는 [V1-07 §7.4](07_TRAINER_APP_SPEC.md#74-옮기지-않을-결함prd-103646--이-문서-추가)가 정본이다.
 
-| 대상 타깃 | 가져올 원본(확인한 시작 줄) | 가져오지 않을 반례(확인함) |
+| 대상 타깃 | 가져올 원본(tip 범위) | 가져오지 않을 반례(tip 확인) |
 |---|---|---|
-| AppShell | `NativeTrainerRoute` dfet:ios/Runner/AppDelegate.swift:7876-7885, `NativeTrainerHomeView` :371, NavigationSplitView 골격 dfet:trainer_ios/DFETTrainer/App/TrainerRootView.swift | schedule·program·alerts 라우트(:7880, :7882, :7884; AS-21) |
+| AppShell | `NativeTrainerRoute` dfet:ios/Runner/AppDelegate.swift:7876-7921(케이스 :7877-7885), `NativeTrainerHomeView` :371-845, NavigationSplitView 골격 dfet:trainer_ios/DFETTrainer/App/TrainerRootView.swift | schedule·program·alerts 라우트(:7880, :7882, :7884; AS-21), UserDefaults 회원·일정 로드(:403-405), 워크스페이스 채널 동기화(:443-525) |
 | FeatureAuth·FirebaseData | claim 로그인 dfet:trainer_ios/DFETTrainer/Features/Login/LoginView.swift:226-249, memberIds → users 10개 청크 dfet:trainer_ios/DFETTrainer/Data/FirebaseTrainerRepository.swift:158-220, App Check dfet:trainer_ios/DFETTrainer/App/DFETTrainerApp.swift:43-53 | `isSharedWithMember: true`(FirebaseTrainerRepository.swift:94), createdAt 덮어쓰기(:95), print만 하는 오류(:104, :163, :183, :215), 알 수 없는 metric 버림(:263-266) |
 | TrainerDomain | 저장소 경계 개념 dfet:trainer_ios/DFETTrainer/Domain/TrainerRepository.swift:4-15(동기 → async 재정의) | 한글 rawValue(SoapModels.swift:4-8), 데모 문장 교체(TrainerStore.swift:263-266) |
-| FeatureSOAP·DesignSystem | `NativeSoapWorkspaceView` :8325, `NativeTrainerSoapDetail` :3529, Pencil :5765, NRS :5126, 바디맵 :5203, 한글 입력 :3130·:3219 | `syncPayload` :3835-3860 전체(:3838 `native_` ID, :3839 로컬 UUID, :3844 diagnosis, :3858 base64), UserDefaults 초안 :3368-3528 |
-| FeatureMembers | `NativeTrainerMembersDetail` :2040, 잔디 뷰 :6883(P2) | `NativeTrainerMember` :7923, `member-UUID` :8117 |
-| FeatureSettings | `NativeTrainerSettingsDetail` :5049 | Firebase signOut 미호출 dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:160-165 |
+| FeatureSOAP·DesignSystem | `NativeSoapWorkspaceView` :8325-9431, `NativeTrainerSoapDetail` :3529-4945, Pencil :5765-5826, NRS :5126-5155, 바디맵 :5203-5349(2D 실루엣 :5257-5301), 한글 입력 :3130-3366(`NativeHangulComposer` :3219), 색 토큰 :9602-9657, 빈 상태 :872-904 | `syncPayload` :3835-3861 전체(:3838 `native_` ID, :3839 로컬 UUID, :3844 diagnosis, :3858 base64), 두 번째 편집기 `save()` :9024-9047, UserDefaults 초안 :3368-3527 |
+| FeatureMembers | `NativeTrainerMembersDetail` :2040-2560, 잔디 뷰 :6883-6945(P2) | `NativeTrainerMember` :7923-8302, `member-UUID` :8117, 아바타 :2474-2503 |
+| FeatureToday | `NativeTrainerSessionBoardDetail` :906-1237, `NativeTrainerSummaryDetail` :1879-2038(참고) | 일정 패널 :1012-1065, 알림 패널 :1094-1132, 위험도 기반 수 :934-946 |
+| FeatureSettings | `NativeTrainerSettingsDetail` :5049-5106, `NativeSettingsRow` :5108-5124 | 고정 값 '모드: 게스트'(:5059), Firebase signOut 미호출 dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:160-165 |
+| FeatureConsent | `NativeMemberRegistrationSheet` :2562-3128(UI만) | 로컬 UUID 회원 `save()` :3027-3075, 프로그램 선택지 :2856-2858, 등록 시 SOAP 입력 :2808-2854, 아바타 선택 :2697-2784 |
 | AppShell 저장소 기본값 | — | `init(repository: TrainerRepository = PreviewTrainerRepository())` TrainerStore.swift:37 |
 | DesignSystem 차트 | 축 분리 패턴 dfet:trainer_ios/DFETTrainer/DesignSystem/ChartsAndPencil.swift:28 이하 | 하드코딩 x축 :20-26 |
-| (전체) | — | tapback.co 아바타 dfet:trainer_ios/DFETTrainer/Domain/TrainerMember.swift:43-49, MethodChannel 저장 dfet:ios/Runner/AppDelegate.swift:164-197 |
+| (전체) | — | tapback.co 아바타 dfet:trainer_ios/DFETTrainer/Domain/TrainerMember.swift:43-49, MethodChannel 저장 dfet:ios/Runner/AppDelegate.swift:159-199 |
+
+(이식 제외 목록) 아바타·멤모지 :5937-6881, program :1530-1727, alerts :1729-1877, schedule :1239-1528, 로컬 UUID 회원 :7923-8302, UserDefaults 초안 :3368-3527, 채널 동기화 :10-369·:443-525. 사용처 줄과 막는 수단은 [V1-07 §7.1.9](07_TRAINER_APP_SPEC.md#719-이식-제외-목록tip)에 있다.
 
 ---
 
@@ -1286,3 +1290,4 @@ NFR-15의 수치는 모두 가설 목표이며 P1a·P1b 측정 후 §12.7에서 
 | v1.0 | 2026-09-24 | 최초 작성 | — | ASM-04-15(NFR-16 문구)는 PRD 개정 후보 |
 | v1.0(정합 패스 2) | 2026-09-24 | project.yml `optional: true` 제거·postBuildScripts, 픽스처 복사 제거(R4), §9.1·§10.2를 V1-05 §12에 맞춤, clientRequestId → requestId/clientCaptureId(R5), 시드·포트 담당(R2) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: R2·R4·R5 반영, ASM-04-21·ASM-04-22 추가 | — | 없음 |
+| v1.0.2 | 2026-09-26 | DF-039: §6.4 이식 대응 요약의 AppDelegate 줄 번호를 보관 브랜치 tip `82c6ee9` 기준 범위로 갱신, FeatureToday·FeatureConsent 행과 이식 제외 목록 추가, 코드 근거 표기 갱신 | — | 없음 |

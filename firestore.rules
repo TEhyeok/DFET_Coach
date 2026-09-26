@@ -525,7 +525,14 @@ service cloud.firestore {
       allow read: if isAccessTrainer(resource.data);                        // R-05
 
       // 필수 9키만. heightCm·연락처·서버 필드(inviteCodeId, promotedUid, promotedAt)는 불가(AC-LINK-01.2)
+      // 문서 ID는 DocumentID.make()/자동 ID 형식(20자 [A-Za-z0-9], V1-04 §9.1)만 허용하고, 기존 회원 uid나
+      // 기존 동의 상태 키와 겹치면 거부한다. 겹치면 isPendingOwner(memberKey)로 남의 회원 동의 상태를
+      // 읽거나 그 동의를 빌려 기록을 만들 수 있다(V1-05 §7.4 후속 반영 대상).
+      // 문서 조회 수: memberConsentStates, users = 2
       allow create: if isTrainer()
+        && pendingMemberId.matches('[A-Za-z0-9]{20}')
+        && !exists(/databases/$(database)/documents/memberConsentStates/$(pendingMemberId))
+        && !exists(/databases/$(database)/documents/users/$(pendingMemberId))
         && incoming().keys().hasOnly(pendingCreateKeys())
         && incoming().keys().hasAll(pendingCreateKeys())
         && incoming().trainerId == request.auth.uid

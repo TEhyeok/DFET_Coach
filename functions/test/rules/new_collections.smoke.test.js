@@ -37,6 +37,13 @@ const P1 = 'fx-pending-001'; // A의 대기 회원, ② ③ 있음
 const P2 = 'fx-pending-002'; // A의 대기 회원, ② 없음
 const P3 = 'fx-pending-003'; // A의 대기 회원, cancelled
 const ADMIN = 'fx-admin-001';
+// 20자 [A-Za-z0-9] uid(커스텀 uid 가정). 대기 회원 ID 형식과 겹쳐도 exists() 검사로 막혀야 한다.
+const M_ID20 = 'FxMemberCustomUid001';
+const M_ID20_NOCONSENT = 'FxMemberCustomUid002';
+// 클라이언트가 만드는 대기 회원 ID는 DocumentID.make()/자동 ID 형식(20자 [A-Za-z0-9])이다(V1-04 §9.1).
+function newPid(n) {
+  return `FxPendingNew${String(n).padStart(8, '0')}`;
+}
 const TRAINER = {trainer: true, role: 'trainer'};
 const ADMIN_CLAIMS = {admin: true, role: 'admin'};
 
@@ -191,7 +198,10 @@ beforeEach(async () => {
     const granted = {granted: true};
     const denied = {granted: false};
     await Promise.all([
-      setDoc(doc(db, `trainers/${T_A}`), {memberIds: [M1, M2, M3, M4]}),
+      setDoc(doc(db, `trainers/${T_A}`), {memberIds: [M1, M2, M3, M4, M_ID20]}),
+      setDoc(doc(db, `users/${M_ID20}`), {role: 'member', trainerId: T_A}),
+      setDoc(doc(db, `users/${M_ID20_NOCONSENT}`), {role: 'member'}),
+      setDoc(doc(db, `memberConsentStates/${M_ID20}`), {healthData: granted, bodyImaging: granted}),
       setDoc(doc(db, `trainers/${T_B}`), {memberIds: []}),
       setDoc(doc(db, `pendingMembers/${P1}`), stored(pendingCreate())),
       setDoc(doc(db, `pendingMembers/${P2}`), stored(pendingCreate({displayName: '가상 대기 회원 2'}))),
@@ -277,7 +287,7 @@ describe('TC-DF021-01 helpers', () => {
 
 describe('AC-DF-021.1 pendingMembers', () => {
   test('AC-DF-021.1 creating trainer with the nine required keys is allowed', async () => {
-    await assertSucceeds(setDoc(doc(trainerDb(), 'pendingMembers/fx-pending-new-01'), pendingCreate()));
+    await assertSucceeds(setDoc(doc(trainerDb(), `pendingMembers/${newPid(1)}`), pendingCreate()));
   });
 
   test('AC-DF-021.1 phone, email, heightCm or server-only keys at create are denied', async () => {
@@ -289,7 +299,7 @@ describe('AC-DF-021.1 pendingMembers', () => {
       {inviteCodeId: 'fx-code'},
       {promotedUid: M1},
     ].entries()) {
-      await assertFails(setDoc(doc(db, `pendingMembers/fx-pending-new-1${i}`), pendingCreate(extra)));
+      await assertFails(setDoc(doc(db, `pendingMembers/${newPid(10 + i)}`), pendingCreate(extra)));
     }
   });
 
@@ -297,18 +307,18 @@ describe('AC-DF-021.1 pendingMembers', () => {
     const db = trainerDb();
     const {sex, ...withoutSex} = pendingCreate();
     assert.ok(sex);
-    await assertFails(setDoc(doc(db, 'pendingMembers/fx-pending-new-20'), withoutSex));
-    await assertFails(setDoc(doc(db, 'pendingMembers/fx-pending-new-21'), pendingCreate({status: 'promoted'})));
-    await assertFails(setDoc(doc(db, 'pendingMembers/fx-pending-new-22'), pendingCreate({ageConfirmed14: false})));
-    await assertFails(setDoc(doc(db, 'pendingMembers/fx-pending-new-23'), pendingCreate({trainerId: T_B})));
+    await assertFails(setDoc(doc(db, `pendingMembers/${newPid(20)}`), withoutSex));
+    await assertFails(setDoc(doc(db, `pendingMembers/${newPid(21)}`), pendingCreate({status: 'promoted'})));
+    await assertFails(setDoc(doc(db, `pendingMembers/${newPid(22)}`), pendingCreate({ageConfirmed14: false})));
+    await assertFails(setDoc(doc(db, `pendingMembers/${newPid(23)}`), pendingCreate({trainerId: T_B})));
   });
 
   test('R-31 AC-DF-021.1 birthYear == year - 14 is allowed, year - 13 is denied', async () => {
     const db = trainerDb();
-    await assertSucceeds(setDoc(doc(db, 'pendingMembers/fx-pending-new-30'), pendingCreate({
+    await assertSucceeds(setDoc(doc(db, `pendingMembers/${newPid(30)}`), pendingCreate({
       birthYear: THIS_YEAR - 14,
     })));
-    await assertFails(setDoc(doc(db, 'pendingMembers/fx-pending-new-31'), pendingCreate({
+    await assertFails(setDoc(doc(db, `pendingMembers/${newPid(31)}`), pendingCreate({
       birthYear: THIS_YEAR - 13,
     })));
   });
@@ -335,6 +345,33 @@ describe('AC-DF-021.1 pendingMembers', () => {
     await assertFails(updateDoc(doc(db, `pendingMembers/${P1}`), {trainerId: T_B, updatedAt: serverTimestamp()}));
     await assertFails(updateDoc(doc(db, `pendingMembers/${P1}`), {status: 'promoted', updatedAt: serverTimestamp()}));
     await assertFails(deleteDoc(doc(db, `pendingMembers/${P1}`)));
+  });
+
+  test('R-05 AC-DF-021.1 pendingMembers id must be a 20-char auto ID that is not a member uid or consent key', async () => {
+    const db = trainerDb(T_B);
+    // 기존 회원 uid(비자동 ID 형식)로 대기 회원을 만들어 isPendingOwner를 통과하려는 시도
+    await assertFails(setDoc(doc(db, `pendingMembers/${M1}`), pendingCreate({trainerId: T_B})));
+    // 자동 ID 형식이어도 기존 동의 상태 키 또는 users 문서와 겹치면 거부
+    await assertFails(setDoc(doc(db, `pendingMembers/${M_ID20}`), pendingCreate({trainerId: T_B})));
+    await assertFails(setDoc(doc(db, `pendingMembers/${M_ID20_NOCONSENT}`), pendingCreate({trainerId: T_B})));
+    // 형식 위반(길이, 문자)
+    await assertFails(setDoc(doc(db, 'pendingMembers/FxPendingShort01'), pendingCreate({trainerId: T_B})));
+    await assertFails(setDoc(doc(db, 'pendingMembers/FxPending_New_000001'), pendingCreate({trainerId: T_B})));
+    await assertSucceeds(setDoc(doc(db, `pendingMembers/${newPid(40)}`), pendingCreate({trainerId: T_B})));
+  });
+
+  test('R-05 AC-DF-021.1 unassigned trainer cannot read a member consent state or borrow its consent after a pending create attempt', async () => {
+    const db = trainerDb(T_B);
+    await assertFails(setDoc(doc(db, `pendingMembers/${M1}`), pendingCreate({trainerId: T_B})));
+    await assertFails(setDoc(doc(db, `pendingMembers/${M_ID20}`), pendingCreate({trainerId: T_B})));
+    await assertFails(getDoc(doc(db, `memberConsentStates/${M1}`)));
+    await assertFails(getDoc(doc(db, `memberConsentStates/${M_ID20}`)));
+    await assertFails(setDoc(doc(db, 'bodyCompositionRecords/fx-bc-borrow-01'), bcCreate({
+      memberUid: null, pendingMemberId: M1, trainerId: T_B, enteredBy: T_B,
+    })));
+    await assertFails(setDoc(doc(db, 'postureAssessments/fx-posture-borrow-01'), postureCreate({
+      memberUid: null, pendingMemberId: M_ID20, trainerId: T_B, authorUid: T_B,
+    })));
   });
 
   test('R-05 AC-DF-021.1 creator reads and lists by trainerId, another trainer cannot', async () => {
@@ -416,6 +453,20 @@ describe('AC-DF-021.2 postureAssessments', () => {
     await assertFails(updateDoc(doc(trainerDb(), 'postureAssessments/fx-posture-voided'), {
       isBaseline: true, updatedAt: serverTimestamp(),
     }));
+  });
+
+  test('AC-DF-021.2 unassigned trainer create and update for a member outside memberIds are denied', async () => {
+    const db = trainerDb(T_B);
+    await assertFails(setDoc(doc(db, 'postureAssessments/fx-posture-new-20'), postureCreate({
+      trainerId: T_B, authorUid: T_B,
+    })));
+    await assertFails(updateDoc(doc(db, 'postureAssessments/fx-posture-draft'), {
+      status: 'confirmed', metrics: [POSTURE_METRIC], updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test('R-10 AC-DF-021.2 member cannot read own raw posture record', async () => {
+    await assertFails(getDoc(doc(dbFor(M1), 'postureAssessments/fx-posture-draft')));
   });
 
   test('R-05 R-23 AC-DF-021.2 writer reads, another trainer and admin claim cannot', async () => {
@@ -504,6 +555,20 @@ describe('AC-DF-021.3 bodyCompositionRecords', () => {
     await assertFails(deleteDoc(ref));
   });
 
+  test('AC-DF-021.3 unassigned trainer create and update for a member outside memberIds are denied', async () => {
+    const db = trainerDb(T_B);
+    await assertFails(setDoc(doc(db, 'bodyCompositionRecords/fx-bc-new-40'), bcCreate({
+      trainerId: T_B, enteredBy: T_B,
+    })));
+    await assertFails(updateDoc(doc(db, 'bodyCompositionRecords/fx-bc-001'), {
+      reportPhotoPath: 'bodyCompositionRecords/fx-bc-001/report.jpg', updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test('R-10 AC-DF-021.3 member cannot read own raw body composition record', async () => {
+    await assertFails(getDoc(doc(dbFor(M1), 'bodyCompositionRecords/fx-bc-001')));
+  });
+
   test('R-05 AC-DF-021.3 writer reads, another trainer cannot', async () => {
     await assertSucceeds(getDoc(doc(trainerDb(), 'bodyCompositionRecords/fx-bc-001')));
     await assertFails(getDoc(doc(trainerDb(T_B), 'bodyCompositionRecords/fx-bc-001')));
@@ -525,6 +590,27 @@ describe('AC-DF-021.4 circumferenceMeasurements', () => {
     await assertSucceeds(setDoc(doc(db, 'circumferenceMeasurements/fx-circ-new-04'), circCreate({
       ...thigh, landmarkNote: '슬개골 상연 위 15cm',
     })));
+  });
+
+  test('AC-DF-021.4 thighCircumference with side none is denied', async () => {
+    const db = trainerDb();
+    await assertFails(setDoc(doc(db, 'circumferenceMeasurements/fx-circ-new-20'), circCreate({
+      metricCode: 'thighCircumference', side: 'none', protocolId: 'custom', landmarkNote: '슬개골 상연 위 15cm',
+    })));
+  });
+
+  test('AC-DF-021.4 unassigned trainer create and update for a member outside memberIds are denied', async () => {
+    const db = trainerDb(T_B);
+    await assertFails(setDoc(doc(db, 'circumferenceMeasurements/fx-circ-new-21'), circCreate({
+      trainerId: T_B, authorUid: T_B,
+    })));
+    await assertFails(updateDoc(doc(db, 'circumferenceMeasurements/fx-circ-001'), {
+      status: 'voided', voidedAt: serverTimestamp(), voidReason: '잘못 잰 값', updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test('R-10 AC-DF-021.4 member cannot read own raw circumference record', async () => {
+    await assertFails(getDoc(doc(dbFor(M1), 'circumferenceMeasurements/fx-circ-001')));
   });
 
   test('R-29 AC-DF-021.4 tape with bodyComposition flag off is denied', async () => {

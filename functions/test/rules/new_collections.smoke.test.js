@@ -532,6 +532,20 @@ describe('AC-DF-021.3 bodyCompositionRecords', () => {
     }));
   });
 
+  test('AC-DF-021.3 reportPhotoPath must be exactly this record path, regex metacharacters in the id do not widen it', async () => {
+    const db = trainerDb();
+    await assertSucceeds(setDoc(doc(db, 'bodyCompositionRecords/fx-bc.*'), bcCreate()));
+    await assertFails(updateDoc(doc(db, 'bodyCompositionRecords/fx-bc.*'), {
+      reportPhotoPath: 'bodyCompositionRecords/fx-bc-001/report.jpg', updatedAt: serverTimestamp(),
+    }));
+    await assertFails(updateDoc(doc(db, 'bodyCompositionRecords/fx-bc-001'), {
+      reportPhotoPath: 'bodyCompositionRecords/fx-bc-001/report.png', updatedAt: serverTimestamp(),
+    }));
+    await assertSucceeds(updateDoc(doc(db, 'bodyCompositionRecords/fx-bc.*'), {
+      reportPhotoPath: 'bodyCompositionRecords/fx-bc.*/report.heic', updatedAt: serverTimestamp(),
+    }));
+  });
+
   test('AC-DF-021.3 active→voided with server voidedAt and 1–200 char reason is allowed', async () => {
     await assertSucceeds(updateDoc(doc(trainerDb(), 'bodyCompositionRecords/fx-bc-001'), {
       status: 'voided', voidedAt: serverTimestamp(), voidReason: '전사 오류', updatedAt: serverTimestamp(),

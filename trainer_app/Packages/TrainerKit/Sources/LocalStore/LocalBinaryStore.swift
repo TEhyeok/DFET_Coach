@@ -96,6 +96,20 @@ public struct LocalBinaryStore: Sendable {
     return true
   }
 
+  /// Partition-relative paths of the regular files under `Binaries/` last modified before `cutoff`, sorted.
+  /// Used by the retention orphan sweep. Returns an empty list when the directory does not exist yet.
+  func storedRelativePaths(modifiedBefore cutoff: Date) -> [String] {
+    guard let enumerator = FileManager.default.enumerator(atPath: location.binariesURL.path) else { return [] }
+    var paths: [String] = []
+    while let subpath = enumerator.nextObject() as? String {
+      let attributes = enumerator.fileAttributes ?? [:]
+      guard attributes[.type] as? FileAttributeType == .typeRegular,
+            let modified = attributes[.modificationDate] as? Date, modified < cutoff else { continue }
+      paths.append(LocalStoreLocation.binariesDirectoryName + "/" + subpath)
+    }
+    return paths.sorted()
+  }
+
   static func isValidExtension(_ ext: String) -> Bool {
     (1...10).contains(ext.count) && ext.unicodeScalars.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) }
   }

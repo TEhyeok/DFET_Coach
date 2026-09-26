@@ -157,21 +157,82 @@ final class LocalRetentionTests: XCTestCase {
     XCTAssertTrue(store.fileExists(relativePath: youngSignature.relativePath))
   }
 
-  func test_TC_DF014_04_expiredCaptureKeepsDraftsThatWaitOnANewerPendingCapture() throws {
+  func test_TC_DF014_04_AC_DF_014_4_expiredCaptureDestroysDraftsEvenWhenANewerPendingCaptureExists() throws {
+    // Conservative reading of AS-32 / V1-05 §12.3: a retake does not extend the drafts' life (AS-DEV candidate).
     let now = Synthetic.now
     let member = Synthetic.memberA
-    try insertCapture(id: "capture-expired", member: member, capturedAt: now - 8 * 24 * hour)
-    try insertCapture(id: "capture-retaken", member: member, capturedAt: now - hour)
-    context.insert(LocalSoapDraft(noteId: "noteWaiting", trainerUid: Synthetic.trainerA, memberKey: member, sessionDate: now,
-                                  syncState: .awaitingConsent, createdLocallyAt: now - 8 * 24 * hour))
+    let (_, expiredSignature) = try insertCapture(id: "capture-expired", member: member, capturedAt: now - 8 * 24 * hour)
+    let (retaken, retakenSignature) = try insertCapture(id: "capture-retaken", member: member, capturedAt: now - hour)
+    let retakenConsent = insertOutbox(entityRef: retaken.entityRef, member: member, stage: .consent,
+                                      kind: .callConsent, state: .queued)
+    let ink = try insertBinary(kind: .ink, verifiedAt: nil)
+    let draft = LocalSoapDraft(noteId: "noteWaiting", trainerUid: Synthetic.trainerA, memberKey: member, sessionDate: now,
+                               inkBinaryId: ink.id, syncState: .awaitingConsent, createdLocallyAt: now - 8 * 24 * hour)
+    context.insert(draft)
+    let draftUpload = insertOutbox(entityRef: draft.entityRef, member: member, stage: .upload, kind: .uploadBinary,
+                                   state: .blocked, binaryId: ink.id)
     try context.save()
 
     let report = try retention.purge(now: now)
 
     XCTAssertEqual(report.destroyedCaptureIds, ["capture-expired"])
-    XCTAssertTrue(report.destroyedSoapNoteIds.isEmpty)
-    XCTAssertEqual(try context.fetchOwned(LocalSoapDraft.self, by: Synthetic.trainerA).count, 1)
+    XCTAssertEqual(report.destroyedSoapNoteIds, ["noteWaiting"])
+    XCTAssertEqual(report.destroyedOutboxItemIds, [draftUpload.id])
+    XCTAssertEqual(Set(report.destroyedBinaryIds), [expiredSignature.id, ink.id])
+    XCTAssertTrue(try context.fetchOwned(LocalSoapDraft.self, by: Synthetic.trainerA).isEmpty)
+    XCTAssertFalse(store.fileExists(relativePath: ink.relativePath))
+    XCTAssertFalse(store.fileExists(relativePath: expiredSignature.relativePath))
+    // The retaken capture itself is still live and keeps its signature and consent call.
     XCTAssertEqual(try context.fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).map(\.captureId), ["capture-retaken"])
+    XCTAssertTrue(store.fileExists(relativePath: retakenSignature.relativePath))
+    XCTAssertEqual(try context.fetchOwned(OutboxItem.self, by: Synthetic.trainerA).map(\.id), [retakenConsent.id])
+  }
+
+  func test_TC_DF014_04_failedFileRemovalDoesNotStopTheRunAndIsSweptLater() throws {
+    let now = Synthetic.now
+    let (_, signature) = try insertCapture(id: "capture-old", member: Synthetic.memberA,
+                                           capturedAt: now - LocalRetention.window - minute)
+    let verified = try insertBinary(kind: .ink, verifiedAt: now - LocalRetention.window - minute)
+    try context.save()
+
+    // The signatures folder refuses removals, so the signature file cannot be deleted in the first run.
+    let signaturesFolder = store.location.binariesURL.appendingPathComponent(LocalBinaryKind.signature.folderName)
+    try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: signaturesFolder.path)
+    defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: signaturesFolder.path) }
+
+    let first = try retention.purge(now: now)
+
+    XCTAssertEqual(first.destroyedCaptureIds, ["capture-old"])
+    XCTAssertEqual(first.failedRelativePaths, [signature.relativePath])
+    XCTAssertEqual(first.purgedBinaryIds, [verified.id], "the rest of the run still happened")
+    XCTAssertFalse(store.fileExists(relativePath: verified.relativePath))
+    XCTAssertTrue(store.fileExists(relativePath: signature.relativePath))
+    XCTAssertTrue(try context.fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).isEmpty)
+    XCTAssertEqual(try context.fetchOwned(LocalBinary.self, by: Synthetic.trainerA).map(\.id), [verified.id])
+
+    // Once removals work again, the next run sweeps the file that no row points at.
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: signaturesFolder.path)
+    let later = Date().addingTimeInterval(LocalRetention.orphanGrace + minute)
+    let second = try retention.purge(now: later)
+
+    XCTAssertEqual(second.sweptOrphanPaths, [signature.relativePath])
+    XCTAssertTrue(second.failedRelativePaths.isEmpty)
+    XCTAssertFalse(store.fileExists(relativePath: signature.relativePath))
+  }
+
+  func test_TC_DF014_04_orphanSweepSkipsFilesYoungerThanTheGraceOrStillReferenced() throws {
+    let kept = try insertBinary(kind: .posture, verifiedAt: nil)
+    try context.save()
+    let orphan = try store.write(data: Data("orphan".utf8), ext: "png", kind: .signature)
+
+    let early = try retention.purge(now: Date().addingTimeInterval(LocalRetention.orphanGrace - minute))
+    XCTAssertTrue(early.sweptOrphanPaths.isEmpty, "a file just written may not have its row saved yet")
+    XCTAssertTrue(store.fileExists(relativePath: orphan.relativePath))
+
+    let late = try retention.purge(now: Date().addingTimeInterval(LocalRetention.orphanGrace + minute))
+    XCTAssertEqual(late.sweptOrphanPaths, [orphan.relativePath])
+    XCTAssertFalse(store.fileExists(relativePath: orphan.relativePath))
+    XCTAssertTrue(store.fileExists(relativePath: kept.relativePath))
   }
 
   func test_TC_DF014_04_captureExpiresAtIsCapturedAtPlusWindow() {

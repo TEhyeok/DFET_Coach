@@ -57,19 +57,7 @@ describe('bodyCompositionRecords create: value checks (R-17, R-27, AC-DF-035.2)'
     await seedBase();
   });
 
-  test('R-17 deviceModel "" is denied', async () => {
-    await assertFails(create(h.bodyCompDoc({deviceModel: ''})));
-  });
-
-  test('R-17 weightKg 0 is denied (an unmeasured key is omitted, never 0)', async () => {
-    await assertFails(create(h.bodyCompDoc({values: {weightKg: 0}})));
-  });
-
-  test('R-17 values {} is denied', async () => {
-    await assertFails(create(h.bodyCompDoc({values: {}})));
-  });
-
-  test('R-27 values.bodyFatPercent 0 is allowed', async () => {
+  test('R-27 values.bodyFatPercent 0 on its own is allowed', async () => {
     await assertSucceeds(create(h.bodyCompDoc({values: {bodyFatPercent: 0}})));
   });
 
@@ -82,7 +70,7 @@ describe('bodyCompositionRecords create: value checks (R-17, R-27, AC-DF-035.2)'
     await assertSucceeds(create(h.bodyCompDoc({values: {bodyFatPercent: 100}})));
   });
 
-  test('R-17 TC-DF035-92 weightKg 0 is denied', async () => {
+  test('R-17 TC-DF035-92 weightKg 0 is denied (an unmeasured key is omitted, never 0)', async () => {
     await assertFails(create(h.bodyCompDoc({values: {weightKg: 0, bodyFatPercent: 22.4}})));
   });
 

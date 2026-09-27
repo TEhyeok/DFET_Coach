@@ -214,11 +214,7 @@ function memberSummaryDoc(overrides = {}) {
 
 // ---- DF-035 create 페이로드 생성기 ----
 // 규칙의 create 조건을 모두 만족하는 기본값이다. 테스트는 한 조건만 바꿔 거부 원인을 하나로 좁힌다.
-// createdAt·updatedAt은 serverTimestamp()로 보내 `== request.time`을 만족한다. 시드에는 stored()로 바꿔 넣는다.
-
-function stored(createPayload, overrides = {}) {
-  return {...createPayload, createdAt: hoursAgo(2), updatedAt: hoursAgo(2), ...overrides};
-}
+// createdAt·updatedAt은 serverTimestamp()로 보내 `== request.time`을 만족한다.
 
 function withoutKeys(data, ...keys) {
   const copy = {...data};
@@ -248,7 +244,7 @@ function bodyCompDoc(overrides = {}) {
 }
 
 // MVP 체형 문서 모양(DF-203 MVP 조각): 기본 스테이션 default-v1, 체크리스트 세 불리언 false,
-// levelDeg·pitchDeg 없음, 뷰별 imageRotationDeg 0, landmarkEngine appleVision2D iOS17.4-r1.
+// levelDeg·pitchDeg 없음, 정면·측면 두 뷰 모두 imageRotationDeg 0, landmarkEngine appleVision2D iOS17.4-r1.
 function postureDoc(overrides = {}) {
   return {
     memberUid: IDS.member1,
@@ -263,7 +259,10 @@ function postureDoc(overrides = {}) {
       clothing: 'fitted', barefoot: false, markersPlaced: false, verbalConsentCheck: false,
       cameraHeightCm: 100, cameraDistanceM: 3,
     },
-    views: [{view: 'front', photoPath: null, thumbPath: null, imageRotationDeg: 0, landmarks: []}],
+    views: [
+      {view: 'front', photoPath: null, thumbPath: null, imageRotationDeg: 0, landmarks: []},
+      {view: 'sagittalLeft', photoPath: null, thumbPath: null, imageRotationDeg: 0, landmarks: []},
+    ],
     status: 'draft',
     isBaseline: false,
     legalNature: 'coachingRecord',
@@ -337,7 +336,6 @@ module.exports = {
   rawRecordDoc,
   pendingMemberDoc,
   memberSummaryDoc,
-  stored,
   withoutKeys,
   bodyCompDoc,
   postureDoc,

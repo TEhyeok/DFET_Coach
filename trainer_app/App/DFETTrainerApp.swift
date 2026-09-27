@@ -13,7 +13,7 @@ struct DFETTrainerApp: App {
 
   var body: some Scene {
     WindowGroup {
-      AppRootView(environment: Self.environment, liveAuth: Self.liveAuth, liveServices: AppBootstrap.liveServices)
+      AppRootView(environment: Self.environment, liveAuth: Self.liveAuth, liveServices: AppBootstrap.liveServices(session:))
     }
   }
 }

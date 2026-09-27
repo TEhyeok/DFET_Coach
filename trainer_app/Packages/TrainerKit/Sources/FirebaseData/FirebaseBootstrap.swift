@@ -4,6 +4,7 @@ import FirebaseCore
 import FirebaseFirestore
 import FirebaseFunctions
 import Foundation
+import os
 
 /// Which Firebase backend the app talks to. The App target decides this in
 /// `LaunchConfiguration` and never imports Firebase itself (V1-04 §8.1, ASM-04-03).
@@ -52,6 +53,11 @@ public enum FirebaseBootstrap {
   /// `.production` reads the bundled `GoogleService-Info.plist`. `.emulator` never reads it: the app is
   /// configured from synthetic `emulatorOptions()` (project `demo-dfet`) and App Check uses a local
   /// provider, so no request can reach the production project.
+  private static let configuredEmulatorHost = OSAllocatedUnfairLock<String?>(initialState: nil)
+
+  /// The emulator host `configure` used, or nil for production. Logout re-applies the Firestore settings with it.
+  static var emulatorHost: String? { configuredEmulatorHost.withLock { $0 } }
+
   public static func configure(_ environment: FirebaseEnvironment) {
     AppCheck.setAppCheckProviderFactory(makeAppCheckProviderFactory(for: environment))
     switch environment {
@@ -64,6 +70,7 @@ public enum FirebaseBootstrap {
     var emulatorHost: String?
     if case let .emulator(host) = environment {
       emulatorHost = host
+      configuredEmulatorHost.withLock { $0 = host }
       Auth.auth().useEmulator(withHost: host, port: EmulatorPort.auth)
       StorageFactory.useEmulator(host: host, port: EmulatorPort.storage)
       Functions.functions(region: functionsRegion).useEmulator(withHost: host, port: EmulatorPort.functions)

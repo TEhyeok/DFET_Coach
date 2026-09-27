@@ -16,6 +16,14 @@ struct PreviewRootView: View {
   @State private var memberGate = PreviewMemberGate()
   /// TR-14 registrations of this launch (DF-108), in memory.
   @State private var registrar = PreviewPendingMemberRegistrar()
+  /// TR-15's Outbox view (DF-018), in memory.
+  @State private var queue: PreviewSyncQueue
+
+  init(preview: PreviewEnvironment) {
+    self.preview = preview
+    _queue = State(initialValue: PreviewSyncQueue(
+      failed: preview.scenario == .queueFailed ? PreviewSyncQueue.syntheticFailures() : []))
+  }
 
   var body: some View {
     Group {
@@ -43,7 +51,8 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        registrar: registrar))
+        registrar: registrar, syncQueue: queue, signOut: PreviewSessionSignOut(auth: auth),
+        accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)

@@ -737,7 +737,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
     - 네트워크 변화는 한 소비자가 순서대로 적용하고, 전경 복귀 때 현재 경로를 다시 읽는다.
     - 저장 성공 뒤 '다음'은 계속 꺼 두고, 등록 시트(저장 중·후)와 동의 시트는 쓸어내려 닫을 수 없다(V1-07 §3.2). 만 14세 차단 문구는 VoiceOver로 알린다.
     - 쓰지 않던 `AgeGate.selectableYears`는 지웠다.
-  - 편차: [V1-04 §9.3](../04_ARCHITECTURE.md)의 열 수 없는 저장소 격리(`Quarantine/`)와 복구 안내 화면은 아직 없다. 지금은 로그를 남기고 등록 저장이 `common.devDefect`로 실패한다. 담당은 DF-018(세션 수명 주기, `save_failure_shown(localStore)`)이다.
+  - 편차: [V1-04 §9.3](../04_ARCHITECTURE.md)의 열 수 없는 저장소 격리(`Quarantine/`)와 복구 안내 화면은 아직 없다. 지금은 로그를 남기고 등록 저장이 `common.devDefect`로 실패한다. DF-018이 넘겨받아 MVP 뒤 재계획으로 남겼다(DF-018 구현 기록).
 
 ---
 

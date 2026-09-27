@@ -28,9 +28,9 @@ final class PendingMemberEmulatorTests: XCTestCase {
     try await EmulatorDocuments.put("trainers/\(trainer.uid)", [
       "trainerId": trainer.uid, "memberIds": [String](), "approvalStatus": "approved",
     ])
-    _ = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
+    let session = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
 
-    let services = AppBootstrap.liveServices(trainerUid: trainer.uid)
+    let services = AppBootstrap.liveServices(session: session)
     let draft = PendingMemberDraft(displayName: "가상 대기 회원", sex: .unspecified, birthYear: 1990, ageConfirmed14: true)
     let id = try await services.registrar.register(draft)
     XCTAssertTrue(DocumentID.isValid(id))
@@ -57,8 +57,8 @@ final class PendingMemberEmulatorTests: XCTestCase {
     try await EmulatorDocuments.put("trainers/\(trainer.uid)", [
       "trainerId": trainer.uid, "memberIds": [String](), "approvalStatus": "approved",
     ])
-    _ = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
-    let services = AppBootstrap.liveServices(trainerUid: trainer.uid)
+    let session = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
+    let services = AppBootstrap.liveServices(session: session)
     try Auth.auth().signOut()
 
     let draft = PendingMemberDraft(displayName: "가상 대기 회원", sex: .female, birthYear: 1991, ageConfirmed14: true)

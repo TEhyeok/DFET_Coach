@@ -73,3 +73,9 @@ public enum TrainerClaims {
     return false
   }
 }
+
+/// Logout as TR-15 runs it (DF-018, V1-04 §12.2): stop sending, drop listeners and the Firestore cache, sign out, and
+/// remove the local rows and files the server already has. Unsynced records stay for the same trainer (ASM-P0-17).
+public protocol SessionSignOut: Sendable {
+  func signOut() async throws
+}

@@ -73,6 +73,9 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
+  /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
+  let container: ModelContainer
+  let location: LocalStoreLocation
   private let sessions: () -> AsyncStream<TrainerSession?>
   private var sessionTask: Task<Void, Never>?
   /// Set while sending runs: a new path monitor, its ordered consumer and the app lifecycle observers.
@@ -90,6 +93,8 @@ final class SessionRuntime {
     self.trainerUid = trainerUid
     let location = try LocalStoreLocation.inApplicationSupport(trainerUid: trainerUid)
     let container = try LocalStoreContainer.make(location: location)
+    self.container = container
+    self.location = location
     let outbox = LocalOutboxStore(container: container, trainerUid: trainerUid, binaries: LocalBinaryStore(location: location))
     let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote)
     let engine = SyncEngine(store: outbox, writer: bound, uploader: bound, callable: bound)
@@ -153,6 +158,23 @@ final class SessionRuntime {
     Task { await engine.start() }
   }
 
+  /// Logout step ② (V1-04 §12.2): the runtime stops following the session and sending, and an item already being
+  /// sent gets up to `drainTimeout` to finish before Firestore is terminated under it. One cut off stays unsynced on
+  /// the device. `activate()` undoes this when the logout fails.
+  func stopSending(drainTimeout: Duration) async {
+    sessionTask?.cancel()
+    sessionTask = nil
+    suspend()
+    let engine = engine
+    await engine.stop()
+    await withTaskGroup(of: Void.self) { group in
+      group.addTask { await engine.waitUntilIdle() }
+      group.addTask { try? await Task.sleep(for: drainTimeout) }
+      await group.next()
+      group.cancelAll()
+    }
+  }
+
   private func suspend() {
     guard let triggers else { return }
     triggers.monitor.cancel()
@@ -186,12 +208,34 @@ final class SessionRuntime {
 
   struct LocalStoreUnavailable: Error {}
 
+  /// The TR-15 queue when the LocalStore could not be opened: nothing is pending, nothing to retry.
+  struct UnavailableSyncQueue: SyncQueueService {
+    func pendingCount() async -> AsyncStream<Int> { AsyncStream { $0.yield(0) } }
+    func failedItems() async -> AsyncStream<[OutboxItem]> { AsyncStream { $0.yield([]) } }
+    func retry(_ id: UUID) async {}
+    func retryAll() async {}
+  }
+
   /// One runtime at a time: the current trainer's, created on first use and kept across view updates. Another
-  /// trainer's sign-in replaces it (DF-018 adds the full sign-out teardown).
+  /// trainer's sign-in replaces it; logout retires it (DF-018).
   @MainActor
   final class Cache {
     static let shared = Cache()
     private var current: SessionRuntime?
+
+    /// Takes `trainerUid`'s runtime out, so a sign-in after this gets a fresh one (logout ⑦, V1-04 §12.2).
+    func retire(trainerUid: String) -> SessionRuntime? {
+      guard let current, current.trainerUid == trainerUid else { return nil }
+      self.current = nil
+      return current
+    }
+
+    /// Puts back a runtime whose logout failed; the trainer is still signed in, so it sends again.
+    func reinstate(_ runtime: SessionRuntime) {
+      guard current == nil else { return }
+      current = runtime
+      runtime.activate()
+    }
 
     func runtime(trainerUid: String, remote: () -> SyncRemote) -> SessionRuntime? {
       if let current, current.trainerUid == trainerUid { return current }

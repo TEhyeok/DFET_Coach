@@ -1,4 +1,4 @@
-/// Module marker for FeatureSettings (DF-008 skeleton; real code arrives with later stories).
+/// Module marker for FeatureSettings (TR-15, DF-018).
 public enum FeatureSettingsModule {
   public static let name = "FeatureSettings"
 }

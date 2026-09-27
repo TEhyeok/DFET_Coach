@@ -409,15 +409,36 @@ extension JSONValue {
   /// The form LocalStore keeps a payload in (`OutboxItem.payloadJSON`, DF-108): the fixture notation, so the
   /// Firestore-only cases (`int`, `timestamp`, `serverTimestamp`, `bytes`) survive the round trip. Non-finite numbers
   /// become `null`, as in JSON.
+  ///
+  /// An object key that starts with `$` would read back as a tag, so every key that starts with `$` or `~` is stored
+  /// with one more `~` in front and read back without it.
   public func storageData() -> Data {
     var out = ""
-    CanonicalJSONWriter(ranks: [:]).write(self, indent: 0, into: &out)
+    let stored = Self.mappingKeys(self) { Self.needsEscape($0) ? "~" + $0 : $0 }
+    CanonicalJSONWriter(ranks: [:]).write(stored, indent: 0, into: &out)
     return Data(out.utf8)
   }
 
   public init(storageData data: Data) throws {
     let json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
-    self = try Self.fromFixtureNotation(json, at: "storage")
+    self = Self.mappingKeys(try Self.fromFixtureNotation(json, at: "storage")) {
+      $0.hasPrefix("~") ? String($0.dropFirst()) : $0
+    }
+  }
+
+  private static func needsEscape(_ key: String) -> Bool {
+    key.hasPrefix("$") || key.hasPrefix("~")
+  }
+
+  private static func mappingKeys(_ value: JSONValue, _ transform: (String) -> String) -> JSONValue {
+    switch value {
+    case let .array(items):
+      return .array(items.map { mappingKeys($0, transform) })
+    case let .object(object):
+      return .object(Dictionary(uniqueKeysWithValues: object.map { (transform($0.key), mappingKeys($0.value, transform)) }))
+    default:
+      return value
+    }
   }
 }
 

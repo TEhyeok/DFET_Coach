@@ -210,6 +210,36 @@ final class SyncEngineTests: XCTestCase {
     XCTAssertEqual(done?.state, .acked)
   }
 
+  /// DF-108 H1: a reply that the Outbox's trainer is not signed in never fails an item or spends an attempt; sending
+  /// waits for `start()` (the session is back), even across the one-minute `retryExhausted()` tick.
+  func testSignedOutPausesWithoutFailingUntilTheNextStart() async {
+    let clock = TestClock()
+    let remote = FakeRemote()
+    let engine = makeEngine(remote: remote, clock: clock)
+    remote.fail("soap_notes/n1", with: [.signedOut])
+    let first = OutboxFixtures.create(member: "m1", note: "n1")
+    let other = OutboxFixtures.create(member: "m2", note: "n2")
+    await engine.enqueue(first)
+    await engine.start()
+    await idle(engine)
+
+    let waiting = await engine.item(first.id)
+    XCTAssertEqual(waiting?.state, .queued)
+    XCTAssertEqual(waiting?.attempts, 0)
+    await engine.enqueue(other)
+    clock.advance(by: 3600)
+    await engine.retryExhausted()
+    await idle(engine)
+    XCTAssertEqual(remote.calls.count, 1, "nothing is sent while signed out")
+
+    await engine.start()
+    await idle(engine)
+    let done = await engine.item(first.id)
+    let otherDone = await engine.item(other.id)
+    XCTAssertEqual(done?.state, .acked)
+    XCTAssertEqual(otherDone?.state, .acked)
+  }
+
   func testUnverifiedUploadIsRetried() async {
     let remote = FakeRemote()
     let engine = makeEngine(remote: remote)

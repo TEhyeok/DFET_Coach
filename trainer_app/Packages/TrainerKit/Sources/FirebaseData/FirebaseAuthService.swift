@@ -82,6 +82,11 @@ public final class FirebaseAuthService: AuthService, Sendable {
     }
   }
 
+  /// The signed-in user's uid right now, whatever the claims (the SyncEngine's per-send session check).
+  public static func currentUid() -> String? {
+    Auth.auth().currentUser?.uid
+  }
+
   public func sessionStream() -> AsyncStream<TrainerSession?> {
     AsyncStream { continuation in
       let handle = Auth.auth().addIDTokenDidChangeListener { [self] _, user in

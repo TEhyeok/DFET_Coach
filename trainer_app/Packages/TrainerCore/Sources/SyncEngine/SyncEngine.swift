@@ -29,6 +29,8 @@ public enum SyncEngineModule {
 ///   resends a rule rejection.
 /// - `protectedDataUnavailable` (device locked, ASM-P0-29) and a failed local save pause sending until
 ///   `protectedDataDidBecomeAvailable()` or `start()`; the attempt is not counted.
+/// - `signedOut` (the Outbox's trainer is not the signed-in user) pauses sending until `start()`, which the app calls
+///   when that trainer's session is back; the attempt is not counted and nothing fails.
 ///
 /// State
 /// - Every in-memory transition happens without a suspension point, then `flush()` writes the changed items to the
@@ -61,9 +63,12 @@ public actor SyncEngine {
   private var running = false
   private var pausedForLock = false
   private var pausedForStorage = false
+  private var pausedForSession = false
   private var networkReachable = true
   /// Increments on every unlock, so a `protectedDataUnavailable` reply from before the unlock does not pause again.
   private var unlockEpoch = 0
+  /// Increments on every `start()`, so a `signedOut` reply from before the session came back does not pause again.
+  private var sessionEpoch = 0
   private var activeMembers: Set<MemberKey> = []
   private var wakeup: (at: Date, task: Task<Void, Never>)?
   private var dirty: Set<UUID> = []
@@ -137,6 +142,8 @@ public actor SyncEngine {
     unlockEpoch += 1  // foreground means unlocked: a lock reply from before this must not pause again
     pausedForLock = false
     pausedForStorage = false
+    sessionEpoch += 1
+    pausedForSession = false
     pump()
     await flush()
   }
@@ -385,7 +392,7 @@ public actor SyncEngine {
   // MARK: - Scheduling
 
   private var canSend: Bool {
-    running && !pausedForLock && !pausedForStorage && networkReachable
+    running && !pausedForLock && !pausedForStorage && !pausedForSession && networkReachable
   }
 
   private func pump() {
@@ -518,7 +525,7 @@ public actor SyncEngine {
       return
     }
 
-    let epoch = unlockEpoch
+    let epochs = (unlock: unlockEpoch, session: sessionEpoch)
     let result: Result<OutboxAck, Error>
     do {
       result = .success(try await perform(item))
@@ -535,7 +542,7 @@ public actor SyncEngine {
       current.lastErrorCode = nil
       items[id] = current
     case let .failure(error):
-      apply(error, to: &current, unlockEpochAtStart: epoch)
+      apply(error, to: &current, epochsAtStart: epochs)
       items[id] = current
     }
     markDirty(id)
@@ -601,7 +608,7 @@ public actor SyncEngine {
   }
 
   /// Applies a failed attempt to `item` synchronously.
-  private func apply(_ error: Error, to item: inout OutboxItem, unlockEpochAtStart epoch: Int) {
+  private func apply(_ error: Error, to item: inout OutboxItem, epochsAtStart epochs: (unlock: Int, session: Int)) {
     let code: String
     let disposition: RetryPolicy.Disposition
     switch error {
@@ -629,8 +636,15 @@ public actor SyncEngine {
       item.attempts -= 1
       item.state = .queued
       item.nextAttemptAt = clock.now()
-      if unlockEpoch == epoch {
+      if unlockEpoch == epochs.unlock {
         pausedForLock = true  // no unlock arrived while the call was out
+      }
+    case .waitForSession:
+      item.attempts -= 1
+      item.state = .queued
+      item.nextAttemptAt = clock.now()
+      if sessionEpoch == epochs.session {
+        pausedForSession = true  // the session did not come back while the call was out
       }
     }
     let outcome = item.state == .failed ? "failed" : "deferred"

@@ -66,6 +66,9 @@ public enum RemoteError: Error, Equatable, Sendable {
   case deadlineExceeded
   /// The device is locked and `NSFileProtectionComplete` files cannot be read (ASM-P0-29).
   case protectedDataUnavailable
+  /// The trainer the Outbox belongs to is not the signed-in user (signed out, claim lost, or another trainer). Nothing
+  /// was sent; the item waits for that trainer's next session (DF-108 H1).
+  case signedOut
   case unknown(String)
 
   /// Stable code stored in `OutboxItem.lastErrorCode` and shown to support. Never contains paths or uids.
@@ -79,6 +82,7 @@ public enum RemoteError: Error, Equatable, Sendable {
     case .unavailable: return "unavailable"
     case .deadlineExceeded: return "deadline-exceeded"
     case .protectedDataUnavailable: return "protected-data-unavailable"
+    case .signedOut: return "signed-out"
     case .unknown: return "unknown"
     }
   }

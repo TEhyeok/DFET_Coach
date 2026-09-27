@@ -78,6 +78,7 @@ struct RootSplitView: View {
               }
             }
         }
+        .interactiveDismissDisabled()  // V1-07 §3.2: `.consent` is `sheet(.large, interactiveDismissDisabled)`
         // The member key is a random pending ID, not personal data; UI tests read it (AC-DF-108.4).
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("tr14.consent.root")

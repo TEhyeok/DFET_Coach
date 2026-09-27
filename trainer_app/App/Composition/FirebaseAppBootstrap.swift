@@ -39,7 +39,8 @@ extension AppBootstrap {
     let runtime = SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
       SyncRemote(
         writer: liveRemoteWriter(trainerUid: trainerUid), uploader: StorageBinaryUploader(),
-        callable: FunctionsCallableClient())
+        callable: FunctionsCallableClient(), currentUid: { FirebaseAuthService.currentUid() },
+        sessions: { liveAuthService().sessionStream() })
     }
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),

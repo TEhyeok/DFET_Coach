@@ -24,7 +24,7 @@ public struct EmptyState: View {
     VStack(spacing: TrainerSpacing.m) {
       Image(systemName: systemImage)
         .font(.largeTitle)
-        .foregroundStyle(TrainerColor.neutral400)
+        .foregroundStyle(TrainerColor.neutral500)
         .accessibilityHidden(true)
       Text(localize(titleKey))
         .font(.headline)

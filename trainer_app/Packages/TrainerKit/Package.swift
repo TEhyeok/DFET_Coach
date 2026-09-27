@@ -44,7 +44,7 @@ let package = Package(
       // FirebaseAnalytics is not linked before G-09 (ADR-015, ASM-04-11).
     ]),
     .target(name: "PostureVision", dependencies: core + [.product(name: "PostureMath", package: "TrainerCore")]),
-    .target(name: "DesignSystem", dependencies: core + [.product(name: "PostureMath", package: "TrainerCore")]),
+    .target(name: "DesignSystem", dependencies: core),
     .target(name: "FeatureAuth", dependencies: featureDeps),
     .target(name: "FeatureToday", dependencies: featureDeps),
     .target(name: "FeatureMembers", dependencies: featureDeps),

@@ -13,15 +13,21 @@ final class SyncStateBadgeTests: XCTestCase {
     XCTAssertEqual(words, ["기기에 저장됨", "동기화 중", "동기화됨", "동기화 실패", "동의 확인 대기"])
   }
 
-  /// AC-DF-016.2 by behaviour: the badge is green exactly for `.synced`, in light and dark.
+  /// AC-DF-016.2 by behaviour: every state has its token, and only `.synced` is green, in light and dark.
   func test_AC_DF_016_2_onlySyncedIsGreen() {
     func resolved(_ color: Color, _ style: UIUserInterfaceStyle) -> UIColor {
       UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
     }
+    let expected: [SyncState: Color] = [
+      .localSaved: TrainerColor.neutral600, .syncing: TrainerColor.neutral600, .synced: TrainerColor.success,
+      .syncFailed: TrainerColor.danger, .awaitingConsent: TrainerColor.caution,
+    ]
     for style in [UIUserInterfaceStyle.light, .dark] {
       let green = resolved(TrainerColor.success, style)
       for state in SyncState.allCases {
-        XCTAssertEqual(resolved(SyncStateBadge.tint(state), style) == green, state == .synced, "\(state) \(style.rawValue)")
+        let tint = resolved(SyncStateBadge.tint(state), style)
+        XCTAssertEqual(tint, resolved(expected[state]!, style), "\(state) \(style.rawValue)")
+        XCTAssertEqual(tint == green, state == .synced, "\(state) \(style.rawValue)")
       }
     }
   }

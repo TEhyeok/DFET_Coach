@@ -4,7 +4,8 @@ import SwiftUI
 import TrainerContracts
 import XCTest
 
-/// TC-DF016-01: SyncStateBadge in its five states, light and dark.
+/// TC-DF016-01: SyncStateBadge in its five states, light and dark; MetricRow as drawn (chip and date included) at
+/// the default size and at xxxLarge in a 320 pt column (1/3 Split View), light and dark.
 ///
 /// References belong to one simulator runtime, the one CI pins (`DFET_SIM_RUNTIME` in trainer-app.yml, V1-10). Other
 /// runtimes draw text differently: locally they skip, on CI (`CI=1`) they fail, so a runner image update cannot
@@ -46,6 +47,36 @@ final class SyncStateBadgeSnapshotTests: XCTestCase {
                      traits: UITraitCollection(userInterfaceStyle: style)),
           named: "\(state.rawValue)-\(style == .dark ? "dark" : "light")",
           record: recording)
+      }
+    }
+  }
+
+  func test_TC_DF016_01_metricRowsLightDarkAndLargeText() throws {
+    let localize = try AppCatalog.localizer()
+    let seoul = TimeZone(identifier: "Asia/Seoul")!
+    let measured = Date(timeIntervalSince1970: 1_790_000_000)
+    let rows = [
+      MetricRowModel(code: .weightKg, value: 72.4, sourceGrade: .device, deviceModel: "합성 체성분 기기", measuredAt: measured),
+      MetricRowModel(code: .shoulderTiltAngle, value: 1.3, side: .left, sourceGrade: .photoAuto, measuredAt: measured),
+      MetricRowModel(code: .waistCircumference, value: 80.2, sourceGrade: .tape, measuredAt: measured),
+    ]
+    let sizes: [(String, UIContentSizeCategory)] = [("default", .large), ("xxxl", .extraExtraExtraLarge)]
+    for style in [UIUserInterfaceStyle.light, .dark] {
+      for (sizeName, size) in sizes {
+        let view = VStack(alignment: .leading, spacing: TrainerSpacing.s) {
+          ForEach(rows, id: \.code) { MetricRow(metric: $0, localize: localize, timeZone: seoul) }
+        }
+        .padding(TrainerSpacing.s)
+        .frame(width: 320, height: 560, alignment: .topLeading)
+        .background(Color(uiColor: .systemBackground))
+        let traits = UITraitCollection(traitsFrom: [
+          UITraitCollection(userInterfaceStyle: style), UITraitCollection(preferredContentSizeCategory: size),
+        ])
+        assertSnapshot(
+          // A fixed frame, like a List row gets: `.sizeThatFits` measures without a width proposal, and ViewThatFits
+          // then reports the wide candidate's height while drawing the stacked one.
+          of: view, as: .image(perceptualPrecision: 0.98, layout: .fixed(width: 320, height: 560), traits: traits),
+          named: "rows-\(sizeName)-\(style == .dark ? "dark" : "light")", record: recording)
       }
     }
   }

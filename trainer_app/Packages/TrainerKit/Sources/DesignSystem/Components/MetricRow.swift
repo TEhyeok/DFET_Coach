@@ -1,4 +1,3 @@
-import PostureMath
 import SwiftUI
 import TrainerContracts
 
@@ -53,32 +52,23 @@ public struct MetricRow: View {
 
   public var body: some View {
     if Self.isShown(metric), let grade = metric.sourceGrade {
-      let layout = dynamicTypeSize.isAccessibilitySize
-        ? AnyLayout(VStackLayout(alignment: .leading, spacing: TrainerSpacing.xs))
-        : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: TrainerSpacing.m))
-      layout {
-        VStack(alignment: .leading, spacing: TrainerSpacing.xxs) {
-          Text(localize("metric.\(metric.code.rawValue).name"))
-            .font(.subheadline)
-          if let side = Self.sideText(metric, localize: localize) {
-            Text(side)
-              .font(.caption)
-              .foregroundStyle(TrainerColor.neutral600)
+      // Side by side when everything fits at its natural size; otherwise stacked, so nothing is clipped or
+      // truncated at large text sizes or in a narrow (1/3 Split View) column (AC-A11Y-02).
+      ViewThatFits(in: .horizontal) {
+        HStack(alignment: .firstTextBaseline, spacing: TrainerSpacing.m) {
+          nameAndSide
+          Spacer(minLength: TrainerSpacing.s)
+          VStack(alignment: .trailing, spacing: TrainerSpacing.xxs) {
+            value
+            HStack(spacing: TrainerSpacing.s) { chipAndDate(grade) }
           }
         }
-        if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: TrainerSpacing.s) }
-        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: TrainerSpacing.xxs) {
-          Text(Self.valueText(metric) + localize("unit.\(Self.unit(metric).rawValue)"))
-            .font(.body.monospacedDigit().weight(.semibold))
-            .fixedSize()
-          HStack(spacing: TrainerSpacing.s) {
-            SourceGradeChip(grade: grade, deviceModel: metric.deviceModel, localize: localize)
-            Text(Self.dateText(metric.measuredAt, timeZone: timeZone))
-              .font(.caption.monospacedDigit())
-              .foregroundStyle(TrainerColor.neutral600)
-              .fixedSize()
-          }
+        VStack(alignment: .leading, spacing: TrainerSpacing.xs) {
+          nameAndSide
+          value
+          chipAndDate(grade)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
       }
       .frame(minHeight: TrainerSpacing.minTapTarget)
       .accessibilityElement(children: .ignore)
@@ -87,15 +77,43 @@ public struct MetricRow: View {
     }
   }
 
+  private var nameAndSide: some View {
+    VStack(alignment: .leading, spacing: TrainerSpacing.xxs) {
+      Text(localize("metric.\(metric.code.rawValue).name"))
+        .font(.subheadline)
+      if let side = Self.sideText(metric, localize: localize) {
+        Text(side)
+          .font(.caption)
+          .foregroundStyle(TrainerColor.neutral600)
+      }
+    }
+  }
+
+  private var value: some View {
+    Text(Self.valueText(metric) + localize("unit.\(Self.unit(metric).rawValue)"))
+      .font(.body.monospacedDigit().weight(.semibold))
+  }
+
+  @ViewBuilder
+  private func chipAndDate(_ grade: SourceGrade) -> some View {
+    SourceGradeChip(grade: grade, deviceModel: metric.deviceModel, localize: localize)
+    Text(Self.dateText(metric.measuredAt, timeZone: timeZone))
+      .font(.caption.monospacedDigit())
+      .foregroundStyle(TrainerColor.neutral600)
+  }
+
   static func unit(_ metric: MetricRowModel) -> MetricUnit {
     MetricCatalog.entry(for: metric.code).unit
   }
 
-  /// The catalog's decimals with V1-09's rounding (half away from zero, no negative zero), and U+2212 for negatives
-  /// so VoiceOver reads '마이너스' (V1-12 §2.6).
+  /// The catalog's decimals with V1-09 §1.3 rounding (half away from zero, no negative zero; the same operation as
+  /// `PostureMath.Rounding.roundHalfAway`, repeated here because V1-04 §7.1 gives DesignSystem no PostureMath
+  /// dependency), and U+2212 for negatives so VoiceOver reads '마이너스' (V1-12 §2.6).
   public static func valueText(_ metric: MetricRowModel) -> String {
     let decimals = MetricCatalog.entry(for: metric.code).decimals
-    let rounded = Rounding.roundHalfAway(metric.value, digits: decimals)
+    let factor = pow(10.0, Double(decimals))
+    let magnitude = (abs(metric.value) * factor).rounded(.toNearestOrAwayFromZero) / factor
+    let rounded = magnitude == 0 ? 0 : (metric.value < 0 ? -magnitude : magnitude)
     let text = String(format: "%.\(decimals)f", locale: Locale(identifier: "en_US_POSIX"), abs(rounded))
     return rounded < 0 ? "\u{2212}" + text : text
   }
@@ -108,7 +126,8 @@ public struct MetricRow: View {
       let word = MetricCatalog.entry(for: metric.code).sideRule == .magnitudeWithHigherSide ? "higher" : "lower"
       switch metric.side {
       case .left, .right: return localize("side.\(word).\(metric.side.rawValue)")
-      case .none, .bilateral: return localize("side.level")
+      case .none: return localize("side.level")
+      case .bilateral: return nil  // not a value this rule produces
       }
     case .leftRight, .leftRightBilateral:
       return metric.side == .none ? nil : localize("side.\(metric.side.rawValue)")

@@ -1,3 +1,5 @@
+import Foundation
+import SyncEngine
 import TrainerDomain
 import XCTest
 
@@ -96,9 +98,27 @@ final class AppEnvironmentTests: XCTestCase {
     XCTAssertEqual(pending.map(\.displayName), ["SYN-P001", "SYN-P002", "SYN-P003"])
     XCTAssertTrue(pending.allSatisfy { DocumentID.isValid($0.id) }, "the rules' pending ID shape")
     let keys = rows.map { MemberKey.uid($0.id) } + pending.map { MemberKey.pending($0.id) }
-    XCTAssertEqual(Set(keys), Set(preview.consentScript.keys))
-    XCTAssertEqual(Set(preview.consentScript.values.map(\.chipState)), [.coreGranted, .needed, .awaiting])
-    XCTAssertEqual(PreviewEnvironment(arguments: ["--preview-members"]).consentScript, [:])
+    let script = preview.consentScript
+    XCTAssertTrue(script.members.isSubset(of: Set(keys)), "the script names listed members only")
+    // Through the real resolver, as TR-02 reads it: every MVP chip state, in the rows' order.
+    let chips = keys.map {
+      EffectiveConsentResolver.resolve(server: script.states[$0], captures: script.captures[$0] ?? [],
+                                       serverObservedAt: Date()).chipState
+    }
+    XCTAssertEqual(chips, [.coreGranted, .needed, .awaiting, .coreGranted, .needed])
+    for (member, captures) in script.captures {
+      XCTAssertTrue(captures.allSatisfy { $0.member == member && !$0.selections.isEmpty }, "\(member)")
+    }
+    XCTAssertEqual(PreviewEnvironment(arguments: ["--preview-members"]).consentScript, PreviewConsentScript())
+  }
+
+  /// `--preview-consent-confirm` is a modifier (DF-113 wiring test), not a scenario.
+  func testConsentConfirmModifier() {
+    let preview = PreviewEnvironment(arguments: ["--preview-members", "--preview-consent-confirm"])
+    XCTAssertEqual(preview.scenario, .members)
+    XCTAssertTrue(preview.confirmsConsent)
+    XCTAssertEqual(preview.unknownArguments, [])
+    XCTAssertFalse(PreviewEnvironment(arguments: ["--preview-members"]).confirmsConsent)
   }
 
 

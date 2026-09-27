@@ -119,7 +119,9 @@ public struct ConsentStepView: View {
         .multilineTextAlignment(.center)
         .accessibilityIdentifier("tr14.consent.returnToTrainer")
       if let chip = model.chip {
-        ConsentChip(state: chip, localize: localize)
+        // The same DesignSystem chip as TR-02's rows (DF-113).
+        ConsentChip(state: chip, style: .result, localize: localize)
+          .accessibilityIdentifier("tr14.consent.result")
       } else {
         ProgressView()
       }
@@ -185,46 +187,6 @@ private struct ConsentCard: View {
       .accessibilityLabel(Text(typeName + " " + localize(key)))
       .accessibilityAddTraits(selected ? .isSelected : [])
       .accessibilityIdentifier(key + "." + type.rawValue)
-    }
-  }
-}
-
-/// The member's consent after the capture: '동의 ①②③' / '동의 확인 대기' / '동의 필요' (`ConsentChipState`). Green is
-/// reserved for the synced state (AC-DF-016.2), so a granted chip is brand blue.
-private struct ConsentChip: View {
-  let state: ConsentChipState
-  let localize: Localizer
-
-  var body: some View {
-    let text = localize(state.copyKey)
-    Label {
-      Text(text)
-    } icon: {
-      Image(systemName: symbol)
-    }
-    .font(.headline)
-    .foregroundStyle(tint)
-    .padding(.horizontal, TrainerSpacing.m)
-    .padding(.vertical, TrainerSpacing.s)
-    .background(Capsule().fill(TrainerColor.neutral100))
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(Text(text))
-    .accessibilityIdentifier("tr14.consent.result")
-  }
-
-  private var symbol: String {
-    switch state {
-    case .coreGranted: return "checkmark.seal"
-    case .awaiting: return "hourglass"
-    case .needed: return "exclamationmark.circle"
-    }
-  }
-
-  private var tint: Color {
-    switch state {
-    case .coreGranted: return TrainerColor.brandBlue
-    case .awaiting: return TrainerColor.caution
-    case .needed: return TrainerColor.neutral700
     }
   }
 }

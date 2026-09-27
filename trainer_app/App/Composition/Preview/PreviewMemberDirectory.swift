@@ -56,15 +56,4 @@ final class PreviewMemberGate: @unchecked Sendable {
     lock.withLock { released = true }
   }
 }
-
-/// DEBUG preview consent (DF-113): each member's scripted `EffectiveConsent`, or no consent at all (`.none`) for a
-/// member the script does not name, such as one registered in this launch.
-struct PreviewConsentSource: EffectiveConsentSource {
-  let script: [MemberKey: EffectiveConsent]
-
-  func observe(member: MemberKey) -> AsyncStream<EffectiveConsent> {
-    let value = script[member] ?? .none
-    return AsyncStream { $0.yield(value) }
-  }
-}
 #endif

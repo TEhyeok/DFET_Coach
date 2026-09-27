@@ -62,7 +62,7 @@ struct MemberRow: View {
   @ViewBuilder
   private var consentChip: some View {
     if let chip {
-      ConsentStatusChip(state: chip)
+      ConsentChip(state: chip)  // DesignSystem, shared with TR-14's result
     }
   }
 }

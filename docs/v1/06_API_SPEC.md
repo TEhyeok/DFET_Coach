@@ -380,6 +380,7 @@ action별 metadataKeys(정본은 `contracts/audit-actions.v1.json`, DF-033)
   "$id": "common",
   "$defs": {
     "DocId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" },
+    "ConsentDocumentVersionId": { "type": "string", "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9_.-]{1,128}$", "description": "consentDocumentVersions 문서 ID `{consentType}--{version}`(V1-05 §4.13, ASM-05-15). 버전에 '.'이 있으므로(`healthData--1.0`) DocId와 달리 '.'을 허용하고 '.'·'..'만 막는다" },
     "RequestId": { "type": "string", "format": "uuid" },
     "ClientCaptureId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,64}$", "description": "recordConsent 전용 멱등 키. 트레이너 앱은 LocalConsentCapture.captureId(UUID 문자열), 회원 앱은 호출마다 만든 UUID v4(§6.2.5, V1-05 ASM-05-12)" },
     "IsoTime": { "type": "string", "format": "date-time" },
@@ -664,7 +665,7 @@ function resolveAccessKey(collection, record, ctx) {
         "properties": {
           "consentType": { "$ref": "common#/$defs/ConsentType" },
           "action": { "$ref": "common#/$defs/ConsentAction" },
-          "documentVersion": { "$ref": "common#/$defs/DocId", "description": "consentDocumentVersions 문서 ID" }
+          "documentVersion": { "$ref": "common#/$defs/ConsentDocumentVersionId", "description": "consentDocumentVersions 문서 ID" }
         }
       }
     },
@@ -2654,3 +2655,4 @@ Q-DEV-01·02는 다른 문서(ADR-015, AS-DEV-08)에서 이미 쓴다.
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 배포 명령 --project, consentDocumentVersions ID `--`, markSummaryViewed DF-335·MB-02·MB-04, §8.6 Outbox 이름을 V1-05에 맞춤, §7.8 audit-reviews 추가, 시드 경로, CF-06-NN·ASM-06-NN 이름 변경 |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: R2·R5·R7·R10 결정 반영(ASM-06-32~34), §7.8 추가 |
 | v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109 MVP 구현) | §6.2.6에 MVP 전용 `consent.unsupportedInMvp` 추가. 구현 편차는 [DF-109 구현 기록](backlog/P1a.md#df-109-recordconsent와-memberconsentstates-파생서명-저장을-구현한다) |
+| v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109~DF-113 MVP 통합) | §3.12에 `ConsentDocumentVersionId`를 더하고 §6.2.1 `documentVersion`이 그것을 쓰게 함: `DocId`에는 '.'이 없어 V1-05 §4.13 ID(`healthData--1.0`)와 모순이었다(DF-110이 보고한 충돌, 서버 `validateRequest`·앱 요청 대조 테스트가 이 정의를 읽는다) |

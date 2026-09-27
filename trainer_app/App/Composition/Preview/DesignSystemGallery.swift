@@ -2,6 +2,7 @@
 import DesignSystem
 import SwiftUI
 import TrainerContracts
+import TrainerDomain
 
 /// `--preview-design-system`: every DesignSystem component once, with synthetic values, for layout checks
 /// (TC-DF016-04) and manual review in light and dark mode. DEBUG only.
@@ -35,6 +36,14 @@ struct DesignSystemGallery: View {
         ComingSoonLabel()
         EmptyState(systemImage: "tray", titleKey: "tr02.empty", actionKey: "common.retry", action: {})
           .frame(height: 220)
+      }
+      Section {
+        ForEach([ConsentChipState.coreGranted, .needed, .awaiting], id: \.self) { state in
+          HStack {
+            ConsentChip(state: state)
+            ConsentChip(state: state, style: .result)
+          }
+        }
       }
     }
     .accessibilityIdentifier("preview.designSystem")

@@ -17,13 +17,18 @@ struct PreviewRootView: View {
   @State private var memberGate = PreviewMemberGate()
   /// TR-14 registrations of this launch (DF-108), in memory; TR-02 lists them as device-only pending members.
   @State private var registrar = PreviewPendingMemberRegistrar()
-  /// TR-14 consent captures of this launch (DF-110), in memory; published versions and server state are synthetic.
-  @State private var consent = PreviewConsentStore()
+  /// The scenario's consent and the TR-14 captures of this launch (DF-110, DF-113), in memory; published versions
+  /// and server states are synthetic. TR-02 and TR-14 read it through one real `EffectiveConsentResolver`.
+  @State private var consent: PreviewConsentStore
+  @State private var effectiveConsent: EffectiveConsentResolver
   /// TR-15's Outbox view (DF-018), in memory.
   @State private var queue: PreviewSyncQueue
 
   init(preview: PreviewEnvironment) {
     self.preview = preview
+    let consent = PreviewConsentStore(script: preview.consentScript)
+    _consent = State(initialValue: consent)
+    _effectiveConsent = State(initialValue: EffectiveConsentResolver(server: consent, captures: consent))
     _queue = State(initialValue: PreviewSyncQueue(
       failed: preview.scenario == .queueFailed ? PreviewSyncQueue.syntheticFailures() : []))
   }
@@ -56,10 +61,8 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        localPendingMembers: registrar, consentStatus: PreviewConsentSource(script: preview.consentScript),
-        registrar: registrar, consentDocuments: consent, consentRecorder: consent,
-        effectiveConsent: EffectiveConsentResolver(server: consent, captures: consent), syncQueue: queue,
-        signOut: signOut,
+        localPendingMembers: registrar, registrar: registrar, consentDocuments: consent, consentRecorder: consent,
+        effectiveConsent: effectiveConsent, syncQueue: queue, signOut: signOut,
         accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
@@ -72,6 +75,14 @@ struct PreviewRootView: View {
             .buttonStyle(.borderedProminent)
             .padding(24)
             .accessibilityIdentifier("preview.releaseMembers")
+        } else if preview.confirmsConsent {
+          // The server's part of a capture (recordConsent + the state listener), on demand.
+          Button { consent.confirmPendingCaptures() } label: {
+            Text(verbatim: "Confirm consent")  // DEBUG tool, not copy
+          }
+          .buttonStyle(.borderedProminent)
+          .padding(24)
+          .accessibilityIdentifier("preview.confirmConsent")
         }
       }
       .overlay(alignment: .bottomTrailing) {

@@ -16,6 +16,7 @@
 		0DB3809986738BA0A239D8FA /* FlagGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA74C579051C18A66CCD05E0 /* FlagGate.swift */; };
 		129EA549E5ED99C16EAA6536 /* LaunchConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */; };
 		14591C2DE96B7F6D3F62EA1A /* PendingMemberEmulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89812E626D2A8F0D57DF4859 /* PendingMemberEmulatorTests.swift */; };
+		168BAF9FD84261EC890323E4 /* ConsentFlowEmulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA8B841C2620DAE66F83A85 /* ConsentFlowEmulatorTests.swift */; };
 		172D5D2E08363403FFBE41FC /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = DFA5ECC237DB881D8A8C8D68 /* DesignSystem */; };
 		1EBD89607252B2BCC5170CCE /* ConfigurationMissingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */; };
 		1F13C474BA7BD74B81C46908 /* TrainerRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38EEEC11818BCEACCF17CB /* TrainerRoute.swift */; };
@@ -23,6 +24,7 @@
 		26C51C60B03CC9264172463F /* ShellNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */; };
 		3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = C0A547249E8270079960845F /* TrainerContracts */; };
 		3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909035E39F699E8176D5FF52 /* EmulatorSupport.swift */; };
+		36EFFBF85B56F2FD5F694E49 /* SyncEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 479CD3F48E444527F9F73264 /* SyncEngine */; };
 		397F3BEDDCF10EF3D2A84E66 /* RemoteWriterEmulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA5A7BB6E81DFD2AF51F44B /* RemoteWriterEmulatorTests.swift */; };
 		39E1C9B716CBCCA3205F348F /* FeatureConsent in Frameworks */ = {isa = PBXBuildFile; productRef = 03195DD71154698C47D9F470 /* FeatureConsent */; };
 		3A22C28EC7BB3AF2BC7E5CC2 /* LoginUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854758AF4B96BE69AC17340B /* LoginUITests.swift */; };
@@ -50,8 +52,9 @@
 		860BB966B0659FF90FB80CA5 /* PreviewSyncQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087A50A31502CF05FD104E77 /* PreviewSyncQueue.swift */; };
 		8767D43C529393A356413391 /* FirebaseData in Frameworks */ = {isa = PBXBuildFile; productRef = 6C6782D060D070D344DA8255 /* FirebaseData */; };
 		8B68DE10DABD721817C0AF85 /* PreviewPendingMemberRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF8CBD74EB1D5B2EB2338DE /* PreviewPendingMemberRegistrar.swift */; };
+		9169FFAFF191C164839067EB /* TrainerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 45731413EEF81BA43D49738A /* TrainerDomain */; };
 		9ACAF918CA34A4E943AE2225 /* PendingMemberRegistrationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC16D3AC88C51ECC8A1F4859 /* PendingMemberRegistrationUITests.swift */; };
-		9BDF13773AB84CA3ABB27A81 /* TrainerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 45731413EEF81BA43D49738A /* TrainerDomain */; };
+		9BDF13773AB84CA3ABB27A81 /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = 20E18292CFD7971E8907CECF /* TrainerContracts */; };
 		9CB9F5E4BE7C4D1DBCBAB914 /* ComingSoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6323C19401ADD26FD1C651CB /* ComingSoonView.swift */; };
 		9F51DBABA0675EF19DF8E138 /* FlagGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45DB07F4D84B7CEF59AB139 /* FlagGateTests.swift */; };
 		9FB4B7E66D55D31F703C5A78 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D418DDB6FE7A9E5B1EE7D72E /* AppRootView.swift */; };
@@ -138,6 +141,7 @@
 		BFF8CBD74EB1D5B2EB2338DE /* PreviewPendingMemberRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPendingMemberRegistrar.swift; sourceTree = "<group>"; };
 		C000499462B611098130F997 /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
 		C8E8A52B4086B072876E1EA4 /* TrainerCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrainerCore; path = Packages/TrainerCore; sourceTree = SOURCE_ROOT; };
+		CCA8B841C2620DAE66F83A85 /* ConsentFlowEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentFlowEmulatorTests.swift; sourceTree = "<group>"; };
 		CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellNavigationTests.swift; sourceTree = "<group>"; };
 		CDE105CB32756FE7A6026CAC /* MemberListUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListUITests.swift; sourceTree = "<group>"; };
 		D123B75016CB51832F478143 /* LayoutMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutMode.swift; sourceTree = "<group>"; };
@@ -160,7 +164,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9BDF13773AB84CA3ABB27A81 /* TrainerDomain in Frameworks */,
+				9BDF13773AB84CA3ABB27A81 /* TrainerContracts in Frameworks */,
+				9169FFAFF191C164839067EB /* TrainerDomain in Frameworks */,
+				36EFFBF85B56F2FD5F694E49 /* SyncEngine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,6 +272,7 @@
 			isa = PBXGroup;
 			children = (
 				97FB9368CC4956DDCA5B12ED /* AuthEmulatorTests.swift */,
+				CCA8B841C2620DAE66F83A85 /* ConsentFlowEmulatorTests.swift */,
 				9700286D85D55A5B359FA510 /* ConsentStateEmulatorTests.swift */,
 				0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */,
 				42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */,
@@ -409,7 +416,9 @@
 			);
 			name = DFETTrainerTests;
 			packageProductDependencies = (
+				20E18292CFD7971E8907CECF /* TrainerContracts */,
 				45731413EEF81BA43D49738A /* TrainerDomain */,
+				479CD3F48E444527F9F73264 /* SyncEngine */,
 			);
 			productName = DFETTrainerTests;
 			productReference = B757D6C1B8B45F055B488697 /* DFETTrainerTests.xctest */;
@@ -542,6 +551,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				72B2124FDE238A28893F0160 /* AuthEmulatorTests.swift in Sources */,
+				168BAF9FD84261EC890323E4 /* ConsentFlowEmulatorTests.swift in Sources */,
 				53DC43FAF32011D726578E42 /* ConsentStateEmulatorTests.swift in Sources */,
 				3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */,
 				57601A9F2F62C726CEFB54F8 /* IntegrationPlaceholderTests.swift in Sources */,
@@ -965,6 +975,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FeatureConsent;
 		};
+		20E18292CFD7971E8907CECF /* TrainerContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TrainerContracts;
+		};
 		27625DB1E3BA69451CE58BC1 /* LocalStore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LocalStore;
@@ -976,6 +990,10 @@
 		45731413EEF81BA43D49738A /* TrainerDomain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TrainerDomain;
+		};
+		479CD3F48E444527F9F73264 /* SyncEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SyncEngine;
 		};
 		6C6782D060D070D344DA8255 /* FirebaseData */ = {
 			isa = XCSwiftPackageProductDependency;

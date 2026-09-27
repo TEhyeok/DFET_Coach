@@ -1,7 +1,8 @@
 import XCTest
 
 /// DF-110 MVP: the TR-14 consent step after registration, in preview mode (`--preview-members`): synthetic published
-/// versions, captures kept in memory and never sent, no server state. Synthetic data only.
+/// versions, captures kept in memory and never sent, no server state unless `--preview-consent-confirm` plays it.
+/// Synthetic data only.
 final class ConsentStepUITests: XCTestCase {
   private let types = ["required", "healthData", "bodyImaging"]
   private let typeNames = ["① 서비스 이용 필수 동의", "② 건강정보 수집·이용", "③ 신체 사진·영상·3D 정보"]
@@ -92,7 +93,47 @@ final class ConsentStepUITests: XCTestCase {
     XCTAssertEqual(chip.label, "동의 필요")
   }
 
+  /// DF-110 + DF-113 wiring: TR-02's row chip and TR-14's result chip read one effective consent. After ①②③ the new
+  /// pending member's row reads '동의 확인 대기'; when the server's part arrives (`preview.confirmConsent`: the capture
+  /// is confirmed and the state is granted, as recordConsent and its listener do) it reads '동의 ①②③'. The row opens
+  /// TR-03 with the member's pending key.
+  @MainActor
+  func testTheRowChipAwaitsTheServerThenShowsTheCoreConsents() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-members", "--preview-consent-confirm"]
+    app.launch()
+    register(in: app)
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    for type in types {
+      app.buttons["tr14.consent.grant.\(type)"].firstMatch.tap()
+    }
+    app.buttons["tr14.consent.submit"].firstMatch.tap()
+    let chip = element("tr14.consent.result", in: app)
+    XCTAssertTrue(chip.waitForExistence(timeout: 10))
+    XCTAssertEqual(chip.label, "동의 확인 대기")
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(element("tr14.consent.root", in: app).waitForNonExistence(timeout: 10))
+
+    let row = listRow(named: "SYN Member B", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 확인 대기"), row.label)
+    element("preview.confirmConsent", in: app).tap()
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 ①②③"), row.label)
+    // A member without any consent keeps '동의 필요'.
+    XCTAssertEqual(listRow(named: "SYN-0001", in: app).label, "SYN-0001, 동의 필요")
+
+    row.tap()
+    let detail = element("tr03.root", in: app)
+    XCTAssertTrue(detail.waitForExistence(timeout: 10))
+    XCTAssertEqual(detail.value as? String, "pending:SynPending0000000001")
+  }
+
   // MARK: Helpers
+
+  private func waitForLabel(_ element: XCUIElement, _ label: String, timeout: TimeInterval = 10) -> Bool {
+    let predicate = NSPredicate(format: "label == %@", label)
+    return XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: element)], timeout: timeout)
+      == .completed
+  }
 
   /// TR-02 '대기 회원 추가' → TR-14 registration with synthetic values → '다음'.
   private func register(in app: XCUIApplication) {
@@ -112,6 +153,12 @@ final class ConsentStepUITests: XCTestCase {
     let next = app.buttons["tr14.register.next"].firstMatch
     XCTAssertTrue(next.isEnabled)
     next.tap()
+  }
+
+  /// The TR-02 row whose spoken label starts with `name` (rows are identified by position, `tr02.row.<n>`).
+  private func listRow(named name: String, in app: XCUIApplication) -> XCUIElement {
+    app.descendants(matching: .any).matching(
+      NSPredicate(format: "identifier BEGINSWITH 'tr02.row.' AND label BEGINSWITH %@", name + ",")).firstMatch
   }
 
   private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {

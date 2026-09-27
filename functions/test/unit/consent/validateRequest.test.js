@@ -3,9 +3,13 @@
 // DF-109 TC-109-03·04 and the MVP gate (V1-06 §6.2.1 schema, §6.2.3 V1·V7·V9·V10, DEC-22). Synthetic values only.
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const {HttpsError} = require('firebase-functions/v2/https');
-const {assertMvpScope, validateRequest} = require('../../../src/consent/core/validateRequest');
+const {
+  DOCUMENT_VERSION_ID, SELECTION_KEYS, TOP_LEVEL_KEYS, assertMvpScope, validateRequest,
+} = require('../../../src/consent/core/validateRequest');
 
 const NOW = Date.UTC(2026, 10, 16, 1, 12, 41);
 
@@ -132,4 +136,43 @@ test('DEC-22 MVP gate: uid member, memberApp, ④⑤, withdraw and signature -> 
     'selections[0].consentType');
   gate(request({selections: [{consentType: 'bodyImaging', action: 'withdraw', documentVersion: 'bodyImaging--1.0'}]}),
     'selections[0].action');
+});
+
+// V1-06 as written: the request schema of §6.2.1 and the common definitions of §3.12, read from the spec itself.
+function specJson(heading) {
+  const spec = fs.readFileSync(path.resolve(__dirname, '../../../../docs/v1/06_API_SPEC.md'), 'utf8');
+  const start = spec.indexOf('```json\n', spec.indexOf(heading)) + '```json\n'.length;
+  return JSON.parse(spec.slice(start, spec.indexOf('```', start)));
+}
+
+test('V1-06 §6.2.1/§3.12: the accepted keys and the documentVersion pattern are the spec\'s', () => {
+  const schema = specJson('#### 6.2.1');
+  const common = specJson('### 3.12');
+  assert.deepEqual([...TOP_LEVEL_KEYS].sort(), Object.keys(schema.properties).sort());
+  const item = schema.properties.selections.items;
+  assert.deepEqual([...SELECTION_KEYS].sort(), Object.keys(item.properties).sort());
+  assert.equal(item.properties.documentVersion.$ref, 'common#/$defs/ConsentDocumentVersionId');
+  assert.equal(DOCUMENT_VERSION_ID.source, common.$defs.ConsentDocumentVersionId.pattern);
+  for (const id of ['required--1.0', 'healthData--test-1', 'bodyImaging--2.1.3']) assert.match(id, DOCUMENT_VERSION_ID);
+  for (const id of ['.', '..', 'a/b', '', 'x'.repeat(129)]) assert.doesNotMatch(id, DOCUMENT_VERSION_ID);
+});
+
+// The trainer app's request as RecordConsentRequest.payload builds it and FunctionsCallableClient sends it (DF-110):
+// exactly five keys, a lowercase UUID capture ID, the pending member's 20-character ID, grants in card order and
+// capturedAt as ISO 8601 with milliseconds and 'Z'. It passes the schema and the MVP gate as is.
+test('DF-110 trainer app payload passes validateRequest and the MVP gate unchanged', () => {
+  const capturedAt = new Date(NOW - 90 * 1000).toISOString();
+  const payload = {
+    clientCaptureId: '9b2f4c1a-7e3d-4f10-8a6b-2c5d7e9f0a1b',
+    memberKey: {pendingMemberId: 'Ab3dEf6hIj9kLm2nOp5q'},
+    channel: 'trainerDeviceInPerson',
+    selections: ['required', 'healthData', 'bodyImaging'].map((consentType) => (
+      {consentType, action: 'grant', documentVersion: `${consentType}--test-1`})),
+    capturedAt,
+  };
+  assert.match(capturedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  const normalised = validate(payload);
+  assert.equal(normalised.capturedAtMillis, Date.parse(capturedAt));
+  assert.equal(normalised.hasSignature, false);
+  assert.doesNotThrow(() => assertMvpScope(normalised));
 });

@@ -34,9 +34,10 @@ extension AppBootstrap {
     FirestoreRemoteWriter(trainerUid: trainerUid)
   }
 
-  /// The signed-in trainer's shell services (DF-108, DF-018, DF-110): FirebaseData's member directory, registration
-  /// and consent captures on the LocalStore partition with the SyncEngine sending to FirebaseData, the effective
-  /// consent (FirebaseData's `memberConsentStates` listener + local captures), its queue for TR-15 and the full logout.
+  /// The signed-in trainer's shell services (DF-108, DF-018, DF-110, DF-113): FirebaseData's member directory with the
+  /// device-only pending members, registration and consent captures on the LocalStore partition with the SyncEngine
+  /// sending to FirebaseData, one effective consent (FirebaseData's `memberConsentStates` listener + local captures)
+  /// for TR-02's chips and TR-14's result, its queue for TR-15 and the full logout.
   /// `gate` signs the trainer out as a user sign-out (no claim-revoked notice); tests without a gate pass nil.
   @MainActor
   static func liveServices(session: TrainerSession, gate: AuthGateModel? = nil) -> ShellServices {
@@ -51,7 +52,6 @@ extension AppBootstrap {
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
       localPendingMembers: runtime?.localPendingMembers ?? SessionRuntime.NoLocalPendingMembers(),
-      consentStatus: UnresolvedConsentSource(),
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
       consentDocuments: consent,
       consentRecorder: runtime?.consentRecorder ?? SessionRuntime.UnavailableConsentRecorder(),

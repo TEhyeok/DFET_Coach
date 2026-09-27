@@ -87,16 +87,17 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 |---|---|
 | `--preview-empty` | Shell with every flag off and no members |
 | `--preview-login` | Signed-out state: login placeholder (`login.root`) until DF-012 |
-| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`). TR-14 registration and its consent step work in memory: synthetic published versions (`{type}--1.0`), captures never sent, no server state (①②③ granted reads '동의 확인 대기') |
+| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`). TR-14 registration and its consent step work in memory: synthetic published versions (`{type}--1.0`), captures never sent, no server state (①②③ granted reads '동의 확인 대기' on TR-14 and on the new member's TR-02 row) |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
-| `--preview-members-pending` | Two synthetic assigned members and three pending ones (`SYN-P001`..`SYN-P003`, '대기' badge), with every consent chip state (DF-113) |
+| `--preview-members-pending` | Two synthetic assigned members and three pending ones (`SYN-P001`..`SYN-P003`, '대기' badge), with every consent chip state from synthetic server states and captures through the real `EffectiveConsentResolver` (DF-113) |
 | `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |
 | `--preview-design-system` | DesignSystem gallery (`preview.designSystem`): every component with synthetic values, for layout checks and light/dark review (DF-016) |
 | `--preview-queue-failed` | TR-15 upload queue with two synthetic failed items (a rule rejection and a retry limit); retrying succeeds at once |
 | `--preview-landscape` | Requests landscape orientation (ported from `trainer_ios`) |
 | `--preview-flags=<k1,k2>` | Local flag override for client entry points only (ADR-010 §3-6); unknown keys are ignored |
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |
+| `--preview-consent-confirm` | A DEBUG button `preview.confirmConsent` plays the server's part of every pending consent capture: the capture is confirmed and its grants become the member's state, as `recordConsent` and the `memberConsentStates` listener do (TR-02 chip '동의 확인 대기' → '동의 ①②③') |
 | `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06) |
 
 ## GoogleService-Info.plist rules (ADR-019, DF-034)

@@ -140,4 +140,13 @@ function assertMvpScope(request) {
   });
 }
 
-module.exports = {MVP_CONSENT_TYPES, assertMvpScope, validateRequest};
+// The request keys and the documentVersion pattern are V1-06's (§6.2.1, §3.12 ConsentDocumentVersionId); a unit test
+// reads them from the spec, and the trainer app checks its payload against the same schema (DF-110 ConsentFlowTests).
+module.exports = {
+  DOCUMENT_VERSION_ID,
+  MVP_CONSENT_TYPES,
+  SELECTION_KEYS,
+  TOP_LEVEL_KEYS,
+  assertMvpScope,
+  validateRequest,
+};

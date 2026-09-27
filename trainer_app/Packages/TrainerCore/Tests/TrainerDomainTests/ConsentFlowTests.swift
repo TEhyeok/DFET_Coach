@@ -128,6 +128,9 @@ final class ConsentFlowTests: XCTestCase {
   /// the common patterns and enums (§3.12). No signature in the MVP (DF-109, DF-110 MVP).
   func testPayloadMatchesTheV1_06RequestSchema() throws {
     let schema = try Self.requestSchema()
+    let common = try Self.specJSON(after: "### 3.12")
+    let versionPattern = try XCTUnwrap(
+      ((common["$defs"] as? [String: Any])?["ConsentDocumentVersionId"] as? [String: Any])?["pattern"] as? String)
     let required = Set(try XCTUnwrap(schema["required"] as? [String]))
     let properties = try XCTUnwrap(schema["properties"] as? [String: Any])
     let selectionItems = try XCTUnwrap(((properties["selections"] as? [String: Any])?["items"]) as? [String: Any])
@@ -165,18 +168,25 @@ final class ConsentFlowTests: XCTestCase {
         XCTAssertTrue(Set(object.keys).isSubset(of: itemProperties))
         let type = try XCTUnwrap(ConsentType(rawValue: object["consentType"]?.stringValue ?? ""))
         XCTAssertNotNil(ConsentAction(rawValue: object["action"]?.stringValue ?? ""))
-        // The document's own ID, `{consentType}--{version}` (V1-05 §4.13). V1-06 types `documentVersion` as `DocId`
-        // (`^[A-Za-z0-9_-]{1,128}$`), which has no '.' for "1.0": a spec conflict reported with DF-110.
-        XCTAssertEqual(object["documentVersion"]?.stringValue, "\(type.rawValue)--1.0")
+        // The document's own ID, `{consentType}--{version}` (V1-05 §4.13), V1-06 §3.12 `ConsentDocumentVersionId`:
+        // the pattern the server's validateRequest uses too (its unit test reads the same definition).
+        let version = try XCTUnwrap(object["documentVersion"]?.stringValue)
+        XCTAssertEqual(version, "\(type.rawValue)--1.0")
+        XCTAssertNotNil(version.range(of: versionPattern, options: .regularExpression), version)
       }
     }
   }
 
   /// The first JSON block after `#### 6.2.1` in docs/v1/06_API_SPEC.md.
   private static func requestSchema() throws -> [String: Any] {
+    try specJSON(after: "#### 6.2.1")
+  }
+
+  /// The first JSON block after `heading` in docs/v1/06_API_SPEC.md.
+  private static func specJSON(after heading: String) throws -> [String: Any] {
     let spec = try String(
       contentsOf: FixtureLoader.repositoryRoot.appendingPathComponent("docs/v1/06_API_SPEC.md"), encoding: .utf8)
-    let section = try XCTUnwrap(spec.range(of: "#### 6.2.1"))
+    let section = try XCTUnwrap(spec.range(of: heading))
     let rest = spec[section.upperBound...]
     let open = try XCTUnwrap(rest.range(of: "```json\n"))
     let close = try XCTUnwrap(rest[open.upperBound...].range(of: "```"))

@@ -90,7 +90,11 @@ targets:
       - path: App/AppShell/TrainerRoute.swift
     dependencies:
       - package: TrainerCore
+        product: TrainerContracts
+      - package: TrainerCore
         product: TrainerDomain
+      - package: TrainerCore
+        product: SyncEngine # pure: the preview consent script is checked through the real resolver (DF-113)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: kr.co.dfet.trainer.tests

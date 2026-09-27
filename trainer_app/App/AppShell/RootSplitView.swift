@@ -52,7 +52,7 @@ struct RootSplitView: View {
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
     _memberList = State(initialValue: MemberListViewModel(
       directory: services.memberDirectory, localPending: services.localPendingMembers,
-      consent: services.consentStatus))
+      consent: services.effectiveConsent))
   }
 
   private var isCompact: Bool { sizeClass == .compact }

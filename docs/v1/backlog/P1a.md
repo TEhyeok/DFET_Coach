@@ -860,6 +860,10 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
     - 선택 필드(`signaturePngBase64`, `capturedAt`, `reconfirmOf`)는 `null`을 '없음'으로 받는다.
   - 게시 스크립트 `functions/scripts/publish-test-consent-documents.js`: 기본 dry-run(아무 데도 연결하지 않고 문서 3개를 출력). `--apply --project <id>`는 소유자만(서울 `dfetmanage`, 자격 증명은 ADC). 에뮬레이터 프로젝트(`demo-*` 등)는 `FIRESTORE_EMULATOR_HOST`가 있어야 하고, 실제 프로젝트는 그 변수가 있으면 거부한다. ID `required--test-1`·`healthData--test-1`·`bodyImaging--test-1`, 본문은 덱 `consentDraft.*`(G-04 전 초안) 그대로에 제목 앞 `[테스트] `, `privacyPolicyVersion: 'test-placeholder'`, 보유기간 개월 수(Q-24 미정)는 `N`. published 문서는 불변이라 같은 ID가 다른 내용으로 있으면 아무것도 쓰지 않고 종료 코드 1이다.
   - 테스트: 단위 `test/unit/consent/*`(derive 표, validateRequest·MVP 게이트, 게시 스크립트 빌더·가드·dry-run, export 메타), e2e `test/e2e/recordConsent.e2e.test.js`(①②③ 기록·상태, 유형별 파생, 멱등 재생·동시 호출·키 재사용, 인증, 비소유·없음·비pending, 미게시·retired·없음·유형 불일치, ① 먼저, Functions 에뮬레이터 HTTP 경로와 오류 모양), 규칙 `test/rules/consent_state.rules.test.js`(대기 회원 생성자의 두 컬렉션 쓰기 거부, `derive()` 모양의 상태로 R-01 허용·거부).
+- 통합 기록(DF-109·DF-110·DF-111·DF-113을 한 브랜치에 합침, `claude/consent-flow`):
+  - 앱 요청과 서버 검증을 V1-06 하나로 맞췄다. 앱의 `RecordConsentRequest.payload`(DF-110 `ConsentFlowTests`)와 서버 `validateRequest`(`validateRequest.test.js`)가 둘 다 V1-06 §6.2.1 요청 스키마와 §3.12 정의를 스펙 본문에서 읽어 대조한다. 서버 테스트 2건을 더했다: 받는 키 집합·선택 키·`documentVersion` 패턴이 스펙과 같다, 앱이 만드는 모양(키 5개, 소문자 UUID `clientCaptureId`, 20자 대기 회원 ID, `<type>--test-1`, `capturedAt` ISO 8601 밀리초 `Z`)이 검증과 MVP 게이트를 그대로 통과한다. 이를 위해 `validateRequest.js`가 `TOP_LEVEL_KEYS`·`SELECTION_KEYS`·`DOCUMENT_VERSION_ID`를 export한다(동작 변경 없음).
+  - 편차 정리: 위 `documentVersion` 편차는 스펙 쪽을 고쳤다. V1-06 §3.12에 `ConsentDocumentVersionId`(`^(?!\.{1,2}$)[A-Za-z0-9_.-]{1,128}$`, V1-05 §4.13 ID)를 더하고 §6.2.1 `documentVersion`이 이것을 쓴다(V1-06 변경 이력). `DocId`로는 V1-05의 `healthData--1.0`을 받을 수 없어 스펙 안에서 모순이었다. 서버 구현은 그대로다.
+  - 종단 확인: `trainer_app/scripts/test_auth_emulator.sh`가 Auth·Firestore에 더해 Functions 에뮬레이터를 띄우고, 게시 스크립트를 `--apply --project demo-dfet`로 에뮬레이터에 먼저 실행한 뒤 앱 통합 테스트를 돌린다. `IntegrationTests/ConsentFlowEmulatorTests`가 앱 → Outbox `callConsent` → 실제 `recordConsent` → `consentRecords`·`memberConsentStates`를 확인한다(아래 DF-111). 게시 스크립트의 `--apply` 쓰기 경로가 에뮬레이터에서 실제로 돈 것은 이것이 처음이다(테스트 문서 3개 생성, 앱이 published로 읽음).
 
 ---
 
@@ -950,6 +954,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 저장소: `LocalStoreSchemaV1_2`(경량 이관)에서 `LocalConsentCapture.signatureBinaryId`를 옵셔널로 했다(서명 없는 MVP 캡처, 서명 선택인 철회). V1-05 v1.0.7 §12.2.
   - 확인 필요(CF 후보): V1-06 §3.12 `DocId` 패턴 `^[A-Za-z0-9_-]{1,128}$`에는 '.'이 없는데 §6.2.1은 `documentVersion`을 `DocId`로 두고, V1-05 §4.13 문서 ID는 `healthData--1.0`처럼 '.'을 가진다. 앱은 문서 ID를 그대로 보낸다. 서버 검증이 `DocId`를 그대로 쓰면 모든 요청이 `invalid-argument`가 된다.
   - 미리보기: `--preview-members`에서 등록 → 동의 단계가 합성 게시 버전(`{type}--1.0`)과 메모리 캡처로 동작한다(서버 상태 없음: ①②③ 동의 뒤 칩은 '동의 확인 대기'). UI 테스트 `ConsentStepUITests`.
+- 통합 기록(DF-109·DF-111·DF-113과 한 브랜치, `claude/consent-flow`):
+  - 칩 하나: 결과 칩과 TR-02 행 칩을 DesignSystem `ConsentChip`(`style: .row`·`.result`)으로 합쳤다. FeatureConsent의 private `ConsentChip`과 FeatureMembers의 `ConsentStatusChip`은 지웠다. 상태별 아이콘·색은 DF-113 쪽을 따른다('동의 ①②③' `neutral700`, '동의 필요'·'동의 확인 대기' `caution`, 초록 없음). 결과 칩의 식별자 `tr14.consent.result`와 라벨(칩 문구)은 그대로다. 갤러리 한 절과 `DesignSystemTests/ConsentChipTests`(덱 문구, 상태마다 다른 아이콘, 초록 없음, 좁은 폭 줄바꿈).
+  - 결과 칩과 TR-02 칩은 같은 `ShellServices.effectiveConsent`를 읽는다(DF-111 통합 기록). 등록 → 동의 단계 → 닫기 뒤 TR-02의 새 대기 회원 행이 곧바로 '동의 확인 대기'이고, 서버 상태가 오면 '동의 ①②③'이 된다.
+  - 미리보기: `PreviewConsentStore`가 시나리오의 서버 상태·캡처(`PreviewConsentScript`)로 시작하고 상태 변화를 흘린다. 새 수식어 `--preview-consent-confirm`의 DEBUG 버튼 `preview.confirmConsent`가 서버 몫(대기 캡처 확인 + 그 grant를 상태로)을 한다. UI 테스트 `ConsentStepUITests.testTheRowChipAwaitsTheServerThenShowsTheCoreConsents`: 등록 → ①②③ 동의 → 결과 칩 '동의 확인 대기' → TR-02 행 '동의 확인 대기' → 확인 → '동의 ①②③' → 행을 누르면 TR-03 `pending:<id>`.
+  - 요청 형식은 V1-06 그대로다(DF-109 통합 기록: 스펙의 `ConsentDocumentVersionId`로 충돌을 풀었고, 앱 테스트가 보내는 `documentVersion`을 그 패턴으로 확인한다).
+  - 종단: `ConsentFlowEmulatorTests`가 온라인 경로(TR-14 등록기 → 캡처 → Outbox → `recordConsent` → 상태)를 Functions 에뮬레이터에서 확인한다.
 
 ---
 
@@ -1032,6 +1042,10 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 카드의 `resolve(server:captures: [LocalConsentCapture])`는 값 타입 `ConsentCapture`(`TrainerDomain/Consent/ConsentCapture.swift`)로 받는다(SyncEngine은 LocalStore를 import하지 않음, ASM-04-02). 로컬 캡처 공급은 `ConsentCaptureSource.observeCaptures(member:)`, LocalStore 구현은 `LocalConsentCaptureStore`다. SwiftData 모델 액터 저장에는 iOS 17에서 쓸 변경 스트림이 없어, 캡처를 바꾸는 `LocalOutboxStore` 저장 뒤 프로세스 안 신호(`ConsentCaptureChanges`)로 다시 읽는다. 로그아웃 정리(`purgeSynced`)는 신호를 보내지 않는다(화면이 없어진 뒤).
   - `FirestoreConsentService.observe(member:)`가 `ConsentStateSource` 구현이다(문서 없음 = nil, 리스너 실패 = nil 뒤 종료).
   - 에뮬레이터: `IntegrationTests/ConsentStateEmulatorTests` — 대기 회원 문서가 서버에 없으면 상태 리스너가 거부돼 nil로 끝나고, 문서가 생기고 서버가 상태를 쓰면 유효 동의가 ①②③ granted, 다른 트레이너는 읽지 못한다. 게시 문서 쿼리는 published만 돌려준다.
+- 통합 기록(DF-109·DF-110·DF-113과 한 브랜치, `claude/consent-flow`):
+  - 한 곳 읽기(AC-DF-111.7): `ShellServices`의 `consentStatus`와 자리 표시 `UnresolvedConsentSource`를 지우고 `effectiveConsent` 하나만 둔다. 라이브는 `EffectiveConsentResolver(server: FirestoreConsentService, captures: LocalConsentCaptureStore)`이고 TR-02 칩(DF-113)과 TR-14 결과 칩(DF-110)이 같은 인스턴스를 읽는다. 미리보기도 같은 resolver에 `PreviewConsentStore`를 서버·캡처 공급원으로 준다(DF-113의 대본 `PreviewConsentSource`는 지웠다).
+  - AC-DF-111.6(로컬 캡처만 있으면 TR-02 칩 '동의 확인 대기'): 위 DF-110 UI 테스트와 아래 에뮬레이터 테스트가 확인한다. `--preview-members-pending`의 '동의 확인 대기' 행도 이제 대기 캡처를 resolver가 계산한 값이다.
+  - 에뮬레이터 종단 `IntegrationTests/ConsentFlowEmulatorTests`(Auth·Firestore·Functions, `demo-dfet`): 합성 트레이너 로그인 → TR-14 등록기로 대기 회원 → 캡처 전 유효 동의 '동의 필요' → `ConsentFlowRules.selections`로 ①②③ 캡처(Outbox `callConsent`, 등록 create에 `dependsOn`) → SyncEngine이 create 뒤 `recordConsent`를 보냄 → 칩 순서가 정확히 '동의 필요' → '동의 확인 대기' → '동의 ①②③'이고 `coreGranted` → 서버 `memberConsentStates/{id}`에 ①②③ `granted`(보낸 버전, `healthData` 포함) → 그 `recordId`의 `consentRecords`가 `clientCaptureId` = 캡처 ID, `channel='trainerDeviceInPerson'`, `recordedBy` = 트레이너, `signaturePath`·`subjectUid` null → 서버 대기 회원 목록 스트림에 그 회원 → Outbox 대기 0·실패 0 → 로그아웃. `test_auth_emulator.sh`의 `-only-testing`에 넣었고 Functions 에뮬레이터 플래그 `DFET_FUNCTIONS_EMULATOR`가 없으면 건너뛴다(스크립트는 건너뛰면 실패).
 
 ---
 
@@ -1177,6 +1191,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 미리보기 `--preview-members-pending`(가입 2 + 대기 3, 칩 3상태 모두). 미리보기 등록기는 등록한 회원을 기기 대기 회원으로 내보내 등록 → 목록 표시를 UI 테스트로 확인한다.
   - 테스트: TrainerDomain `MemberListTests`(병합·정렬·검색), FeatureModules `MemberListViewModelTests`(결합, 로딩 조건, 대기 목록 실패, 칩 구독·해제, 검색), LocalStore `LocalPendingMembersTests`(등록 → 표시 → ack → 사라짐), FirebaseData `FirestorePendingMembersTests`, 통합 `PendingMemberEmulatorTests.testTheListHasOnlyThisTrainersPendingMembers_DF_113`, UI `MemberListUITests`(행 문장으로 배지·칩 확인, 검색, 대기 행 → TR-03 키, 빈 상태 → 등록 → 목록). 스냅샷 대신 UI 테스트다(TC-113-01·02).
   - 이 조각에 없는 것: AC-DF-113.6 대기 회원 등록 취소(행 메뉴, `cancelPendingMember`), AC-DF-113.7 오프라인 `common.offlineStale`, AC-DF-113.8 TR-03 셸(헤더·`tr03.startSession`), 검색 결과 0건 문구(덱에 키가 없다. V1-07의 `tr02.search.noResult` 초안을 덱에 올린 뒤 붙인다. 지금은 검색 필드 아래 빈 목록).
+- 통합 기록(DF-109·DF-110·DF-111과 한 브랜치, `claude/consent-flow`):
+  - 칩 공급원: `ShellServices.consentStatus`(라이브 `UnresolvedConsentSource`)를 지우고 `MemberListViewModel`이 `ShellServices.effectiveConsent`(DF-111 `EffectiveConsentResolver`)를 읽는다. 라이브 앱의 TR-02에 칩이 보인다. 회원마다 `memberConsentStates/{key}` 리스너는 DF-110 `FirestoreConsentService`가 `FirestoreListenerRegistry`에 등록한다(이 화면은 Firestore를 따로 읽지 않는다).
+  - 칩 뷰는 DesignSystem `ConsentChip`(`.row`)으로 옮겼다(DF-110 결과 칩과 같은 컴포넌트, 모양·문구 그대로). `FeatureMembers/List/ConsentStatusChip.swift`는 지웠다.
+  - 미리보기 `--preview-members-pending`: 칩이 대본 `EffectiveConsent`가 아니라 합성 서버 상태(가입 1·대기 2: ①②③)와 캡처(대기 1: 확인 대기, 대기 3: 서버 거부)를 실제 resolver로 계산한 값이다. 화면은 같다(`MemberListUITests` 그대로 통과). `AppEnvironmentTests`가 행 순서대로 5개 칩을 resolver로 확인한다.
+  - 대기 행 → TR-03: 위 DF-110 UI 테스트가 등록 직후 동의까지 받은 대기 회원 행에서 TR-03(`pending:<id>`)을 연다.
+  - 에뮬레이터: `ConsentFlowEmulatorTests`가 등록한 대기 회원이 `observePendingMembers()`(서버 목록)에 나오는 것을 확인한다.
 
 ---
 

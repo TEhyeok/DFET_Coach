@@ -13,7 +13,7 @@ struct DesignSystemGallery: View {
       Section {
         ForEach(SyncState.allCases, id: \.self) { state in
           let failed = state == .syncFailed
-          SyncStateBadge(state: state, reasonKey: failed ? "sync.reason.network" : nil, onRetry: failed ? {} : nil)
+          SyncStateBadge(state: state, reasonKey: failed ? "sync.reason.ruleDenied" : nil, onRetry: failed ? {} : nil)
         }
       }
       Section {
@@ -24,7 +24,7 @@ struct DesignSystemGallery: View {
       Section {
         MetricRow(metric: MetricRowModel(code: .weightKg, value: 72.4, sourceGrade: .device, deviceModel: "SYN-DEVICE",
                                          measuredAt: measuredAt))
-        MetricRow(metric: MetricRowModel(code: .shoulderTiltAngle, value: -1.3, side: .left, sourceGrade: .photoManual,
+        MetricRow(metric: MetricRowModel(code: .shoulderTiltAngle, value: 1.3, side: .left, sourceGrade: .photoManual,
                                          measuredAt: measuredAt))
         MetricRow(metric: MetricRowModel(code: .waistCircumference, value: 80.2, sourceGrade: nil, measuredAt: measuredAt))
       }

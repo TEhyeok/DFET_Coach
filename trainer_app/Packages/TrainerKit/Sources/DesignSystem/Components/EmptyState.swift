@@ -38,7 +38,7 @@ public struct EmptyState: View {
             .padding(.horizontal, TrainerSpacing.s)
         }
         .buttonStyle(.borderedProminent)
-        .tint(TrainerColor.brandBlue)
+        .tint(TrainerColor.brandBlueFill)
         .accessibilityIdentifier("empty.action")
       }
     }

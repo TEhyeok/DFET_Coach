@@ -47,6 +47,8 @@ public struct SyncStateBadge: View {
               .frame(minWidth: TrainerSpacing.minTapTarget, minHeight: TrainerSpacing.minTapTarget)
               .contentShape(Rectangle())
           }
+          .tint(TrainerColor.brandBlue)
+          .accessibilityLabel(localize("sync.failedRetry"))  // '동기화 실패 · 다시 시도': what the retry is for
           .accessibilityIdentifier("sync.badge.retry")
         }
       }

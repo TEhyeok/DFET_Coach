@@ -112,6 +112,7 @@ test('a deck key without a §4.9 row fails unless baselined, and a stale baselin
   assert.ok(tableErrors(small, doc, new Set()).some((e) => /fx.n has no row/.test(e)));
   assert.deepEqual(tableErrors(small, doc, new Set(['fx.n'])), []);
   assert.ok(tableErrors(small, doc, new Set(['fx.n', 'fx.plain'])).some((e) => /fx.plain has a §4.9 row now/.test(e)));
+  assert.ok(tableErrors(small, doc, new Set(['fx.n', 'fx.gone'])).some((e) => /fx.gone is not in the deck/.test(e)));
 });
 
 test('deck text and args must name the same placeholders', () => {

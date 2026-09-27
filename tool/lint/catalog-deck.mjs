@@ -93,6 +93,7 @@ export function tableErrors(deck, doc, baseline = null) {
     }
     for (const key of baseline) {
       if (listed.has(key)) errors.push(`${BASELINE_FILE}: ${key} has a §4.9 row now; delete its baseline line`);
+      if (!deck.strings[key]) errors.push(`${BASELINE_FILE}: ${key} is not in the deck; delete its baseline line`);
     }
   }
   for (const row of section.rows) {

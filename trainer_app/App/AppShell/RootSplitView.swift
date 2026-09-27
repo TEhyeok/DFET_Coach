@@ -1,3 +1,4 @@
+import FeatureConsent
 import FeatureMembers
 import SwiftUI
 import TrainerDomain
@@ -19,13 +20,17 @@ struct RootSplitView: View {
   @State private var stackPath: [TrainerRoute] = []
   @State private var columnVisibility: NavigationSplitViewVisibility = .all
   @State private var comingSoonEntry: EntryPoint?
+  /// TR-14 registration and the consent step after it (DF-108).
+  @State private var sheet: ShellSheet?
   /// TR-02 (DF-013). Kept in state so the subscription survives layout changes.
   @State private var memberList: MemberListViewModel
+  private let registrar: any PendingMemberRegistrar
 
-  init(flags: FeatureFlags, memberDirectory: any MemberDirectory) {
+  init(flags: FeatureFlags, services: ShellServices) {
     self.flags = flags
+    registrar = services.registrar
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
-    _memberList = State(initialValue: MemberListViewModel(directory: memberDirectory))
+    _memberList = State(initialValue: MemberListViewModel(directory: services.memberDirectory))
   }
 
   private var isCompact: Bool { sizeClass == .compact }
@@ -54,6 +59,29 @@ struct RootSplitView: View {
                 .accessibilityIdentifier("common.close")
             }
           }
+      }
+    }
+    .sheet(item: $sheet) { presented in
+      switch presented {
+      case .registration:
+        PendingMemberRegistrationView(
+          model: PendingMemberRegistrationModel(registrar: registrar),
+          onRegistered: { member in sheet = .consent(member: member) },
+          onCancel: { sheet = nil })
+      case let .consent(member):
+        NavigationStack {
+          ComingSoonView()
+            .toolbar {
+              ToolbarItem(placement: .cancellationAction) {
+                Button(String(localized: "common.close")) { sheet = nil }
+                  .accessibilityIdentifier("common.close")
+              }
+            }
+        }
+        // The member key is a random pending ID, not personal data; UI tests read it (AC-DF-108.4).
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("tr14.consent.root")
+        .accessibilityValue(member.id)
       }
     }
     .accessibilityElement(children: .contain)
@@ -163,6 +191,15 @@ struct RootSplitView: View {
       }
     }
     .navigationTitle(String(localized: "tr02.title"))
+    .toolbar {
+      // TR-14 entry (DF-108). DF-113 adds the pending rows and the empty-state button.
+      ToolbarItem(placement: .primaryAction) {
+        Button { sheet = .registration } label: {
+          Label(String(localized: "tr02.addPending"), systemImage: "person.badge.plus")
+        }
+        .accessibilityIdentifier("tr02.addPending")
+      }
+    }
   }
 
   private var selectedMemberID: String? {

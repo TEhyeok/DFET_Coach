@@ -403,6 +403,24 @@ public enum FixtureTimestamp {
   }()
 }
 
+// MARK: - Local storage form
+
+extension JSONValue {
+  /// The form LocalStore keeps a payload in (`OutboxItem.payloadJSON`, DF-108): the fixture notation, so the
+  /// Firestore-only cases (`int`, `timestamp`, `serverTimestamp`, `bytes`) survive the round trip. Non-finite numbers
+  /// become `null`, as in JSON.
+  public func storageData() -> Data {
+    var out = ""
+    CanonicalJSONWriter(ranks: [:]).write(self, indent: 0, into: &out)
+    return Data(out.utf8)
+  }
+
+  public init(storageData data: Data) throws {
+    let json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
+    self = try Self.fromFixtureNotation(json, at: "storage")
+  }
+}
+
 // MARK: - Canonical writer
 
 /// Writes `JSON.stringify(value, null, 2)` text with tags for the Firestore-only cases.

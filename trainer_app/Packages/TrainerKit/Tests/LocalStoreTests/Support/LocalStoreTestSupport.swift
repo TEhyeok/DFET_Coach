@@ -6,7 +6,7 @@ import XCTest
 
 /// The LocalStore SwiftData model. TrainerDomain has a SyncEngine `OutboxItem` too (DF-015); this test-module
 /// declaration shadows both imports so the tests keep meaning the stored model.
-typealias OutboxItem = LocalStoreSchemaV1.OutboxItem
+typealias OutboxItem = LocalStoreSchemaV1_1.OutboxItem
 
 // Synthetic values only (no real member or trainer data).
 enum Synthetic {

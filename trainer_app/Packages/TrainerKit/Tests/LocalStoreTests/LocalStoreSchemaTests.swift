@@ -17,12 +17,22 @@ final class LocalStoreSchemaTests: XCTestCase {
     XCTAssertEqual(LocalStoreSchemaV1.versionIdentifier, Schema.Version(1, 0, 0))
     let names = Set(LocalStoreSchemaV1.models.map { String(describing: $0) })
     XCTAssertEqual(names, Self.v1ModelNames)
-    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), Self.v1ModelNames)
     // Added by later schema versions, not V1 (DF-108 V1_1, DF-203).
     XCTAssertFalse(names.contains("LocalPendingMemberDraft"))
     XCTAssertFalse(names.contains("LocalAssessmentDraft"))
-    XCTAssertEqual(LocalStoreMigrationPlan.schemas.count, 1)
-    XCTAssertTrue(LocalStoreMigrationPlan.stages.isEmpty)
+  }
+
+  /// DF-108: V1_1 adds `LocalPendingMemberDraft` and `OutboxItem.ackConfirmed`, with one lightweight stage from V1.
+  func testSchemaV1_1IsCurrentAndMigratesFromV1() throws {
+    XCTAssertEqual(LocalStoreSchemaV1_1.versionIdentifier, Schema.Version(1, 1, 0))
+    let names = Set(LocalStoreSchemaV1_1.models.map { String(describing: $0) })
+    XCTAssertEqual(names, Self.v1ModelNames.union(["LocalPendingMemberDraft"]))
+    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), names)
+    let outbox = try XCTUnwrap(LocalStoreContainer.schema.entities.first { $0.name == "OutboxItem" })
+    XCTAssertTrue(try XCTUnwrap(outbox.attributes.first { $0.name == "ackConfirmed" }).isOptional)
+    XCTAssertEqual(LocalStoreMigrationPlan.schemas.map { String(describing: $0) },
+                   ["LocalStoreSchemaV1", "LocalStoreSchemaV1_1"])
+    XCTAssertEqual(LocalStoreMigrationPlan.stages.count, 1)
   }
 
   func test_TC_DF014_01_AC_DF_014_1_everyModelHasANonOptionalTrainerUidAttribute() throws {
@@ -38,7 +48,7 @@ final class LocalStoreSchemaTests: XCTestCase {
     let expected: [String: String] = [
       "LocalSoapDraft": "noteId", "LocalMeasurementDraft": "recordId", "LocalConsentCapture": "captureId",
       "OutboxItem": "id", "LocalBinary": "id", "TodayListEntry": "id", "StationProfile": "id", "QuickPhrase": "id",
-      "FilterPreference": "key",
+      "FilterPreference": "key", "LocalPendingMemberDraft": "pendingMemberId",
     ]
     for entity in LocalStoreContainer.schema.entities {
       let unique = entity.attributes.filter(\.isUnique).map(\.name)

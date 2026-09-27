@@ -31,4 +31,18 @@ extension AppBootstrap {
   static func liveRemoteWriter(trainerUid: String) -> any RemoteWriter {
     FirestoreRemoteWriter(trainerUid: trainerUid)
   }
+
+  /// The signed-in trainer's shell services (DF-108): FirebaseData's member directory, and registration on the
+  /// LocalStore partition with the SyncEngine sending to FirebaseData.
+  @MainActor
+  static func liveServices(trainerUid: String) -> ShellServices {
+    let runtime = SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
+      SyncRemote(
+        writer: liveRemoteWriter(trainerUid: trainerUid), uploader: StorageBinaryUploader(),
+        callable: FunctionsCallableClient())
+    }
+    return ShellServices(
+      memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
+      registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar())
+  }
 }

@@ -21,8 +21,9 @@ firebase emulators:exec --only auth,firestore --project demo-dfet \
     -only-testing:DFETTrainerIntegrationTests/AuthEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/MemberDirectoryEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/RemoteWriterEmulatorTests \
+    -only-testing:DFETTrainerIntegrationTests/PendingMemberEmulatorTests \
     CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=" 2>&1 | tee "$LOG"
-if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests|RemoteWriterEmulatorTests).* skipped" "$LOG"; then
+if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests|RemoteWriterEmulatorTests|PendingMemberEmulatorTests).* skipped" "$LOG"; then
   echo "emulator tests were skipped: the emulator flag did not reach the test process" >&2
   exit 1
 fi

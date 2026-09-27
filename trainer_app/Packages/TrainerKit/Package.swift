@@ -58,7 +58,7 @@ let package = Package(
     .target(name: "FeatureShare", dependencies: featureDeps),
     .target(name: "FeatureLidarBeta", dependencies: featureDeps),  // P2 adds BodyPathResult, BodyPathCoreUI (ADR-012)
     .target(name: "FeatureSettings", dependencies: featureDeps),
-    .testTarget(name: "LocalStoreTests", dependencies: ["LocalStore"]),
+    .testTarget(name: "LocalStoreTests", dependencies: ["LocalStore", .product(name: "SyncEngine", package: "TrainerCore")]),
     .testTarget(name: "FirebaseDataTests", dependencies: ["FirebaseData"]),
     .testTarget(name: "PostureVisionTests", dependencies: ["PostureVision"]),
     .testTarget(

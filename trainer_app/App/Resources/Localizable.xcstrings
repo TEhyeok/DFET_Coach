@@ -109,6 +109,18 @@
         }
       }
     },
+    "common.cancel" : {
+      "comment" : "V1-12",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "취소"
+          }
+        }
+      }
+    },
     "common.close" : {
       "comment" : "V1-12 · —",
       "extractionState" : "manual",
@@ -129,6 +141,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "추후 추가 예정"
+          }
+        }
+      }
+    },
+    "common.devDefect" : {
+      "comment" : "V1-12 · V1-06 §3.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "처리하지 못했어요. 문제가 계속되면 관리자에게 알려 주세요."
           }
         }
       }
@@ -937,6 +961,18 @@
         }
       }
     },
+    "tr02.addPending" : {
+      "comment" : "V1-12 · F-LINK-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기 회원 추가"
+          }
+        }
+      }
+    },
     "tr02.empty" : {
       "comment" : "V1-12 · §8.4",
       "extractionState" : "manual",
@@ -1077,6 +1113,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LiDAR 관측 단면(베타)"
+          }
+        }
+      }
+    },
+    "tr14.register.age14Confirm" : {
+      "comment" : "V1-12 · F-LINK-01.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "만 14세 이상임을 확인했습니다"
+          }
+        }
+      }
+    },
+    "tr14.register.birthYear" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출생연도"
+          }
+        }
+      }
+    },
+    "tr14.register.displayName" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "표시명"
+          }
+        }
+      }
+    },
+    "tr14.register.next" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음: 동의 받기"
+          }
+        }
+      }
+    },
+    "tr14.register.sex" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "성별"
+          }
+        }
+      }
+    },
+    "tr14.register.sex.female" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여성"
+          }
+        }
+      }
+    },
+    "tr14.register.sex.male" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "남성"
+          }
+        }
+      }
+    },
+    "tr14.register.sex.unspecified" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "밝히지 않음"
+          }
+        }
+      }
+    },
+    "tr14.register.title" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원 등록"
+          }
+        }
+      }
+    },
+    "tr14.register.under14Blocked" : {
+      "comment" : "V1-12 · F-LINK-01.8, AS-22",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "만 14세 미만은 등록할 수 없어요. 법정대리인 동의 절차는 지원하지 않습니다."
           }
         }
       }

@@ -46,6 +46,12 @@ targets:
       - package: TrainerKit
         product: FeatureMembers
       - package: TrainerKit
+        product: FeatureConsent
+      - package: TrainerKit
+        product: LocalStore
+      - package: TrainerCore
+        product: SyncEngine
+      - package: TrainerKit
         product: FeatureSettings
       - package: TrainerKit
         product: DesignSystem

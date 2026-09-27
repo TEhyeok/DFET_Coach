@@ -67,6 +67,16 @@ enum EmulatorDocuments {
     _ = try await EmulatorREST.send("PATCH", "\(base)/\(path)", ["fields": try fields.mapValues(encode)])
   }
 
+  /// The stored fields of `path` in Firestore REST form, or nil when the document does not exist.
+  static func get(_ path: String) async throws -> [String: Any]? {
+    do {
+      let document = try await EmulatorREST.send("GET", "\(base)/\(path)", nil)
+      return document["fields"] as? [String: Any]
+    } catch let error as NSError where error.domain == "EmulatorREST" && error.code == 404 {
+      return nil
+    }
+  }
+
   /// Firestore REST value encoding.
   private static func encode(_ value: Any) throws -> [String: Any] {
     switch value {
@@ -83,12 +93,12 @@ enum EmulatorDocuments {
 }
 
 enum EmulatorREST {
-  static func send(_ method: String, _ url: String, _ body: [String: Any]) async throws -> [String: Any] {
+  static func send(_ method: String, _ url: String, _ body: [String: Any]?) async throws -> [String: Any] {
     var request = URLRequest(url: try XCTUnwrap(URL(string: url)))
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer owner", forHTTPHeaderField: "Authorization")
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
+    if let body { request.httpBody = try JSONSerialization.data(withJSONObject: body) }
     let (data, response) = try await URLSession.shared.data(for: request)
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
     guard status == 200 else {

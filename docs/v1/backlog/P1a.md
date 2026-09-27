@@ -713,6 +713,16 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 스프린트: S05(원래 계획 S07). 상태: 할 일
 - 왜 필요한가: TR-14 대기 회원 최소 등록(만 14세 확인). MVP의 테스트 회원 생성 경로
 - 지금 만든다: 카드 전체 범위
+- 구현 기록(첫 Outbox 쓰기 스토리라 동기화 배선을 함께 만들었다):
+  - `TrainerDomain`: `DocumentID.make()`(20자 `[A-Za-z0-9]`), `Sex`, `PendingMemberDraft`, `AgeGate`(서울 연도, `birthYear <= 연도 - 15`), `PendingMemberPayload`(규칙 9키, 키 집합은 firestore.rules `pendingCreateKeys()`와 테스트로 대조), `PendingMemberRegistrar` 프로토콜.
+  - 등록 구현은 카드의 `FirebaseData/FirestoreMemberDirectory+Pending.swift`가 아니라 `LocalStore/LocalPendingMemberRegistrar`다: 서버를 기다리지 않고 로컬 저장 + Outbox 0단계 create만 하므로 FirebaseData는 보내는 쪽만 맡는다.
+  - `LocalStoreSchemaV1_1`(가벼운 이관): `LocalPendingMemberDraft`(V1-05 §12.2, `outboxItemId`로 뒤 항목의 `dependsOn` 대상), `OutboxItem.ackConfirmed`(재시작 뒤에도 synced 계산). `LocalOutboxStore`가 SyncEngine의 `OutboxStore`이고, 대기 회원 create가 `acked`되면 로컬 행을 지운다(ASM-05-38).
+  - 앱 배선 `SessionRuntime`: 트레이너별 LocalStore 파티션·Outbox·SyncEngine(FirebaseData 원격), `start()`(실행·전경), `retryExhausted()`(전경·1분), `NWPathMonitor` → `networkDidChange`, 잠금 해제 → `protectedDataDidBecomeAvailable`. 로그아웃 정리는 DF-018.
+  - 동의 단계는 `TrainerRoute.consent(member:)`가 아니라 시트 `ShellSheet.consent(member:)`다(V1-07 §3.2에서 TR-14는 시트). DF-110 전까지 '추후 추가 예정' 자리 표시이고 같은 `MemberKey.pending(id)`를 가진다(AC-DF-108.4).
+  - 진입점 TR-02 툴바 '대기 회원 추가'(`tr02.addPending`)를 이 스토리에서 더했다. 대기 행·빈 상태 버튼은 DF-113.
+  - 출생연도 선택기는 1900~올해를 모두 보인다(만 14세 미만을 골라야 차단 문구를 보일 수 있음).
+  - `OnboardingSession.startedAt`(M-08 시작점)은 그 값을 쓰는 DF-110에서 만든다.
+  - TC-108-05의 `dependsOn` 연결은 동의 캡처를 만드는 DF-110 몫이다. 이 스토리는 `outboxItemId` 저장과 오프라인 등록 → 온라인 복귀 → 전송 → 재시작 뒤 synced를 단위 테스트로 확인한다.
 
 ---
 

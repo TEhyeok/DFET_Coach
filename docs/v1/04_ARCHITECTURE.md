@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-04 |
-| 버전 | v1.0.2 |
+| 버전 | v1.0.3 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -716,7 +716,11 @@ sequenceDiagram
 | 영구 오류 | `permission-denied`, `invalid-argument`, `failed-precondition`, `not-found`(부모 없음) | 먼저 **재조정**(10.5). 재조정으로 해소되지 않으면 즉시 `syncFailed`, 자동 재시도 없음. 사유와 '다시 시도' 버튼 표시. 로컬 원본은 지우지 않는다(NFR-06) |
 | 로컬 오류 | 파일 없음, 디스크 부족 | `syncFailed(localIO)`, 트레이너에게 안내 |
 
-- 전역 동기화 대기 건수(`pendingCount()`)는 `acked`가 아닌 항목을 가진 엔터티 수다(M-G3). TR-01과 TR-15 상단에 항상 보인다.
+- 전역 동기화 대기 건수(`pendingCount()`)는 `acked`가 아닌 **Outbox 항목 수**다(M-G3, AC-DF-015.7). TR-01과 TR-15 상단에 항상 보인다.
+- **구현 기준(DF-015, ASM-P0-16 우선).** 위 표의 일시 오류 행과 달리, 구현은 카드 AC-DF-015.4를 따른다.
+  - 백오프는 `min(2^n초, 15분) ± 20%`다(n = 연속 실패 횟수).
+  - 연속 5회 실패하면 `syncFailed`로 멈추고 자동 재시도하지 않는다. '다시 시도'(`retry`)가 attempts를 0으로 돌린다.
+  - `protectedDataUnavailable`은 한도에 넣지 않고 잠금 해제까지 엔진을 멈춘다(ASM-P0-29).
 - 모든 실패 표시는 분석 이벤트 `save_failure_shown(entity_type, retry_result)` 하나로만 남긴다(§5.5).
 
 ### 10.5 멱등과 재조정
@@ -1291,3 +1295,4 @@ NFR-15의 수치는 모두 가설 목표이며 P1a·P1b 측정 후 §12.7에서 
 | v1.0(정합 패스 2) | 2026-09-24 | project.yml `optional: true` 제거·postBuildScripts, 픽스처 복사 제거(R4), §9.1·§10.2를 V1-05 §12에 맞춤, clientRequestId → requestId/clientCaptureId(R5), 시드·포트 담당(R2) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: R2·R4·R5 반영, ASM-04-21·ASM-04-22 추가 | — | 없음 |
 | v1.0.2 | 2026-09-26 | DF-039: §6.4 이식 대응 요약의 AppDelegate 줄 번호를 보관 브랜치 tip `82c6ee9` 기준 범위로 갱신, FeatureToday·FeatureConsent 행과 이식 제외 목록 추가, 코드 근거 표기 갱신 | — | 없음 |
+| v1.0.3 | 2026-09-27 | DF-015: §10.4 `pendingCount()` 정의를 항목 수로 맞추고(AC-DF-015.7), 백오프·재시도 한도의 구현 기준(ASM-P0-16, AC-DF-015.4)을 표 아래에 명시 | — | ASM-04-06(최대 간격 자동 재시도 지속)은 DF-015 카드와 달라 구현하지 않음 |

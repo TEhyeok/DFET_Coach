@@ -20,12 +20,12 @@ let package = Package(
     .target(name: "TrainerContracts", swiftSettings: strict),
     .target(name: "TrainerDomain", dependencies: ["TrainerContracts"], swiftSettings: strict),
     .target(name: "PostureMath", dependencies: ["TrainerContracts", "TrainerDomain"], swiftSettings: strict),
-    .target(name: "SyncEngine", dependencies: ["TrainerDomain"], swiftSettings: strict),  // no LocalStore (ASM-04-02)
+    .target(name: "SyncEngine", dependencies: ["TrainerContracts", "TrainerDomain"], swiftSettings: strict),  // no LocalStore (ASM-04-02)
     .target(name: "TrainerAnalytics", dependencies: ["TrainerContracts"], swiftSettings: strict),
     .testTarget(name: "TrainerContractsTests", dependencies: ["TrainerContracts"]),
     .testTarget(name: "TrainerDomainTests", dependencies: ["TrainerDomain", "TrainerContracts"]),
     .testTarget(name: "PostureMathTests", dependencies: ["PostureMath"]),
-    .testTarget(name: "SyncEngineTests", dependencies: ["SyncEngine"]),
+    .testTarget(name: "SyncEngineTests", dependencies: ["SyncEngine", "TrainerContracts", "TrainerDomain"]),
     .testTarget(name: "TrainerAnalyticsTests", dependencies: ["TrainerAnalytics"]),
   ],
   swiftLanguageVersions: [.v5]

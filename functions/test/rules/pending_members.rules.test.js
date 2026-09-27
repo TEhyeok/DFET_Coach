@@ -6,12 +6,16 @@ const {doc, serverTimestamp, setDoc, updateDoc} = require('firebase/firestore');
 const h = require('./_harness');
 
 const {trainerA, pendA} = h.IDS;
-// request.time.year()와 같은 UTC 연도. 실행 중 1월 1일 00:00 UTC를 넘으면 새 연도로 한 번 더 확인한다.
+// request.time.year()와 같은 UTC 연도. 확인 도중 1월 1일 00:00 UTC를 넘어 실패하면 새 연도로 한 번 더 확인한다.
 const utcYear = () => new Date().getUTCFullYear();
 async function atStableYear(check) {
   const year = utcYear();
-  await check(year);
-  if (utcYear() !== year) await check(utcYear());
+  try {
+    await check(year);
+  } catch (err) {
+    if (utcYear() === year) throw err;
+    await check(utcYear());
+  }
 }
 let env;
 let seq = 0;

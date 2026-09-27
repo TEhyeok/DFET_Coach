@@ -19,11 +19,11 @@ function withCase(loaded, mutate) {
   return { ...loaded, postureMetricVectors: { ...loaded.postureMetricVectors, doc } };
 }
 
-test('AC-DF-201.9 posture vectors pass the meta-schema and cross checks with PM-01..PM-24', () => {
+test('AC-DF-201.9 posture vectors pass the meta-schema and cross checks with PM-01..PM-25', () => {
   const loaded = load();
   assert.deepEqual(validateInputs(REPO_ROOT, loaded), []);
   const ids = loaded.postureMetricVectors.doc.cases.map((c) => c.id);
-  assert.deepEqual(ids, Array.from({ length: 24 }, (_, i) => `PM-${String(i + 1).padStart(2, '0')}`));
+  assert.deepEqual(ids, Array.from({ length: 25 }, (_, i) => `PM-${String(i + 1).padStart(2, '0')}`));
 });
 
 test('AC-DF-201.9 an unknown landmark, metric or side and a duplicate id are rejected', () => {

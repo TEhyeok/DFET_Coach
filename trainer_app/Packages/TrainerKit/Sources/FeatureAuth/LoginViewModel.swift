@@ -16,10 +16,16 @@ public final class LoginViewModel {
   public var password = ""
   public private(set) var phase: Phase = .idle
 
-  private let auth: any AuthService
+  private let signIn: @MainActor (_ email: String, _ password: String) async throws -> TrainerSession
 
   public init(auth: any AuthService) {
-    self.auth = auth
+    signIn = { try await auth.signIn(email: $0, password: $1) }
+  }
+
+  /// Signs in through the gate (`AuthGate`), so a sign-in that fails after its session was published is not shown as
+  /// a revoked claim.
+  public init(gate: AuthGateModel) {
+    signIn = { try await gate.signIn(email: $0, password: $1) }
   }
 
   public var canSubmit: Bool {
@@ -40,8 +46,7 @@ public final class LoginViewModel {
     guard canSubmit else { return }
     phase = .signingIn
     do {
-      _ = try await auth.signIn(
-        email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
+      _ = try await signIn(email.trimmingCharacters(in: .whitespacesAndNewlines), password)
       password = ""
       phase = .idle
     } catch let error as AuthError {
@@ -68,6 +73,10 @@ public final class AuthGateModel {
   public let auth: any AuthService
   /// Set while a sign-out the trainer asked for is in progress, so the resulting `nil` is not a lock.
   private var userSignOutInProgress = false
+  /// Set by a sign-in from the login screen until it succeeds or a `nil` arrives. A sign-in can fail after the token
+  /// listener already published its session (the claim check hits an error) and then signs out: that `nil` ends the
+  /// failed attempt, not a revoked claim, and the login screen shows the sign-in error instead of the lock notice.
+  private var signInAttemptInProgress = false
 
   public init(auth: any AuthService) {
     self.auth = auth
@@ -91,13 +100,24 @@ public final class AuthGateModel {
     }
     let wasSignedIn: Bool
     if case .signedIn = state { wasSignedIn = true } else { wasSignedIn = false }
-    let lock: AuthLockReason? = (wasSignedIn && !userSignOutInProgress) ? .claimRevoked : nil
+    let causedByTrainer = userSignOutInProgress || signInAttemptInProgress
+    let lock: AuthLockReason? = (wasSignedIn && !causedByTrainer) ? .claimRevoked : nil
     userSignOutInProgress = false
+    signInAttemptInProgress = false
     if case let .signedOut(existing) = state, lock == nil {
       state = .signedOut(lock: existing)  // keep a lock notice already on screen
     } else {
       state = .signedOut(lock: lock)
     }
+  }
+
+  /// Sign-in from the login screen (DF-012). A failed attempt keeps its flag until its `nil` arrives, which can come
+  /// after the error; while the login screen shows, only a sign-in can publish a session, so the flag hides no lock.
+  public func signIn(email: String, password: String) async throws -> TrainerSession {
+    signInAttemptInProgress = true
+    let session = try await auth.signIn(email: email, password: password)
+    signInAttemptInProgress = false
+    return session
   }
 
   /// Sign-out requested by the trainer (settings, DF-018). Never shows the claim-revoked notice.

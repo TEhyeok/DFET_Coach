@@ -50,4 +50,15 @@ public enum PixelGeometry {
     let t = degrees * .pi / 180
     return PixelPoint(x: cx + dx * cos(t) + dy * sin(t), y: cy - dx * sin(t) + dy * cos(t))
   }
+
+  /// Tolerance of the 1 px boundary, in pixels. Far above the rounding error of pixel values up to about 10⁴ (about
+  /// 10⁻¹² px) and far below any distance a trainer can place.
+  static let onePixelTolerance = 1e-9
+
+  /// Whether a pixel distance is under 1 px: the level rule (F-ASM-03.4) and V-POS-03 (V1-09 §5.6, §5.8). A gap of
+  /// exactly one pixel can come out a hair under 1 after the conversion (0.5005 × 2000 = 1000.9999999999999), so it
+  /// still counts as 1 px. The only epsilon of PostureMath; rounding has none (§1.3).
+  static func isUnderOnePixel(_ distance: Double) -> Bool {
+    abs(distance) < 1 - onePixelTolerance
+  }
 }

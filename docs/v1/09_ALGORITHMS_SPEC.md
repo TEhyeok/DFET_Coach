@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-09 |
-| 버전 | v1.0.3 |
+| 버전 | v1.0.4 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -66,7 +66,7 @@
 
 ### 1.3 공통 수치 규약
 
-**반올림(정본).** 모든 저장값·Δ 계산은 '0에서 먼 쪽 반올림'(half away from zero)이다(ASM-P1b-03 채택). 세 플랫폼이 IEEE 754 double에서 **같은 연산 순서**로 계산해 결과가 비트 단위로 같게 한다. 보정용 epsilon을 더하지 않는다(더하면 플랫폼별로 결과가 달라질 수 있다). 기존 `round(value, digits)`(dfet:functions/src/clinical/normalization.js:6-9)는 `Number.EPSILON`을 더하는 다른 규칙이므로 판정 코드에서 재사용하지 않는다.
+**반올림(정본).** 모든 저장값·Δ 계산은 '0에서 먼 쪽 반올림'(half away from zero)이다(ASM-P1b-03 채택). 세 플랫폼이 IEEE 754 double에서 **같은 연산 순서**로 계산해 결과가 비트 단위로 같게 한다. 보정용 epsilon을 더하지 않는다(더하면 플랫폼별로 결과가 달라질 수 있다). 1px 경계 비교의 허용 오차는 반올림이 아니며 [§5.6](#56-side부호1px-규칙)에 따로 정한다. 기존 `round(value, digits)`(dfet:functions/src/clinical/normalization.js:6-9)는 `Number.EPSILON`을 더하는 다른 규칙이므로 판정 코드에서 재사용하지 않는다.
 
 ```
 roundHalfAway(v, d):  f = 10^d;  return sign(v) * round(|v| * f) / f     // round = 가장 가까운 정수, .5는 위로(양수 입력)
@@ -442,11 +442,13 @@ confirmability(views, options):
 
 | 규칙 | 내용 | 근거 |
 |---|---|---|
-| 1px 미만 | 보정 후 `|Δy| < 1.0` px이면 값 `0.0`, `side=none` | F-ASM-03.4 |
+| 1px 미만 | 보정 후 `|Δy| < 1.0` px이면 값 `0.0`, `side=none`(경계 비교는 아래 `isUnderOnePixel`) | F-ASM-03.4 |
 | 반올림 0 | 반올림한 값이 `0.0`이면 `side=none` | V1-05 ASM-05-19 |
 | 좌우 | 해부학적 좌우(코드 접미사). 이미지 좌우를 쓰지 않는다 | F-ASM-02.7 |
 | 추이 부호 | 기울기 지표는 `signed = value × (+1 right, −1 left, 0 none)`로 한 선을 그린다(ASM-P1b-17) | F-ASM-03.4 '오른쪽=+' |
 | 판정 | 크기(`value`)로 한다. 측면이 바뀌면 `sideChanged=true`를 따로 표시 | §7.5, T20 |
+
+- **1px 경계 비교**: 이 절의 1px 미만 규칙과 V-POS-03(§5.8)은 모두 `isUnderOnePixel(d) = |d| < 1 − 1e-9`(px)로 판정한다. 저장 좌표에서 정확히 1px인 차이(1px 방향 버튼 한 번, §4)는 픽셀 변환·roll 보정의 부동소수 오차로 1보다 아주 조금 작아질 수 있다(2000px에서 0.5005 × 2000 = 1000.9999999999999, Δy = 0.9999999999998863). 이런 차이는 1px로 본다(PM-25). 허용 오차 1e-9px는 픽셀 값(약 10⁴ 이하)의 변환 오차(약 10⁻¹²px)보다 훨씬 크고 사람이 찍을 수 있는 거리보다 훨씬 작다. 세 플랫폼이 같은 상수를 쓴다. 각도 반올림(§1.3)에는 epsilon을 두지 않는다.
 
 ### 5.7 출처 등급 할당
 
@@ -465,7 +467,7 @@ for metric in computed:
 |---|---|---|---|
 | V-POS-01 | 좌표가 [0,1] 밖 | `PostureMathError.coordinateOutOfRange(code)`, 계산 거부 | 거부 |
 | V-POS-02 | `W ≤ 0` 또는 `H ≤ 0` | `PostureMathError.zeroImageSize` | 거부 |
-| V-POS-03 | CVA `|v| < 1px`, 쌍 지표 `|Δx| < 1px` | 해당 지표 미계산 + 확정 차단 `degenerateGeometry(metric)` | 확정 차단 |
+| V-POS-03 | CVA `|v| < 1px`, 쌍 지표 `|Δx| < 1px`(경계 비교는 §5.6 `isUnderOnePixel`) | 해당 지표 미계산 + 확정 차단 `degenerateGeometry(metric)` | 확정 차단 |
 | V-POS-04 | 정면 쌍의 `|Δx| < 0.02·W` | 확정 차단 `pairTooClose(metric)` '두 점이 너무 가까워요'(ASM-09-10) | 확정 차단 |
 | V-POS-05 | 정면 쌍에서 `x'(Left) ≤ x'(Right)` | 확정 차단 `sidesSwapped(metric)` '좌우가 바뀐 것 같아요' | 확정 차단 |
 | V-POS-06 | `sagittalLeft`인데 이주 x' ≥ C7 x'(`sagittalRight`는 반대) | 경고 W-POS-01 '측면 방향을 확인해 주세요', 트레이너 확인 뒤 진행 | 경고 |
@@ -493,7 +495,7 @@ public enum PostureMetricCalculator {
       let tragusCode: LandmarkCode = (view == .sagittalLeft) ? .tragusLeft : .tragusRight
       guard let t = try f.corrected(tragusCode), let c = try f.corrected(.c7) else { return [] }
       let vx = t.x - c.x, vy = t.y - c.y
-      guard (vx * vx + vy * vy).squareRoot() >= 1 else { throw PostureMathError.degenerateGeometry(.craniovertebralAngle) }
+      guard !PixelGeometry.isUnderOnePixel((vx * vx + vy * vy).squareRoot()) else { throw PostureMathError.degenerateGeometry(.craniovertebralAngle) }
       let deg = atan2(-vy, abs(vx)) * 180 / .pi
       return [.init(metricCode: .craniovertebralAngle, value: Rounding.roundTenth(deg), side: .none,
                     sourceGrade: f.grade([tragusCode, .c7]))]
@@ -512,8 +514,8 @@ public enum PostureMetricCalculator {
                            sideIsLower: Bool) throws -> [PostureMetricResult] {
     guard let l = try f.corrected(left), let r = try f.corrected(right) else { return [] }   // 없으면 미산출
     let dx = l.x - r.x, dy = l.y - r.y
-    guard abs(dx) >= 1 else { throw PostureMathError.degenerateGeometry(metric) }
-    if abs(dy) < 1 { return [.init(metricCode: metric, value: 0, side: .none, sourceGrade: f.grade([left, right]))] }
+    guard !PixelGeometry.isUnderOnePixel(dx) else { throw PostureMathError.degenerateGeometry(metric) }   // §5.6 경계
+    if PixelGeometry.isUnderOnePixel(dy) { return [.init(metricCode: metric, value: 0, side: .none, sourceGrade: f.grade([left, right]))] }
     let value = Rounding.roundTenth(atan(abs(dy) / abs(dx)) * 180 / .pi)
     // 보정 후 y가 큰 쪽이 낮다. l.y > r.y 이면 왼쪽이 낮다.
     let leftIsLower = l.y > r.y
@@ -571,6 +573,7 @@ public struct ViewInput {
 | PM-22 | V-POS-02 | `front`, 폭 0 | `zeroImageSize` |
 | PM-23 | AC-ASM-02.1 | PM-19와 같되 `c7` `origin=auto, confirmed=true` | `canConfirm=false`, `blocking ∋ c7`(수동 필수는 확정해도 auto면 차단) |
 | PM-24 | V-POS-03 | `front`, 귀L(1000.4,700)·귀R(1000,690), `|Δx|`=0.4px | `degenerateGeometry(headTiltFrontal)` |
+| PM-25 | F-ASM-03.4, AC-DF-208.4 | `front`, 2000², 견봉L(1200,1001)·견봉R(800,1000), JSON y는 0.5005·0.5 | Δy가 계산상 0.9999999999998863이지만 1px(§5.6 경계) → atan(1/400) = 0.143° → **0.1, right**(수평 아님) |
 
 - 벡터 형식: 오류 기대 사례는 `expectedError: {error, metricCode?, landmarkCode?}`(PM-17·21·22·24), 확정 가능성 사례는 `kind: "confirmability"`(PM-19·20·23), 반올림 사례는 `kind: "rounding"`(PM-11), 기하 차단은 `expectedBlockingReasons`(PM-14)로 적는다. 계산을 거부하는 입력(V-POS-01~03)은 `Confirmability`에서도 차단 사유(`coordinateOutOfRange`, `zeroImageSize`, `degenerateGeometry`)가 되어 확정할 수 없다.
 
@@ -1967,3 +1970,4 @@ countBand(n):  0 → "0",  1…3 → "1to3",  4…6 → "4to6",  7…9 → "7to9
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 카탈로그·vocab 정본을 V1-05 §13으로 고정(ASM-09-36), ASM-09-01·C-09-02 해소 표기, §8.1 `nrsScale` 대응 추가 | — | 없음 |
 | v1.0.2 | 2026-09-28 | §5.10 벡터 PM-21~PM-24(V-POS-01·02·03, 수동 필수 auto 확정)와 벡터 형식 설명 추가, 계산을 거부하는 입력은 확정도 차단함을 명시, C-09-14(정면 쌍 퇴화 시 뷰 전체 오류) 기록 | DF-201 | 없음 |
 | v1.0.3 | 2026-09-28 | §3.1을 DF-203이 만든 `contracts/posture-protocol.v1.json` revision 1(평평한 구조)에 맞추고, 초안 필드 대응과 아직 없는 필드(DF-204·DF-207)를 표로 기록 | DF-203 | 없음 |
+| v1.0.4 | 2026-09-28 | §5.6 1px 경계 비교 `isUnderOnePixel`(허용 오차 1e-9px)을 정하고 §1.3·§5.8 V-POS-03·§5.9 참조 구현에 반영, §5.10 벡터 PM-25(정확히 1px인 높이차는 수평이 아님) 추가. 교차 리뷰에서 확인한 결함 수정 | — | 없음 |

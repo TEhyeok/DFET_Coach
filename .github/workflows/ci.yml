@@ -194,5 +194,7 @@ jobs:
       # 보고서를 job 로그와 Step Summary 표로 남긴다(AC-DF-010.2, AC-DF-010.6)
       - run: node tool/lint/prohibited-terms.mjs --mode="${COPY_LINT_MODE:-report}" --summary "$GITHUB_STEP_SUMMARY"
       # 보고서 뒤에 둬서 이 검사가 실패해도 보고서와 Step Summary는 남는다(#174)
-      - run: node --test tool/lint/test/catalog-deck.test.mjs       # 카탈로그가 문구 덱을 따른다(docs/v1/12 §4.7)
-      - run: node tool/lint/catalog-deck.mjs --check                 # 덱에 없는 키·다른 문장·자리표시자·§4.9 행 차단
+      - if: ${{ success() || failure() }}                            # 보고서가 block 모드로 실패해도 결과를 남긴다
+        run: node --test tool/lint/test/catalog-deck.test.mjs       # 카탈로그가 문구 덱을 따른다(docs/v1/12 §4.7)
+      - if: ${{ success() || failure() }}
+        run: node tool/lint/catalog-deck.mjs --check                 # 덱에 없는 키·다른 문장·자리표시자·§4.9 행 차단

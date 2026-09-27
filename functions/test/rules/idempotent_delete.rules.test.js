@@ -1,4 +1,4 @@
-// DF-104: deleting a draft is idempotent. A draft delete sent again after its reply was lost (the document is gone)
+// R-32 (DF-104): deleting a draft is idempotent. A draft delete sent again after its reply was lost (the document is gone)
 // succeeds for a trainer, so the Outbox never fails it for good; an existing document keeps its delete conditions.
 // Synthetic data only.
 const {after, before, beforeEach, test} = require('node:test');
@@ -24,7 +24,7 @@ beforeEach(async () => {
   });
 });
 
-test('DF-104 a trainer deleting a draft twice: the second delete of the missing document succeeds', async () => {
+test('R-32 DF-104 a trainer deleting a draft twice: the second delete of the missing document succeeds', async () => {
   const db = h.trainerDb(env);
   await assertSucceeds(deleteDoc(doc(db, 'soap_notes/fx-draft-a')));
   await assertSucceeds(deleteDoc(doc(db, 'soap_notes/fx-draft-a')));
@@ -32,13 +32,13 @@ test('DF-104 a trainer deleting a draft twice: the second delete of the missing 
   await assertSucceeds(deleteDoc(doc(db, 'postureAssessments/fx-posture-a')));
 });
 
-test('DF-104 a missing document can be "deleted" only by a trainer', async () => {
+test('R-32 DF-104 a missing document can be "deleted" only by a trainer', async () => {
   await assertFails(deleteDoc(doc(h.memberDb(env), 'soap_notes/fx-never-a')));
   await assertFails(deleteDoc(doc(h.memberDb(env), 'postureAssessments/fx-never-a')));
   await assertFails(deleteDoc(doc(env.unauthenticatedContext().firestore(), 'soap_notes/fx-never-a')));
 });
 
-test('DF-104 existing documents keep their delete conditions', async () => {
+test('R-32 DF-104 existing documents keep their delete conditions', async () => {
   await assertFails(deleteDoc(doc(h.trainerDb(env), 'soap_notes/fx-final-a')));          // finalized
   await assertFails(deleteDoc(doc(h.trainerDb(env, trainerB), 'soap_notes/fx-draft-a')));  // another trainer's draft
   await assertFails(deleteDoc(doc(h.trainerDb(env, trainerB), 'postureAssessments/fx-posture-a')));

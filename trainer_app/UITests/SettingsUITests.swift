@@ -46,7 +46,7 @@ final class SettingsUITests: XCTestCase {
     XCTAssertEqual(alert.buttons.count, 3)
     XCTAssertEqual(alert.buttons.matching(NSPredicate(format: "label CONTAINS '삭제'")).count, 0)
     attachScreenshot(app, name: "TC-DF018-02 unsynced logout warning")
-    alert.buttons.element(boundBy: 2).tap()  // 취소
+    alert.buttons["취소"].tap()
     XCTAssertTrue(alert.waitForNonExistence(timeout: 10))
     XCTAssertTrue(element("tr15.root", in: app).exists)
   }

@@ -16,12 +16,14 @@ struct LiveSessionSignOut: SessionSignOut {
   static let drainTimeout: Duration = .seconds(3)
 
   let trainerUid: String
-  let auth: any AuthService
+  /// ⑤ as a sign-out the trainer asked for (`AuthGateModel.signOut`, never the claim-revoked notice).
+  let signOutAuth: @Sendable () async throws -> Void
   /// FirebaseData's `FirestoreSessionTeardown.run()` (③④).
   let teardownRemote: @Sendable () async throws -> Void
 
   func signOut() async throws {
-    let runtime = await SessionRuntime.Cache.shared.retire(trainerUid: trainerUid)
+    let cache = await SessionRuntime.Cache.shared
+    let runtime = await cache.retire(trainerUid: trainerUid)
     await runtime?.stopSending(drainTimeout: Self.drainTimeout)
     do {
       try await teardownRemote()
@@ -31,14 +33,14 @@ struct LiveSessionSignOut: SessionSignOut {
       Self.logger.fault("firestore teardown failed: \(String(describing: type(of: error)), privacy: .public)")
     }
     do {
-      try await auth.signOut(discardUnsynced: false)
+      try await signOutAuth()
     } catch {
-      if let runtime { await SessionRuntime.Cache.shared.reinstate(runtime) }
+      if let runtime { await cache.reinstate(runtime) }
       throw error
     }
-    if let runtime {
-      await Self.purgeSynced(container: runtime.container, location: runtime.location, trainerUid: trainerUid)
-    }
+    guard let runtime else { return }
+    await cache.finishRetiring(runtime)
+    await Self.purgeSynced(container: runtime.container, location: runtime.location, trainerUid: trainerUid)
   }
 
   /// ⑥. A failure is logged only: the synced rows stay on the device until the next logout.

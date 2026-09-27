@@ -99,6 +99,9 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
 
   private func apply(_ item: TrainerDomain.OutboxItem, to row: OutboxItem) {
     OutboxRowMapping.apply(item, to: row)
+    if row.binaryId == nil, let binary = item.binary {
+      row.binaryId = try? binaryId(for: binary)  // the LocalBinary row was saved after the item
+    }
     if item.state == .acked, item.kind == .createDocument, case let .pending(id) = item.memberKey,
       item.entityRef == .pendingMember(id: id) {
       deletePendingMemberDraft(id)  // the server has it now (ASM-05-38)
@@ -197,7 +200,8 @@ enum OutboxRowMapping {
     row.lastErrorCode = item.lastErrorCode
     row.ackConfirmed = item.ack?.isConfirmed
     row.dependsOn = item.dependsOn
-    row.payloadJSON = storedPayload(item)
+    // An item loaded without its payload (unreadable) keeps the stored bytes; only an ack clears them.
+    if item.state == .acked || item.payload != nil { row.payloadJSON = storedPayload(item) }
   }
 
   /// An acked item's payload is never read again, so it is not kept: a pending member's name, sex and birth year
@@ -215,7 +219,19 @@ enum OutboxRowMapping {
       entityRef: TrainerDomain.LocalEntityRef(rawValue: row.entityRef), sequence: row.sequence,
       stage: OutboxStage(rawValue: row.stage) ?? .document, kind: kind, target: target(kind, path: row.targetPath),
       payload: nil, binary: nil, dependsOn: row.dependsOn, attempts: row.attempts, nextAttemptAt: row.nextAttemptAt,
-      state: .failed, lastErrorCode: unreadableCode, createdAt: row.createdAt)
+      state: finishedState(row) ?? .failed, lastErrorCode: finishedState(row) == nil ? unreadableCode : row.lastErrorCode,
+      ack: finishedState(row) == .acked ? ack(kind, confirmed: row.ackConfirmed ?? false, path: row.targetPath, sha256: nil)
+        : nil,
+      createdAt: row.createdAt)
+  }
+
+  /// A row that was already acked or superseded stays so even when another field is unreadable: it is done.
+  private static func finishedState(_ row: OutboxItem) -> OutboxItemState? {
+    switch state(row.state, blockedReason: row.blockedReason) {
+    case .acked?: return .acked
+    case .superseded?: return .superseded
+    default: return nil
+    }
   }
 
   static let unreadableCode = "local-unreadable"

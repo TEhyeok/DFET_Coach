@@ -77,8 +77,10 @@ final class SessionSignOutOrderTests: XCTestCase {
     try await store.insert(unsynced)
 
     let steps = Steps()
+    let auth = FakeAuth(steps: steps, fails: false)
     let signOut = LiveSessionSignOut(
-      trainerUid: uid, auth: FakeAuth(steps: steps, fails: false), teardownRemote: { steps.add("teardown") })
+      trainerUid: uid, signOutAuth: { try await auth.signOut(discardUnsynced: false) },
+      teardownRemote: { steps.add("teardown") })
     try await signOut.signOut()
 
     XCTAssertEqual(steps.all, ["teardown", "auth"])
@@ -95,8 +97,10 @@ final class SessionSignOutOrderTests: XCTestCase {
     try await store.insert(synced)
 
     let steps = Steps()
+    let auth = FakeAuth(steps: steps, fails: true)
     let signOut = LiveSessionSignOut(
-      trainerUid: uid, auth: FakeAuth(steps: steps, fails: true), teardownRemote: { steps.add("teardown") })
+      trainerUid: uid, signOutAuth: { try await auth.signOut(discardUnsynced: false) },
+      teardownRemote: { steps.add("teardown") })
     do {
       try await signOut.signOut()
       XCTFail("expected the sign-out error")

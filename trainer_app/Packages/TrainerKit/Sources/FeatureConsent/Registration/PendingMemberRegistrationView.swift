@@ -63,6 +63,7 @@ public struct PendingMemberRegistrationView: View {
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button { onCancel() } label: { Text("common.cancel", bundle: .main) }
+            .disabled(model.isSaving)  // a save in progress would open the consent sheet after the form closed
             .accessibilityIdentifier("tr14.register.cancel")
         }
         ToolbarItem(placement: .confirmationAction) {

@@ -144,6 +144,8 @@ public actor SyncEngine {
       return
     }
     await reconcileWithStore()
+    // A stop() while the store was loading wins: the app asked to stop last.
+    guard startRequested else { return }
     running = true
     unlockEpoch += 1  // foreground means unlocked: a lock reply from before this must not pause again
     pausedForLock = false

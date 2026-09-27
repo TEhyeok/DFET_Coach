@@ -95,8 +95,11 @@ public struct LocalRetention {
   /// Logout (DF-018, NFR-08, ASM-P0-17): removes what the server already has and keeps everything it does not.
   ///
   /// - Outbox items that are acked or superseded are deleted.
-  /// - A draft (SOAP, measurement) or a server-confirmed consent capture is deleted once none of its Outbox items is
-  ///   still waiting; with it go its binaries whose upload was verified.
+  /// - A draft (SOAP, measurement) is deleted only on evidence that the server has it: an acked item of its record, no
+  ///   waiting item, and no local edit after the newest acked item. A draft that was never queued (a Live session
+  ///   still being written, Review edits before '확정') is unsynced and stays.
+  /// - A server-confirmed consent capture with no waiting item is deleted.
+  /// - A binary goes with its record only when an acked upload of that very file exists and the upload was verified.
   /// - Anything still waiting (queued, in flight, failed, blocked) stays with its draft and files, tied to
   ///   `trainerUid`, and is sent after the same trainer signs in again. Nothing unsynced is ever deleted here.
   /// - Device settings (today list, filters, quick phrases, stations) stay: they hold no health record.
@@ -110,19 +113,28 @@ public struct LocalRetention {
     let waiting = outbox.filter { !finished.contains($0.state) }
     let waitingRefs = Set(waiting.map(\.entityRef))
     let waitingBinaries = Set(waiting.compactMap(\.binaryId))
+    let acked = outbox.filter { $0.state == LocalOutboxState.acked.rawValue }
+    // The newest acked step of each record: a draft edited after it has changes the server does not have.
+    let newestAck = Dictionary(acked.map { ($0.entityRef, $0.createdAt) }, uniquingKeysWith: max)
+    let uploadedBinaries = Set(acked.filter { $0.kind == LocalOutboxKind.uploadBinary.rawValue }.compactMap(\.binaryId))
+    func serverHas(_ entityRef: String, editedAt: Date) -> Bool {
+      guard !waitingRefs.contains(entityRef), let ack = newestAck[entityRef] else { return false }
+      return editedAt <= ack
+    }
     for item in outbox where finished.contains(item.state) {
       report.destroyedOutboxItemIds.append(item.id)
       context.delete(item)
     }
 
     var freedBinaries: [UUID] = []
-    for draft in try context.fetchOwned(LocalSoapDraft.self, by: trainerUid) where !waitingRefs.contains(draft.entityRef) {
+    for draft in try context.fetchOwned(LocalSoapDraft.self, by: trainerUid)
+    where serverHas(draft.entityRef, editedAt: draft.updatedLocallyAt) {
       report.destroyedSoapNoteIds.append(draft.noteId)
       if let ink = draft.inkBinaryId { freedBinaries.append(ink) }
       context.delete(draft)
     }
     for draft in try context.fetchOwned(LocalMeasurementDraft.self, by: trainerUid)
-    where !waitingRefs.contains(draft.entityRef) {
+    where serverHas(draft.entityRef, editedAt: draft.updatedLocallyAt) {
       report.destroyedMeasurementRecordIds.append(draft.recordId)
       if let photo = draft.reportPhotoBinaryId { freedBinaries.append(photo) }
       context.delete(draft)
@@ -134,8 +146,8 @@ public struct LocalRetention {
       context.delete(capture)
     }
 
-    // A binary goes with its record only when the server has the file (verified) and no waiting item needs it.
-    let freed = Set(freedBinaries).subtracting(waitingBinaries)
+    // A binary goes with its record only when this file was uploaded (acked, verified) and no waiting item needs it.
+    let freed = Set(freedBinaries).intersection(uploadedBinaries).subtracting(waitingBinaries)
     for binary in try context.fetchOwned(LocalBinary.self, by: trainerUid)
     where freed.contains(binary.id) && binary.verifiedAt != nil {
       report.destroyedBinaryIds.append(binary.id)

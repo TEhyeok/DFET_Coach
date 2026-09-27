@@ -435,7 +435,9 @@ extension JSONValue {
     case let .array(items):
       return .array(items.map { mappingKeys($0, transform) })
     case let .object(object):
-      return .object(Dictionary(uniqueKeysWithValues: object.map { (transform($0.key), mappingKeys($0.value, transform)) }))
+      // A hand-edited store could hold both `~a` and `a`; keep one instead of trapping on every launch.
+      return .object(Dictionary(object.map { (transform($0.key), mappingKeys($0.value, transform)) },
+                                uniquingKeysWith: { first, _ in first }))
     default:
       return value
     }

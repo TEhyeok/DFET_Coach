@@ -84,12 +84,18 @@ public struct AuthGate<Content: View>: View {
   @State private var gate: AuthGateModel
   @State private var login: LoginViewModel
   @Environment(\.scenePhase) private var scenePhase
-  private let content: (TrainerSession) -> Content
+  private let content: (TrainerSession, AuthGateModel) -> Content
 
-  public init(auth: any AuthService, @ViewBuilder content: @escaping (TrainerSession) -> Content) {
+  /// `content` also gets the gate, so a logout the trainer asks for goes through `AuthGateModel.signOut` and never
+  /// shows the claim-revoked notice (DF-018).
+  public init(auth: any AuthService, @ViewBuilder content: @escaping (TrainerSession, AuthGateModel) -> Content) {
     _gate = State(initialValue: AuthGateModel(auth: auth))
     _login = State(initialValue: LoginViewModel(auth: auth))
     self.content = content
+  }
+
+  public init(auth: any AuthService, @ViewBuilder content: @escaping (TrainerSession) -> Content) {
+    self.init(auth: auth) { session, _ in content(session) }
   }
 
   public var body: some View {
@@ -101,7 +107,7 @@ public struct AuthGate<Content: View>: View {
       case let .signedOut(lock):
         LoginView(model: login, lock: lock)
       case let .signedIn(session):
-        content(session)
+        content(session, gate)
       }
     }
     .task { await gate.observe() }

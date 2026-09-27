@@ -1,0 +1,5 @@
+import SwiftUI
+
+struct SaveStateLabel: View {
+  var body: some View { Text("저장됨") }
+}

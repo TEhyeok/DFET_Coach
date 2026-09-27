@@ -22,6 +22,8 @@
 #                            access goes through StorageFactory, which picks the Seoul bucket (DEC-19)           AC-DF-104.9
 #   G9 raw record collection 'soap_notes' 'postureAssessments' 'bodyCompositionRecords'
 #                            'circumferenceMeasurements' 'bodyScans' as a string or path segment in lib/         AC-DF-011.4
+#   G11 plain saved          a standalone "저장됨" literal in trainer_app/ Swift and string catalogs outside the test
+#                            targets: the save state is one of the five §6.0.3 phrases ("기기에 저장됨" passes)  ASM-12-19
 #   W1 workflow secrets      tool/lint/check-workflow-secrets.sh on .github/workflows/trainer-app.yml: the Firebase
 #                            config is injected only on main push / workflow_dispatch, never printed, never uploaded,
 #                            and always removed (DF-034). Runs when the tree has .github/workflows/ (the repository;
@@ -83,6 +85,7 @@ guard_name() {
     G8) echo "print in FirebaseData/SyncEngine" ;;
     G9) echo "member app raw record collection" ;;
     G10) echo "Storage.storage(...) outside StorageFactory" ;;
+    G11) echo "standalone \"저장됨\" save state (PRD §6.0.3)" ;;
   esac
 }
 
@@ -149,6 +152,9 @@ scan G8 "$SWIFT" '' '(^|[^A-Za-z0-9_])(print|debugPrint)[[:space:]]*\(' '' "$TK/
 scan G9 '' '' "['\"/](soap_notes|postureAssessments|bodyCompositionRecords|circumferenceMeasurements|bodyScans)['\"/]" '' lib
 # G10 (AC-DF-104.9, DEC-19). Every trainer-app Storage access goes through StorageFactory.make(emulator:).
 scan G10 "$SWIFT" '(^|/)StorageFactory\.swift$' 'Storage\.storage\(' '' trainer_app
+# G11 (ASM-12-19, docs/v1/12 §7.9). Test targets (Tests/, UITests/, AppTests/, IntegrationTests/) may name it to assert
+# that it is absent.
+scan G11 '\.(swift|xcstrings)$' '(^|/)[A-Za-z]*Tests/' '"저장됨"' '' trainer_app
 
 # W1 (AC-DF-034.3, NFR-02). Not baselinable: any finding fails.
 workflow_fail=0
@@ -226,4 +232,4 @@ if [ "$violations" -gt 0 ] || [ "$stale" -gt 0 ] || [ "$errors" -gt 0 ] || [ "$w
   [ "$violations" -eq 0 ] || echo "static-guards: fix the code; baseline entries are only for pre-existing uses with a removal story or owner decision (ASM-P0-25)"
   exit 1
 fi
-echo "static-guards: OK: 10 guards, 0 violations, $baselined baselined finding(s) in $(wc -l < "$TMP/allowed" | tr -d ' ') file(s)$workflow_note"
+echo "static-guards: OK: 11 guards, 0 violations, $baselined baselined finding(s) in $(wc -l < "$TMP/allowed" | tr -d ' ') file(s)$workflow_note"

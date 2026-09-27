@@ -1,0 +1,6 @@
+import SwiftUI
+
+// The badge never shows a plain 저장됨 (§6.0.3).
+struct SaveStateLabel: View {
+  var body: some View { Text("기기에 저장됨") }
+}

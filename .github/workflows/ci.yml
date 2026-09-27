@@ -197,4 +197,6 @@ jobs:
       - if: ${{ success() || failure() }}                            # 보고서가 block 모드로 실패해도 결과를 남긴다
         run: node --test tool/lint/test/catalog-deck.test.mjs       # 카탈로그가 문구 덱을 따른다(docs/v1/12 §4.7)
       - if: ${{ success() || failure() }}
-        run: node tool/lint/catalog-deck.mjs --check                 # 덱에 없는 키·다른 문장·자리표시자·§4.9 행 차단
+        run: node tool/lint/catalog-deck.mjs --check                 # 덱에 없는 키·다른 문장·자리표시자·§4.9 행·카탈로그에 없는 사용 키 차단
+      - if: ${{ success() || failure() }}
+        run: node --test tool/lint/test/copy-deck.test.mjs          # 덱 전체가 대상별 세트로 위반 0건, 모드와 무관하게 차단(TC-12-LN-07)

@@ -27,6 +27,8 @@ final class AuthEmulatorTests: XCTestCase {
   }
 
   override func tearDownWithError() throws {
+    // tearDown also runs after the XCTSkip in setUp; Auth.auth() without a configured app is a fatal error.
+    guard FirebaseApp.app() != nil else { return }
     try? Auth.auth().signOut()
   }
 

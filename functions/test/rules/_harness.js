@@ -212,6 +212,109 @@ function memberSummaryDoc(overrides = {}) {
   };
 }
 
+// ---- DF-035 create 페이로드 생성기 ----
+// 규칙의 create 조건을 모두 만족하는 기본값이다. 테스트는 한 조건만 바꿔 거부 원인을 하나로 좁힌다.
+// createdAt·updatedAt은 serverTimestamp()로 보내 `== request.time`을 만족한다. 시드에는 stored()로 바꿔 넣는다.
+
+function stored(createPayload, overrides = {}) {
+  return {...createPayload, createdAt: hoursAgo(2), updatedAt: hoursAgo(2), ...overrides};
+}
+
+function withoutKeys(data, ...keys) {
+  const copy = {...data};
+  for (const key of keys) delete copy[key];
+  return copy;
+}
+
+function bodyCompDoc(overrides = {}) {
+  return {
+    memberUid: IDS.member1,
+    trainerId: IDS.trainerA,
+    enteredBy: IDS.trainerA,
+    source: 'manualEntry',
+    sourceGrade: 'device',
+    deviceModel: '합성 체성분 기기',
+    measuredAt: hoursAgo(1),
+    fasting: 'yes',
+    timeOfDayBand: 'morning',
+    values: {weightKg: 70.5, bodyFatPercent: 22.4},
+    status: 'active',
+    legalNature: 'coachingRecord',
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    ...overrides,
+  };
+}
+
+// MVP 체형 문서 모양(DF-203 MVP 조각): 기본 스테이션 default-v1, 체크리스트 세 불리언 false,
+// levelDeg·pitchDeg 없음, 뷰별 imageRotationDeg 0, landmarkEngine appleVision2D iOS17.4-r1.
+function postureDoc(overrides = {}) {
+  return {
+    memberUid: IDS.member1,
+    trainerId: IDS.trainerA,
+    authorUid: IDS.trainerA,
+    capturedAt: hoursAgo(1),
+    protocolVersion: 'posture-v1',
+    stationProfileId: 'default-v1',
+    landmarkEngine: {name: 'appleVision2D', version: 'iOS17.4-r1'},
+    device: {model: 'iPad14,5', osVersion: '17.4'},
+    captureConditions: {
+      clothing: 'fitted', barefoot: false, markersPlaced: false, verbalConsentCheck: false,
+      cameraHeightCm: 100, cameraDistanceM: 3,
+    },
+    views: [{view: 'front', photoPath: null, thumbPath: null, imageRotationDeg: 0, landmarks: []}],
+    status: 'draft',
+    isBaseline: false,
+    legalNature: 'coachingRecord',
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    ...overrides,
+  };
+}
+
+// 줄자 허리둘레(tape). observedSection은 observedSectionDoc()으로 바꾼다.
+function tapeDoc(overrides = {}) {
+  return {
+    memberUid: IDS.member1,
+    trainerId: IDS.trainerA,
+    authorUid: IDS.trainerA,
+    metricCode: 'waistCircumference',
+    side: 'none',
+    valueCm: 80.2,
+    sourceGrade: 'tape',
+    protocolId: 'waistMidpoint',
+    protocolVersion: 'circ-v1',
+    measuredAt: hoursAgo(1),
+    trialIndex: 1,
+    validationStatus: 'validated',
+    isBeta: false,
+    status: 'active',
+    legalNature: 'coachingRecord',
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    ...overrides,
+  };
+}
+
+// P2 LiDAR 관찰 단면 둘레. 플래그(lidarBeta) 말고는 create 조건을 모두 만족한다(R-22).
+function observedSectionDoc(overrides = {}) {
+  return tapeDoc({
+    sourceGrade: 'observedSection',
+    validationStatus: 'unvalidated',
+    isBeta: true,
+    scanId: 'fx-scan-001',
+    ...overrides,
+  });
+}
+
+// 대기 회원 create 페이로드(필수 9키). 시드용 저장본은 pendingMemberDoc()이다.
+function pendingMemberCreateDoc(overrides = {}) {
+  return pendingMemberDoc({createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...overrides});
+}
+
 module.exports = {
   IDS,
   TOKENS,
@@ -234,4 +337,11 @@ module.exports = {
   rawRecordDoc,
   pendingMemberDoc,
   memberSummaryDoc,
+  stored,
+  withoutKeys,
+  bodyCompDoc,
+  postureDoc,
+  tapeDoc,
+  observedSectionDoc,
+  pendingMemberCreateDoc,
 };

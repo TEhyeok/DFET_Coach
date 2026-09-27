@@ -1,4 +1,5 @@
 #if DEBUG
+import FeatureAuth
 import SwiftUI
 import UIKit
 
@@ -9,6 +10,8 @@ struct PreviewRootView: View {
   @Environment(\.horizontalSizeClass) private var windowSizeClass
   /// Whether the `--preview-width=` simulation is applied. Toggled by `preview.toggleWidth` (`--preview-resizable`).
   @State private var isNarrow = true
+  /// `--preview-login` only. Kept in state so the gate keeps one session source across view updates.
+  @State private var auth = PreviewAuthService()
 
   var body: some View {
     Group {
@@ -19,10 +22,8 @@ struct PreviewRootView: View {
       } else if preview.isSignedIn {
         shell
       } else {
-        // `--preview-login`: FeatureAuth's login screen (DF-012) replaces this placeholder.
-        ComingSoonView()
-          .accessibilityElement(children: .contain)
-          .accessibilityIdentifier("login.root")
+        // `--preview-login`: the real login gate with scripted synthetic accounts (DF-012).
+        AuthGate(auth: auth) { _ in shell }
       }
     }
     .background(PreviewOrientationBridge(forcesLandscape: preview.forcesLandscape))

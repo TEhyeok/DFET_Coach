@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		01014D391AFB42F7677A085F /* FeatureSettings in Frameworks */ = {isa = PBXBuildFile; productRef = F9D4AA520F29F8910FA570FF /* FeatureSettings */; };
+		01014D391AFB42F7677A085F /* FeatureAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9D2552AAC50D61D67E8AB3F7 /* FeatureAuth */; };
 		0337925D2201FC838766DFEF /* TrainerRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A42D033A5C0478888A4FF5 /* TrainerRouteTests.swift */; };
 		06A9C2D3E704EF726B0375B1 /* LayoutMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D123B75016CB51832F478143 /* LayoutMode.swift */; };
 		090DA8569AF8AACFAE038D69 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7681D5BB6B15EED55E6DA977 /* Localizable.xcstrings */; };
@@ -17,6 +17,7 @@
 		1F13C474BA7BD74B81C46908 /* TrainerRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38EEEC11818BCEACCF17CB /* TrainerRoute.swift */; };
 		26C51C60B03CC9264172463F /* ShellNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */; };
 		3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = C0A547249E8270079960845F /* TrainerContracts */; };
+		3A22C28EC7BB3AF2BC7E5CC2 /* LoginUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854758AF4B96BE69AC17340B /* LoginUITests.swift */; };
 		4BDA5246C1EA4E69ABC00AC2 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D9FBE0E75D5BA3F84155BF /* AppEnvironment.swift */; };
 		559E90D8C9B19B9ACEC40FCE /* LayoutMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D123B75016CB51832F478143 /* LayoutMode.swift */; };
 		5699194EF75B54399B1CB799 /* TrainerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = BABB8811F7884DE7FDE325AE /* TrainerDomain */; };
@@ -29,7 +30,9 @@
 		74958077F200349BD2B532F2 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D9FBE0E75D5BA3F84155BF /* AppEnvironment.swift */; };
 		7A87C59E75AB10B4677C429B /* TrainerRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38EEEC11818BCEACCF17CB /* TrainerRoute.swift */; };
 		7BE4AB457FA0CA411A8AB743 /* ShellNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F046A4B44321C9D58C49BB5 /* ShellNavigation.swift */; };
+		7D5314178491C7D26C38F5D3 /* FeatureSettings in Frameworks */ = {isa = PBXBuildFile; productRef = F9D4AA520F29F8910FA570FF /* FeatureSettings */; };
 		851D243BE2E3B1D377C691AB /* PreviewEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ECB81A5339CA06FC9F7F06 /* PreviewEnvironment.swift */; };
+		852BA10009305D7AF00101C7 /* PreviewAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA953C800FB9A18028D9BFF /* PreviewAuthService.swift */; };
 		8767D43C529393A356413391 /* FirebaseData in Frameworks */ = {isa = PBXBuildFile; productRef = 6C6782D060D070D344DA8255 /* FirebaseData */; };
 		9BDF13773AB84CA3ABB27A81 /* TrainerDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 45731413EEF81BA43D49738A /* TrainerDomain */; };
 		9CB9F5E4BE7C4D1DBCBAB914 /* ComingSoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6323C19401ADD26FD1C651CB /* ComingSoonView.swift */; };
@@ -83,6 +86,7 @@
 		77A42D033A5C0478888A4FF5 /* TrainerRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRouteTests.swift; sourceTree = "<group>"; };
 		794979F05400B72EC344B146 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7E726F1893F83B5B473A6E62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		854758AF4B96BE69AC17340B /* LoginUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginUITests.swift; sourceTree = "<group>"; };
 		8F7B59614A09DA9394B5A21D /* RootSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootSplitView.swift; sourceTree = "<group>"; };
 		9A0FD1840027C365FCC0D466 /* LayoutModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutModeTests.swift; sourceTree = "<group>"; };
 		9F50A2ACEDADA4F1FE4CF3A8 /* AppShellUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellUITests.swift; sourceTree = "<group>"; };
@@ -96,6 +100,7 @@
 		CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellNavigationTests.swift; sourceTree = "<group>"; };
 		D123B75016CB51832F478143 /* LayoutMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutMode.swift; sourceTree = "<group>"; };
 		D418DDB6FE7A9E5B1EE7D72E /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		DFA953C800FB9A18028D9BFF /* PreviewAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewAuthService.swift; sourceTree = "<group>"; };
 		E95AECD063ED2DA384A3A0CE /* DFETTrainer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DFETTrainer.entitlements; sourceTree = "<group>"; };
 		EA74C579051C18A66CCD05E0 /* FlagGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagGate.swift; sourceTree = "<group>"; };
 		F50B192E4E41316D41F1948C /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -119,7 +124,8 @@
 				3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */,
 				5699194EF75B54399B1CB799 /* TrainerDomain in Frameworks */,
 				8767D43C529393A356413391 /* FirebaseData in Frameworks */,
-				01014D391AFB42F7677A085F /* FeatureSettings in Frameworks */,
+				01014D391AFB42F7677A085F /* FeatureAuth in Frameworks */,
+				7D5314178491C7D26C38F5D3 /* FeatureSettings in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +177,7 @@
 		5D67D9B8D7FDCA1748EF55E1 /* Preview */ = {
 			isa = PBXGroup;
 			children = (
+				DFA953C800FB9A18028D9BFF /* PreviewAuthService.swift */,
 				50ECB81A5339CA06FC9F7F06 /* PreviewEnvironment.swift */,
 				B59E06AC20B5D7040AA4FB5C /* PreviewRootView.swift */,
 			);
@@ -201,6 +208,7 @@
 			children = (
 				9F50A2ACEDADA4F1FE4CF3A8 /* AppShellUITests.swift */,
 				3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */,
+				854758AF4B96BE69AC17340B /* LoginUITests.swift */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -277,6 +285,7 @@
 				C0A547249E8270079960845F /* TrainerContracts */,
 				BABB8811F7884DE7FDE325AE /* TrainerDomain */,
 				6C6782D060D070D344DA8255 /* FirebaseData */,
+				9D2552AAC50D61D67E8AB3F7 /* FeatureAuth */,
 				F9D4AA520F29F8910FA570FF /* FeatureSettings */,
 			);
 			productName = DFETTrainer;
@@ -433,6 +442,7 @@
 			files = (
 				F959AD1FB0578C0CF0768C49 /* AppShellUITests.swift in Sources */,
 				A138F141CD54E5AD508068E9 /* LaunchSmokeTests.swift in Sources */,
+				3A22C28EC7BB3AF2BC7E5CC2 /* LoginUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,6 +468,7 @@
 				6F59723484D1967BDF093DDA /* FlagGate.swift in Sources */,
 				EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */,
 				06A9C2D3E704EF726B0375B1 /* LayoutMode.swift in Sources */,
+				852BA10009305D7AF00101C7 /* PreviewAuthService.swift in Sources */,
 				851D243BE2E3B1D377C691AB /* PreviewEnvironment.swift in Sources */,
 				E3768360841175B1914390F4 /* PreviewRootView.swift in Sources */,
 				D046B697803EE95CA411C44E /* RootSplitView.swift in Sources */,
@@ -850,6 +861,10 @@
 		6C6782D060D070D344DA8255 /* FirebaseData */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FirebaseData;
+		};
+		9D2552AAC50D61D67E8AB3F7 /* FeatureAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureAuth;
 		};
 		BABB8811F7884DE7FDE325AE /* TrainerDomain */ = {
 			isa = XCSwiftPackageProductDependency;

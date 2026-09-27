@@ -17,8 +17,10 @@ public enum SyncEngineModule {
 /// - Member gates by stage: every item after ⓪ waits for the member's pending-member create. Records (after ①) are
 ///   stored as `blocked(awaitingConsent)` while the member's latest consent capture is not acked, pending or failed,
 ///   and make no remote call (AC-DF-015.2, V1-05 §12.3); they return to `queued` when it is acked.
-/// - Consent captures of a member run in `sequence` order. A new capture supersedes the member's older unsent ones
-///   (`superseded`, terminal), so an older grant never reaches the server after a newer capture or a withdrawal.
+/// - Consent captures of a member are per-type changes (grant healthData, withdraw bodyImaging, …), so every one is
+///   sent, strictly in `sequence` order: a capture waits while an older one is queued, in flight or failed after
+///   transient errors. Only a capture the server rejected for good stops holding the rest; once a newer capture is
+///   acked it becomes `superseded` and can no longer be resent out of order.
 ///
 /// Failures
 /// - Rule rejections and bad requests fail at once (AC-DF-015.3). Transient errors, unverified uploads and writes that
@@ -63,6 +65,9 @@ public actor SyncEngine {
   private var activeMembers: Set<MemberKey> = []
   private var wakeup: (at: Date, task: Task<Void, Never>)?
   private var dirty: Set<UUID> = []
+  /// Ids that exist in the store (loaded or saved). Only these can be dropped as deleted by retention, and a save of
+  /// one of them is an update, never an insert.
+  private var persisted: Set<UUID> = []
   private var flushing = false
   private var flushWaiters: [CheckedContinuation<Void, Never>] = []
   private var stateSubscribers: [LocalEntityRef: [UUID: StateSubscriber]] = [:]
@@ -141,6 +146,7 @@ public actor SyncEngine {
     for id in ids {
       items[id] = nil
       dirty.remove(id)
+      persisted.remove(id)
     }
     for member in Set(items.values.map(\.memberKey)) { refreshConsentGate(for: member) }
     publishChanges()
@@ -177,9 +183,6 @@ public actor SyncEngine {
       item.nextAttemptAt = min(item.nextAttemptAt, clock.now())
       items[item.id] = item
       markDirty(item.id)
-      if item.stage == .consent {
-        supersedeOlderConsents(than: item)
-      }
       refreshConsentGate(for: item.memberKey)
     }
     publishChanges()
@@ -314,17 +317,23 @@ public actor SyncEngine {
         markDirty(item.id)
       }
       items[item.id] = item
+      persisted.insert(item.id)
     }
-    // A kill during a flush can leave gate states half written: derive them again from the consent items.
-    for member in Set(items.values.map(\.memberKey)) { refreshConsentGate(for: member) }
+    // A kill during a flush can leave derived states half written: derive them again from the consent items.
+    for member in Set(items.values.map(\.memberKey)) {
+      supersedeRejectedConsents(for: member)
+      refreshConsentGate(for: member)
+    }
     loaded = true
     publishChanges()
     return true
   }
 
-  /// Drops in-memory rows the store no longer has (retention ran while the app was away). Rows that are unsaved or in
-  /// flight are kept.
+  /// Drops in-memory rows the store no longer has (retention ran while the app was away). Only rows known to be
+  /// stored before the read started are candidates, so an item enqueued or first saved during the read is never
+  /// dropped; unsaved and in-flight rows are kept too.
   private func reconcileWithStore() async {
+    let candidates = persisted
     let stored: [OutboxItem]
     do {
       stored = try await store.loadAll()
@@ -332,8 +341,10 @@ public actor SyncEngine {
       return
     }
     let present = Set(stored.map(\.id))
-    let gone = items.values.filter { !present.contains($0.id) && !dirty.contains($0.id) && $0.state != .inFlight }
-    if !gone.isEmpty { discard(ids: gone.map(\.id)) }
+    let gone = candidates.filter { id in
+      !present.contains(id) && !dirty.contains(id) && items[id].map { $0.state != .inFlight } == true
+    }
+    if !gone.isEmpty { discard(ids: Array(gone)) }
   }
 
   private func markDirty(_ id: UUID) {
@@ -352,7 +363,12 @@ public actor SyncEngine {
       dirty.remove(id)
       guard let item = items[id] else { continue }
       do {
-        try await store.save(item)
+        if persisted.contains(id) {
+          try await store.update(item)
+        } else {
+          try await store.insert(item)
+          if items[id] != nil { persisted.insert(id) }  // unless discarded meanwhile
+        }
       } catch {
         dirty.insert(id)
         pausedForStorage = true
@@ -425,8 +441,13 @@ public actor SyncEngine {
     if item.stage > .consent, let consent = latestConsent(for: item.memberKey), consent.state != .acked {
       return false
     }
-    // Consent captures need no extra rule here: a new capture supersedes the member's older unsent ones, and a
-    // member makes one call at a time, so an in-flight older capture finishes before the newer one starts.
+    // Consent captures go strictly in order. An older capture holds the rest while it can still be sent: queued,
+    // in flight, or failed after transient errors (retryExhausted resends it first). A permanent rejection does not.
+    if item.stage == .consent, items.values.contains(where: {
+      $0.memberKey == item.memberKey && $0.stage == .consent && $0.sequence < item.sequence && holdsLaterCaptures($0)
+    }) {
+      return false
+    }
     return true
   }
 
@@ -491,6 +512,7 @@ public actor SyncEngine {
         reverted.attempts -= 1
         items[id] = reverted
         markDirty(id)
+        refreshConsentGate(for: reverted.memberKey)
         publishChanges()
       }
       return
@@ -514,15 +536,13 @@ public actor SyncEngine {
       items[id] = current
     case let .failure(error):
       apply(error, to: &current, unlockEpochAtStart: epoch)
-      if current.stage == .consent, !isLatestConsent(current), current.state != .acked {
-        current.state = .superseded  // a newer capture arrived while this one was out
-      }
       items[id] = current
     }
-    if current.stage <= .consent {
-      refreshConsentGate(for: current.memberKey)
-    }
     markDirty(id)
+    if current.stage == .consent, current.state == .acked {
+      supersedeRejectedConsents(for: current.memberKey)
+    }
+    refreshConsentGate(for: current.memberKey)
     publishChanges()
     pump()  // an ack can release another member's dependent item
     await flush()
@@ -645,12 +665,24 @@ public actor SyncEngine {
     }
   }
 
-  /// A new capture replaces the member's older ones that have not been sent (in-flight ones finish first and are
-  /// superseded if they fail).
-  private func supersedeOlderConsents(than capture: OutboxItem) {
-    for (id, item) in items where item.memberKey == capture.memberKey && item.stage == .consent
-      && item.sequence < capture.sequence
-      && (item.state == .queued || item.state == .failed || item.state == .blocked(.awaitingConsent)) {
+  /// Whether an older capture must go before later ones: it can still be sent.
+  private func holdsLaterCaptures(_ capture: OutboxItem) -> Bool {
+    switch capture.state {
+    case .queued, .inFlight, .blocked: return true
+    case .failed: return Self.transientCodes.contains(capture.lastErrorCode ?? "")
+    case .acked, .superseded: return false
+    }
+  }
+
+  /// Once a newer capture is acked, older captures the server rejected for good can never be sent in order again:
+  /// they become `superseded` so no retry resends them after the newer one (V1-05 §12.3).
+  private func supersedeRejectedConsents(for member: MemberKey) {
+    guard let newestAcked = items.values
+      .filter({ $0.memberKey == member && $0.stage == .consent && $0.state == .acked })
+      .map(\.sequence).max()
+    else { return }
+    for (id, item) in items where item.memberKey == member && item.stage == .consent
+      && item.sequence < newestAcked && item.state == .failed {
       items[id]?.state = .superseded
       markDirty(id)
     }

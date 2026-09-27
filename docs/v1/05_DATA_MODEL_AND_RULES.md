@@ -2395,7 +2395,7 @@ TrainerKit `LocalStore` 타깃(ADR-002)의 편집 원본이다. Firestore에 그
 | `stage` | `0` memberKey(대기 회원 create) · `1` consent · `2` document · `3` upload · `4` pathRecord · `5` finalize | 회원 안 처리 순서(NFR-05, 04 §10.1) |
 | `kind` | `createDocument`, `updateDocument`, `deleteDocument`, `uploadBinary`, `deleteBinary`, `recordBinaryPath`, `finalize`, `callConsent`, `callFunction` | 04 §10.2 `OutboxKind`와 같은 값 |
 | `sequence` | 회원(`memberKey`)별 단조 증가 | 같은 stage 안의 순서 |
-| `state` | `queued`, `inFlight`, `acked`, `failed`, `blocked`, `superseded` | 04 §10.2 `OutboxItemState`와 같다. `failed`의 사유는 `lastErrorCode`. `superseded`는 같은 회원의 새 동의 캡처가 대체한 미전송 동의 항목의 종료 상태다. 보내지도, 재시도하지도, 대기 건수에 세지도 않는다(DF-015). LocalStore 값 enum에는 DF-104 저장 어댑터가 더한다 |
+| `state` | `queued`, `inFlight`, `acked`, `failed`, `blocked`, `superseded` | 04 §10.2 `OutboxItemState`와 같다. `failed`의 사유는 `lastErrorCode`. `superseded`는 서버가 영구 거부한 동의 항목의 종료 상태다. 같은 회원의 더 새 캡처가 acked되면 이 상태가 된다. 다시 보내지도, 재시도하지도, 대기 건수에 세지도 않고, 그 엔티티는 `syncFailed`로 읽힌다(DF-015). LocalStore 값 enum에는 DF-104 저장 어댑터가 더한다 |
 | `blockedReason` | `awaitingConsent`(`state == blocked`일 때만) | 도메인 `.blocked(.awaitingConsent)` |
 | `lastErrorCode` | `permission-denied`, `consent-rejected`, `upload-mismatch`, `file-too-large`, Firestore·Functions 오류 코드 | 사용자 문구 키 `sync.reason.*`(permission-denied→ruleDenied, upload-mismatch→uploadMismatch, 네트워크→network, 재시도 한도→retryLimit, consent-rejected→consentRejected, file-too-large→fileTooLarge; 덱 정본 V1-12) |
 
@@ -2410,12 +2410,11 @@ queued ──(연결 있음, 선행 항목 acked)──▶ inFlight ──(서�
   │                                        └─(영구 오류 또는 attempts == 5)──▶ failed ──(사용자 재시도)──▶ queued
   └─(같은 memberKey의 consent 항목이 acked 전)──▶ blocked(awaitingConsent) ──(consent acked)──▶ queued
 
-consent 항목: queued·failed ──(같은 회원의 새 캡처 enqueue)──▶ superseded(종료)
-              inFlight ──(새 캡처가 있는 동안 실패)──▶ superseded
+consent 항목: failed(영구 거부) ──(같은 회원의 더 새 캡처 acked)──▶ superseded(종료)
 ```
 
 - 기록 항목의 `blocked(awaitingConsent)`는 그 회원의 **최신** 동의 캡처가 acked가 아닌 동안(대기·전송 중·실패) 저장된다. 앱을 다시 켜서 Outbox를 읽을 때도 이 규칙으로 다시 계산한다(DF-015).
-- 같은 회원의 동의 캡처는 `sequence` 순서로 보낸다. 새 캡처가 생기면 아직 보내지 않은 이전 캡처는 `superseded`가 되어, 이전 동의가 새 캡처(철회 포함)보다 서버에 늦게 도착하지 않는다.
+- 동의 캡처는 유형별 변경(부여·철회)이라 **모두** 보내야 한다. 같은 회원의 캡처는 `sequence` 순서로만 보낸다. 앞선 캡처가 대기·전송 중이거나 일시 오류로 실패해 있으면 뒤 캡처는 기다리고, 재시도는 오래된 것부터 보낸다. 서버가 영구 거부한 캡처만 뒤 캡처를 막지 않는다. 그 캡처는 뒤 캡처가 acked되면 `superseded`가 되어, 순서를 깨고 다시 보내지는 일이 없다.
 
 엔티티 `syncState`(위에서부터 먼저 맞는 것)
 
@@ -2919,4 +2918,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 리드 결정 R2·R4·R5·R7·R10 반영, 결정 ASM-05-43~ASM-05-45 기록 | — | 없음(위 행의 §9.2 제안과 같음) |
 | v1.0.2 | 2026-09-25 | §7.3에 null·키 생략 원칙과 DF-020 구현 차이(스위치 줄 위치, `measuredAtOk` 이름, v1 delete 분기, 미사용 헬퍼 이월, 문서 조회 수) 기록 | DF-020 | 없음 |
 | v1.0.3 | 2026-09-25 | §8 머리에 서울 버킷 명시 한 줄(DEC-19, DF-043. 트레이너 앱은 DF-104) | DF-043 | 없음 |
-| v1.0.4 | 2026-09-28 | §12.2 Outbox `state`에 `superseded`(새 동의 캡처가 대체한 미전송 캡처) 추가, §12.3에 최신 동의 기준 `blocked` 저장·재계산과 동의 캡처 순서 규칙 명시 | DF-015 | 없음 |
+| v1.0.4 | 2026-09-28 | §12.2 Outbox `state`에 `superseded`(영구 거부 뒤 더 새 캡처가 acked된 동의 캡처) 추가, §12.3에 최신 동의 기준 `blocked` 저장·재계산과 동의 캡처의 엄격한 순서 규칙 명시 | DF-015 | 없음 |

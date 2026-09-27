@@ -17,21 +17,45 @@ actor ControllableStore: OutboxStore {
     self.failingLoads = failingLoads
   }
 
-  func loadAll() throws -> [OutboxItem] {
+  func loadAll() async throws -> [OutboxItem] {
     if failingLoads > 0 {
       failingLoads -= 1
       throw CocoaError(.fileReadNoPermission)  // e.g. NSFileProtectionComplete while locked
     }
-    return items.values.sorted { $0.sequence < $1.sequence }
+    let snapshot = items.values.sorted { $0.sequence < $1.sequence }
+    if holdingLoads {
+      await withCheckedContinuation { heldLoads.append($0) }
+    }
+    return snapshot
   }
 
-  func save(_ item: OutboxItem) async throws {
+  private var holdingLoads = false
+  private var heldLoads: [CheckedContinuation<Void, Never>] = []
+  /// The next loads read the rows, then wait until `releaseLoads()`.
+  func holdLoads() { holdingLoads = true }
+  var heldLoadCount: Int { heldLoads.count }
+  func releaseLoads() {
+    holdingLoads = false
+    let waiting = heldLoads
+    heldLoads = []
+    waiting.forEach { $0.resume() }
+  }
+
+  func insert(_ item: OutboxItem) async throws {
+    try await write(item, insert: true)
+  }
+
+  func update(_ item: OutboxItem) async throws {
+    try await write(item, insert: false)
+  }
+
+  private func write(_ item: OutboxItem, insert: Bool) async throws {
     if failSaves || failPredicate?(item) == true { throw CocoaError(.fileWriteNoPermission) }
     savedIds.append(item.id)
     if let holdPredicate, holdPredicate(item) {
       await withCheckedContinuation { held.append($0) }
     }
-    items[item.id] = item
+    if insert || items[item.id] != nil { items[item.id] = item }  // an update never brings back a deleted row
   }
 
   func item(_ id: UUID) -> OutboxItem? { items[id] }

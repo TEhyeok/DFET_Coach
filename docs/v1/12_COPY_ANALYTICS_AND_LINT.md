@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.8 |
+| 버전 | v1.0.9 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 845개(트레이너 561, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 849개(트레이너 565, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -1061,7 +1061,10 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr11.title` | 신체조성 입력 | trainer | P1a | TR-11 |  |
 | `tr11.consentNeeded` | 건강정보 동의 필요 | trainer | P1a | AC-PRIV-01.1 | 저장 버튼 비활성 |
 | `tr11.deviceModel` | 기기 모델 | trainer | P1a | F-BC-01.2 |  |
+| `tr11.deviceModel.required` | 기기 모델을 골라 주세요 | trainer | P1a | F-BC-01.2, AC-BC-01.1 | 저장 버튼 비활성(DF-127) |
+| `tr11.deviceModel.tooLong` | 기기 이름은 64자까지 쓸 수 있어요 | trainer | P1a | F-BC-01.2, R-17 | 규칙 `strRange(deviceModel, 1, 64)`(DF-127) |
 | `tr11.measuredAt` | 측정 일시 | trainer | P1a | F-BC-01.2 |  |
+| `tr11.measuredAt.future` | 측정 일시가 지금보다 늦어요. 다시 확인하세요 | trainer | P1a | F-BC-01.2, §9.1 | 지금 + 5분까지 허용(`measuredAtOk`, DF-127) |
 | `tr11.fasting` | 공복 여부 | trainer | P1a | F-BC-01.2 |  |
 | `tr11.fasting.yes` | 공복 | trainer | P1a | F-BC-01.2 |  |
 | `tr11.fasting.no` | 공복 아님 | trainer | P1a | F-BC-01.2 |  |
@@ -1071,6 +1074,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr11.height` | 키(트레이너 측정) | trainer | P1a | F-BC-01.3 | ② 이후 |
 | `tr11.bmi.needsHeight` | 키를 입력하면 BMI가 계산돼요 | trainer | P1a | F-BC-01.3 |  |
 | `tr11.atLeastOne` | 측정값을 하나 이상 입력하세요 | trainer | P1a | F-BC-01.1 |  |
+| `tr11.number.invalid` | 숫자로 입력하세요. 소수점 아래는 한 자리까지예요 | trainer | P1a | F-BC-03.1, F-BC-03.2 | 쉼표 소수점 허용, 부호·지수·단위·둘째 자리 거부(V1-09 §10.1, DF-127) |
 | `tr11.range.generic` | {min}~{max}{unit} 사이로 입력하세요 | trainer | P1a | F-BC-03.2 | 범위는 metric-catalog range |
 | `tr11.cross.fatMassOverWeight` | 체지방량이 체중보다 커요. 결과지를 다시 확인하세요 | trainer | P1a | F-BC-03.3 | 경고, 저장 허용 |
 | `tr11.cross.muscleOverWeight` | 골격근량이 체중 이상이에요. 결과지를 다시 확인하세요 | trainer | P1a | F-BC-03.3 |  |
@@ -2216,3 +2220,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.6 | 2026-09-28 | DF-018: 로그아웃 문구를 '미동기 기록은 기기에 남고 다시 로그인하면 이어서 보낸다'(ASM-P0-17)로 고침(`tr15.signOut.unsyncedWarning`, `tr15.signOut.confirm`), `tr15.signOut.question`·`tr15.signOut.syncNow`, 대기열 항목 종류 `tr15.queue.kind.*` 7키 추가 | DF-018 | 없음 |
 | v1.0.7 | 2026-09-28 | `tr14.register.under14Blocked` 두 번째 문장을 해요체로 맞춤('지원하지 않아요'), 덱 v1.0.6 | — | 없음 |
 | v1.0.8 | 2026-09-28 | 린트 보강(교차 리뷰): 금지어 린트가 덱을 `docs/**` 예외로 읽고 항목별 `audience` 세트로 검사(§7.7, §7.9 `copy-lint`, TC-12-LN-07 `copy-deck.test.mjs`를 `docs-and-backlog`에서 옮김). §4.3 같은 자리표시자 반복 금지, §4.7 5항에 반복 자리표시자와 '앱 소스 리터럴의 덱 키가 카탈로그에 없음' 차단 추가. ASM-12-19 static-guards G11 구현 | — | 없음 |
+| v1.0.9 | 2026-09-28 | DF-127: TR-11 검증 오류 문구 `tr11.deviceModel.required`·`tr11.deviceModel.tooLong`·`tr11.measuredAt.future`·`tr11.number.invalid` 추가(덱 v1.0.7), §1.2 덱 키 수 갱신 | DF-127 | 없음 |

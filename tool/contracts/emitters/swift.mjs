@@ -354,6 +354,30 @@ export function renderFeatureFlagKey({ featureFlags }) {
   return lines(out);
 }
 
+// contracts/posture-protocol.v1.json -> PostureProtocol.swift (DF-203). Values come only from the contract; code never
+// repeats them (ASM-P1b-05).
+export function renderPostureProtocol({ postureProtocol }) {
+  const doc = postureProtocol.doc;
+  const num = (n) => (Number.isInteger(n) ? `${n}.0` : `${n}`);
+  const out = [
+    `// contract ${doc.contract} v${doc.version} revision ${doc.revision}. Regenerate with: node tool/contracts/generate.mjs`,
+    '',
+    `/// Posture capture protocol ${doc.protocolVersion} (V1-09 §3.1)${doc.status ? `, status ${doc.status}` : ''}.`,
+    'public enum PostureProtocolV1 {',
+    `${INDENT}public static let protocolVersion = ${dqString(doc.protocolVersion)}`,
+    `${INDENT}/// ${doc.status ? 'Draft: DF-915 confirms the values.' : 'Confirmed.'}`,
+    `${INDENT}public static let isDraft = ${doc.status ? 'true' : 'false'}`,
+    `${INDENT}public static let levelToleranceDeg = ${num(doc.levelToleranceDeg)}`,
+    `${INDENT}public static let pitchToleranceDeg = ${num(doc.pitchToleranceDeg)}`,
+    `${INDENT}public static let cameraHeightCm: ClosedRange<Double> = ${num(doc.cameraHeightCm.min)}...${num(doc.cameraHeightCm.max)}`,
+    `${INDENT}public static let cameraDistanceM: ClosedRange<Double> = ${num(doc.cameraDistanceM.min)}...${num(doc.cameraDistanceM.max)}`,
+    `${INDENT}public static let clothingOptions: [Clothing] = [${doc.clothingOptions.map((c) => `.${swiftCase(c)}`).join(', ')}]`,
+    `${INDENT}public static let standardInstructionKey = ${dqString(doc.standardInstructionKey)}`,
+    '}',
+  ];
+  return lines(out);
+}
+
 export const swiftEmitters = Object.freeze({
   vocab: { id: 'swift.vocab', path: `${SWIFT_DIR}/Vocab.swift`, comment: '//', uses: ['vocab'], render: renderVocab },
   metricCatalog: {
@@ -376,6 +400,13 @@ export const swiftEmitters = Object.freeze({
     comment: '//',
     uses: ['featureFlags'],
     render: renderFeatureFlagKey,
+  },
+  postureProtocol: {
+    id: 'swift.postureProtocol',
+    path: `${SWIFT_DIR}/PostureProtocol.swift`,
+    comment: '//',
+    uses: ['postureProtocol'],
+    render: renderPostureProtocol,
   },
   contractsVersion: {
     id: 'swift.contractsVersion',

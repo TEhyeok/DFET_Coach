@@ -76,6 +76,14 @@ export const INPUTS = [
     requires: ['vocab', 'metricCatalog'],
     emit: [],
   },
+  {
+    // DF-203: capture protocol values (V1-09 §3.1). Swift PostureProtocolV1 for the station profile, the capture
+    // conditions and (DF-204) the shutter gate. Dart and JS outputs arrive with their first users (DF-216, DF-224).
+    file: 'posture-protocol.v1.json',
+    key: 'postureProtocol',
+    requires: ['vocab'],
+    emit: [swiftEmitters.postureProtocol],
+  },
 ];
 
 // Outputs built from more than one input. `partial: true` renders with whichever inputs are present.
@@ -225,8 +233,25 @@ function postureVectorErrors(loaded) {
   return errors;
 }
 
+// DF-203: protocol ranges must be ordered and the clothing options must be vocab clothing values.
+function postureProtocolErrors(loaded) {
+  const doc = loaded.postureProtocol?.doc;
+  const vocab = loaded.vocab?.doc;
+  if (!doc || !vocab) return [];
+  const p = `contracts/${loaded.postureProtocol.file}`;
+  const errors = [];
+  for (const key of ['cameraHeightCm', 'cameraDistanceM']) {
+    if (!(doc[key].min < doc[key].max)) errors.push(`${p}#/${key}: min must be below max`);
+  }
+  const clothing = vocab.enums.clothing?.values ?? [];
+  doc.clothingOptions.forEach((c, i) => {
+    if (!clothing.includes(c)) errors.push(`${p}#/clothingOptions/${i}: "${c}" is not in vocab clothing`);
+  });
+  return errors;
+}
+
 export function crossCheckErrors(loaded) {
-  const errors = [...postureVectorErrors(loaded)];
+  const errors = [...postureVectorErrors(loaded), ...postureProtocolErrors(loaded)];
   const vocab = loaded.vocab?.doc;
   if (vocab) {
     const v = `contracts/${loaded.vocab.file}`;

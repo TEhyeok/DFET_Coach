@@ -14,7 +14,7 @@ import { applyPatch, makeRoot, readJson, removeRoot, runCli, writeJson } from '.
 const FIXTURES = path.join(REPO_ROOT, 'tool', 'contracts', 'test', 'fixtures');
 
 // AC-DF-004.1: the files the generator owns in its directories for the v1 inputs (ten from DF-004, two
-// from DF-010, two from DF-027). DF-027 also writes schemas/feature-flags.example.json, outside those
+// from DF-010, two from DF-027, one from DF-203). DF-027 also writes schemas/feature-flags.example.json, outside those
 // directories (see EXTRA_OUTPUTS).
 const EXPECTED_OUTPUTS = [
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/MetricCatalog.swift',
@@ -22,6 +22,7 @@ const EXPECTED_OUTPUTS = [
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ContractsVersion.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/ProhibitedTerms.swift',
   'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/FeatureFlagKey.swift',
+  'trainer_app/Packages/TrainerCore/Sources/TrainerContracts/Generated/PostureProtocol.swift',
   'lib/contracts/generated/metric_catalog.g.dart',
   'lib/contracts/generated/vocab.g.dart',
   'lib/contracts/generated/contracts_version.g.dart',
@@ -44,6 +45,7 @@ const SOURCES = {
   'ContractsVersion.swift': ['metric-catalog.v1.json', 'vocab.v1.json'],
   'ProhibitedTerms.swift': ['prohibited-terms.v1.json'],
   'FeatureFlagKey.swift': ['feature-flags.v1.json'],
+  'PostureProtocol.swift': ['posture-protocol.v1.json'],
   'feature_flags.g.dart': ['feature-flags.v1.json'],
   'metric_catalog.g.dart': ['metric-catalog.v1.json'],
   'vocab.g.dart': ['vocab.v1.json'],

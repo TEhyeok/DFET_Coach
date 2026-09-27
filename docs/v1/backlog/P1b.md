@@ -561,6 +561,7 @@ public enum PostureMathError: Error { case coordinateOutOfRange(LandmarkCode), z
   7. 테스트: `StationProfileTests`(`ensureDefault` 멱등·컨테이너 재적재 뒤 유지), `CaptureConditionsBuilderTests`(키가 규칙 `hasOnly` 목록 안, 세 불리언 `false`, `protocolVersion`이 생성물 값, 높이·거리가 생성물 범위 안), `ShutterGateTests`(복장 미선택 차단, 새 draft에서 복장 선택 초기화), contracts `--check`
 - MVP 뒤로 미룬다: TR-15 스테이션 프로필 목록·편집·범위 검사(AC-DF-203.1), 여러 프로필 가운데 선택과 '스테이션 프로필 등록' 빈 상태(AC-DF-203.2. MVP에서는 기본 프로필이 늘 있어 빈 상태가 나오지 않는다), 체크리스트의 맨발·머리카락·귀·마커·회원 확인 세 토글과 그 셔터 차단(AC-DF-203.3의 나머지, [V1-09](../09_ALGORITHMS_SPEC.md)의 '셔터 시점에 모두 true'), AC-DF-203.4의 세 불리언 `true` 기록, 체크리스트 문구 린트(AC-DF-203.5 중 복장 문구 외). 실회원 전에는 체크리스트 전체가 필요하다
 - MVP에서 기다리지 않는 의존: DF-915(소유자 수치 확정). DEC-21 ⑤대로 초안 값으로 진행하고, 확정되면 같은 PR에서 `status`를 지운다. 확정 범위가 초안과 달라 기본 프로필 값이 바뀌면 기본 ID를 `default-v2`로 올려 새 프로필을 만든다(기기에 이미 있는 `default-v1`과 그 ID로 기록된 문서의 뜻은 바뀌지 않는다)
+- MVP 구현 기록(PR #172): `StationProfileStore.ensureDefault(trainerUid:now:)`(`now` 기본값 `Date()`, 새 행의 `createdLocallyAt`에만 쓴다). `lastUsedAt` 갱신은 하지 않는다. DF-014의 `StationProfile`([V1-05 §12.2](../05_DATA_MODEL_AND_RULES.md))에 그 필드가 없어 V1_1 이관이 필요하므로, 여러 프로필 가운데 고르는 TR-15 조각(MVP 뒤)으로 미룬다. 스토어는 트레이너별 파티션을 전제로 하고, 다른 트레이너의 `default-v1` 행은 넘겨받지 않고 거부한다. 복장 선택지 문구는 생성 코드의 한국어 라벨이 아니라 덱 키 `clothing.<value>`(V1-12 v1.0.4)를 쓴다. 테스트는 `CaptureTests`(조건 빌더·셔터 게이트·초기화, 키 집합을 firestore.rules의 `hasOnly` 목록과 비교)와 `StationProfileTests`에 있다
 
 ---
 

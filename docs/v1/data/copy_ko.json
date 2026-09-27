@@ -18,7 +18,7 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 538, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 93, "trainer": 543, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -173,6 +173,9 @@
     "condition.clothing": {"ko": "복장", "audience": "trainer", "phase": "P1b", "prdRefs": ["§7.4"], "screens": "툴팁", "group": "change"},
     "condition.station": {"ko": "촬영 스테이션", "audience": "trainer", "phase": "P1b", "prdRefs": ["§7.4"], "screens": "툴팁", "group": "change"},
     "condition.side": {"ko": "측면", "audience": "trainer", "phase": "P1a", "prdRefs": ["§7.4"], "screens": "툴팁", "group": "change"},
+    "clothing.fitted": {"ko": "몸에 붙는 옷", "audience": "trainer", "phase": "P1b", "prdRefs": ["§7.4", "F-ASM-01.3"], "screens": "TR-07", "note": "contracts vocab clothing labelsKo와 같은 문장. 화면은 이 키를 쓴다(DF-203)", "group": "change"},
+    "clothing.regular": {"ko": "일반 운동복", "audience": "trainer", "phase": "P1b", "prdRefs": ["§7.4", "F-ASM-01.3"], "screens": "TR-07", "note": "contracts vocab clothing labelsKo와 같은 문장. 화면은 이 키를 쓴다(DF-203)", "group": "change"},
+    "clothing.unknown": {"ko": "확인 안 됨", "audience": "trainer", "phase": "P1b", "prdRefs": ["§7.4", "F-ASM-01.3"], "screens": "TR-07", "note": "contracts vocab clothing labelsKo와 같은 문장. 화면은 이 키를 쓴다(DF-203)", "group": "change"},
     "mb.change.meaningfulImprovement": {"ko": "측정 오차보다 큰 변화가 정한 목표 방향으로 나타났어요", "audience": "member", "phase": "P3", "prdRefs": ["B.8", "§7.6"], "screens": "MB-01, MB-02, MB-04", "note": "inHouse·policyVersion 있을 때만", "group": "mbchange"},
     "mb.change.withinError": {"ko": "측정 오차 범위 안이에요", "audience": "member", "phase": "P3", "prdRefs": ["B.8"], "screens": "같음", "group": "mbchange"},
     "mb.change.meaningfulDecline": {"ko": "측정 오차보다 큰 변화가 목표와 반대 방향으로 나타났어요", "audience": "member", "phase": "P3", "prdRefs": ["B.8"], "screens": "같음", "group": "mbchange"},
@@ -547,6 +550,8 @@
     "tr07.gate.consentMissing": {"ko": "동의 ②③ 필요 · 현장 동의 열기", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.5"], "screens": "TR-07", "note": "consent.needed.healthAndImaging와 같은 문장", "group": "tr07"},
     "tr07.station.select": {"ko": "촬영 스테이션", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.2"], "screens": "TR-07", "group": "tr07"},
     "tr07.station.none": {"ko": "촬영 스테이션을 먼저 등록하세요", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.2"], "screens": "TR-07", "group": "tr07"},
+    "tr07.station.default": {"ko": "기본 스테이션(프로토콜 v1 초안)", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.2"], "screens": "TR-07", "note": "DEC-22 MVP 기본 스테이션 이름(DF-203)", "group": "tr07"},
+    "tr07.station.defaultSummary": {"ko": "{name} · 카메라 높이 {height}cm · 거리 {distance}m", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.2"], "screens": "TR-07", "args": ["name", "height", "distance"], "note": "카메라를 이 값에 맞춘다(DF-203 MVP). name은 스테이션 이름(기본은 tr07.station.default), 높이·거리는 소수 첫째 자리", "group": "tr07"},
     "tr07.checklist.title": {"ko": "촬영 전 확인", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.3"], "screens": "TR-07", "group": "tr07"},
     "tr07.checklist.clothing": {"ko": "윤곽과 기준점이 보이는 복장", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.3"], "screens": "TR-07", "group": "tr07"},
     "tr07.checklist.barefoot": {"ko": "맨발", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-ASM-01.3"], "screens": "TR-07", "group": "tr07"},

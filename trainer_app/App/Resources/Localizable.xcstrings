@@ -133,6 +133,42 @@
         }
       }
     },
+    "clothing.fitted" : {
+      "comment" : "V1-12 · §7.4 · vocab clothing label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "몸에 붙는 옷"
+          }
+        }
+      }
+    },
+    "clothing.regular" : {
+      "comment" : "V1-12 · §7.4 · vocab clothing label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 운동복"
+          }
+        }
+      }
+    },
+    "clothing.unknown" : {
+      "comment" : "V1-12 · §7.4 · vocab clothing label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인 안 됨"
+          }
+        }
+      }
+    },
     "common.close" : {
       "comment" : "V1-12 · —",
       "extractionState" : "manual",
@@ -273,6 +309,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "회원 화면 미리보기"
+          }
+        }
+      }
+    },
+    "tr07.checklist.clothing" : {
+      "comment" : "V1-12 · F-ASM-01.3 · clothing row title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "윤곽과 기준점이 보이는 복장"
+          }
+        }
+      }
+    },
+    "tr07.station.default" : {
+      "comment" : "V1-12 · F-ASM-01.2 · DEC-22 MVP default station name",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기본 스테이션(프로토콜 v1 초안)"
+          }
+        }
+      }
+    },
+    "tr07.station.defaultSummary" : {
+      "comment" : "V1-12 · F-ASM-01.2 · args: name, height, distance",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · 카메라 높이 %2$@cm · 거리 %3$@m"
           }
         }
       }

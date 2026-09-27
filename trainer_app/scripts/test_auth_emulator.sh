@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Emulator integration tests, hosted in the app (project demo-dfet): DF-012 AuthEmulatorTests (TC-DF012-02/03) and
-# DF-013 MemberDirectoryEmulatorTests (TC-DF013-05) against the Auth and Firestore emulators with firestore.rules.
+# DF-013 MemberDirectoryEmulatorTests (TC-DF013-05) and DF-104 RemoteWriterEmulatorTests (write reconciliation)
+# against the Auth and Firestore emulators with firestore.rules.
 # Usage (from anywhere): bash trainer_app/scripts/test_auth_emulator.sh [derived-data-path]
 # Needs firebase-tools >= 15 and Java 21 on PATH. Extra xcodebuild arguments can be passed in XCODEBUILD_EXTRA_ARGS.
 # CI automation is DF-107. Fails when the tests were skipped instead of run.
@@ -19,8 +20,9 @@ firebase emulators:exec --only auth,firestore --project demo-dfet \
     -destination id=${UDID} -derivedDataPath '${DERIVED}' ${XCODEBUILD_EXTRA_ARGS:-} \
     -only-testing:DFETTrainerIntegrationTests/AuthEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/MemberDirectoryEmulatorTests \
+    -only-testing:DFETTrainerIntegrationTests/RemoteWriterEmulatorTests \
     CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=" 2>&1 | tee "$LOG"
-if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests).* skipped" "$LOG"; then
+if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests|RemoteWriterEmulatorTests).* skipped" "$LOG"; then
   echo "emulator tests were skipped: the emulator flag did not reach the test process" >&2
   exit 1
 fi

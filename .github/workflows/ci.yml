@@ -49,7 +49,7 @@ jobs:
       - run: npm ci --prefix functions
       - run: npm --prefix functions run lint
       - run: npm --prefix functions test
-      - run: jq empty schemas/*.json
+      - run: jq empty schemas/*.json firestore.indexes.json
       - run: npm install --global firebase-tools
       - run: firebase emulators:exec --only firestore,storage --project dfet-rules-test "npm --prefix functions run test:rules"
       - run: printf '%s\n' 'INGEST_HMAC_KEYS={"e2e":"e2e-secret"}' > functions/.secret.local

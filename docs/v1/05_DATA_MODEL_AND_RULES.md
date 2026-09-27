@@ -2754,7 +2754,7 @@ PRD §9.3 '변경 절차'를 따른다. 스키마·규칙·어휘를 바꾸는 P
 - [ ] `schemas/*.schema.json`과 `contracts/*.json`, 그리고 `node tool/contracts/generate.mjs` 생성물(Swift·Dart·functions·admin_web)
 - [ ] `firestore.rules` / `storage.rules`와 `functions/test/rules/*` 케이스
 - [ ] Swift 코덱(TrainerDomain)과 Dart 코덱(`lib/models/soap_note_v2.dart`), 교차 픽스처
-- [ ] `firestore.indexes.json`(쿼리가 바뀌면)과 [§10.2](#102-firestoreindexesjson-추가-항목df-024) 목록의 소유 스토리 칸
+- [ ] `firestore.indexes.json`(쿼리가 바뀌면)과 [§10.2](#102-firestoreindexesjson-추가-항목df-024) 목록의 소유 스토리 칸, 그리고 `functions/test/unit/indexes.test.js`의 기대 목록(목록 밖 인덱스가 있으면 테스트가 실패한다)
 - [ ] 트레이너 앱 로컬 엔티티를 바꾸면 [§12.2](#122-엔티티) 행과 새 `VersionedSchema`·이관 단계
 - [ ] 삭제 연쇄([§11.2](#112-삭제-연쇄deletemembercascade))와 재정렬 표([§11.4](#114-접근-키-재정렬syncrecordaccesskeys))에 새 컬렉션·경로 반영
 - [ ] 데이터 분류([§2](#2-데이터-분류민감-등급)) 등급 칸

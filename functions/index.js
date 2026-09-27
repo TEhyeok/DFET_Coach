@@ -26,6 +26,8 @@ const {deleteAccountMedia} = require('./src/shared/storage');
 
 admin.initializeApp();
 
+exports.recordConsent = require('./src/consent/recordConsent').handler;
+
 const ingestionHmacKeys = defineSecret('INGEST_HMAC_KEYS');
 const isFunctionsEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
 

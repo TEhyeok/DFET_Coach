@@ -14,6 +14,8 @@ public enum StorageBucket {
 /// is configured (the emulator has one bucket), otherwise the Seoul bucket.
 public enum StorageFactory {
   private static let emulator = OSAllocatedUnfairLock(initialState: false)
+  /// Buckets whose `maxUploadRetryTime` is set; set once per instance, under the lock (no concurrent writes).
+  private static let configured = OSAllocatedUnfairLock(initialState: Set<String>())
   /// Upper bound for the SDK's own upload retries (its default is 600 s); an upload cannot be cancelled from outside.
   static let maxUploadRetrySeconds: TimeInterval = 120
 
@@ -28,8 +30,11 @@ public enum StorageFactory {
   }
 
   static func make(emulator: Bool) -> Storage {
-    let storage = bucketURL(emulator: emulator).map { Storage.storage(url: $0) } ?? Storage.storage()
-    storage.maxUploadRetryTime = maxUploadRetrySeconds
+    let url = bucketURL(emulator: emulator)
+    let storage = url.map { Storage.storage(url: $0) } ?? Storage.storage()
+    configured.withLock { buckets in
+      if buckets.insert(url ?? "default").inserted { storage.maxUploadRetryTime = maxUploadRetrySeconds }
+    }
     return storage
   }
 

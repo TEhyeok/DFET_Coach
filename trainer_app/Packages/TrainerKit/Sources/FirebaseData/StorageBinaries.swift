@@ -74,8 +74,9 @@ public final class StorageBinaryUploader: BinaryUploader, Sendable {
 }
 
 /// Firebase Storage implementation of `BinaryDownloader` (DF-104). The downloaded file gets the LocalStore file
-/// rules: complete protection and no backup (DF-014 `LocalBinaryStore`). It is written into a staging directory
-/// created with complete protection, so it never exists under a weaker class, and then moved into place.
+/// rules: complete protection and no backup (DF-014 `LocalBinaryStore`). It lands in a staging directory created with
+/// complete protection and is then moved into place. (The SDK itself writes to its own temporary file first, which this
+/// code does not control.) Staging directories left by a download that never finished are removed after an hour.
 public final class StorageBinaryDownloader: BinaryDownloader, Sendable {
   private let access: any StorageFileAccess
 
@@ -89,8 +90,9 @@ public final class StorageBinaryDownloader: BinaryDownloader, Sendable {
 
   public func download(path: String, to localURL: URL) async throws -> URL {
     let files = FileManager.default
-    let staging = localURL.deletingLastPathComponent()
-      .appendingPathComponent(".download-\(UUID().uuidString)", isDirectory: true)
+    let folder = localURL.deletingLastPathComponent()
+    Self.removeStaleStaging(in: folder)
+    let staging = folder.appendingPathComponent(".download-\(UUID().uuidString)", isDirectory: true)
     defer { try? files.removeItem(at: staging) }
     do {
       try files.createDirectory(
@@ -112,6 +114,17 @@ public final class StorageBinaryDownloader: BinaryDownloader, Sendable {
 }
 
 extension StorageBinaryDownloader {
+  /// `.download-*` directories older than `age` (a download killed with the app).
+  static func removeStaleStaging(in folder: URL, olderThan age: TimeInterval = 3_600, now: Date = Date()) {
+    let files = FileManager.default
+    let entries = (try? files.contentsOfDirectory(
+      at: folder, includingPropertiesForKeys: [.contentModificationDateKey], options: [])) ?? []
+    for entry in entries where entry.lastPathComponent.hasPrefix(".download-") {
+      let modified = (try? entry.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+      if let modified, now.timeIntervalSince(modified) > age { try? files.removeItem(at: entry) }
+    }
+  }
+
   static func protect(_ url: URL) throws {
     try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
     var values = URLResourceValues()

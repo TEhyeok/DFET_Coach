@@ -330,7 +330,9 @@ service cloud.firestore {
           && incoming().trainerId == resource.data.trainerId
         );
 
-      allow delete: if (
+      // 없는 문서 삭제는 트레이너에게 무해한 성공이다: 응답을 잃은 draft 삭제를 다시 보내도 영구 실패가 되지 않는다
+      // (DF-104, V1-04 §10.5). 있는 문서는 아래 조건 그대로다.
+      allow delete: if (resource == null && isTrainer()) || (
           isV2(resource.data)
           && isAccessTrainer(resource.data)
           && canWriteFor(resource.data)
@@ -626,9 +628,10 @@ service cloud.firestore {
             && incoming().isBaseline is bool)
         );                                                                  // voided: 모두 거부
 
-      allow delete: if isAccessTrainer(resource.data)
-        && canWriteFor(resource.data)
-        && resource.data.status == 'draft';
+      allow delete: if (resource == null && isTrainer())                    // 재전송된 draft 삭제(DF-104)
+        || (isAccessTrainer(resource.data)
+          && canWriteFor(resource.data)
+          && resource.data.status == 'draft');
     }
 
     // --- Body Composition Records (P1a, V1-05 §7.6) ---

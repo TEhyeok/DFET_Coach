@@ -162,3 +162,22 @@ final class SyncEngineRound3Tests: XCTestCase {
     XCTAssertEqual(remote.calls.count, 0, "a discarded item is not sent")
   }
 }
+
+/// DF-104: the delete kinds reach the remote (document delete, and a stored binary's delete).
+final class SyncEngineDeleteTests: XCTestCase {
+  func testDeleteKindsAreSent() async {
+    let remote = FakeRemote()
+    remote.seedDocument("soap_notes/n1")
+    let engine = makeTestEngine(remote: remote)
+    await engine.enqueue(contentsOf: [
+      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 1, stage: .document,
+                 kind: .deleteDocument, target: .document(path: "soap_notes/n1"), createdAt: OutboxFixtures.createdAt),
+      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 2, stage: .upload,
+                 kind: .deleteBinary, target: .storage(path: "soapInk/n1/1.drawing"), createdAt: OutboxFixtures.createdAt),
+    ])
+    await engine.start()
+    await idle(engine)
+    XCTAssertEqual(remote.calls.map(\.kind), ["delete", "deleteBinary"])
+    XCTAssertFalse(remote.hasDocument("soap_notes/n1"))
+  }
+}

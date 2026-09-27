@@ -1,0 +1,7 @@
+import FirebaseStorage
+
+enum StorageFactory {
+  static func make(emulator: Bool) -> Storage {
+    emulator ? Storage.storage() : Storage.storage(url: "gs://dfetmanage-seoul")
+  }
+}

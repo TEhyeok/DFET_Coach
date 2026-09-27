@@ -34,10 +34,20 @@ public protocol RemoteWriter: Sendable {
   func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck
   /// Updates only the given fields (`updateData`; never a full `set` or `merge`, V1-04 §10.2 rule 1).
   func update(path: String, fields: JSONValue) async throws -> WriteAck
+  /// Deletes the document; a missing document is a success (DF-104, P1a drafts).
+  func delete(path: String) async throws -> WriteAck
 }
 
 public protocol BinaryUploader: Sendable {
   func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt
+  /// Deletes the stored file; a missing file is a success (DF-104, replaced ink revisions).
+  func delete(path: String) async throws
+}
+
+/// Downloads a stored file to a local path (DF-104). Never through a download URL (PRD §9.5 link policy).
+public protocol BinaryDownloader: Sendable {
+  /// Writes the file to `localURL` and returns it.
+  func download(path: String, to localURL: URL) async throws -> URL
 }
 
 public protocol CallableClient: Sendable {

@@ -62,16 +62,16 @@ public enum FirebaseBootstrap {
       FirebaseApp.configure(options: emulatorOptions())
     }
 
-    let settings = FirestoreSettings()
-    settings.cacheSettings = PersistentCacheSettings(sizeBytes: NSNumber(value: 100 * 1024 * 1024))  // ASM-04-13
+    var emulatorHost: String?
     if case let .emulator(host) = environment {
-      settings.host = "\(host):\(EmulatorPort.firestore)"
-      settings.isSSLEnabled = false
+      emulatorHost = host
       Auth.auth().useEmulator(withHost: host, port: EmulatorPort.auth)
-      Storage.storage().useEmulator(withHost: host, port: EmulatorPort.storage)
+      Storage.storage().useEmulator(withHost: host, port: EmulatorPort.storage)  // the emulator uses the default bucket
       Functions.functions(region: functionsRegion).useEmulator(withHost: host, port: EmulatorPort.functions)
+      StorageFactory.useEmulator = true
     }
-    Firestore.firestore().settings = settings
+    // Settings first, then the first use of Firestore (AC-DF-104.1).
+    Firestore.firestore().settings = FirestoreConfigurator.settings(emulatorHost: emulatorHost)
   }
 
   /// Synthetic options for emulator runs. Pure: building `FirebaseOptions` does not configure an app.

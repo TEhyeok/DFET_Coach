@@ -274,6 +274,10 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
   private var continuation: AsyncThrowingStream<MemberIdsSnapshot, Error>.Continuation?
   private var nextSnapshot = 0
   private var currentSnapshotIsCached = false
+  /// `pendingMembers(trainerUid:)` yields these lists in order, then ends with `pendingError` (DF-113).
+  var pendingLists: [[PendingMember]] = []
+  var pendingError: Error?
+  private var _pendingQueriedFor: [String] = []
 
   init(snapshots: [MemberIdsSnapshot], failingChunk: Int? = nil, cachedUsers: Set<String>? = nil,
        gateFirstRead: Bool = false, failFirstRead: Bool = false, keepListenerOpen: Bool = false) {
@@ -291,6 +295,7 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
   var isFirstReadWaiting: Bool { lock.withLock { _firstReadWaiting } }
   var firstReadWasCancelled: Bool { lock.withLock { _firstReadCancelled } }
   var listenerRemoved: Bool { lock.withLock { _listenerRemoved } }
+  var pendingQueriedFor: [String] { lock.withLock { _pendingQueriedFor } }
 
   func memberIds(trainerUid: String) -> AsyncThrowingStream<MemberIdsSnapshot, Error> {
     AsyncThrowingStream { continuation in
@@ -331,6 +336,17 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
       return firstReadGate
     }
     gate?.resume()
+  }
+
+  func pendingMembers(trainerUid: String) -> AsyncThrowingStream<[PendingMember], Error> {
+    let (lists, error) = lock.withLock { () -> ([[PendingMember]], Error?) in
+      _pendingQueriedFor.append(trainerUid)
+      return (pendingLists, pendingError)
+    }
+    return AsyncThrowingStream { continuation in
+      lists.forEach { continuation.yield($0) }
+      continuation.finish(throwing: error)
+    }
   }
 
   func users(ids: [String]) async throws -> UsersChunk {

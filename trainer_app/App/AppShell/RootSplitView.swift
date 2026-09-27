@@ -31,7 +31,7 @@ struct RootSplitView: View {
   @State private var comingSoonEntry: EntryPoint?
   /// TR-14 registration and the consent step after it (DF-108).
   @State private var sheet: ShellSheet?
-  /// TR-02 (DF-013). Kept in state so the subscription survives layout changes.
+  /// TR-02 (DF-013, DF-113). Kept in state so the subscriptions survive layout changes.
   @State private var memberList: MemberListViewModel
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
@@ -50,7 +50,9 @@ struct RootSplitView: View {
       queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
       version: Self.appVersion))
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
-    _memberList = State(initialValue: MemberListViewModel(directory: services.memberDirectory))
+    _memberList = State(initialValue: MemberListViewModel(
+      directory: services.memberDirectory, localPending: services.localPendingMembers,
+      consent: services.consentStatus))
   }
 
   private var isCompact: Bool { sizeClass == .compact }
@@ -121,8 +123,8 @@ struct RootSplitView: View {
       content(for: navigation.selection ?? .members)
     } detail: {
       DetailColumn {
-        if case let .memberDetail(uid) = navigation.detail {
-          memberDetail(uid: uid)
+        if case let .memberDetail(member) = navigation.detail {
+          memberDetail(member)
         } else {
           Color.clear.accessibilityIdentifier("app.detail.empty")
         }
@@ -150,8 +152,8 @@ struct RootSplitView: View {
       .navigationTitle(String(localized: "app.title"))
       .navigationDestination(for: TrainerRoute.self) { route in
         switch route {
-        case let .memberDetail(uid):
-          DetailColumn { memberDetail(uid: uid) }
+        case let .memberDetail(member):
+          DetailColumn { memberDetail(member) }
         default:
           content(for: route)
         }
@@ -200,19 +202,23 @@ struct RootSplitView: View {
     return "\(short) (\(build))"
   }
 
-  /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack.
+  /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack. A pending member's
+  /// row opens TR-03 with its `MemberKey.pending` (DF-113).
   private var memberListView: some View {
-    MemberListView(model: memberList, selectedID: selectedMemberID) { member in
-      let route = TrainerRoute.memberDetail(uid: member.id)
-      if isCompact {
-        stackPath.append(route)
-      } else {
-        navigation.detail = route
-      }
-    }
+    MemberListView(
+      model: memberList, selectedKey: selectedMember,
+      onSelect: { member in
+        let route = TrainerRoute.memberDetail(member: member)
+        if isCompact {
+          stackPath.append(route)
+        } else {
+          navigation.detail = route
+        }
+      },
+      onAddPending: { sheet = .registration })
     .navigationTitle(String(localized: "tr02.title"))
     .toolbar {
-      // TR-14 entry (DF-108). DF-113 adds the pending rows and the empty-state button.
+      // TR-14 entry (DF-108); the empty state offers the same action (DF-113).
       ToolbarItem(placement: .primaryAction) {
         Button { sheet = .registration } label: {
           Label(String(localized: "tr02.addPending"), systemImage: "person.badge.plus")
@@ -222,18 +228,27 @@ struct RootSplitView: View {
     }
   }
 
-  private var selectedMemberID: String? {
-    if case let .memberDetail(uid) = navigation.detail { return uid }
+  private var selectedMember: MemberKey? {
+    if case let .memberDetail(member) = navigation.detail { return member }
     return nil
   }
 
-  private func memberDetail(uid: String) -> some View {
+  private func memberDetail(_ member: MemberKey) -> some View {
     MemberDetailShell(entries: FlagGate.visibleEntries(on: .memberDetail, flags: flags)) { entry in
       if entry.destination == .comingSoon {
         comingSoonEntry = entry
       }
     }
     .container("tr03.root")
+    // Which member is open, for UI tests: the kind and the random key, never a name.
+    .accessibilityValue(Self.accessibilityValue(member))
+  }
+
+  static func accessibilityValue(_ member: MemberKey) -> String {
+    switch member {
+    case let .uid(id): return "uid:" + id
+    case let .pending(id): return "pending:" + id
+    }
   }
 }
 

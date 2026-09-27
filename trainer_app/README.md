@@ -68,7 +68,7 @@ exchange endpoint, so it cannot reach the production project even when a plist i
 | File | Role |
 |---|---|
 | `AppEnvironment.swift` | `AppEnvironment.resolveAtLaunch(...)` / `resolve(arguments:isDebug:bootstrap:)` -> `.live` (FirebaseData, flags fixed to `.allOff` until P1a), `.preview` (DEBUG only, in-memory synthetic data) or `.misconfigured` (no Firebase call). Firebase is configured through the injected `AppBootstrap` for `.live` only |
-| `TrainerRoute.swift` | `today` (TR-01), `members` (TR-02), `memberDetail(uid:)` (TR-03), `settings` (TR-15). No schedule/program/alerts (AS-21) |
+| `TrainerRoute.swift` | `today` (TR-01), `members` (TR-02), `memberDetail(member:)` (TR-03, a `MemberKey`: `.uid` or `.pending`), `settings` (TR-15). No schedule/program/alerts (AS-21) |
 | `FlagGate.swift` | `EntryPoint` list and the pure `FlagGate.isEntryVisible(_:flags:)` table (AC-IA-02). Gated entries without a screen open `common.comingSoon` |
 | `LayoutMode.swift` | `LayoutMode.for(width:)`: detail width < 1120pt is `.compact` (ASM-P0-22) |
 | `RootSplitView.swift` | NavigationSplitView (sidebar, content, detail); a compact size class switches to a NavigationStack |
@@ -90,6 +90,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`). TR-14 registration and its consent step work in memory: synthetic published versions (`{type}--1.0`), captures never sent, no server state (①②③ granted reads '동의 확인 대기') |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
+| `--preview-members-pending` | Two synthetic assigned members and three pending ones (`SYN-P001`..`SYN-P003`, '대기' badge), with every consent chip state (DF-113) |
 | `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |
 | `--preview-design-system` | DesignSystem gallery (`preview.designSystem`): every component with synthetic values, for layout checks and light/dark review (DF-016) |
 | `--preview-queue-failed` | TR-15 upload queue with two synthetic failed items (a rule rejection and a retry limit); retrying succeeds at once |

@@ -1057,6 +1057,18 @@
         }
       }
     },
+    "tr02.badge.pending" : {
+      "comment" : "V1-12 · F-LINK-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기"
+          }
+        }
+      }
+    },
     "tr02.consent.needed" : {
       "comment" : "V1-12 · TR-02",
       "extractionState" : "manual",
@@ -1089,6 +1101,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아직 담당 회원이 없어요"
+          }
+        }
+      }
+    },
+    "tr02.search" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원 검색"
           }
         }
       }

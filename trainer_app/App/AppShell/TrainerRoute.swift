@@ -10,17 +10,17 @@ enum TrainerRoute: Hashable, CaseIterable {
   case today
   /// TR-02
   case members
-  /// TR-03
-  case memberDetail(uid: String)
+  /// TR-03 of an assigned (`.uid`) or pending (`.pending`) member (DF-113).
+  case memberDetail(member: MemberKey)
   /// TR-15
   case settings
 
-  /// One value per case. `memberDetail` carries an empty uid: `allCases` enumerates cases, not members.
+  /// One value per case. `memberDetail` carries an empty key: `allCases` enumerates cases, not members.
   static var allCases: [TrainerRoute] {
-    [.today, .members, .memberDetail(uid: ""), .settings]
+    [.today, .members, .memberDetail(member: .uid("")), .settings]
   }
 
-  /// Case name without associated values (for the AS-21 check and logs; never contains a uid).
+  /// Case name without associated values (for the AS-21 check and logs; never contains a member key).
   var caseName: String {
     switch self {
     case .today: return "today"

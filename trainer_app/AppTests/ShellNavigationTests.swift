@@ -1,9 +1,10 @@
+import TrainerDomain
 import XCTest
 
 /// TC-DF017-06 (NFR-12, V1-07 §3.3): a size-class change maps the regular split state to the compact stack path
 /// and back without losing the TR screen.
 final class ShellNavigationTests: XCTestCase {
-  private let member = TrainerRoute.memberDetail(uid: "syn-0001")
+  private let member = TrainerRoute.memberDetail(member: .uid("syn-0001"))
 
   func testSplitToStackTable() {
     let cases: [(ShellNavigation, [TrainerRoute], String)] = [

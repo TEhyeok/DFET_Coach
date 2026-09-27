@@ -24,7 +24,7 @@ extension AppBootstrap {
     FirebaseAuthService()
   }
 
-  /// FirebaseData's `MemberDirectory` for the signed-in trainer (DF-013).
+  /// FirebaseData's `MemberDirectory` for the signed-in trainer (DF-013, DF-113).
   static func liveMemberDirectory(trainerUid: String) -> any MemberDirectory {
     FirestoreMemberDirectory(trainerUid: trainerUid)
   }
@@ -50,6 +50,8 @@ extension AppBootstrap {
     let consent = FirestoreConsentService()
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
+      localPendingMembers: runtime?.localPendingMembers ?? SessionRuntime.NoLocalPendingMembers(),
+      consentStatus: UnresolvedConsentSource(),
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
       consentDocuments: consent,
       consentRecorder: runtime?.consentRecorder ?? SessionRuntime.UnavailableConsentRecorder(),

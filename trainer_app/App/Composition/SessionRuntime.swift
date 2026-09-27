@@ -85,6 +85,8 @@ final class SessionRuntime {
   let consentRecorder: any ConsentCaptureRecorder
   /// The partition's consent captures, for `EffectiveConsentResolver` (DF-111).
   let consentCaptures: any ConsentCaptureSource
+  /// TR-02's pending members that are only on this device yet (DF-113).
+  let localPendingMembers: any LocalPendingMemberSource
   /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
   let container: ModelContainer
   let location: LocalStoreLocation
@@ -115,6 +117,7 @@ final class SessionRuntime {
     registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
     consentRecorder = LocalConsentRecorder(outbox: outbox, enqueue: { await engine.enqueue($0) })
     consentCaptures = LocalConsentCaptureStore(container: container, trainerUid: trainerUid)
+    localPendingMembers = LocalPendingMembers(container: container, trainerUid: trainerUid)
   }
 
   /// Created for a signed-in session, so sending starts now; then it follows the session.
@@ -232,6 +235,13 @@ final class SessionRuntime {
   /// No LocalStore, no local capture: the effective consent is the server's alone.
   struct NoConsentCaptures: ConsentCaptureSource {
     func observeCaptures(member: MemberKey) -> AsyncStream<[ConsentCapture]> {
+      AsyncStream { $0.yield([]) }
+    }
+  }
+
+  /// TR-02's device-only pending members when the LocalStore could not be opened: none (nothing could be saved).
+  struct NoLocalPendingMembers: LocalPendingMemberSource {
+    func observeLocalPendingMembers() -> AsyncStream<[PendingMember]> {
       AsyncStream { $0.yield([]) }
     }
   }

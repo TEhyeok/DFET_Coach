@@ -15,7 +15,7 @@ struct PreviewRootView: View {
   @State private var auth = PreviewAuthService()
   /// `--preview-members-slow` only: holds the member list until `preview.releaseMembers`.
   @State private var memberGate = PreviewMemberGate()
-  /// TR-14 registrations of this launch (DF-108), in memory.
+  /// TR-14 registrations of this launch (DF-108), in memory; TR-02 lists them as device-only pending members.
   @State private var registrar = PreviewPendingMemberRegistrar()
   /// TR-14 consent captures of this launch (DF-110), in memory; published versions and server state are synthetic.
   @State private var consent = PreviewConsentStore()
@@ -56,6 +56,7 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
+        localPendingMembers: registrar, consentStatus: PreviewConsentSource(script: preview.consentScript),
         registrar: registrar, consentDocuments: consent, consentRecorder: consent,
         effectiveConsent: EffectiveConsentResolver(server: consent, captures: consent), syncQueue: queue,
         signOut: signOut,

@@ -24,6 +24,8 @@ protocol MemberDirectoryGateway: Sendable {
   func memberIds(trainerUid: String) -> AsyncThrowingStream<MemberIdsSnapshot, Error>
   /// `users where documentId in ids` (at most `MemberChunks.size` ids).
   func users(ids: [String]) async throws -> UsersChunk
+  /// `pendingMembers where trainerId == uid && status == 'pending'` now and after every change.
+  func pendingMembers(trainerUid: String) -> AsyncThrowingStream<[PendingMember], Error>
 }
 
 /// Assigned members from a `trainers/{uid}` listener and chunked `users` reads (DF-013, ported from
@@ -68,6 +70,28 @@ public final class FirestoreMemberDirectory: MemberDirectory, Sendable {
       let task = Task {
         await AssignedMembersRun(gateway: gateway, serverWait: serverWait, output: continuation)
           .run(trainerUid: trainerUid)
+      }
+      continuation.onTermination = { _ in task.cancel() }
+    }
+  }
+
+  /// The trainer's pending members (DF-113, F-LINK-03.2). The query needs no composite index (equality filters only;
+  /// the `trainerId, status, createdAt` index covers it too) and the rules can prove it (`isAccessTrainer`, R-05).
+  /// Firestore answers from the cache only when it has documents or is offline, so an empty list is not shown before
+  /// the server answered online. Errors end the stream as `MemberDirectoryError`, like the assigned list.
+  public func observePendingMembers() -> AsyncThrowingStream<[PendingMember], Error> {
+    let trainerUid = trainerUid
+    let gateway = gateway
+    return AsyncThrowingStream { continuation in
+      let task = Task {
+        do {
+          for try await members in gateway.pendingMembers(trainerUid: trainerUid) { continuation.yield(members) }
+          continuation.finish()
+        } catch {
+          let mapped = MemberDirectoryErrorMapper.map(error)
+          Self.logger.error("pending members failed: \(String(describing: mapped), privacy: .public)")
+          continuation.finish(throwing: mapped)
+        }
       }
       continuation.onTermination = { _ in task.cancel() }
     }
@@ -337,5 +361,26 @@ struct FirestoreMemberGateway: MemberDirectoryGateway {
         trainerId: document.get("trainerId") as? String)
     }
     return UsersChunk(members: members, isFromCache: snapshot.metadata.isFromCache)
+  }
+
+  func pendingMembers(trainerUid: String) -> AsyncThrowingStream<[PendingMember], Error> {
+    AsyncThrowingStream { continuation in
+      // Only `displayName` is read; sex and birth year stay in the cache and never reach the list.
+      let registration = Firestore.firestore().collection(PendingMemberPayload.collection)
+        .whereField("trainerId", isEqualTo: trainerUid)
+        .whereField("status", isEqualTo: "pending")
+        .addSnapshotListener { snapshot, error in
+          if let error {
+            continuation.finish(throwing: error)
+            return
+          }
+          guard let snapshot else { return }
+          continuation.yield(snapshot.documents.map { document in
+            PendingMember(id: document.documentID, displayName: (document.get("displayName") as? String) ?? "")
+          })
+        }
+      let token = FirestoreListenerRegistry.shared.add(registration)
+      continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
+    }
   }
 }

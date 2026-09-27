@@ -626,6 +626,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 
 **비고·가정** — macOS 러너 시간이 길다. PR에서는 경로 트리거로만 돌고 필수 체크는 경로 해당 PR에만 건다(V1-01 DoD D2). 에뮬레이터용 `FirebaseOptions` 값은 가짜이며 비밀이 아니다. 시드 ID는 [§5.4](#54-테스트-id와-합성-데이터)와 같다(`synthTrainerA`, `synthMember0001`, `SYNTHpending00000001`).
 
+**DF-012에서 넘어온 항목** — DF-012의 Auth 에뮬레이터 테스트(TC-DF012-02·03)는 `IntegrationTests/AuthEmulatorTests.swift`에 있다(앱 호스트 번들).
+- Firebase는 앱의 사본 하나만 쓴다. 테스트는 `@testable import DFETTrainer`의 `AppBootstrap`으로 에뮬레이터를 구성하고, Firebase 제품을 링크하지 않는다.
+- 이 테스트는 `DFET_AUTH_EMULATOR=1`이 없으면 건너뛴다(xcodebuild에는 환경 변수 `TEST_RUNNER_DFET_AUTH_EMULATOR=1`로 준다).
+- Firebase Auth는 키체인이 필요하다. 시뮬레이터 앱은 서명돼야 키체인을 쓸 수 있으므로 `CODE_SIGNING_ALLOWED=NO`로는 로그인이 전부 17995(keychainError)로 실패한다.
+  - 이 스토리의 CI 잡은 ad-hoc 서명(`CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=`)으로 빌드하고 플래그를 켠다.
+  - 로컬 실행은 `trainer_app/scripts/test_auth_emulator.sh`다.
+
 **DoR** — [x] R1 [x] R2 [x] R3 DF-104(S06), DF-015 같은 스프린트(§4.2), P0 시드 스토리(DF-042 또는 DF-012, S04까지 병합) [x] R4 [x] R5 [x] R6 `.github/workflows/trainer-app.yml`, `trainer_app/IntegrationTests/**`, `functions/test/fixtures/emulator-seed*.v1.json`, `firebase.json`(`emulators`만) [x] R7 영향 없음 [x] R8 P1a 시드 데이터와 변형 파일이 이 스토리 산출물 [ ] R9 [x] R10 해당 없음
 
 **에이전트 브리프** — 먼저 `firebase.json`에 auth·functions 에뮬레이터 항목이 있는지 확인하고(없으면 추가), 시드 파일에 P1a 데이터와 변형 파일을 더한 뒤 `firebase emulators:exec --project demo-dfet`로 적재를 확인한다. `seed-emulator.js` 자체는 고치지 않는다(필요하면 막힘으로 보고). 그다음 `EmulatorHarness`와 `FaultInjection`을 만들고 `RulesRejectionIT` 하나를 초록으로 만든 뒤 나머지 시나리오를 더한다. 운영 프로젝트 ID나 실제 plist를 쓰지 않는다. `trainer_app/App/**`와 `TrainerKit/Sources/**`는 고치지 않는다(테스트 전용 훅이 필요하면 막힘으로 보고).

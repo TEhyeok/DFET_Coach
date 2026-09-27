@@ -1,34 +1,44 @@
 import FirebaseAuth
-import FirebaseCore
 import Foundation
 import TrainerDomain
 import XCTest
-@testable import FirebaseData
+@testable import DFETTrainer
 
-/// TC-DF012-02, TC-DF012-03 against the Auth emulator (project `demo-dfet`). Runs only when the test process
-/// gets `DFET_AUTH_EMULATOR=1` (xcodebuild: `TEST_RUNNER_DFET_AUTH_EMULATOR=1`), otherwise skips, so CI without
-/// an emulator stays green. Local run: `trainer_app/scripts/test_auth_emulator.sh`. CI automation is DF-107.
+/// TC-DF012-02, TC-DF012-03 against the Auth emulator (project `demo-dfet`), hosted in the app so Firebase Auth has
+/// the app's keychain (a host-less bundle fails with keychain error 17995). Firebase is the app's own copy: this
+/// bundle configures it through `AppBootstrap` and links no Firebase product (one Firebase instance per process).
 ///
-/// Each test creates its own `@example.invalid` account through the emulator REST API, so the DF-042 seed is not
-/// needed and seeded accounts are never changed.
+/// Runs only when the test process gets `DFET_AUTH_EMULATOR=1` (xcodebuild environment
+/// `TEST_RUNNER_DFET_AUTH_EMULATOR=1`), otherwise skips. Local run: `trainer_app/scripts/test_auth_emulator.sh`.
+/// CI automation is DF-107. Each test creates its own `@example.invalid` account through the emulator REST API, so the
+/// DF-042 seed is not needed and seeded accounts are never changed.
 final class AuthEmulatorTests: XCTestCase {
-  private static let host = "127.0.0.1"
-  private var service: FirebaseAuthService!
+  /// The hosted app starts in `--preview-unit-test-host` mode and never configures Firebase; this does, once.
+  private static let configureEmulator: Void = {
+    AppBootstrap.firebase(bundle: .main).configureLive(.emulator(host: "127.0.0.1"))
+  }()
+
+  private var configured = false
+  private var service: (any AuthService)!
 
   override func setUpWithError() throws {
     guard ProcessInfo.processInfo.environment["DFET_AUTH_EMULATOR"] == "1" else {
       throw XCTSkip("set DFET_AUTH_EMULATOR=1 and start the Auth emulator (demo-dfet) to run")
     }
-    if FirebaseApp.app() == nil {
-      FirebaseBootstrap.configure(.emulator(host: Self.host))
+    Self.configureEmulator
+    configured = true
+    // Never run against anything but the emulator project.
+    guard Auth.auth().app?.options.projectID == "demo-dfet" else {
+      XCTFail("Firebase is not the demo-dfet emulator app")
+      throw XCTSkip("refusing to run outside the emulator")
     }
     try? Auth.auth().signOut()
-    service = FirebaseAuthService()
+    service = AppBootstrap.liveAuthService()
   }
 
   override func tearDownWithError() throws {
     // tearDown also runs after the XCTSkip in setUp; Auth.auth() without a configured app is a fatal error.
-    guard FirebaseApp.app() != nil else { return }
+    guard configured else { return }
     try? Auth.auth().signOut()
   }
 
@@ -44,6 +54,8 @@ final class AuthEmulatorTests: XCTestCase {
 
   /// TC-DF012-02 (AC-DF-012.2): an account without a boolean `true` claim is rejected and signed out.
   func testAccountWithoutClaimIsSignedOut() async throws {
+    let recorder = SessionRecorder(service.sessionStream())
+    defer { recorder.stop() }
     for claims in [[:], ["trainer": "true"], ["trainer": 1, "admin": true]] as [[String: Any]] {
       let account = try await EmulatorAccounts.create(claims: claims)
       do {
@@ -54,6 +66,9 @@ final class AuthEmulatorTests: XCTestCase {
       }
       XCTAssertNil(Auth.auth().currentUser)
     }
+    // The stream never reported a session for these accounts (AC-DF-012.2).
+    await recorder.wait { $0.count >= 1 }
+    XCTAssertTrue(recorder.values.allSatisfy { $0 == nil }, "stream: \(recorder.values.map { $0?.uid ?? "nil" })")
   }
 
   /// AC-DF-012.4: a wrong password maps to `.invalidCredentials`.
@@ -86,15 +101,19 @@ final class AuthEmulatorTests: XCTestCase {
 /// Records every value of a session stream on a background task.
 private final class SessionRecorder: @unchecked Sendable {
   private let lock = NSLock()
-  private var values: [TrainerSession?] = []
+  private var _values: [TrainerSession?] = []
   private var task: Task<Void, Never>?
 
   init(_ stream: AsyncStream<TrainerSession?>) {
     task = Task { [weak self] in
       for await value in stream {
-        self?.lock.withLock { self?.values.append(value) }
+        self?.lock.withLock { self?._values.append(value) }
       }
     }
+  }
+
+  var values: [TrainerSession?] {
+    lock.withLock { _values }
   }
 
   func stop() {
@@ -106,10 +125,10 @@ private final class SessionRecorder: @unchecked Sendable {
     file: StaticString = #filePath, line: UInt = #line, _ condition: ([TrainerSession?]) -> Bool
   ) async {
     for _ in 0..<200 {
-      if lock.withLock({ condition(values) }) { return }
+      if lock.withLock({ condition(_values) }) { return }
       try? await Task.sleep(nanoseconds: 50_000_000)
     }
-    XCTFail("stream never reached the expected state: \(lock.withLock { values.map { $0?.uid ?? "nil" } })",
+    XCTFail("stream never reached the expected state: \(lock.withLock { _values.map { $0?.uid ?? "nil" } })",
             file: file, line: line)
   }
 }
@@ -122,8 +141,8 @@ private enum EmulatorAccounts {
     let password: String
   }
 
-  private static let base =
-    "http://127.0.0.1:\(FirebaseBootstrap.EmulatorPort.auth)/identitytoolkit.googleapis.com/v1/projects/\(FirebaseBootstrap.emulatorProjectID)"
+  /// Auth emulator port 19099 and project `demo-dfet` (FirebaseBootstrap.EmulatorPort.auth, firebase.json).
+  private static let base = "http://127.0.0.1:19099/identitytoolkit.googleapis.com/v1/projects/demo-dfet"
 
   static func create(claims: [String: Any]) async throws -> Account {
     let email = "df012-\(UUID().uuidString.lowercased())@example.invalid"

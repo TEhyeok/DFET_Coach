@@ -74,7 +74,8 @@ public final class AuthGateModel {
   }
 
   /// Follows the session stream until the task is cancelled. A `nil` after a signed-in state that the trainer
-  /// did not ask for means the claim was revoked (AC-DF-012.3).
+  /// did not ask for means the claim was revoked (AC-DF-012.3). A disabled account or revoked token ends the session
+  /// the same way and shows the same notice, which also tells the trainer to contact the administrator.
   public func observe() async {
     for await session in auth.sessionStream() {
       apply(session)
@@ -99,6 +100,11 @@ public final class AuthGateModel {
 
   /// Sign-out requested by the trainer (settings, DF-018). Never shows the claim-revoked notice.
   public func signOut(discardUnsynced: Bool = false) async throws {
+    // Only a signed-in state produces the `nil` that clears the flag; otherwise the flag would hide a later lock.
+    guard case .signedIn = state else {
+      try await auth.signOut(discardUnsynced: discardUnsynced)
+      return
+    }
     userSignOutInProgress = true
     do {
       try await auth.signOut(discardUnsynced: discardUnsynced)

@@ -76,6 +76,13 @@ public struct PendingMemberRegistrationView: View {
         }
       }
     }
+    // A swipe must not drop a save in progress or one already made (V1-07 §3.2).
+    .interactiveDismissDisabled(model.isSaving || model.didSave)
+    .onChange(of: model.showsUnder14Block) { _, blocked in
+      guard blocked else { return }
+      AccessibilityNotification.Announcement(
+        String(localized: String.LocalizationValue("tr14.register.under14Blocked"), bundle: .main)).post()
+    }
     .accessibilityIdentifier("tr14.register.root")
   }
 }

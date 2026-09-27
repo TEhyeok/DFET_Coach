@@ -13,6 +13,8 @@ public struct RetryPolicy: Equatable, Sendable {
     case retry
     /// Wait for the next device unlock without counting the attempt (ASM-P0-29).
     case waitForUnlock
+    /// Wait for the trainer's next session (`start()`) without counting the attempt.
+    case waitForSession
   }
 
   public var maxAttempts: Int
@@ -49,6 +51,8 @@ public struct RetryPolicy: Equatable, Sendable {
       return .retry
     case .protectedDataUnavailable:
       return .waitForUnlock
+    case .signedOut:
+      return .waitForSession
     }
   }
 }

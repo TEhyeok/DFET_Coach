@@ -58,6 +58,12 @@ final class PendingMemberRegistrationModelTests: XCTestCase {
     XCTAssertEqual(member, .pending("SynthPending00000001"))
     XCTAssertEqual(registrar.drafts.count, 1)
     XCTAssertFalse(model.saveFailed)
+    // Review L3: while the sheet swaps to consent, '다음' stays off and a second save does nothing.
+    XCTAssertTrue(model.didSave)
+    XCTAssertFalse(model.canSave)
+    let again = await model.save()
+    XCTAssertNil(again)
+    XCTAssertEqual(registrar.drafts.count, 1)
   }
 
   func testAFailedSaveKeepsTheDraftAndSaysSo() async {

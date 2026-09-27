@@ -23,11 +23,13 @@ public struct PendingMemberDraft: Equatable, Sendable {
     self.ageConfirmed14 = ageConfirmed14
   }
 
-  /// `displayName` trimmed; 1-40 characters are allowed (V1-05 §4.3).
+  /// `displayName` trimmed and in NFC, as it is stored.
   public var trimmedName: String {
-    displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+    displayName.trimmingCharacters(in: .whitespacesAndNewlines).precomposedStringWithCanonicalMapping
   }
 
+  /// 1-40, counted as the rules count (`strRange(displayName, 1, 40)`, V1-05 §4.3): UTF-16 code units. A Hangul
+  /// syllable is one unit, most emoji are two or more, so a name the rules would refuse is never saved.
   public static let nameLimit = 1...40
 }
 
@@ -48,11 +50,6 @@ public enum AgeGate {
   public static func isEligible(birthYear: Int, now: Date) -> Bool {
     birthYear >= minimumBirthYear && birthYear <= currentYear(now: now) - 15
   }
-
-  /// Years offered in the picker, newest first: the ones that are eligible.
-  public static func selectableYears(now: Date) -> [Int] {
-    Array((minimumBirthYear...(currentYear(now: now) - 15)).reversed())
-  }
 }
 
 /// Why a draft cannot be saved yet.
@@ -67,7 +64,7 @@ public enum PendingMemberDraftProblem: Equatable, Sendable {
 public extension PendingMemberDraft {
   func problems(now: Date) -> [PendingMemberDraftProblem] {
     var problems: [PendingMemberDraftProblem] = []
-    if !Self.nameLimit.contains(trimmedName.count) { problems.append(.nameMissingOrTooLong) }
+    if !Self.nameLimit.contains(trimmedName.utf16.count) { problems.append(.nameMissingOrTooLong) }
     if sex == nil { problems.append(.sexNotChosen) }
     if let birthYear {
       if !AgeGate.isEligible(birthYear: birthYear, now: now) { problems.append(.under14) }

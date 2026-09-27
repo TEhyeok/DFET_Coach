@@ -31,6 +31,7 @@ final class RetryPolicyTests: XCTestCase {
       XCTAssertEqual(RetryPolicy.disposition(for: error), .retry, "\(error)")
     }
     XCTAssertEqual(RetryPolicy.disposition(for: .protectedDataUnavailable), .waitForUnlock)
+    XCTAssertEqual(RetryPolicy.disposition(for: .signedOut), .waitForSession)
   }
 
   func testErrorCodesNeverCarryDetails() {

@@ -14,8 +14,28 @@ final class PendingMemberTests: XCTestCase {
     XCTAssertFalse(AgeGate.isEligible(birthYear: 2013, now: now2026))
     XCTAssertTrue(AgeGate.isEligible(birthYear: 1900, now: now2026))
     XCTAssertFalse(AgeGate.isEligible(birthYear: 1899, now: now2026))
-    XCTAssertEqual(AgeGate.selectableYears(now: now2026).first, 2011)
-    XCTAssertEqual(AgeGate.selectableYears(now: now2026).last, 1900)
+  }
+
+  /// Review M6: the length is counted in UTF-16 units after NFC, as the rules' `strRange(displayName, 1, 40)` does
+  /// (checked on the emulator: 40 ASCII and 40 Hangul syllables pass; 41 ASCII, 21 × 😀, 40 × 👍🏻 are refused).
+  func testNameLengthIsCountedAsTheRulesCountIt() {
+    func accepts(_ name: String) -> Bool {
+      !PendingMemberDraft(displayName: name, sex: .female, birthYear: 1990, ageConfirmed14: true)
+        .problems(now: now2026).contains(.nameMissingOrTooLong)
+    }
+    XCTAssertTrue(accepts(String(repeating: "a", count: 40)))
+    XCTAssertFalse(accepts(String(repeating: "a", count: 41)))
+    XCTAssertTrue(accepts(String(repeating: "가", count: 40)))
+    XCTAssertFalse(accepts(String(repeating: "😀", count: 21)))
+    XCTAssertTrue(accepts(String(repeating: "😀", count: 20)))
+    XCTAssertFalse(accepts(String(repeating: "👍🏻", count: 40)))
+    XCTAssertFalse(accepts("   "))
+    // 김 decomposed (3 units each) is stored composed (1 unit each): 14 of them fit.
+    let decomposed = String(repeating: "\u{1100}\u{1175}\u{11B7}", count: 14)
+    XCTAssertTrue(accepts(decomposed))
+    let draft = PendingMemberDraft(displayName: decomposed, sex: .female, birthYear: 1990, ageConfirmed14: true)
+    XCTAssertEqual(draft.trimmedName.utf16.count, 14)
+    XCTAssertEqual(draft.trimmedName, String(repeating: "김", count: 14))
   }
 
   /// The Seoul year decides: 2026-12-31 20:00 UTC is already 2027 in Seoul.

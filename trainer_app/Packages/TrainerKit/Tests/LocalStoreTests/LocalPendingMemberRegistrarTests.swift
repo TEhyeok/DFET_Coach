@@ -24,7 +24,7 @@ final class LocalPendingMemberRegistrarTests: XCTestCase {
     let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
     let recorder = Recorder()
     let registrar = LocalPendingMemberRegistrar(
-      container: container, outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { recorder.add($0) },
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { recorder.add($0) },
       now: { Synthetic.now }, makeID: { [fixedID] in fixedID })
     let id = try await registrar.register(draft)
     XCTAssertEqual(id, fixedID)
@@ -55,7 +55,7 @@ final class LocalPendingMemberRegistrarTests: XCTestCase {
     let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
     let recorder = Recorder()
     let registrar = LocalPendingMemberRegistrar(
-      container: container, outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { recorder.add($0) },
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { recorder.add($0) },
       now: { Synthetic.now })
     var under14 = draft
     under14.birthYear = 2012  // Synthetic.now is 2026
@@ -84,7 +84,7 @@ final class LocalPendingMemberRegistrarTests: XCTestCase {
       await engine.networkDidChange(isReachable: false)
       await engine.start()
       let registrar = LocalPendingMemberRegistrar(
-        container: container, outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { await engine.enqueue($0) },
+        outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { await engine.enqueue($0) },
         now: { Synthetic.now }, makeID: { [fixedID] in fixedID })
       _ = try await registrar.register(draft)
       XCTAssertEqual(remote.creates, [], "offline: nothing sent yet")
@@ -114,17 +114,22 @@ private func firstPending(_ engine: SyncEngine) async -> Int {
   return -1
 }
 
-/// A remote that accepts every create and records its path.
+/// A remote that accepts every write and records the create and update paths.
 final class RecordingRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked Sendable {
   private let lock = NSLock()
   private var _creates: [String] = []
+  private var _updates: [String] = []
   var creates: [String] { lock.withLock { _creates } }
+  var updates: [String] { lock.withLock { _updates } }
 
   func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck {
     lock.withLock { _creates.append(path) }
     return WriteAck(serverCommitted: true)
   }
-  func update(path: String, fields: JSONValue) async throws -> WriteAck { WriteAck(serverCommitted: true) }
+  func update(path: String, fields: JSONValue) async throws -> WriteAck {
+    lock.withLock { _updates.append(path) }
+    return WriteAck(serverCommitted: true)
+  }
   func delete(path: String) async throws -> WriteAck { WriteAck(serverCommitted: true) }
   func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
     UploadReceipt(path: path, size: 0, sha256: sha256, verified: true)

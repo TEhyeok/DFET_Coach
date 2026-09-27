@@ -125,6 +125,23 @@ describe('soap_notes finalized is immutable (AC-DF-022.1, AC-SOAP-04.1~04.3)', (
       text: '바꾼 합성 문장',
     }));
   });
+
+  test('R-09 new addendum is denied after healthData withdrawal while access key cleanup is pending', async () => {
+    await seedR01();
+    await h.seed(env, h.seedConsent(member1, {healthData: false}));
+    // Assignment and parent trainerId intentionally remain: consent commits before access-key cleanup.
+    await assertFails(setDoc(doc(h.trainerDb(env), 'soap_notes/N2/addenda/A-after-withdrawal'), {
+      authorUid: trainerA, createdAt: serverTimestamp(), reason: '합성 정정 사유', text: '새 합성 건강 기록',
+    }));
+  });
+
+  test('R-09 new addendum is denied when the consent state has no healthData grant', async () => {
+    await seedR01();
+    await h.seed(env, h.seedConsent(member1, {}));
+    await assertFails(setDoc(doc(h.trainerDb(env), 'soap_notes/N2/addenda/A-without-consent'), {
+      authorUid: trainerA, createdAt: serverTimestamp(), reason: '합성 정정 사유', text: '새 합성 건강 기록',
+    }));
+  });
 });
 
 describe('soap_notes list must be proven by trainerId (AC-DF-022.1)', () => {

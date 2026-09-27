@@ -121,8 +121,6 @@ final class RemoteWriterTests: XCTestCase {
     access.pendingWritesDrain = false
     let undrained = try await writer.createIfAbsent(path: "soap_notes/n1", fields: fields)
     XCTAssertFalse(undrained.serverCommitted)
-    let missing = try await writer.delete(path: "soap_notes/gone")
-    XCTAssertFalse(missing.serverCommitted, "an unreadable document is not taken as deleted while writes are queued")
   }
 
   /// Finding 3/P5: a finalize whose reply was lost is denied when sent again (finalized documents are frozen) and
@@ -147,11 +145,22 @@ final class RemoteWriterTests: XCTestCase {
     }
   }
 
-  /// Finding 4/P4: deleting a missing document is denied by the rules and reconciled into a success.
+  /// Deleting a missing draft is allowed by the rules (idempotent delete), so a delete sent again just succeeds.
   func testDeletingAMissingDocumentIsASuccess() async throws {
     let access = RulesLikeDocumentAccess(trainerUid: "t1")
     let ack = try await FirestoreRemoteWriter(trainerUid: "t1", access: access).delete(path: "soap_notes/gone")
     XCTAssertTrue(ack.serverCommitted)
+    XCTAssertEqual(access.serverReads, 0)
+  }
+
+  /// A denied delete is real: an existing document this trainer can no longer read (unassigned member) is never
+  /// taken as deleted (NFR-06).
+  func testADeniedDeleteIsNeverTakenAsDone() async {
+    let access = RulesLikeDocumentAccess(trainerUid: "t1", documents: ["soap_notes/n1": ["trainerId": "t2"]])
+    await assertThrows(.permissionDenied) {
+      _ = try await FirestoreRemoteWriter(trainerUid: "t1", access: access).delete(path: "soap_notes/n1")
+    }
+    XCTAssertEqual(access.serverReads, 0)
   }
 
   func testDeletingAFrozenDocumentStaysDenied() async {
@@ -184,8 +193,11 @@ final class RemoteWriterTests: XCTestCase {
     let badPayloads: [JSONValue] = [
       .object(["list": .array([.array([.int(1)])])]),
       .object(["list": .array([.serverTimestamp])]),
+      .object(["list": .array([.object(["at": .serverTimestamp])])]),
       .object(["": .int(1)]),
       .object(["__name__": .int(1)]),
+      .object(["__": .int(1)]),
+      .object(["___": .int(1)]),
       .object(["nested": .object(["": .int(1)])]),
       .object(["at": .timestamp(Date(timeIntervalSince1970: 300_000_000_000))]),
     ]
@@ -200,6 +212,31 @@ final class RemoteWriterTests: XCTestCase {
       }
     }
     XCTAssertEqual(access.createAttempts + access.updatePayloads.count, 0)
+  }
+
+  /// An array inside a map inside an array is valid Firestore data: posture `views[].landmarks` and a SOAP metric row
+  /// that keeps an array must reach the server (the SDK resets "in an array" for a map's fields).
+  func testArraysInsideMapsInsideArraysAreAccepted() async throws {
+    let posture = JSONValue.object([
+      "trainerId": .string("t1"),
+      "views": .array([
+        .object(["view": .string("front"), "landmarks": .array([
+          .object(["code": .string("earLeft"), "x": .number(0.41), "y": .number(0.12)]),
+        ])]),
+        .object(["view": .string("sagittalLeft"), "landmarks": .array([])]),
+      ]),
+    ])
+    let access = RulesLikeDocumentAccess(trainerUid: "t1")
+    let ack = try await FirestoreRemoteWriter(trainerUid: "t1", access: access)
+      .createIfAbsent(path: "postureAssessments/p1", fields: posture)
+    XCTAssertTrue(ack.serverCommitted)
+    let views = try XCTUnwrap(access.createPayloads["postureAssessments/p1"]?["views"] as? [[String: Any]])
+    XCTAssertEqual((views.first?["landmarks"] as? [[String: Any]])?.count, 1)
+
+    let metricRow = JSONValue.object(["metrics": .array([
+      .object(["metricCode": .string("romDeg"), "raw": .array([.string("합성"), .int(3)])]),
+    ])])
+    XCTAssertNoThrow(try JSONValueFirestoreMapper.fields(metricRow))
   }
 
   func testServerHasComparesByValue() {
@@ -362,8 +399,9 @@ final class RemoteWriterTests: XCTestCase {
 }
 
 /// Firestore document access that behaves like the repository's rules for one trainer (probes P1-P8 of the PR #173
-/// review): a missing or someone else's document cannot be read, a second create is denied, a missing document can be
-/// neither updated nor deleted, and frozen (finalized) documents take no update or delete.
+/// review): a missing or someone else's document cannot be read, a second create is denied, a missing document cannot
+/// be updated but its delete succeeds (idempotent delete rule), and frozen (finalized) documents take no update or
+/// delete.
 final class RulesLikeDocumentAccess: FirestoreDocumentAccess, @unchecked Sendable {
   private let lock = NSLock()
   private let trainerUid: String
@@ -473,9 +511,12 @@ final class RulesLikeDocumentAccess: FirestoreDocumentAccess, @unchecked Sendabl
     }
   }
 
+  /// Idempotent like the rules: a missing document "deletes"; an existing one needs to be this trainer's and not
+  /// frozen.
   func delete(path: String) async throws {
     try write {
-      guard documents[path] != nil, !_frozen.contains(path) else { return false }
+      guard let document = documents[path] else { return true }
+      guard isMine(document), !_frozen.contains(path) else { return false }
       documents[path] = nil
       return true
     }

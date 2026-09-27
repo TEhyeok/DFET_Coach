@@ -1,0 +1,4 @@
+import FirebaseStorage
+
+// Even an explicit bucket bypasses StorageFactory (the one place that picks the bucket, DEC-19).
+let storage = Storage.storage(url: "gs://dfetmanage.appspot.com")

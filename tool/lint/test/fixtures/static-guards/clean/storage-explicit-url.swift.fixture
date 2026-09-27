@@ -1,4 +1,0 @@
-import FirebaseStorage
-
-// Any file may name the Seoul bucket explicitly; only the default bucket is guarded.
-let storage = Storage.storage(url: "gs://dfetmanage-seoul")

@@ -28,17 +28,17 @@ protocol FirestoreDocumentAccess: Sendable {
 
 /// Firestore implementation of `RemoteWriter` (DF-104).
 ///
-/// Every write goes out first and is reconciled only when the server denies it (V1-04 §10.5): a write whose earlier
-/// attempt committed before the app lost the reply is denied the second time (a second create counts as an update,
-/// finalized and voided documents are frozen, a missing document cannot be deleted). On `permission-denied` the
-/// writer waits for this device's pending writes (at most 30 s), reads the document from the server once and decides:
+/// Every write goes out first. A create or update is reconciled only when the server denies it (V1-04 §10.5): a write
+/// whose earlier attempt committed before the app lost the reply is denied the second time (a second create counts as
+/// an update; finalized and voided documents are frozen). On `permission-denied` the writer waits for this device's
+/// pending writes (at most 30 s), reads the document from the server once and decides:
 /// - create: the document exists and this trainer wrote it (`authorUid`, `enteredBy` or `trainerId`) → committed
 ///   (AC-DF-015.5, AC-DF-104.3).
 /// - update (and finalize, void): the server already has every non-server-time field of the payload → committed.
-/// - delete: the document is gone (or no longer readable) → committed.
 /// - the read shows unconfirmed local writes, or this device's writes did not drain → `serverCommitted: false`, so
 ///   the SyncEngine retries later instead of failing for good.
-/// Otherwise the denial stands. There is no client timeout: the SDK's completion is the only proof of a commit, and
+/// Otherwise the denial stands. A delete needs no reconciliation: the rules let a trainer delete a missing draft
+/// (idempotent), so a delete sent again succeeds and a denial is real (never taken as done, NFR-06). There is no client timeout: the SDK's completion is the only proof of a commit, and
 /// its writes cannot be cancelled (AC-DF-104.5).
 ///
 /// `createIfAbsent` adds `createdAt` and `updatedAt` as server time (only `createdAt` on append-only `addenda`, whose
@@ -94,11 +94,8 @@ public final class FirestoreRemoteWriter: RemoteWriter, Sendable {
   public func delete(path: String) async throws -> WriteAck {
     try await mapped {
       try FirestorePayload.validateDocumentPath(path)
-      return try await write(path) {
-        try await self.access.delete(path: path)
-      } committed: { server in
-        server == nil
-      }
+      try await access.delete(path: path)
+      return WriteAck(serverCommitted: true)
     }
   }
 

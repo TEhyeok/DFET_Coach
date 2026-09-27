@@ -5,8 +5,9 @@ import XCTest
 @testable import DFETTrainer
 
 /// DF-104 against the Firestore emulator with the repository's rules (PR #173 review probes P1-P5): the writer
-/// creates, reconciles a create and a void sent again after a lost reply, and treats a missing document's delete as
-/// done. The rest of the error-injection matrix is DF-107. Synthetic data only; every run uses its own trainer.
+/// creates, reconciles a create and a void sent again after a lost reply, and a delete sent again succeeds (the rules
+/// make draft deletes idempotent). The rest of the error-injection matrix is DF-107. Synthetic data only; every run
+/// uses its own trainer.
 final class RemoteWriterEmulatorTests: XCTestCase {
   private var configured = false
 
@@ -55,7 +56,7 @@ final class RemoteWriterEmulatorTests: XCTestCase {
       XCTAssertEqual(error as? RemoteError, .permissionDenied)
     }
 
-    // P4: deleting a document that does not exist is denied by the rules and reconciled as done.
+    // P4: deleting a document that does not exist (a delete sent again) succeeds: the delete rule is idempotent.
     let deleted = try await writer.delete(path: "soap_notes/it-missing-\(UUID().uuidString.lowercased())")
     XCTAssertTrue(deleted.serverCommitted)
   }

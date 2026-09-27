@@ -6,10 +6,20 @@ import TrainerDomain
 /// `FieldValue.serverTimestamp()`, `.timestamp` a `Timestamp`, `.int` an `Int64`, `.bytes` `Data`.
 ///
 /// The SDK raises Objective-C exceptions, which Swift cannot catch, for values Firestore does not accept, so they are
-/// refused here with `.invalidArgument`: an array inside an array, a server timestamp inside an array, an empty or
-/// reserved (`__name__`) field name, and a date outside 0001-01-01...9999-12-31.
+/// refused here with `.invalidArgument`: an array directly inside an array, a server timestamp anywhere under an
+/// array, an empty or reserved (`__…__`) field name, and a date outside 0001-01-01...9999-12-31. An array inside a map
+/// inside an array is fine (posture `views[].landmarks`, SDK `ParseContext::ChildContext`).
 enum JSONValueFirestoreMapper {
-  static func firestore(_ value: JSONValue, inArray: Bool = false) throws -> Any {
+  /// Where a value sits: `directlyInArray` is reset by a map (it gates nested arrays); `underArray` is kept through
+  /// maps (it gates server timestamps, which the SDK accepts only on a field path).
+  struct Position {
+    var directlyInArray = false
+    var underArray = false
+
+    static let top = Position()
+  }
+
+  static func firestore(_ value: JSONValue, at position: Position = .top) throws -> Any {
     switch value {
     case .null: return NSNull()
     case let .bool(b): return b
@@ -17,15 +27,16 @@ enum JSONValueFirestoreMapper {
     case let .int(i): return i
     case let .string(s): return s
     case let .array(items):
-      guard !inArray else { throw RemoteError.invalidArgument }  // nested arrays
-      return try items.map { try firestore($0, inArray: true) }
+      guard !position.directlyInArray else { throw RemoteError.invalidArgument }  // an array directly in an array
+      let element = Position(directlyInArray: true, underArray: true)
+      return try items.map { try firestore($0, at: element) }
     case let .object(fields):
-      return try map(fields, inArray: inArray)
+      return try map(fields, at: Position(directlyInArray: false, underArray: position.underArray))
     case let .timestamp(date):
       guard FirestorePayload.timestampRange.contains(date) else { throw RemoteError.invalidArgument }
       return Timestamp(date: date)
     case .serverTimestamp:
-      guard !inArray else { throw RemoteError.invalidArgument }
+      guard !position.underArray else { throw RemoteError.invalidArgument }
       return FieldValue.serverTimestamp()
     case let .bytes(data): return data
     }
@@ -34,14 +45,14 @@ enum JSONValueFirestoreMapper {
   /// Top-level document fields; the payload must be an object.
   static func fields(_ value: JSONValue) throws -> [String: Any] {
     guard case let .object(fields) = value else { throw RemoteError.invalidArgument }
-    return try map(fields, inArray: false)
+    return try map(fields, at: .top)
   }
 
-  private static func map(_ fields: [String: JSONValue], inArray: Bool) throws -> [String: Any] {
+  private static func map(_ fields: [String: JSONValue], at position: Position) throws -> [String: Any] {
     var out: [String: Any] = [:]
     for (key, value) in fields {
       guard FirestorePayload.isValidFieldName(key) else { throw RemoteError.invalidArgument }
-      out[key] = try firestore(value, inArray: inArray)
+      out[key] = try firestore(value, at: position)
     }
     return out
   }
@@ -99,8 +110,9 @@ enum FirestorePayload {
 
   private static let forbiddenInPath = CharacterSet(charactersIn: "~*/[]")
 
+  /// `__…__`, including `__` and `___` (SDK `user_data.cc`).
   private static func isReserved(_ segment: Substring) -> Bool {
-    segment.count >= 4 && segment.hasPrefix("__") && segment.hasSuffix("__")
+    segment.hasPrefix("__") && segment.hasSuffix("__")
   }
 
   /// Whether the server document already holds every field of an update payload (V1-04 §10.5.3-4). Server-time

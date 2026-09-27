@@ -21,6 +21,8 @@ struct PreviewRootView: View {
         // A mistyped `--preview-<name>` must not silently run another scenario. No `app.root`, so UI tests fail.
         Text(verbatim: "Unknown preview argument: \(preview.unknownArguments.joined(separator: " "))")
           .accessibilityIdentifier("preview.unknownArgument")
+      } else if preview.scenario == .designSystem {
+        DesignSystemGallery()
       } else if preview.isSignedIn {
         shell
       } else {

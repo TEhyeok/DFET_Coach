@@ -28,7 +28,9 @@ let package = Package(
   dependencies: [
     .package(path: "../TrainerCore"),
     .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "11.0.0"),  // ASM-04-11, ASM-S01-06
-    // swift-snapshot-testing (test only) is added by the first story that records snapshots (DF-016).
+    // Test only (DF-016, ADR-013). 1.12.0 is the last release without transitive dependencies (later ones pull in
+    // swift-syntax and swift-custom-dump for inline snapshots, which this repository does not use).
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.12.0"),
   ],
   targets: [
     .target(name: "LocalStore", dependencies: core + [.product(name: "SyncEngine", package: "TrainerCore")]),
@@ -59,7 +61,11 @@ let package = Package(
     .testTarget(name: "LocalStoreTests", dependencies: ["LocalStore"]),
     .testTarget(name: "FirebaseDataTests", dependencies: ["FirebaseData"]),
     .testTarget(name: "PostureVisionTests", dependencies: ["PostureVision"]),
-    .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
+    .testTarget(
+      name: "DesignSystemTests",
+      dependencies: ["DesignSystem", .product(name: "SnapshotTesting", package: "swift-snapshot-testing")],
+      exclude: ["__Snapshots__"]
+    ),
     .testTarget(name: "FeatureModulesTests", dependencies: featureNames.map { Target.Dependency(stringLiteral: $0) }),
   ],
   swiftLanguageVersions: [.v5]

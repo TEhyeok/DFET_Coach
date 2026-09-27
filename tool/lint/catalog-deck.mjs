@@ -14,20 +14,29 @@
 //   문자 `%`는 `%%`다. 형식 종류가 다르면 `String(format:)`이 앱을 죽일 수 있어 같은 값으로 보지 않는다.
 // - 항목은 ko 하나, `stringUnit.state == translated`, 변형(variations) 없음, 카탈로그 `sourceLanguage == ko`다.
 // - 주석이 `V1-12 · ` 또는 정확히 `V1-12`로 시작한다(카탈로그 주석 규칙, §4.4).
-// - 덱 전체: 문장의 `{name}` 자리표시자 집합이 `args`와 같다.
+// - 덱 전체: 문장의 `{name}` 자리표시자 집합이 `args`와 같고, 한 문장에 같은 자리표시자가 두 번 나오지 않는다
+//   (인자가 하나면 번호 없는 `%@`가 되어 두 번째 자리가 넘기지 않은 인자를 읽는다, §4.3).
+// - 앱 소스(`trainer_app/App`, `trainer_app/Packages`의 `Tests` 밖)의 문자열 리터럴 가운데 덱 키는 카탈로그에 있다.
+//   없으면 화면에 키가 그대로 보인다. `.accessibilityIdentifier(…)` 인자(§4.5)와 생성물(`Generated/`, contracts 값의
+//   사본)은 보지 않는다. `reason.\(…)`처럼 코드가 만든 키는 여기서 볼 수 없다.
 // - 이 문서 §4.9 표의 모든 행(`| \`키\` | 문구 | 대상 | 단계 |`)이 덱에 같은 문구·대상으로 있다. §4.9가 없거나,
 //   `| \`` 로 시작하는데 행 형식이 아닌 줄이 있으면 실패한다(검사 없이 통과하지 않게).
 // - 덱 키는 §4.9에 행이 있어야 한다. 이 도구 도입 전부터 행이 없던 키는 `catalog-deck.baseline`에 적혀 있고
 //   (행을 더하면 그 줄을 지운다), 거기 없는 새 키는 실패한다.
 // 종료 코드: 0 = 통과, 1 = 위반, 2 = 사용법·파일 오류.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
+import { extractSwift } from './prohibited-terms.mjs';
 
 export const DECK_FILE = 'docs/v1/data/copy_ko.json';
 export const CATALOG_FILE = 'trainer_app/App/Resources/Localizable.xcstrings';
 export const DOC_FILE = 'docs/v1/12_COPY_ANALYTICS_AND_LINT.md';
 export const BASELINE_FILE = 'tool/lint/catalog-deck.baseline';
+/// Trainer app source roots whose Swift literals are checked against the catalog, and the directories skipped in them.
+export const SOURCE_ROOTS = ['trainer_app/App', 'trainer_app/Packages'];
+const SKIPPED_DIRS = new Set(['Tests', 'Generated']);
 /// V1-12 §4.3: these argument names are integers (`%lld`).
 export const INT_ARGS = new Set(['count', 'n', 'selected', 'total']);
 const APP_AUDIENCES = new Set(['trainer', 'shared']);
@@ -44,16 +53,49 @@ export function catalogValue(entry) {
 }
 
 function placeholders(text) {
-  return new Set([...text.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((m) => m[1]));
+  return [...text.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((m) => m[1]);
 }
 
 export function deckErrors(deck) {
   const errors = [];
   for (const [key, entry] of Object.entries(deck.strings)) {
-    const used = placeholders(entry.ko);
+    const found = placeholders(entry.ko);
+    const used = new Set(found);
     const args = new Set(entry.args ?? []);
     const same = used.size === args.size && [...used].every((a) => args.has(a));
     if (!same) errors.push(`${DECK_FILE} ${key}: placeholders {${[...used].join(', ')}} ≠ args [${[...args].join(', ')}]`);
+    const repeated = [...used].filter((a) => found.indexOf(a) !== found.lastIndexOf(a));
+    if (repeated.length) errors.push(`${DECK_FILE} ${key}: {${repeated.join(', ')}} appears more than once; use each arg once (V1-12 §4.3)`);
+  }
+  return errors;
+}
+
+/** Swift files under SOURCE_ROOTS, without `Tests`, `Generated` and dot directories (`.build`), relative to root. */
+export function swiftSources(root) {
+  const files = [];
+  const walk = (dir) => {
+    for (const ent of readdirSync(path.join(root, dir), { withFileTypes: true })) {
+      if (ent.name.startsWith('.') || SKIPPED_DIRS.has(ent.name)) continue;
+      const rel = `${dir}/${ent.name}`;
+      if (ent.isDirectory()) walk(rel);
+      else if (ent.isFile() && ent.name.endsWith('.swift')) files.push(rel);
+    }
+  };
+  for (const dir of SOURCE_ROOTS) walk(dir);
+  return files.sort();
+}
+
+/** Deck keys written as Swift string literals that the catalog lacks. sources: [{file, text}]. */
+export function usedKeyErrors(deck, catalog, sources) {
+  const errors = [];
+  for (const { file, text } of sources) {
+    for (const item of extractSwift(text)) {
+      if (!deck.strings[item.text] || catalog.strings[item.text]) continue;
+      const before = text.slice(0, item.origin - 1);
+      if (/\.accessibilityIdentifier\(\s*$/.test(before)) continue; // §4.5: an identifier, not displayed text
+      const line = before.split('\n').length;
+      errors.push(`${file}:${line}: ${item.text} is not in ${CATALOG_FILE}, so the screen shows the key (add it with --add, V1-12 §4.7)`);
+    }
   }
   return errors;
 }
@@ -195,11 +237,13 @@ function main(argv) {
   let catalog;
   let doc;
   let baseline;
+  let sources;
   try {
     deck = JSON.parse(readFileSync(path.join(root, DECK_FILE), 'utf8'));
     catalog = JSON.parse(readFileSync(path.join(root, CATALOG_FILE), 'utf8'));
     doc = readFileSync(path.join(root, DOC_FILE), 'utf8');
     baseline = readBaseline(path.join(root, BASELINE_FILE));
+    sources = swiftSources(root).map((file) => ({ file, text: readFileSync(path.join(root, file), 'utf8') }));
   } catch (error) {
     console.error(`catalog-deck: ${error.message}`);
     return 2;
@@ -215,7 +259,10 @@ function main(argv) {
     console.log(`catalog-deck: added ${keys.length} key(s)`);
     return 0;
   }
-  const errors = [...deckErrors(deck), ...tableErrors(deck, doc, baseline), ...catalogErrors(deck, catalog)];
+  const errors = [
+    ...deckErrors(deck), ...tableErrors(deck, doc, baseline), ...catalogErrors(deck, catalog),
+    ...usedKeyErrors(deck, catalog, sources),
+  ];
   for (const error of errors) console.log(error);
   if (baseline.size) console.log(`catalog-deck: note: ${baseline.size} baselined deck key(s) still have no §4.9 row`);
   console.log(`catalog-deck: ${Object.keys(catalog.strings).length} catalog key(s), ${errors.length} violation(s)`);

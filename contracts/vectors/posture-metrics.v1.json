@@ -1,7 +1,7 @@
 {
   "contract": "posture-metric-vectors",
   "version": 1,
-  "revision": 1,
+  "revision": 2,
   "source": "docs/v1/09_ALGORITHMS_SPEC.md section 5.10 and card DF-201; synthetic coordinates only",
   "schemaVersion": 1,
   "rounding": "halfAwayFromZero",
@@ -1028,6 +1028,46 @@
         "error": "degenerateGeometry",
         "metricCode": "headTiltFrontal"
       }
+    },
+    {
+      "id": "PM-25",
+      "trace": [
+        "F-ASM-03.4",
+        "AC-DF-201.6",
+        "AC-DF-208.4"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.6,
+          "y": 0.5005,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.4,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "dy is exactly 1 px (one 1-pixel move), computed as 0.9999999999998863; it is not under 1 px, so 0.143 deg rounds to 0.1 and the right side is higher",
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 0.1,
+          "unit": "deg",
+          "side": "right",
+          "sourceGrade": "photoManual"
+        }
+      ]
     }
   ]
 }

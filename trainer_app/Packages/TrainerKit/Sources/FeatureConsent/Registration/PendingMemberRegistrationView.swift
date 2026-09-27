@@ -47,7 +47,6 @@ public struct PendingMemberRegistrationView: View {
         }
         Section {
           Toggle(isOn: $model.draft.ageConfirmed14) { Text("tr14.register.age14Confirm", bundle: .main) }
-            .frame(minHeight: 44)
             .accessibilityIdentifier("tr14.register.age14Confirm")
         }
         if model.saveFailed {
@@ -113,7 +112,9 @@ private struct SexChoice: View {
         selection = sex
       } label: {
         Label {
-          Text(Self.label(sex))
+          // One line each: at iPhone width the row then no longer fits and the options stack (ViewThatFits),
+          // instead of breaking '여성' into '여/성'.
+          Text(Self.label(sex)).lineLimit(1).fixedSize()
         } icon: {
           Image(systemName: selected ? "checkmark.circle.fill" : "circle")
         }

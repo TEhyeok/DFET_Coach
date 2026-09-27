@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.6 |
+| 버전 | v1.0.7 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1127,7 +1127,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr14.register.sex.unspecified` | 밝히지 않음 | trainer | P1a | F-LINK-01.1 |  |
 | `tr14.register.birthYear` | 출생연도 | trainer | P1a | F-LINK-01.1 |  |
 | `tr14.register.age14Confirm` | 만 14세 이상임을 확인했습니다 | trainer | P1a | F-LINK-01.8 |  |
-| `tr14.register.under14Blocked` | 만 14세 미만은 등록할 수 없어요. 법정대리인 동의 절차는 지원하지 않습니다. | trainer | P1a | F-LINK-01.8, AS-22 |  |
+| `tr14.register.under14Blocked` | 만 14세 미만은 등록할 수 없어요. 법정대리인 동의 절차는 지원하지 않아요. | trainer | P1a | F-LINK-01.8, AS-22 |  |
 | `tr14.register.next` | 다음: 동의 받기 | trainer | P1a | F-LINK-01.1 |  |
 | `tr14.consent.title` | 동의 받기 | trainer | P1a | F-PRIV-03 |  |
 | `tr14.consent.handToMember` | 이 화면은 회원님이 직접 읽고 선택합니다 | shared | P1a | F-PRIV-03.1 | 회원에게 보이는 화면 |
@@ -2213,3 +2213,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.4 | 2026-09-28 | DF-203: `tr07.station.default`·`tr07.station.defaultSummary`(args name, height, distance), 복장 라벨 `clothing.*` 3키 추가, §4.1 vocab 값 라벨 이름공간 행, §2 덱 키 수 갱신 | #172 | 없음 |
 | v1.0.5 | 2026-09-28 | 트레이너 카탈로그 드리프트 정리: DF-012·DF-017이 카드 제안 키(`auth.field.*`, `auth.error.*`, `nav.*` 등)로 쓴 문구를 덱 키(`login.*`, `auth.notTrainer`, `auth.sessionLocked`, `common.internal`, `tr01/02/15.title`)로 바꾸고, 덱에 없던 `app.title`, `app.config.missing`, `login.error.invalidCredentials`, `login.error.network`와 v1.0.2 표에만 있던 라벨 5키를 덱 JSON에 추가. §4.1 `app.*` 행, §4.5 `nav.*` 식별자 예외, §4.7 5항·§7.9·ASM-12-22를 `catalog-deck.mjs` 차단 검사로 변경, §10.2 X-12, `login.error.network` 추가 | #174 | 없음 |
 | v1.0.6 | 2026-09-28 | DF-018: 로그아웃 문구를 '미동기 기록은 기기에 남고 다시 로그인하면 이어서 보낸다'(ASM-P0-17)로 고침(`tr15.signOut.unsyncedWarning`, `tr15.signOut.confirm`), `tr15.signOut.question`·`tr15.signOut.syncNow`, 대기열 항목 종류 `tr15.queue.kind.*` 7키 추가 | DF-018 | 없음 |
+| v1.0.7 | 2026-09-28 | `tr14.register.under14Blocked` 두 번째 문장을 해요체로 맞춤('지원하지 않아요'), 덱 v1.0.6 | — | 없음 |

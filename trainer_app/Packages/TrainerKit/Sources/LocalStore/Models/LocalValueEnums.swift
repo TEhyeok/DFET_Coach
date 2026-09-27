@@ -56,6 +56,8 @@ enum LocalOutboxState: String, CaseIterable, Sendable {
   case acked
   case failed
   case blocked
+  /// A consent capture replaced by a newer acked one (V1-05 v1.0.4, DF-015). A string column: no schema change.
+  case superseded
 }
 
 /// `OutboxItem.blockedReason`, set only while `state == blocked`.

@@ -14,6 +14,8 @@ struct PreviewRootView: View {
   @State private var auth = PreviewAuthService()
   /// `--preview-members-slow` only: holds the member list until `preview.releaseMembers`.
   @State private var memberGate = PreviewMemberGate()
+  /// TR-14 registrations of this launch (DF-108), in memory.
+  @State private var registrar = PreviewPendingMemberRegistrar()
 
   var body: some View {
     Group {
@@ -39,7 +41,9 @@ struct PreviewRootView: View {
     let narrowWidth = isNarrow ? preview.simulatedWidth : nil
     return RootSplitView(
       flags: preview.flagsProvider.current,
-      memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate))
+      services: ShellServices(
+        memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
+        registrar: registrar))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)

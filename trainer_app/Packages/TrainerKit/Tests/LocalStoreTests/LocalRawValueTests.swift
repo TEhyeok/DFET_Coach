@@ -35,7 +35,7 @@ final class LocalRawValueTests: XCTestCase {
       "createDocument", "updateDocument", "deleteDocument", "uploadBinary", "deleteBinary", "recordBinaryPath",
       "finalize", "callConsent", "callFunction",
     ])
-    XCTAssertEqual(LocalOutboxState.allCases.map(\.rawValue), ["queued", "inFlight", "acked", "failed", "blocked"])
+    XCTAssertEqual(LocalOutboxState.allCases.map(\.rawValue), ["queued", "inFlight", "acked", "failed", "blocked", "superseded"])
     XCTAssertEqual(LocalOutboxBlockedReason.allCases.map(\.rawValue), ["awaitingConsent"])
     XCTAssertEqual(LocalOutboxStage.allCases.map(\.rawValue), [0, 1, 2, 3, 4, 5])
     XCTAssertEqual(LocalBinaryKind.allCases.map(\.rawValue), ["ink", "posture", "bodycompReport", "signature"])

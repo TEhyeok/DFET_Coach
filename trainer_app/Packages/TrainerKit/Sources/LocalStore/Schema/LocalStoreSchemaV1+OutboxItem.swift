@@ -2,10 +2,10 @@ import Foundation
 import SwiftData
 import TrainerDomain
 
-extension LocalStoreSchemaV1_1 {
-  /// One server write waiting to be applied (V1-05 §12.2, V1-04 §10.2). LocalStore stores it; the processing logic
-  /// (state transitions, retry, coalescing) belongs to the SyncEngine (DF-015), which reads and writes it through
-  /// `LocalOutboxStore` (DF-108).
+/// Frozen V1 shape of `OutboxItem`, kept only so SwiftData can migrate V1 stores (DF-108). Do not change it: the
+/// current model is `LocalStoreSchemaV1_1.OutboxItem` in Models/OutboxItem.swift.
+extension LocalStoreSchemaV1 {
+  /// One server write waiting to be applied (V1-05 §12.2, V1-04 §10.2).
   @Model
   final class OutboxItem {
     @Attribute(.unique) var id: UUID
@@ -33,9 +33,6 @@ extension LocalStoreSchemaV1_1 {
     /// `LocalOutboxBlockedReason` raw value, only while `state == blocked`.
     var blockedReason: String?
     var lastErrorCode: String?
-    /// Whether the ack of an `acked` item was confirmed by the server (`OutboxAck.isConfirmed`); nil before an ack.
-    /// V1_1 (DF-108): without it an acked record would read as '동기화 중' after a restart.
-    var ackConfirmed: Bool?
     var createdAt: Date
 
     init(
@@ -56,7 +53,6 @@ extension LocalStoreSchemaV1_1 {
       state: LocalOutboxState = .queued,
       blockedReason: LocalOutboxBlockedReason? = nil,
       lastErrorCode: String? = nil,
-      ackConfirmed: Bool? = nil,
       createdAt: Date
     ) {
       self.id = id
@@ -76,14 +72,7 @@ extension LocalStoreSchemaV1_1 {
       self.state = state.rawValue
       self.blockedReason = state == .blocked ? blockedReason?.rawValue : nil
       self.lastErrorCode = lastErrorCode
-      self.ackConfirmed = ackConfirmed
       self.createdAt = createdAt
     }
-  }
-}
-
-extension OutboxItem: TrainerScopedModel {
-  static func ownedBy(_ trainerUid: String) -> Predicate<OutboxItem> {
-    #Predicate<OutboxItem> { $0.trainerUid == trainerUid }
   }
 }

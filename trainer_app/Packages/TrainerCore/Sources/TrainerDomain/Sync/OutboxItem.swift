@@ -12,6 +12,7 @@ public struct LocalEntityRef: Hashable, Sendable, CustomStringConvertible {
 
   public static func soap(noteId: String) -> LocalEntityRef { LocalEntityRef(rawValue: "soap:\(noteId)") }
   public static func consent(captureId: String) -> LocalEntityRef { LocalEntityRef(rawValue: "consent:\(captureId)") }
+  public static func pendingMember(id: String) -> LocalEntityRef { LocalEntityRef(rawValue: "pendingMember:\(id)") }
   public static func measurement(kind: String, recordId: String) -> LocalEntityRef {
     LocalEntityRef(rawValue: "\(kind):\(recordId)")
   }

@@ -27,19 +27,25 @@ public enum LocalStoreSchemaV1: VersionedSchema {
   }
 }
 
-/// Migration plan (V1-04 §9.3). V1 is the first version, so there are no stages yet.
+/// Migration plan (V1-04 §9.3). Every stage so far is lightweight (additive changes only).
 public enum LocalStoreMigrationPlan: SchemaMigrationPlan {
-  public static var schemas: [any VersionedSchema.Type] { [LocalStoreSchemaV1.self] }
-  public static var stages: [MigrationStage] { [] }
+  public static var schemas: [any VersionedSchema.Type] { [LocalStoreSchemaV1.self, LocalStoreSchemaV1_1.self] }
+  public static var stages: [MigrationStage] {
+    [.lightweight(fromVersion: LocalStoreSchemaV1.self, toVersion: LocalStoreSchemaV1_1.self)]
+  }
 }
+
+/// The current schema version.
+public typealias LocalStoreCurrentSchema = LocalStoreSchemaV1_1
 
 // Current-version names used by the rest of the module (V1-05 §12.1: inside LocalStore `OutboxItem` is the @Model).
 typealias LocalSoapDraft = LocalStoreSchemaV1.LocalSoapDraft
 typealias LocalMeasurementDraft = LocalStoreSchemaV1.LocalMeasurementDraft
 typealias LocalConsentCapture = LocalStoreSchemaV1.LocalConsentCapture
-typealias OutboxItem = LocalStoreSchemaV1.OutboxItem
+typealias OutboxItem = LocalStoreSchemaV1_1.OutboxItem
 typealias LocalBinary = LocalStoreSchemaV1.LocalBinary
 typealias TodayListEntry = LocalStoreSchemaV1.TodayListEntry
 typealias StationProfile = LocalStoreSchemaV1.StationProfile
 typealias QuickPhrase = LocalStoreSchemaV1.QuickPhrase
 typealias FilterPreference = LocalStoreSchemaV1.FilterPreference
+typealias LocalPendingMemberDraft = LocalStoreSchemaV1_1.LocalPendingMemberDraft

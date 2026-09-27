@@ -59,6 +59,13 @@ public struct ClothingPicker: View {
     .accessibilityIdentifier("tr07.checklist.clothing")
   }
 
+  /// The key is built as a `String` first: `String.LocalizationValue("clothing.\(x)")` would be the format key
+  /// `clothing.%@` with an argument (SE-0213) and show the raw key.
+  static func label(_ option: Clothing, bundle: Bundle = .main) -> String {
+    let key = "clothing." + option.rawValue
+    return String(localized: String.LocalizationValue(key), bundle: bundle)
+  }
+
   private var options: some View {
     ForEach(PostureProtocolV1.clothingOptions, id: \.self) { option in
       let selected = selection == option
@@ -67,7 +74,7 @@ public struct ClothingPicker: View {
       } label: {
         // A checkmark as well as the fill, so the choice does not rest on colour alone.
         Label {
-          Text(String(localized: String.LocalizationValue("clothing.\(option.rawValue)"), bundle: .main))
+          Text(Self.label(option))
         } icon: {
           Image(systemName: selected ? "checkmark.circle.fill" : "circle")
         }

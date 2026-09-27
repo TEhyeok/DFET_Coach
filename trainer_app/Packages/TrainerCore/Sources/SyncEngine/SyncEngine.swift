@@ -90,14 +90,12 @@ public actor SyncEngine {
   private enum LocalFailure: Error {
     case uploadUnverified
     case writeUncommitted
-    case unsupportedKind
     case malformedItem
 
     var code: String {
       switch self {
       case .uploadUnverified: return "upload-unverified"
       case .writeUncommitted: return "write-uncommitted"
-      case .unsupportedKind: return "unsupported-kind"
       case .malformedItem: return "malformed-item"
       }
     }
@@ -574,8 +572,11 @@ public actor SyncEngine {
       let payload = try Self.adding("requestId", item.requestId, to: item.payload)
       let _: CallableAck = try await callable.call(name, payload)
       return .call
-    case (.deleteDocument, _), (.deleteBinary, _):
-      throw LocalFailure.unsupportedKind  // no delete in the P0 RemoteWriter contract (DF-104 adds it)
+    case let (.deleteDocument, .document(path)):
+      return try committed(await writer.delete(path: path))
+    case let (.deleteBinary, .storage(path)):
+      try await uploader.delete(path: path)
+      return .call
     default:
       throw LocalFailure.malformedItem  // kind and target do not match
     }

@@ -74,6 +74,7 @@ AC-DF-011.2|G7|violations/G7-tapback.swift.fixture|$TK/FeatureSOAP/G7Violation.s
 AC-DF-011.3|G8|violations/G8-firebase-data-print.swift.fixture|$TK/FirebaseData/G8Violation.swift|1
 AC-DF-011.3|G8|violations/G8-sync-engine-debug-print.swift.fixture|$TC/SyncEngine/G8Violation.swift|1
 AC-DF-011.4|G9|violations/G9-raw-collections.dart.fixture|lib/screens/g9_violation.dart|5
+AC-DF-104.9|G10|violations/G10-default-bucket.swift.fixture|$TK/FirebaseData/G10Violation.swift|1
 "
 i=0
 while IFS='|' read -r ac gid fixture dest count; do
@@ -101,6 +102,7 @@ AC-DF-011.2|clean/legacy-soap-view-keys.swift.fixture|$TK/FeatureSOAP/LegacySoap
 AC-DF-011.3|clean/print-outside-data-sync.swift.fixture|$TK/FeatureSOAP/Preview.swift
 AC-DF-011.4|clean/member-app-safe.dart.fixture|lib/screens/ios_profile_screen.dart
 AC-DF-011.2|clean/runner-frozen.swift.fixture|ios/Runner/AppDelegate.swift
+AC-DF-104.9|clean/storage-factory.swift.fixture|$TK/FirebaseData/StorageFactory.swift
 "
 while IFS='|' read -r ac fixture dest; do
   [ -n "$ac" ] || continue

@@ -1,0 +1,3 @@
+import FirebaseStorage
+
+let reference = Storage.storage().reference(withPath: "soapInk/fx/1.drawing")

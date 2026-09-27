@@ -128,6 +128,18 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
     return lock.withLock { WriteAck(serverCommitted: !_uncommittedWrites.contains(path)) }
   }
 
+  func delete(path: String) async throws -> WriteAck {
+    try await enter("delete", path)
+    return lock.withLock {
+      _documents.remove(path)
+      return WriteAck(serverCommitted: !_uncommittedWrites.contains(path))
+    }
+  }
+
+  func delete(path: String) async throws {
+    try await enter("deleteBinary", path)
+  }
+
   func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
     try await enter("upload", path)
     let verified = lock.withLock { !_unverifiedUploads.contains(path) }

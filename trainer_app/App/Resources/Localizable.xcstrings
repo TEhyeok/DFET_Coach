@@ -25,6 +25,114 @@
         }
       }
     },
+    "auth.error.invalidCredentials" : {
+      "comment" : "DF-012 · AC-DF-012.4 · wrong email or password",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일 또는 비밀번호가 맞지 않습니다."
+          }
+        }
+      }
+    },
+    "auth.error.network" : {
+      "comment" : "DF-012 · AC-DF-012.4 · no network",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크에 연결할 수 없습니다. 연결을 확인한 뒤 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "auth.error.notTrainer" : {
+      "comment" : "DF-012 · AC-DF-012.2 · account without the trainer claim",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트레이너 권한이 없는 계정입니다. 관리자에게 권한 부여를 요청하세요."
+          }
+        }
+      }
+    },
+    "auth.error.unknown" : {
+      "comment" : "DF-012 · any other sign-in failure",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그인하지 못했습니다. 잠시 후 다시 시도하세요."
+          }
+        }
+      }
+    },
+    "auth.field.email" : {
+      "comment" : "DF-012 · login email field placeholder",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일"
+          }
+        }
+      }
+    },
+    "auth.field.password" : {
+      "comment" : "DF-012 · login password field placeholder",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비밀번호"
+          }
+        }
+      }
+    },
+    "auth.locked.claimRevoked" : {
+      "comment" : "DF-012 · AC-DF-012.3 · trainer claim revoked while signed in",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트레이너 권한이 회수되어 로그아웃되었습니다. 관리자에게 문의하세요."
+          }
+        }
+      }
+    },
+    "auth.login.title" : {
+      "comment" : "DF-012 · login screen title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D-FET Trainer 로그인"
+          }
+        }
+      }
+    },
+    "auth.submit.title" : {
+      "comment" : "DF-012 · login button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그인"
+          }
+        }
+      }
+    },
     "common.close" : {
       "comment" : "V1-12 · —",
       "extractionState" : "manual",

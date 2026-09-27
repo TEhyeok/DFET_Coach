@@ -1,5 +1,6 @@
 import FirebaseData
 import Foundation
+import TrainerDomain
 
 extension AppBootstrap {
   /// The real bootstrap: plist presence from the bundle and `FirebaseBootstrap.configure(_:)` from FirebaseData.
@@ -13,5 +14,11 @@ extension AppBootstrap {
         FirebaseBootstrap.configure(.emulator(host: host))
       }
     }
+  }
+
+  /// FirebaseData's `AuthService` (DF-012). Firebase Auth is touched only when a method is called, i.e. after
+  /// `configureLive` has run for a `.live` environment.
+  static func liveAuthService() -> any AuthService {
+    FirebaseAuthService()
   }
 }

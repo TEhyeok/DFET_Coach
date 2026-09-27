@@ -194,6 +194,48 @@ final class FirestoreMemberDirectoryTests: XCTestCase {
     XCTAssertEqual(gateway.chunkSizes, [2], "the confirmation started no second read")
   }
 
+  /// The server confirms the cached `memberIds` while their read is out, and the read then answers from the cache:
+  /// the members are read again from the server, as when the two arrive the other way round (cross-review).
+  func testACachedReadThatEndsAfterTheServerConfirmsItIsReadAgain() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a"]), .server(["a"])], cachedUsers: ["a"],
+                                    gateFirstRead: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway)
+    let collecting = Task { await collect(directory) }
+    let reading = await eventually { gateway.isFirstReadWaiting }
+    XCTAssertTrue(reading)
+    gateway.sendNextSnapshot()
+    try? await Task.sleep(nanoseconds: 200_000_000)  // the confirmation reaches the directory before the read
+    gateway.releaseFirstRead()
+    let again = await eventually { gateway.completedReads >= 2 }
+    XCTAssertTrue(again, "the confirmed list was read again")
+    gateway.finishSnapshots()
+    let result = await collecting.value
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a"], ["a"]])
+    XCTAssertEqual(gateway.chunkSizes, [1, 1])
+  }
+
+  /// Same order with a chunk only partly cached: the confirmed list is read from the server instead of failing with
+  /// `.unavailable` for good.
+  func testAPartlyCachedReadThatEndsAfterTheServerConfirmsItIsReadAgain() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a", "b"]), .server(["a", "b"])], cachedUsers: ["a"],
+                                    gateFirstRead: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway)
+    let collecting = Task { await collect(directory) }
+    let reading = await eventually { gateway.isFirstReadWaiting }
+    XCTAssertTrue(reading)
+    gateway.sendNextSnapshot()
+    try? await Task.sleep(nanoseconds: 200_000_000)  // the confirmation reaches the directory before the read
+    gateway.releaseFirstRead()
+    let again = await eventually { gateway.completedReads >= 2 }
+    XCTAssertTrue(again, "the confirmed list was read again")
+    gateway.finishSnapshots()
+    let result = await collecting.value
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a", "b"]])
+    XCTAssertEqual(gateway.chunkSizes, [2, 2])
+  }
+
   /// A snapshot with unchanged `memberIds` (a metadata change) starts no read.
   func testUnchangedMemberIdsStartNoRead() async {
     let gateway = FakeMemberGateway(snapshots: [.server(["a"]), .server(["a"])])

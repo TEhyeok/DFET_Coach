@@ -2,16 +2,23 @@ import SwiftUI
 import TrainerDomain
 
 /// TR-15 upload queue (AC-DF-018.3): each failed item's kind and reason, '다시 시도', and '모두 다시 시도'. No member
-/// name and no path.
+/// name and no path. Without failed items it says how many records still wait, or that nothing does.
 struct SyncQueueView: View {
   let model: SettingsViewModel
 
   var body: some View {
     List {
-      if model.failedItems.isEmpty {
+      switch model.queueNotice {
+      case .empty?:
         Text(localized("tr15.queue.empty"))
           .foregroundStyle(.secondary)
           .accessibilityIdentifier("tr15.queue.empty")
+      case let .waiting(count)?:
+        Text(formatted("sync.pendingCount", count))
+          .foregroundStyle(.secondary)
+          .accessibilityIdentifier("tr15.queue.pending")
+      case nil:
+        EmptyView()
       }
       ForEach(Array(model.failedItems.enumerated()), id: \.element.id) { index, item in
         HStack(spacing: 12) {

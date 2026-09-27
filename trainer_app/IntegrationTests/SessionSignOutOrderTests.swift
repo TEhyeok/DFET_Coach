@@ -6,7 +6,8 @@ import XCTest
 
 /// DF-018 TC-DF018-01 (V1-04 §12.2 ②-⑦, ASM-P0-17) without Firebase: the live logout tears Firestore down before it
 /// signs out, purges only what the server has, keeps unsynced records, and retires the runtime; a failed sign-out
-/// puts the runtime back. Fakes for Auth and Firestore; a synthetic trainer partition in the test host.
+/// puts the runtime back; a call that never returns holds step ② for the drain bound only. Fakes for Auth and
+/// Firestore; a synthetic trainer partition in the test host.
 @MainActor
 final class SessionSignOutOrderTests: XCTestCase {
   private let uid = "syn-signout-" + UUID().uuidString.prefix(8)
@@ -47,6 +48,47 @@ final class SessionSignOutOrderTests: XCTestCase {
     func call<T: Decodable & Sendable>(_ name: String, _ payload: JSONValue) async throws -> T {
       throw RemoteError.unavailable
     }
+  }
+
+  /// Every call waits until `release()`, then fails as unavailable: a Firestore write whose completion never comes
+  /// (offline, no client timeout).
+  private final class HangingRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _calls = 0
+    private var released = false
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+    var calls: Int { lock.withLock { _calls } }
+
+    func release() {
+      let all = lock.withLock { () -> [CheckedContinuation<Void, Never>] in
+        released = true
+        defer { waiting = [] }
+        return waiting
+      }
+      all.forEach { $0.resume() }
+    }
+
+    private func hang() async throws -> Never {
+      await withCheckedContinuation { continuation in
+        let now = lock.withLock { () -> Bool in
+          _calls += 1
+          if released { return true }
+          waiting.append(continuation)
+          return false
+        }
+        if now { continuation.resume() }
+      }
+      throw RemoteError.unavailable
+    }
+
+    func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck { try await hang() }
+    func update(path: String, fields: JSONValue) async throws -> WriteAck { try await hang() }
+    func delete(path: String) async throws -> WriteAck { try await hang() }
+    func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
+      try await hang()
+    }
+    func delete(path: String) async throws { try await hang() }
+    func call<T: Decodable & Sendable>(_ name: String, _ payload: JSONValue) async throws -> T { try await hang() }
   }
 
   private var remote: SyncRemote {
@@ -111,5 +153,38 @@ final class SessionSignOutOrderTests: XCTestCase {
     XCTAssertTrue(same === runtime, "still signed in: the runtime is back")
     let rows = try await store.loadAll()
     XCTAssertEqual(rows.map(\.id), [synced.id], "nothing purged while still signed in")
+  }
+
+  /// Cross-review: an item being sent whose call never returns holds logout step ② for `drainTimeout` only, so the
+  /// Firestore teardown and Auth sign-out still come; the item stays on the device, unsynced.
+  func testTheDrainIsBoundedWhenACallNeverReturns() async throws {
+    let hanging = HangingRemote()
+    let trainerUid = uid
+    let runtime = try XCTUnwrap(SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
+      SyncRemote(writer: hanging, uploader: hanging, callable: hanging, currentUid: { trainerUid },
+                 sessions: { AsyncStream { _ in } })
+    })
+    defer { hanging.release() }
+    let unsynced = item("SynNote0000000000004", state: .queued)
+    await runtime.engine.enqueue(unsynced)
+    for _ in 0..<200 where hanging.calls == 0 {
+      try await Task.sleep(nanoseconds: 10_000_000)
+    }
+    XCTAssertEqual(hanging.calls, 1, "the item is being sent")
+
+    // Unstructured, so a drain that never ends fails this test instead of hanging it.
+    let steps = Steps()
+    let started = Date()
+    Task { @MainActor in
+      await runtime.stopSending(drainTimeout: .milliseconds(100))
+      steps.add("stopped")
+    }
+    for _ in 0..<200 where steps.all.isEmpty {
+      try await Task.sleep(nanoseconds: 10_000_000)
+    }
+    XCTAssertEqual(steps.all, ["stopped"], "logout goes on although the call never returns")
+    XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+    let kept = try await LocalOutboxStore(container: runtime.container, trainerUid: trainerUid, binaries: nil).loadAll()
+    XCTAssertEqual(kept.map(\.id), [unsynced.id], "cut off, it stays on the device")
   }
 }

@@ -187,7 +187,7 @@ struct LiveFirestoreDocumentAccess: FirestoreDocumentAccess {
 }
 
 /// Whether a document still has writes the server has not confirmed (PRD §9.6 `synced` check). Ends when the
-/// listener fails (for example the document is not readable).
+/// listener fails (for example the document is not readable) or logout removes it.
 public enum PendingWritesObserver {
   public static func observe(path: String) -> AsyncStream<Bool> {
     AsyncStream { continuation in
@@ -200,7 +200,7 @@ public enum PendingWritesObserver {
           guard let snapshot else { return }
           continuation.yield(snapshot.metadata.hasPendingWrites)
         }
-      let token = FirestoreListenerRegistry.shared.add(registration)
+      let token = FirestoreListenerRegistry.shared.add(registration) { continuation.finish() }
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }

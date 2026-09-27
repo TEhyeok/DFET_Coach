@@ -1,4 +1,5 @@
 import CryptoKit
+import FirebaseAuth
 import FirebaseFirestore
 import FirebaseFunctions
 import FirebaseStorage
@@ -251,6 +252,28 @@ final class RemoteWriterTests: XCTestCase {
     XCTAssertFalse(FirestorePayload.serverHas(["missing": .string("x")], in: server))
   }
 
+  /// V1-10 §6.1: null and a missing key differ. A null the server does not have is not on the server.
+  func testServerHasTellsAMissingFieldFromNull() {
+    XCTAssertFalse(FirestorePayload.serverHas(["missing": .null], in: [:]))
+    XCTAssertFalse(FirestorePayload.serverHas(["a.b": .null], in: [:]))
+    XCTAssertFalse(FirestorePayload.serverHas(["a.b": .null], in: ["a": "not a map"]))
+    XCTAssertFalse(FirestorePayload.serverHas(["a.b": .null], in: ["a": [String: Any]()]))
+    XCTAssertTrue(FirestorePayload.serverHas(["x": .null], in: ["x": NSNull()]))
+    XCTAssertTrue(FirestorePayload.serverHas(["a.b": .null], in: ["a": ["b": NSNull()]]))
+  }
+
+  /// A null update of a frozen document that lacks the field stays denied instead of being taken as committed.
+  func testADeniedNullUpdateOfAMissingFieldStaysDenied() async {
+    let access = RulesLikeDocumentAccess(trainerUid: "t1", documents: [
+      "soap_notes/n1": ["trainerId": "t1", "status": "finalized", "subjective": ["quickNote": "합성"]],
+    ])
+    access.frozen = ["soap_notes/n1"]
+    await assertThrows(.permissionDenied) {
+      _ = try await FirestoreRemoteWriter(trainerUid: "t1", access: access)
+        .update(path: "soap_notes/n1", fields: .object(["subjective.painNrs": .null]))
+    }
+  }
+
   // MARK: mapping
 
   func testJSONValueMapsToFirestoreValuesAndBack() throws {
@@ -282,6 +305,7 @@ final class RemoteWriterTests: XCTestCase {
     XCTAssertEqual(RemoteErrorMapper.map(firestore(.notFound)), .notFound)
     XCTAssertEqual(RemoteErrorMapper.map(firestore(.internal)), .unknown("firestore:\(FirestoreErrorCode.Code.internal.rawValue)"))
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: StorageErrorDomain, code: StorageErrorCode.unauthorized.rawValue)), .permissionDenied)
+    XCTAssertEqual(RemoteErrorMapper.map(firestore(.unauthenticated)), .unauthenticated)
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: StorageErrorDomain, code: StorageErrorCode.retryLimitExceeded.rawValue)), .unavailable)
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: StorageErrorDomain, code: StorageErrorCode.objectNotFound.rawValue)), .notFound)
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: FunctionsErrorDomain, code: FunctionsErrorCode.permissionDenied.rawValue)), .permissionDenied)
@@ -297,6 +321,24 @@ final class RemoteWriterTests: XCTestCase {
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: FunctionsErrorDomain, code: FunctionsErrorCode.invalidArgument.rawValue)), .invalidArgument)
     XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: FunctionsErrorDomain, code: FunctionsErrorCode.internal.rawValue)),
                    .unknown("functions:\(FunctionsErrorCode.internal.rawValue)"))
+  }
+
+  /// V1-06 §3.6/§8.7: `unauthenticated` is the session, not a rule rejection, so the SyncEngine waits instead of
+  /// failing. Storage wraps every ID token failure in it; a token refresh that could not reach the network is the
+  /// network (the trainer stays signed in).
+  func testUnauthenticatedIsTheSessionUnlessTheTokenRefreshWasOffline() {
+    XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: FunctionsErrorDomain, code: FunctionsErrorCode.unauthenticated.rawValue)),
+                   .unauthenticated)
+    XCTAssertEqual(RemoteErrorMapper.map(NSError(domain: StorageErrorDomain, code: StorageErrorCode.unauthenticated.rawValue)),
+                   .unauthenticated, "a server 401")
+    let expired = StorageError.unauthenticated(serverError: [
+      "ResponseErrorDomain": AuthErrorDomain, "ResponseErrorCode": AuthErrorCode.userTokenExpired.rawValue,
+    ])
+    XCTAssertEqual(RemoteErrorMapper.map(expired), .unauthenticated)
+    let offline = StorageError.unauthenticated(serverError: [
+      "ResponseErrorDomain": AuthErrorDomain, "ResponseErrorCode": AuthErrorCode.networkError.rawValue,
+    ])
+    XCTAssertEqual(RemoteErrorMapper.map(offline), .unavailable)
   }
 
   // MARK: TC-104-04 upload integrity

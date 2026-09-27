@@ -51,7 +51,7 @@ public struct RetryPolicy: Equatable, Sendable {
       return .retry
     case .protectedDataUnavailable:
       return .waitForUnlock
-    case .signedOut:
+    case .signedOut, .unauthenticated:
       return .waitForSession
     }
   }

@@ -13,11 +13,25 @@ public final class SettingsViewModel {
     case unsynced
   }
 
+  /// What TR-15's upload queue says when no item failed (NFR-06: the queue matches the Outbox).
+  public enum QueueNotice: Equatable {
+    /// Nothing waits: '보낼 기록이 없어요'.
+    case empty
+    /// Records are queued, in flight or waiting for consent, and none failed: '동기화 대기 n건'.
+    case waiting(Int)
+  }
+
   public private(set) var pendingCount = 0
   public private(set) var failedItems: [OutboxItem] = []
   public var prompt: SignOutPrompt?
   public private(set) var isSigningOut = false
   public private(set) var signOutFailed = false
+
+  /// nil while failed items are listed. Retried items that are still waiting are not "nothing to send".
+  public var queueNotice: QueueNotice? {
+    guard failedItems.isEmpty else { return nil }
+    return pendingCount == 0 ? .empty : .waiting(pendingCount)
+  }
 
   /// The signed-in trainer's display name (TR-15 계정).
   public let accountName: String?

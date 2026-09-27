@@ -168,7 +168,8 @@ final class SessionRuntime {
 
   /// Logout step ② (V1-04 §12.2): the runtime stops following the session and sending, and an item already being
   /// sent gets up to `drainTimeout` to finish before Firestore is terminated under it. One cut off stays unsynced on
-  /// the device. `activate()` undoes this when the logout fails.
+  /// the device. `waitUntilIdle()` ends when the group cancels it, so the bound holds even for a call that never
+  /// returns (an offline Firestore write has no client timeout). `activate()` undoes this when the logout fails.
   func stopSending(drainTimeout: Duration) async {
     sessionTask?.cancel()
     sessionTask = nil

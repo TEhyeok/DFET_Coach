@@ -31,7 +31,8 @@ protocol MemberDirectoryGateway: Sendable {
 ///
 /// - Every `memberIds` change cancels the reads for the previous value; a superseded read never emits or fails the
 ///   stream (AC-DF-013.1). A snapshot whose `memberIds` did not change (a metadata change) starts no read, unless the
-///   server confirms a value the last read answered from the cache or could not answer.
+///   server confirms a value the last read answered from the cache or could not answer. That holds in either order:
+///   a read started before the confirmation that answers from the cache, or fails for lack of it, is read again.
 /// - All chunks must succeed; a failed chunk fails the stream and nothing partial is emitted (AC-DF-013.2, §9.6).
 /// - Firestore answers a new listener from the cache first, even online. What only the server can decide waits for
 ///   the server's snapshot, for at most `serverWait`, and then fails with `.unavailable` (or the read's error):
@@ -134,6 +135,9 @@ private final class AssignedMembersRun {
   /// A server snapshot has shown `readIds`, so a failure of their read is final. (A confirmation that arrives after
   /// the failure reads the list once more instead; that read's failure is final.)
   private var confirmed = false
+  /// The current read started after the confirmation. When it did not and the confirmation came while it was out, an
+  /// answer the cache limited (cached members, or too few of them) is not the server's: the list is read again.
+  private var readStartedConfirmed = false
   private var lastReadFromCache = false
   /// A failure that stands unless the server's snapshot says otherwise within `serverWait`.
   private var pending: (error: MemberDirectoryError, token: Int)?
@@ -179,14 +183,24 @@ private final class AssignedMembersRun {
     case let .read(generation, result):
       guard generation == self.generation else { return false }  // superseded
       reading = false
+      let confirmedMeanwhile = confirmed && !readStartedConfirmed
       switch result {
       case let .success(read):
         lastReadFromCache = read.fromCache
         output.yield(read.members)
+        if confirmedMeanwhile, read.fromCache, let readIds {
+          startRead(readIds, confirmed: true)  // refresh the cached members from the server
+          return false
+        }
         return listenerEnded ? settle() : false
       case let .failure(error):
+        let mapped = MemberDirectoryErrorMapper.map(error)
+        if confirmedMeanwhile, mapped == .unavailable, let readIds {
+          startRead(readIds, confirmed: true)  // the cache could not answer; the server can
+          return false
+        }
         if confirmed || listenerEnded { return fail(error) }
-        holdForServer(MemberDirectoryErrorMapper.map(error))  // the cached memberIds may be stale
+        holdForServer(mapped)  // the cached memberIds may be stale
         return false
       }
     case let .serverWaitElapsed(token):
@@ -234,6 +248,7 @@ private final class AssignedMembersRun {
     readIds = ids
     reading = true
     self.confirmed = confirmed
+    readStartedConfirmed = confirmed
     readTask = Task {
       do {
         let read = try await FirestoreMemberDirectory.members(for: ids, gateway: gateway)
@@ -320,7 +335,10 @@ struct FirestoreMemberGateway: MemberDirectoryGateway {
             ids: raw == nil ? [] : raw as? [String], exists: snapshot.exists,
             isFromCache: snapshot.metadata.isFromCache))
         }
-      let token = FirestoreListenerRegistry.shared.add(registration)
+      // Logout removing the listener ends the list with `.unavailable`, so TR-02 offers '다시 시도' (DF-018).
+      let token = FirestoreListenerRegistry.shared.add(registration) {
+        continuation.finish(throwing: MemberDirectoryError.unavailable)
+      }
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }

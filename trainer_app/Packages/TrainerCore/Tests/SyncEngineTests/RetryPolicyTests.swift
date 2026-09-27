@@ -32,10 +32,12 @@ final class RetryPolicyTests: XCTestCase {
     }
     XCTAssertEqual(RetryPolicy.disposition(for: .protectedDataUnavailable), .waitForUnlock)
     XCTAssertEqual(RetryPolicy.disposition(for: .signedOut), .waitForSession)
+    XCTAssertEqual(RetryPolicy.disposition(for: .unauthenticated), .waitForSession, "V1-06 §8.7")
   }
 
   func testErrorCodesNeverCarryDetails() {
     XCTAssertEqual(RemoteError.permissionDenied.code, "permission-denied")
+    XCTAssertEqual(RemoteError.unauthenticated.code, "unauthenticated")
     XCTAssertEqual(RemoteError.unknown("soap_notes/fx-note uid=fx").code, "unknown")
   }
 }

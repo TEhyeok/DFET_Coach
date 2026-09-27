@@ -116,15 +116,18 @@ enum FirestorePayload {
   }
 
   /// Whether the server document already holds every field of an update payload (V1-04 §10.5.3-4). Server-time
-  /// fields are skipped (their value is the server's); numbers compare by value, so `1` equals `1.0`.
+  /// fields are skipped (their value is the server's); numbers compare by value, so `1` equals `1.0`. A missing field
+  /// is not `null` (V1-10 §6.1): only a stored null matches `.null`.
   static func serverHas(_ payload: [String: JSONValue], in server: [String: Any]) -> Bool {
     payload.allSatisfy { key, value in
       if case .serverTimestamp = value { return true }
       let path = key.split(separator: ".").map(String.init)
-      return equal(value, JSONValueFirestoreMapper.json(lookup(path, in: server)))
+      guard let stored = lookup(path, in: server) else { return false }
+      return equal(value, JSONValueFirestoreMapper.json(stored))
     }
   }
 
+  /// The value at a dot path; nil when a segment is missing or not a map.
   private static func lookup(_ path: [String], in fields: [String: Any]) -> Any? {
     guard let first = path.first else { return nil }
     let value = fields[first]

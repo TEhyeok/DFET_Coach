@@ -28,7 +28,7 @@ func firstValue<T: Sendable>(of stream: AsyncStream<T>) async -> T? {
 }
 
 /// `waitUntilIdle()` with a deadline, so a scheduling bug fails the test instead of hanging the suite. The wait runs
-/// in an unstructured task (it cannot be cancelled), and this polls for it.
+/// in an unstructured task, and this polls for it.
 func idle(_ engine: SyncEngine, timeout: Double = 5, file: StaticString = #filePath, line: UInt = #line) async {
   let flag = IdleFlag()
   Task {

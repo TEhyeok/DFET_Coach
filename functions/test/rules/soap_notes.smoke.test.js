@@ -327,6 +327,30 @@ describe('R-03 / R-08 draft update and finalize (AC-DF-020.4)', () => {
   });
 });
 
+// V1-05 §5.1: inkPath는 정확히 soapInk/{noteId}/{inkRevision}.drawing이다(정규식이 아니라 문자열 비교).
+describe('inkPath names this note and its inkRevision (AC-DF-020.2, AC-DF-020.4)', () => {
+  const ink = (inkPath, inkRevision) => ({inkPath, inkRevision});
+
+  test('AC-DF-020.2 create: another note path through regex metacharacters in the id, or a revision mismatch, is denied', async () => {
+    const db = trainerDb();
+    await assertFails(setDoc(doc(db, 'soap_notes/fx-note.*'), v2Create(ink('soapInk/fx-note-other/1.drawing', 1))));
+    await assertFails(setDoc(doc(db, 'soap_notes/fx-new-030'), v2Create(ink('soapInk/fx-new-030/9.drawing', 1))));
+    await assertFails(setDoc(doc(db, 'soap_notes/fx-new-030'), v2Create(ink('soapInk/fx-new-030/0.drawing', 0))));
+    await assertFails(setDoc(doc(db, 'soap_notes/fx-new-030'), v2Create({inkPath: 'soapInk/fx-new-030/1.drawing'})));
+    await assertSucceeds(setDoc(doc(db, 'soap_notes/fx-note.*'), v2Create(ink('soapInk/fx-note.*/1.drawing', 1))));
+    await assertSucceeds(setDoc(doc(db, 'soap_notes/fx-new-030'), v2Create(ink('soapInk/fx-new-030/12.drawing', 12))));
+  });
+
+  test('AC-DF-020.4 update: the same mismatches are denied, the matching next revision is allowed', async () => {
+    const ref = doc(trainerDb(), 'soap_notes/fx-draft-001');
+    const edit = (inkPath, inkRevision) => updateDoc(ref, {...ink(inkPath, inkRevision), updatedAt: serverTimestamp()});
+    await assertFails(edit('soapInk/fx-draft-001/9.drawing', 1));
+    await assertFails(edit('soapInk/fx-draft-002/2.drawing', 2));
+    await assertFails(edit('soapInk/fx-draft-001/2.drawing', '2'));
+    await assertSucceeds(edit('soapInk/fx-draft-001/2.drawing', 2));
+  });
+});
+
 describe('R-09 addenda (AC-DF-020.5)', () => {
   const addendum = (overrides = {}) => ({
     authorUid: T_A, createdAt: serverTimestamp(), reason: '정보주체 정정 요구',

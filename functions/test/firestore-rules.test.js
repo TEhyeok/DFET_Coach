@@ -52,6 +52,11 @@ beforeEach(async () => {
         authorId: 'member1', content: '건강 기록', imageUrls: [], likeCount: 0,
         commentCount: 0, createdAt: 1,
       }),
+      setDoc(doc(db, 'requests/request1'), {
+        userId: 'member1', userName: '가상 회원 A', type: 'postureCheck', status: 'pending',
+        title: '합성 요청', description: '합성 설명', attachmentUrls: ['https://example.invalid/a.mp4'],
+        createdAt: 1, updatedAt: 1,
+      }),
     ]);
     await uploadBytes(
       ref(context.storage(), 'clinical-ingest/gut/raw.json'),
@@ -162,6 +167,63 @@ describe('community integrity boundaries', () => {
     const owner = dbFor('member1');
     await assertSucceeds(updateDoc(doc(owner, 'posts/post1'), {content: '수정된 기록'}));
     await assertFails(updateDoc(doc(owner, 'posts/post1'), {authorId: 'member2'}));
+  });
+
+  // Post.fromFirestore가 읽지 못하는 게시글 하나가 피드 전체를 실패시킨다: 수정도 작성과 같은 본문 검증을 받는다.
+  test('post edits keep the create body types: content is a 1-2000 char string, imageUrls a list', async () => {
+    const owner = dbFor('member1');
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {content: {}}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {content: ''}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {content: 'a'.repeat(2001)}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {imageUrls: 5}));
+    await assertSucceeds(updateDoc(doc(owner, 'posts/post1'), {
+      content: 'a'.repeat(2000), imageUrls: ['https://example.invalid/1.jpg'],
+    }));
+  });
+
+  test('post create takes only the app keys with string author fields', async () => {
+    const member = dbFor('member1');
+    const post = {
+      authorId: 'member1', authorName: '가상 회원 A', authorProfileImage: null, content: '새 기록',
+      imageUrls: [], likeCount: 0, commentCount: 0, createdAt: 1,
+    };
+    await assertSucceeds(setDoc(doc(member, 'posts/post2'), post));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, authorName: {}}));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, authorProfileImage: 7}));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, imageUrls: 'x'}));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, content: {}}));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, pinned: true}));
+  });
+});
+
+describe('request workflow boundaries', () => {
+  const trainerDb = (uid) => dbFor(uid, {trainer: true, role: 'trainer'});
+
+  test('assigned trainer updates only the workflow fields, with their own adminId', async () => {
+    const assigned = trainerDb('trainer1');
+    await assertSucceeds(updateDoc(doc(assigned, 'requests/request1'), {status: 'inProgress', updatedAt: 2}));
+    await assertSucceeds(updateDoc(doc(assigned, 'requests/request1'), {
+      status: 'completed', adminFeedback: '합성 피드백', adminId: 'trainer1', updatedAt: 3,
+    }));
+    await assertFails(updateDoc(doc(assigned, 'requests/request1'), {adminId: 'trainer2'}));
+  });
+
+  test('assigned trainer cannot move a request to another member or edit what the member wrote', async () => {
+    const assigned = trainerDb('trainer1');
+    await assertFails(updateDoc(doc(assigned, 'requests/request1'), {userId: 'member2'}));
+    await assertFails(updateDoc(doc(assigned, 'requests/request1'), {userId: 'member2', status: 'completed'}));
+    await assertFails(updateDoc(doc(assigned, 'requests/request1'), {title: '바뀐 제목'}));
+    await assertFails(updateDoc(doc(assigned, 'requests/request1'), {
+      attachmentUrls: ['https://example.invalid/b.mp4'],
+    }));
+  });
+
+  test('unassigned trainer and the member cannot update, admin can', async () => {
+    await assertFails(updateDoc(doc(trainerDb('trainer2'), 'requests/request1'), {status: 'completed'}));
+    await assertFails(updateDoc(doc(dbFor('member1'), 'requests/request1'), {status: 'completed'}));
+    await assertSucceeds(updateDoc(doc(dbFor('admin1', {admin: true}), 'requests/request1'), {
+      status: 'rejected',
+    }));
   });
 });
 

@@ -252,12 +252,13 @@ service cloud.firestore {
           && optStrMax(p, 'nextSession', 2000)
           && optStrMax(p, 'homeExercise', 2000);
       }
+      // 정확한 문자열 비교(V1-05 §5.1 `soapInk/{noteId}/{inkRevision}.drawing`). noteId를 정규식에 넣으면 '.', '*' 같은
+      // 메타 문자가 다른 노트 경로와 맞을 수 있고, 경로의 개정 번호는 inkRevision과 같아야 한다.
       function validInk(d) {
         return d.get('inkPath', null) == null
-          || (d.inkPath is string
-              && d.inkPath.matches('soapInk/' + noteId + '/[0-9]+[.]drawing')
-              && d.get('inkRevision', null) is int
-              && d.inkRevision >= 1);
+          || (d.get('inkRevision', null) is int
+              && d.inkRevision >= 1
+              && d.inkPath == 'soapInk/' + noteId + '/' + string(d.inkRevision) + '.drawing');
       }
       function validSoapContent(d) {
         return measuredAtOk(d.sessionDate)
@@ -371,14 +372,28 @@ service cloud.firestore {
 
     // --- Community (Posts) ---
     match /posts/{postId} {
+      // 작성·수정 공통 본문 검증. Post.fromFirestore는 content를 문자열로, imageUrls를 문자열 목록으로 읽으므로
+      // 타입이 어긋난 게시글 하나가 피드 전체(Future.wait)를 실패시킨다. 목록 원소의 타입은 규칙으로 검사할 수 없다.
+      function validPostBody(d) {
+        return d.content is string &&
+          d.content.size() > 0 &&
+          d.content.size() <= 2000 &&
+          d.get('imageUrls', []) is list;
+      }
+
       // Anyone authenticated can read posts
       allow read: if isAuth();
       // Authenticated users can create posts
       allow create: if isAuth() &&
+        request.resource.data.keys().hasOnly([
+          'authorId', 'authorName', 'authorProfileImage', 'content', 'imageUrls',
+          'likeCount', 'commentCount', 'createdAt'
+        ]) &&
         request.resource.data.authorId == request.auth.uid &&
-        request.resource.data.content is string &&
-        request.resource.data.content.size() > 0 &&
-        request.resource.data.content.size() <= 2000 &&
+        request.resource.data.get('authorName', '') is string &&
+        (request.resource.data.get('authorProfileImage', null) == null ||
+          request.resource.data.authorProfileImage is string) &&
+        validPostBody(request.resource.data) &&
         request.resource.data.likeCount == 0 &&
         request.resource.data.commentCount == 0;
       // 카운터는 Cloud Functions만 변경하며, 작성자는 본문과 이미지만 편집한다.
@@ -387,7 +402,8 @@ service cloud.firestore {
         resource.data.authorId == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'content', 'imageUrls'
-        ])
+        ]) &&
+        validPostBody(request.resource.data)
       );
       allow delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
       
@@ -420,7 +436,13 @@ service cloud.firestore {
       allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
       allow read: if isOwner(resource.data.userId) ||
         isAssignedTrainer(resource.data.userId) || isAdmin();
-      allow update: if isAssignedTrainer(resource.data.userId) || isAdmin();
+      // 담당 트레이너는 처리 필드만 바꾼다. userId와 회원이 쓴 내용(제목·설명·첨부)은 고정이다: userId를 바꾸면 요청이
+      // 다른 회원과 그 담당 트레이너에게 보인다. adminId는 처리한 본인만 적는다.
+      allow update: if isAdmin() || (
+        isAssignedTrainer(resource.data.userId) &&
+        changed().hasOnly(['status', 'adminFeedback', 'adminId', 'updatedAt']) &&
+        (!('adminId' in changed()) || request.resource.data.adminId == request.auth.uid)
+      );
       allow delete: if isAdmin();
     }
 

@@ -26,7 +26,7 @@ struct SyncQueueView: View {
           Spacer(minLength: 8)
           Button(localized("common.retry")) { Task { await model.retry(item.id) } }
             .buttonStyle(.bordered)
-            .frame(minWidth: 44, minHeight: 44)
+            .controlSize(.large)  // the capsule itself is the tap target: at least 44pt tall
             .accessibilityIdentifier("tr15.queue.retry.\(index)")
         }
         .accessibilityElement(children: .contain)

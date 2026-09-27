@@ -55,7 +55,6 @@ public struct SettingsView: View {
             Text(localized("tr15.signOut"))
           }
         }
-        .frame(minHeight: 44)
         .disabled(model.isSigningOut)
         .accessibilityIdentifier("tr15.logout")
         if model.signOutFailed {

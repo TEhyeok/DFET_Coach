@@ -33,7 +33,7 @@ struct DesignSystemGallery: View {
       }
       Section {
         ComingSoonLabel()
-        EmptyState(systemImage: "tray", titleKey: "tr02.empty", actionKey: "common.retry", action: {})
+        EmptyState(systemImage: "tray", titleKey: "tr02.empty", actionKey: "tr02.addPending", action: {})
           .frame(height: 220)
       }
     }

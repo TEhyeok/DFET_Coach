@@ -14,22 +14,24 @@ final class DesignSystemSourceTests: XCTestCase {
     }
   }
 
-  /// AC-DF-016.2: `TrainerColor.success` appears only in the token file and the synced badge.
+  /// AC-DF-016.2: green (`TrainerColor.success`, `Color.green`, `.green`, `systemGreen`) appears only in the token
+  /// file and the badge, whose tint is checked by `SyncStateBadgeTests` to be green for `.synced` only.
   func test_TC_DF016_03_successColourOnlyWhereAllowed() throws {
     let allowed: Set<String> = [
       "Packages/TrainerKit/Sources/DesignSystem/Tokens/TrainerColor.swift",
       "Packages/TrainerKit/Sources/DesignSystem/Components/SyncStateBadge.swift",
     ]
     var users: Set<String> = []
-    let root = AppCatalog.trainerApp
+    let green = try NSRegularExpression(pattern: #"TrainerColor\s*\.\s*success|Color\s*\.\s*green|\.green\b|systemGreen"#)
+    let root = AppCatalog.trainerApp.resolvingSymlinksInPath()
     let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil)
     while let url = files?.nextObject() as? URL {
-      let path = url.path.replacingOccurrences(of: root.path + "/", with: "")
+      let path = url.resolvingSymlinksInPath().path.replacingOccurrences(of: root.path + "/", with: "")
       if path.hasPrefix(".spm") || path.hasPrefix("build") || path.contains("/.build/") || path.contains("/Tests/") {
         continue
       }
       guard url.pathExtension == "swift", let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
-      if text.contains("TrainerColor.success") {
+      if green.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) != nil {
         users.insert(path)
       }
     }

@@ -7,6 +7,11 @@ import UIKit
 /// `success` (green) means "saved to the server / completed" and nothing else: only `SyncStateBadge(.synced)` and
 /// completed-state marks use it (dfet:design.md:111, AC-DF-016.2; `DesignSystemSourceTests` checks the call sites).
 /// `danger` is for error text only.
+///
+/// Contrast (V1-07 §3.11): as text on `neutral50` and on the system grouped background, `neutral600`-`neutral900`,
+/// `brandBlue`, `success`, `caution` and `danger` pass 4.5:1 in light and dark. `neutral500` passes 3:1 for graphics
+/// (borders, icons). `neutral50`-`neutral400` are backgrounds and dividers, never text. Filled buttons use
+/// `brandBlueFill` with white text (5.17:1 or more).
 public enum TrainerColor {
   public static let neutral50 = dynamic(light: 0xFAFAFA, dark: 0x18181B)
   public static let neutral100 = dynamic(light: 0xF4F4F5, dark: 0x27272A)
@@ -19,11 +24,12 @@ public enum TrainerColor {
   public static let neutral800 = dynamic(light: 0x27272A, dark: 0xF4F4F5)
   public static let neutral900 = dynamic(light: 0x18181B, dark: 0xFAFAFA)
   public static let brandBlue = dynamic(light: 0x1D4ED8, dark: 0x60A5FA)
-  public static let success = dynamic(light: 0x15803D, dark: 0x4ADE80)
-  public static let caution = dynamic(light: 0xB45309, dark: 0xFBBF24)
+  /// Fill behind white text (`.borderedProminent`): brandBlue is too light for that in dark mode.
+  public static let brandBlueFill = dynamic(light: 0x1D4ED8, dark: 0x2563EB)
+  public static let success = dynamic(light: 0x166534, dark: 0x4ADE80)
+  public static let caution = dynamic(light: 0x92400E, dark: 0xFBBF24)
   public static let danger = dynamic(light: 0xB91C1C, dark: 0xF87171)
 
-  /// Light and dark sRGB values; both pass WCAG AA (4.5:1) as text on `neutral50`.
   static func dynamic(light: UInt32, dark: UInt32) -> Color {
     Color(uiColor: UIColor { traits in
       rgb(traits.userInterfaceStyle == .dark ? dark : light)

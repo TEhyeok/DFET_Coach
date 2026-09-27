@@ -90,7 +90,8 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`) |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
-| `--preview-members-slow` | Member list arrives after 8 s, to see the loading skeleton (`tr02.loading`) |
+| `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |
+| `--preview-design-system` | DesignSystem gallery (`preview.designSystem`): every component with synthetic values, for layout checks and light/dark review (DF-016) |
 | `--preview-landscape` | Requests landscape orientation (ported from `trainer_ios`) |
 | `--preview-flags=<k1,k2>` | Local flag override for client entry points only (ADR-010 §3-6); unknown keys are ignored |
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |

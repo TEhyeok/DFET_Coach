@@ -6,20 +6,26 @@ import XCTest
 
 /// TC-DF016-01: SyncStateBadge in its five states, light and dark.
 ///
-/// References are recorded on the CI runtime (V1-10: the trainer-app job's iOS 18 simulator). Other runtimes draw
-/// text differently, so they skip. When a reference is missing, CI records it, fails, and uploads the
-/// `__Snapshots__` folder as the `snapshot-references` artifact of the pull request run; commit it from there.
-/// `SNAPSHOT_RECORD=1` (xcodebuild `TEST_RUNNER_SNAPSHOT_RECORD=1`) re-records on purpose.
+/// References belong to one simulator runtime, the one CI pins (`DFET_SIM_RUNTIME` in trainer-app.yml, V1-10). Other
+/// runtimes draw text differently: locally they skip, on CI (`CI=1`) they fail, so a runner image update cannot
+/// silently turn the test off. A missing reference is recorded, fails the run, and CI uploads the `__Snapshots__`
+/// folder as the `snapshot-references` artifact of the pull request run; commit it from there. To re-record on
+/// purpose, put `TEST_RUNNER_SNAPSHOT_RECORD=1` in xcodebuild's environment (not as a build setting).
 @MainActor
 final class SyncStateBadgeSnapshotTests: XCTestCase {
-  static let referenceOSMajor = 18
+  /// The runtime of the committed references: `DFET_SIM_RUNTIME` in trainer-app.yml.
+  static let referenceRuntime = "26.2"
   private var recording = false
 
   override func setUpWithError() throws {
-    recording = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
-    let major = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
-    guard recording || major == Self.referenceOSMajor else {
-      throw XCTSkip("snapshot references are recorded on iOS \(Self.referenceOSMajor) (CI); this runtime is iOS \(major)")
+    let environment = ProcessInfo.processInfo.environment
+    recording = environment["SNAPSHOT_RECORD"] == "1"
+    let version = ProcessInfo.processInfo.operatingSystemVersion
+    let running = "\(version.majorVersion).\(version.minorVersion)"
+    guard recording || running == Self.referenceRuntime else {
+      let message = "snapshot references are for iOS \(Self.referenceRuntime); this runtime is iOS \(running)"
+      if environment["CI"] == "1" { XCTFail(message + " (pin DFET_SIM_RUNTIME)") }
+      throw XCTSkip(message)
     }
   }
 
@@ -29,7 +35,7 @@ final class SyncStateBadgeSnapshotTests: XCTestCase {
       for state in SyncState.allCases {
         let failed = state == .syncFailed
         let badge = SyncStateBadge(
-          state: state, reasonKey: failed ? "sync.reason.network" : nil, onRetry: failed ? {} : nil, localize: localize)
+          state: state, reasonKey: failed ? "sync.reason.ruleDenied" : nil, onRetry: failed ? {} : nil, localize: localize)
         let view = badge
           .padding(TrainerSpacing.s)
           .frame(width: 320, alignment: .leading)

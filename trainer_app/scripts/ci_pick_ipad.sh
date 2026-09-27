@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Prints the UDID of one available iPad simulator on the newest installed iOS runtime.
+# Prints the UDID of one available iPad simulator on the newest installed iOS runtime, or on the runtime named by
+# DFET_SIM_RUNTIME (e.g. "iOS 26.2"; CI pins it because snapshot references belong to one runtime, DF-016).
 # Preference: iPad Pro 13-inch (M4) > any iPad Pro > any iPad. If no iPad device exists yet
 # (fresh local Xcode), creates "DFET Trainer iPad" from the best iPad device type.
 # Only the UDID goes to stdout; diagnostics go to stderr.
 set -euo pipefail
 
 python3 - <<'PY'
-import json, re, subprocess, sys
+import json, os, re, subprocess, sys
 
 def simctl(*args):
     return subprocess.run(["xcrun", "simctl", *args], check=True, capture_output=True, text=True).stdout
@@ -31,6 +32,11 @@ runtimes = [r for r in json.loads(simctl("list", "runtimes", "--json"))["runtime
 if not runtimes:
     sys.exit("ci_pick_ipad: no available iOS simulator runtime")
 runtimes.sort(key=lambda r: version_key(r["identifier"]), reverse=True)
+pinned = os.environ.get("DFET_SIM_RUNTIME", "").strip()
+if pinned:
+    runtimes = [r for r in runtimes if r["name"] == pinned]
+    if not runtimes:
+        sys.exit(f"ci_pick_ipad: DFET_SIM_RUNTIME={pinned} is not installed")
 
 devices = json.loads(simctl("list", "devices", "available", "--json"))["devices"]
 for runtime in runtimes:

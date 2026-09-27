@@ -21,7 +21,11 @@ final class DesignSystemUITests: XCTestCase {
       XCTAssertGreaterThanOrEqual(target.frame.height, 44, id)
     }
     XCTAssertFalse(element("metric.row.waistCircumference", in: app).exists, "a value without a source has no row")
-    XCTAssertTrue(element("metric.row.weightKg", in: app).exists)
+    // The rendered row speaks the full template (AC-DF-016.5), and a failed badge shows its reason (AC-DF-016.1).
+    let weight = element("metric.row.weightKg", in: app)
+    XCTAssertTrue(weight.exists)
+    XCTAssertEqual(weight.label, "체중 72.4kg, 출처 기기 측정 · SYN-DEVICE, 2026.09.21, 변화 산정 준비 중")
+    XCTAssertTrue(element("sync.badge.reason", in: app).exists)
   }
 
   private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {

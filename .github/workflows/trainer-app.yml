@@ -87,6 +87,8 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
+          # Snapshot references are recorded on this runtime (DF-016); the snapshot test fails on CI on any other.
+          export DFET_SIM_RUNTIME="iOS 26.2" TEST_RUNNER_CI=1
           UDID=$(bash trainer_app/scripts/ci_pick_ipad.sh)
           xcodebuild test -project trainer_app/DFETTrainer.xcodeproj -scheme DFETTrainer \
             -destination "id=${UDID}" -clonedSourcePackagesDirPath trainer_app/.spm \

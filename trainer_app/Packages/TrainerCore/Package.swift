@@ -24,7 +24,7 @@ let package = Package(
     .target(name: "TrainerAnalytics", dependencies: ["TrainerContracts"], swiftSettings: strict),
     .testTarget(name: "TrainerContractsTests", dependencies: ["TrainerContracts"]),
     .testTarget(name: "TrainerDomainTests", dependencies: ["TrainerDomain", "TrainerContracts"]),
-    .testTarget(name: "PostureMathTests", dependencies: ["PostureMath"]),
+    .testTarget(name: "PostureMathTests", dependencies: ["PostureMath", "TrainerContracts"]),
     .testTarget(name: "SyncEngineTests", dependencies: ["SyncEngine", "TrainerContracts", "TrainerDomain"]),
     .testTarget(name: "TrainerAnalyticsTests", dependencies: ["TrainerAnalytics"]),
   ],

@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.7 |
+| 버전 | v1.0.8 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 849개(트레이너 565, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 851개(트레이너 567, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -537,6 +537,12 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `reason.betaMetric.detail` | 베타 값이라 같은 부위 나란히 보기만 제공합니다 | trainer | P2 | §6.3 |  |
 | `chart.singlePoint` | 비교할 측정이 없습니다 · 판정 불가 | trainer | P1b | F-VIZ-03.10 |  |
 | `chart.lineHelp` | 점 사이 직선은 보기 위한 연결이며 그 사이 값을 뜻하지 않아요. | shared | P1a | F-VIZ-03.4 |  |
+| `chart.rejected.mixedSource` | 출처가 다른 값은 한 차트에 그리지 않아요 | trainer | P1a | F-VIZ-07.2, C-02 | DF-130 |
+| `chart.summary` | {metricName} 추이, {period}, 기록 {count}개, 최소 {min}, 최대 {max}, 끊김 {breaks}곳, 출처 {source}, 변화 {status} | trainer | P1a | A-03, AC-A11Y-02 | DF-130 차트 요약 문장(AC-DF-130.10). {period}는 첫·마지막 측정일, {status}는 §3.4 트레이너 라벨 |
+| `chart.legend.left` | 왼쪽 | trainer | P1a | F-VIZ-07, A-02 | DF-130 좌우 시리즈 범례(실선) |
+| `chart.legend.right` | 오른쪽 | trainer | P1a | F-VIZ-07, A-02 | DF-130 좌우 시리즈 범례(점선) |
+| `chart.empty` | 아직 추이로 볼 기록이 없어요 | trainer | P1a | §8.4, C-04 | DF-130 점 0개 |
+| `chart.measuredAt` | 측정일 | trainer | P1a | A-03 | DF-130 오디오 그래프 x축 이름 |
 | `series.break.device` | 기기 변경: {from} → {to} | trainer | P1a | F-VIZ-03.3 |  |
 | `series.break.protocol` | 프로토콜 변경 | trainer | P1b | F-VIZ-03.3 |  |
 | `series.break.condition` | 조건 불일치: {condition} | trainer | P1a | F-VIZ-03.3 |  |
@@ -2218,3 +2224,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.5 | 2026-09-28 | 트레이너 카탈로그 드리프트 정리: DF-012·DF-017이 카드 제안 키(`auth.field.*`, `auth.error.*`, `nav.*` 등)로 쓴 문구를 덱 키(`login.*`, `auth.notTrainer`, `auth.sessionLocked`, `common.internal`, `tr01/02/15.title`)로 바꾸고, 덱에 없던 `app.title`, `app.config.missing`, `login.error.invalidCredentials`, `login.error.network`와 v1.0.2 표에만 있던 라벨 5키를 덱 JSON에 추가. §4.1 `app.*` 행, §4.5 `nav.*` 식별자 예외, §4.7 5항·§7.9·ASM-12-22를 `catalog-deck.mjs` 차단 검사로 변경, §10.2 X-12, `login.error.network` 추가 | #174 | 없음 |
 | v1.0.6 | 2026-09-28 | DF-018: 로그아웃 문구를 '미동기 기록은 기기에 남고 다시 로그인하면 이어서 보낸다'(ASM-P0-17)로 고침(`tr15.signOut.unsyncedWarning`, `tr15.signOut.confirm`), `tr15.signOut.question`·`tr15.signOut.syncNow`, 대기열 항목 종류 `tr15.queue.kind.*` 7키 추가 | DF-018 | 없음 |
 | v1.0.7 | 2026-09-28 | DF-127: TR-11 검증 오류 문구 `tr11.deviceModel.required`·`tr11.deviceModel.tooLong`·`tr11.measuredAt.future`·`tr11.number.invalid` 추가(덱 v1.0.6), §1.2 덱 키 수 갱신 | DF-127 | 없음 |
+| v1.0.8 | 2026-09-28 | DF-130: `chart.summary`에 기간 `{period}`와 변화 상태 `{status}`를 더하고 끊김 수에 '곳'을 붙임(AC-DF-130.10, V1-07 TR-10 접근성 문장), `chart.empty`·`chart.measuredAt` 추가, P1a §5.3에서 온 `chart.*` 4키의 §4.9 행 추가(`catalog-deck.baseline`에서 삭제), 덱 v1.0.7, §1.2 덱 키 수 갱신 | DF-130 | 없음 |

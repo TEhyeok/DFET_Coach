@@ -9,7 +9,13 @@ struct PreviewMemberDirectory: MemberDirectory {
     let script = script
     return AsyncThrowingStream { continuation in
       switch script {
-      case let .members(members):
+      case let .members(members, delay) where delay > 0:
+        let task = Task {
+          try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+          continuation.yield(members)
+        }
+        continuation.onTermination = { _ in task.cancel() }
+      case let .members(members, _):
         continuation.yield(members)
       case let .failure(error):
         continuation.finish(throwing: error)

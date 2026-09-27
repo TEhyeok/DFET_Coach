@@ -169,6 +169,18 @@
         }
       }
     },
+    "common.loading" : {
+      "comment" : "V1-12 · §8.4 · loading skeleton label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "불러오는 중"
+          }
+        }
+      }
+    },
     "common.retry" : {
       "comment" : "V1-12 · §8.4 · §9.6",
       "extractionState" : "manual",

@@ -2020,6 +2020,7 @@ PRD §9.4·§9.5의 표를 **입력(Given)·동작(When)·기대(Expect)** 로 �
 | `functions/test/rules/policies.rules.test.js` | R-25 | DF-035 |
 | `functions/test/rules/circumference.rules.test.js` | R-26 | DF-035 |
 | `functions/test/rules/consent_read.rules.test.js` | R-28 | DF-035 |
+| `functions/test/rules/idempotent_delete.rules.test.js` | R-32 | DF-104 |
 | `functions/test/rules/storage.rules.test.js` | S-01~S-08 | DF-023 |
 
 파일 배치 정본은 P0 DF-022·DF-035 카드와 V1-10 §7.2다.
@@ -2066,6 +2067,7 @@ PRD §9.4·§9.5의 표를 **입력(Given)·동작(When)·기대(Expect)** 로 �
 | R-29 | S0, `bodyComposition=false` | trainerA가 tape 둘레 create | 거부 | AC-ASM-06.5 |
 | R-30 | S0, `memberConsentStates/pendA.healthData.granted=false` | trainerA가 pendA update로 `heightCm=165`, `heightMeasuredAt` | 거부. ② granted면 허용 | AC-LINK-01.2 |
 | R-31 | S0, `request.time` 연도 2026 | trainerA가 `birthYear=2013` create / `birthYear=2012` create | 거부 / 허용(ASM-05-02) | AC-LINK-01.6 |
+| R-32 | S0, `soap_notes/D1` draft(trainerA)·`postureAssessments/P1` draft(trainerA) | trainerA가 D1·P1 delete 두 번 / member1·미인증이 없는 문서 delete / trainerB가 D1 delete / trainerA가 finalized 노트 delete | 허용·허용 / 거부 / 거부 / 거부(없는 draft 삭제는 트레이너에게 멱등, DF-104) | NFR-04, NFR-06 |
 
 ### 9.3 Storage 규칙(S-01~S-09)
 
@@ -2922,4 +2924,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0.2 | 2026-09-25 | §7.3에 null·키 생략 원칙과 DF-020 구현 차이(스위치 줄 위치, `measuredAtOk` 이름, v1 delete 분기, 미사용 헬퍼 이월, 문서 조회 수) 기록 | DF-020 | 없음 |
 | v1.0.3 | 2026-09-25 | §8 머리에 서울 버킷 명시 한 줄(DEC-19, DF-043. 트레이너 앱은 DF-104) | DF-043 | 없음 |
 | v1.0.4 | 2026-09-28 | §12.2 Outbox `state`에 `superseded`(영구 거부 뒤 더 새 캡처가 acked된 동의 캡처) 추가, §12.3에 최신 동의 기준 `blocked` 저장·재계산과 동의 캡처의 엄격한 순서 규칙 명시 | DF-015 | 없음 |
-| v1.0.5 | 2026-09-28 | §7 `soap_notes`·`postureAssessments` delete 규칙에 `resource == null && isTrainer()`(없는 문서 삭제는 성공) 추가: Outbox가 응답을 잃고 다시 보낸 draft 삭제가 영구 실패가 되지 않고, 클라이언트가 읽을 수 없는 문서를 삭제된 것으로 오판하지 않는다 | DF-104 | 없음 |
+| v1.0.5 | 2026-09-28 | R-32(규칙 매트릭스·테스트 파일 표) 추가. §7 `soap_notes`·`postureAssessments` delete 규칙에 `resource == null && isTrainer()`(없는 문서 삭제는 성공) 추가: Outbox가 응답을 잃고 다시 보낸 draft 삭제가 영구 실패가 되지 않고, 클라이언트가 읽을 수 없는 문서를 삭제된 것으로 오판하지 않는다 | DF-104 | 없음 |

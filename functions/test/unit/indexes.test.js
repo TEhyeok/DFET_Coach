@@ -4,6 +4,8 @@
 // TC-DF024-01: the 20 v1 indexes exist, the 8 clinical indexes are unchanged, no duplicates.
 // The emulator does not enforce composite indexes (ASM-P0-28), so the file is compared with the
 // expected table below, copied by hand from the DF-024 card and V1-05 §10.2.1.
+// The file must hold exactly these indexes. A story that adds an index (V1-05 §10.2.2: DF-114, DF-119,
+// DF-125, DF-133, ...) appends its row to V1 or to a new list here in the same PR (V1-05 §14).
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

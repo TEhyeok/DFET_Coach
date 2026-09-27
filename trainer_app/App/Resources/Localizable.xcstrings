@@ -229,6 +229,18 @@
         }
       }
     },
+    "consent.state.awaiting" : {
+      "comment" : "V1-12 · F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인 대기"
+          }
+        }
+      }
+    },
     "login.email" : {
       "comment" : "V1-12 · NFR-02",
       "extractionState" : "manual",
@@ -985,6 +997,42 @@
         }
       }
     },
+    "tr02.badge.pending" : {
+      "comment" : "V1-12 · F-LINK-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기"
+          }
+        }
+      }
+    },
+    "tr02.consent.needed" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 필요"
+          }
+        }
+      }
+    },
+    "tr02.consent.ok" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 ①②③"
+          }
+        }
+      }
+    },
     "tr02.empty" : {
       "comment" : "V1-12 · §8.4",
       "extractionState" : "manual",
@@ -993,6 +1041,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아직 담당 회원이 없어요"
+          }
+        }
+      }
+    },
+    "tr02.search" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원 검색"
           }
         }
       }

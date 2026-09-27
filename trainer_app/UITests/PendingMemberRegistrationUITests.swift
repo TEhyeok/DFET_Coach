@@ -20,7 +20,9 @@ final class PendingMemberRegistrationUITests: XCTestCase {
     XCTAssertTrue(element("tr14.register.root", in: app).waitForExistence(timeout: 10))
 
     // AC-DF-108.1: the four inputs only, nothing preselected, no contact fields.
-    XCTAssertEqual(app.textFields.count, 1, "display name is the only text field (no phone, email or address)")
+    // TR-02's search field (DF-113) stays behind the sheet; it is not part of the form.
+    let formFields = app.textFields.matching(NSPredicate(format: "identifier != %@", "tr02.search"))
+    XCTAssertEqual(formFields.count, 1, "display name is the only text field (no phone, email or address)")
     for sex in ["female", "male", "unspecified"] {
       let option = element("tr14.register.sex.\(sex)", in: app)
       XCTAssertTrue(option.exists, sex)

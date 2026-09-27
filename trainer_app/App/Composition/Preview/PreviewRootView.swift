@@ -14,7 +14,7 @@ struct PreviewRootView: View {
   @State private var auth = PreviewAuthService()
   /// `--preview-members-slow` only: holds the member list until `preview.releaseMembers`.
   @State private var memberGate = PreviewMemberGate()
-  /// TR-14 registrations of this launch (DF-108), in memory.
+  /// TR-14 registrations of this launch (DF-108), in memory; TR-02 lists them as device-only pending members.
   @State private var registrar = PreviewPendingMemberRegistrar()
   /// TR-15's Outbox view (DF-018), in memory.
   @State private var queue: PreviewSyncQueue
@@ -53,6 +53,7 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
+        localPendingMembers: registrar, consentStatus: PreviewConsentSource(script: preview.consentScript),
         registrar: registrar, syncQueue: queue, signOut: signOut,
         accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.

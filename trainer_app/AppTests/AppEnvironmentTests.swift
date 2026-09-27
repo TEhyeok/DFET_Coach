@@ -79,11 +79,26 @@ final class AppEnvironmentTests: XCTestCase {
     }
     XCTAssertEqual(script("--preview-members-empty"), .members([], waitsForRelease: false))
     XCTAssertEqual(script("--preview-members-error"), .failure(.permissionDenied))
-    guard case let .members(rows, held)? = script("--preview-members") else { return XCTFail("expected rows") }
+    guard case let .members(rows, pending, held)? = script("--preview-members") else { return XCTFail("expected rows") }
     XCTAssertFalse(held)
-    guard case let .members(_, slowHeld)? = script("--preview-members-slow") else { return XCTFail("expected rows") }
+    XCTAssertEqual(pending, [])
+    guard case let .members(_, _, slowHeld)? = script("--preview-members-slow") else { return XCTFail("expected rows") }
     XCTAssertTrue(slowHeld, "the slow list waits for preview.releaseMembers")
     XCTAssertEqual(rows.map(\.id), ["syn-0001", "syn-0002", "syn-0003"])
+  }
+
+  /// DF-113: synthetic pending members, and every chip state among the listed members.
+  func testPreviewPendingMembersCoverEveryChipState() {
+    let preview = PreviewEnvironment(arguments: ["--preview-members-pending"])
+    guard case let .members(rows, pending, held) = preview.memberScript else { return XCTFail("expected rows") }
+    XCTAssertFalse(held)
+    XCTAssertEqual(rows.map(\.displayName), ["SYN-0001", "SYN-0002"])
+    XCTAssertEqual(pending.map(\.displayName), ["SYN-P001", "SYN-P002", "SYN-P003"])
+    XCTAssertTrue(pending.allSatisfy { DocumentID.isValid($0.id) }, "the rules' pending ID shape")
+    let keys = rows.map { MemberKey.uid($0.id) } + pending.map { MemberKey.pending($0.id) }
+    XCTAssertEqual(Set(keys), Set(preview.consentScript.keys))
+    XCTAssertEqual(Set(preview.consentScript.values.map(\.chipState)), [.coreGranted, .needed, .awaiting])
+    XCTAssertEqual(PreviewEnvironment(arguments: ["--preview-members"]).consentScript, [:])
   }
 
 

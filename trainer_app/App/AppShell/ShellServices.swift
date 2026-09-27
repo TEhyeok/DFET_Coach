@@ -2,8 +2,13 @@ import TrainerDomain
 
 /// What the shell's screens use, for one signed-in trainer (live) or a preview scenario.
 struct ShellServices {
-  /// TR-02 (DF-013).
+  /// TR-02 (DF-013): assigned and pending members from the server.
   let memberDirectory: any MemberDirectory
+  /// TR-02 (DF-113): pending members registered on this device that the server has not acked yet.
+  let localPendingMembers: any LocalPendingMemberSource
+  /// TR-02 consent chips (DF-113): each member's effective consent. DF-111's `EffectiveConsentResolver` provides it;
+  /// until it is wired the live app uses `UnresolvedConsentSource`.
+  let consentStatus: any EffectiveConsentSource
   /// TR-14 registration (DF-108).
   let registrar: any PendingMemberRegistrar
   /// TR-15 upload queue (DF-018): the session's SyncEngine.
@@ -26,5 +31,13 @@ enum ShellSheet: Identifiable, Equatable {
     case .registration: return "registration"
     case let .consent(member): return "consent:\(member.id)"
     }
+  }
+}
+
+/// Consent that is not known yet: the stream stays silent, so TR-02 shows no chip rather than a wrong one. The live
+/// app uses it until DF-111's `EffectiveConsentResolver` (fed by DF-110's `memberConsentStates` listener) is wired.
+struct UnresolvedConsentSource: EffectiveConsentSource {
+  func observe(member: MemberKey) -> AsyncStream<EffectiveConsent> {
+    AsyncStream { _ in }
   }
 }

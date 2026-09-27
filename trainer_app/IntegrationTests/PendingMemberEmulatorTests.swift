@@ -5,7 +5,8 @@ import XCTest
 @testable import DFETTrainer
 
 /// DF-108 TC-108-04 (AC-DF-108.3): a TR-14 registration saved on the device reaches the Firestore emulator through the
-/// live session runtime (LocalStore Outbox + SyncEngine + FirebaseData) and the repository rules accept it.
+/// live session runtime (LocalStore Outbox + SyncEngine + FirebaseData) and the repository rules accept it. DF-113: the
+/// TR-02 pending-member query against the same rules.
 /// Synthetic data only; every run uses its own trainer and LocalStore partition.
 final class PendingMemberEmulatorTests: XCTestCase {
   private var configured = false
@@ -47,6 +48,28 @@ final class PendingMemberEmulatorTests: XCTestCase {
     XCTAssertEqual((stored["ageConfirmed14"] as? [String: Any])?["booleanValue"] as? Bool, true)
     XCTAssertEqual((stored["schemaVersion"] as? [String: Any])?["integerValue"] as? String, "1")
     XCTAssertEqual((stored["birthYear"] as? [String: Any])?["integerValue"] as? String, "1990")
+  }
+
+  /// DF-113 (AC-DF-113.1, F-LINK-03.2) against the rules: TR-02's query lists this trainer's pending members only. A
+  /// cancelled one and another trainer's pending member are not listed; the rules allow the query (R-05).
+  func testTheListHasOnlyThisTrainersPendingMembers_DF_113() async throws {
+    let trainer = try await EmulatorAccounts.create(claims: ["trainer": true])
+    let other = try await EmulatorAccounts.create(claims: ["trainer": true])
+    let (listed, cancelled, othersPending) = (DocumentID.make(), DocumentID.make(), DocumentID.make())
+    try await EmulatorDocuments.put("pendingMembers/\(listed)", pendingDocument(trainer.uid, "가상 대기 회원", "pending"))
+    try await EmulatorDocuments.put("pendingMembers/\(cancelled)", pendingDocument(trainer.uid, "가상 취소 회원", "cancelled"))
+    try await EmulatorDocuments.put("pendingMembers/\(othersPending)", pendingDocument(other.uid, "가상 남의 회원", "pending"))
+    _ = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
+
+    let members = try await firstValue(of: AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid).observePendingMembers())
+    XCTAssertEqual(members, [PendingMember(id: listed, displayName: "가상 대기 회원")])
+  }
+
+  private func pendingDocument(_ trainerUid: String, _ name: String, _ status: String) -> [String: Any] {
+    [
+      "trainerId": trainerUid, "displayName": name, "sex": "unspecified", "birthYear": 1990, "ageConfirmed14": true,
+      "status": status, "schemaVersion": 1, "createdAt": Date(), "updatedAt": Date(),
+    ]
   }
 
   /// Review H1: a registration made while signed out is not sent under no session and never fails for good; it goes

@@ -1135,6 +1135,17 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: TR-02 회원 목록(대기 배지, 동의 칩, 검색, 대기 회원 추가). MVP 앱의 첫 화면이다(DF-017 MVP 절)
 - 지금 만든다: 카드 전체 범위. 단 AC-DF-113.2 동의 칩은 MVP에서 **3상태**('동의 ①②③' / '동의 필요' / '동의 확인 대기')이고 DF-111 MVP 조각(S06)의 `EffectiveConsent.chipState`만 읽는다. 회원별 `memberConsentStates` 리스너는 DF-110 `FirestoreConsentService`가 `ConsentStateSource`로 공급하며, 이 화면이 Firestore를 따로 읽지 않는다. TC-113-02는 3상태 스냅샷이다
 - MVP 뒤로 미룬다: '재동의 필요' 칩(`consent.state.revisedPending`, DF-110 AC-DF-110.6 재동의가 MVP 뒤), 행의 '오늘에 추가'(DF-125)
+- 구현 기록(1차 조각: 목록·대기 배지·동의 칩·검색·TR-03 진입 키):
+  - `TrainerDomain`: `PendingMember`(ID·표시명만), `MemberListEntry`(`MemberKey` + 표시명), 순수 `MemberList.merge`(표시명 가나다순, 같은 이름은 가입 회원 먼저, 같은 대기 회원은 한 번)·`MemberList.search`(부분 일치, 대소문자·공백 무시), `MemberName.initials(of:)`. `MemberDirectory.observePendingMembers()`와 `LocalPendingMemberSource`를 더했다. 카드의 `FeatureMembers/List/MemberSearch.swift` 대신 순수 로직을 TrainerDomain에 두어 macOS `swift test`로 확인한다(TC-113-04).
+  - `FirebaseData`: `pendingMembers where trainerId == uid && status == 'pending'` 리스너(`FirestoreListenerRegistry` 등록, 로그아웃 때 제거). `orderBy` 없이 등호 필터 두 개라 복합 인덱스가 필요 없다(정렬은 앱에서 이름순. 기존 `trainerId, status, createdAt` 인덱스도 이 쿼리를 덮는다). 규칙은 `isAccessTrainer`(R-05)로 증명된다. 에뮬레이터 통합 테스트가 취소된 회원·다른 트레이너의 회원이 빠지는 것을 확인한다. 쿼리 오류는 `MemberDirectoryError`로 끝나 목록 전체가 '불러오기 실패'가 된다.
+  - `LocalStore`: `LocalPendingMembers` — 서버가 create를 ack하기 전의 `LocalPendingMemberDraft`(DF-108)를 TR-02에 합친다. 오프라인에서는 SyncEngine이 보내지 않아 Firestore 캐시에도 없으므로, 이것이 없으면 현장에서 등록한 회원이 목록에 없다(V1-07 '대기 회원 표시(로컬)'). `ModelContext.didSave`마다 다시 읽고 바뀌었을 때만 내보낸다. ack 뒤에는 행이 지워지고 서버 목록이 이어받는다(ASM-05-38).
+  - `FeatureMembers/List`: `MemberListViewModel`이 담당 회원·서버 대기 회원·기기 대기 회원 세 스트림을 합친다. 두 서버 목록이 모두 답하기 전에는 로딩, 하나라도 실패하면 전체 실패(부분 목록 없음, §9.6). 목록에 있는 회원마다 `EffectiveConsentSource.observe(member:)`를 하나씩 구독하고 `EffectiveConsent.chipState`만 읽는다(3상태 `ConsentStatusChip`, 첫 값 전에는 칩 없음). 목록에서 빠진 회원은 구독과 칩이 함께 사라진다. `MemberRow`(이니셜, 표시명, '대기' 배지, 칩, 좁으면 줄바꿈), 검색 필드 `tr02.search`, 빈 상태는 DesignSystem `EmptyState` + '대기 회원 추가'(TR-14) 버튼 하나.
+  - 동의 칩 공급원: 카드의 `ConsentStateSource` 직접 구독이 아니라 DF-127 도메인의 `EffectiveConsentSource`를 주입한다(`ShellServices.consentStatus`). DF-111의 `EffectiveConsentResolver`가 이 프로토콜을 구현해 연결하면 된다. 그 전까지 라이브 앱은 `UnresolvedConsentSource`(값 없음 → 칩 없음)를 쓴다. 틀린 칩보다 없는 칩이 낫다.
+  - 라우트: `TrainerRoute.memberDetail(member: MemberKey)`. 대기 회원 행은 `MemberKey.pending`으로 TR-03을 연다. TR-03은 아직 DF-017 자리 표시(`tr03.root`의 접근성 값으로 키 종류와 ID를 보인다, 이름 없음).
+  - 문구: `tr02.search`, `tr02.badge.pending`, `tr02.consent.ok`, `tr02.consent.needed`, `consent.state.awaiting`을 카탈로그에 옮겼다(덱 변경 없음).
+  - 미리보기 `--preview-members-pending`(가입 2 + 대기 3, 칩 3상태 모두). 미리보기 등록기는 등록한 회원을 기기 대기 회원으로 내보내 등록 → 목록 표시를 UI 테스트로 확인한다.
+  - 테스트: TrainerDomain `MemberListTests`(병합·정렬·검색), FeatureModules `MemberListViewModelTests`(결합, 로딩 조건, 대기 목록 실패, 칩 구독·해제, 검색), LocalStore `LocalPendingMembersTests`(등록 → 표시 → ack → 사라짐), FirebaseData `FirestorePendingMembersTests`, 통합 `PendingMemberEmulatorTests.testTheListHasOnlyThisTrainersPendingMembers_DF_113`, UI `MemberListUITests`(행 문장으로 배지·칩 확인, 검색, 대기 행 → TR-03 키, 빈 상태 → 등록 → 목록). 스냅샷 대신 UI 테스트다(TC-113-01·02).
+  - 이 조각에 없는 것: AC-DF-113.6 대기 회원 등록 취소(행 메뉴, `cancelPendingMember`), AC-DF-113.7 오프라인 `common.offlineStale`, AC-DF-113.8 TR-03 셸(헤더·`tr03.startSession`), 검색 결과 0건 문구(덱에 키가 없다. V1-07의 `tr02.search.noResult` 초안을 덱에 올린 뒤 붙인다. 지금은 검색 필드 아래 빈 목록).
 
 ---
 

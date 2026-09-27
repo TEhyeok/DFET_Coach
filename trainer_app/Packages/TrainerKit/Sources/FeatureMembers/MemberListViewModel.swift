@@ -6,7 +6,8 @@ import TrainerDomain
 /// (AC-DF-013.2, AC-DF-013.5).
 ///
 /// One subscription at a time: every `start()` gets a generation, and a result or completion from an older
-/// generation is ignored, so a cancelled run can never overwrite state or drop the current task handle.
+/// generation is ignored, so a cancelled run can never overwrite state or drop the current task handle. The
+/// subscription lives as long as the model (the shell keeps one for the session); screens only call `start()`.
 @MainActor
 @Observable
 public final class MemberListViewModel {
@@ -51,8 +52,7 @@ public final class MemberListViewModel {
     }
   }
 
-  /// Ends the subscription (the list left the screen). `start()` subscribes again.
-  public func stop() {
+  private func stop() {
     task?.cancel()
     task = nil
     generation += 1

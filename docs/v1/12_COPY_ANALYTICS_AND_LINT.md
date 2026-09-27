@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.2 |
+| 버전 | v1.0.3 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 789개(트레이너 505, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 822개(트레이너 538, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -264,7 +264,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 
 | 네임스페이스 | 용도 | 대상 기본값 |
 |---|---|---|
-| `common.*` | 두 앱 공통 버튼·상태·고지, 모르는 messageKey 대체 문장(`common.<code>`) | shared(`common.comingSoon`, `common.unparsed`는 trainer) |
+| `common.*` | 두 앱 공통 버튼·상태·고지, 모르는 messageKey 대체 문장(`common.<code>`) | shared(`common.comingSoon`, `common.unparsed`, `common.loading`은 trainer) |
 | `sync.*`, `soap.status.*`, `posture.status.*`, `record.*` | 저장 상태·기록 상태 | trainer |
 | `sourceGrade.*`, `reliability.*`, `mdc.*`, `change.*`, `reason.*`, `series.*`, `condition.*`, `chart.*` | 트레이너 표시 어휘(§3) | trainer(`chart.lineHelp`는 shared) |
 | `mb.*` | 회원 표시 어휘(출처·변화 문장·지표명) | member |
@@ -384,6 +384,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `common.saveAction` | 저장하기 | shared | P0 | §6.0.3 | 동작 버튼 전용. 상태 표시로 '저장됨' 단독 문구 금지 |
 | `common.loadFailed` | 불러오기 실패 | shared | P0 | §8.4, §9.6, F-VIZ-05.6 | 쿼리·권한 오류. 빈 상태 문구와 함께 쓰지 않음(AC-VIZ-05.4) |
 | `common.loadFailed.detail` | 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요. | shared | P0 | §9.6 |  |
+| `common.loading` | 불러오는 중 | trainer | P0 | §8.4 | 스켈레톤의 접근성 라벨(DF-013 AC-DF-013.5). 트레이너 앱 전용: 회원 앱이 쓰면 shared로 바꾸고 regulatory 라벨 |
 | `common.onlineRequired` | 온라인 필요 | shared | P1b | §7, F-SOAP-05.6 | 판정 표시·공유·해제는 온라인 전용 |
 | `common.offlineStale` | 오프라인 · 최신이 아닐 수 있어요 | shared | P2 | §8.4 |  |
 | `common.comingSoon` | 추후 추가 예정 | trainer | P0 | §6.0.3, §8.4 | 트레이너 앱 전용. 회원 앱은 진입점을 숨긴다(§8.4). v2 기능에는 쓰지 않음 |
@@ -2186,3 +2187,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0(정합 패스 2) | 2026-09-24 | 06 가정 ID 참조 ASM-06-NN(R10), markSummaryViewed 소유·호출 화면(R5) | - | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: V1-06 가정 참조 ASM-06-04(R10), `markSummaryViewed` 소유 DF-335·호출 MB-02·MB-04(R5), X-06 후속 반영 표시 | - | 없음 |
 | v1.0.2 | 2026-09-25 | Sprint 01 문서 후속(PR #104): contracts `labelsKo`에만 있던 라벨 5키(`reliabilityTier.tier1`, `measurementStatus.active`, `circumferenceProtocolId.*`)를 문구 덱에 추가 | #113 | 없음 |
+| v1.0.3 | 2026-09-28 | DF-013: `common.loading`(트레이너 전용, TR-02 스켈레톤 접근성 라벨) 추가, §2 덱 키 수를 덱의 `counts`와 맞춤 | #169 | 없음 |

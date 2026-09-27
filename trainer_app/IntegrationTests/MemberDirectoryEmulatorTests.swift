@@ -35,13 +35,16 @@ final class MemberDirectoryEmulatorTests: XCTestCase {
     XCTAssertTrue(members?.allSatisfy { $0.trainerId == trainer.uid } ?? false)
   }
 
-  /// A trainer without a `trainers/{uid}` document has no members: an empty list, not an error.
-  func testTrainerWithoutAssignmentsGetsAnEmptyList() async throws {
+  /// A trainer without a `trainers/{uid}` document has no members: an empty list, not an error. From the second
+  /// subscription on Firestore first answers "no document" from its cache; the directory waits for the server (N2).
+  func testTrainerWithoutAssignmentsGetsAnEmptyListOnEverySubscription() async throws {
     let trainer = try await EmulatorAccounts.create(claims: ["trainer": true])
     _ = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
-    let members = try await firstValue(of: AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid)
-      .observeAssignedMembers())
-    XCTAssertEqual(members, [])
+    let directory = AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid)
+    for subscription in 1...3 {
+      let members = try await firstValue(of: directory.observeAssignedMembers())
+      XCTAssertEqual(members, [], "subscription \(subscription)")
+    }
   }
 
   /// Without the trainer claim the `users` read is denied by the rules: the stream fails with permissionDenied and

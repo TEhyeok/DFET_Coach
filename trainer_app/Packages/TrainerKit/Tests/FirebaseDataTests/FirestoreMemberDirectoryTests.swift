@@ -42,6 +42,28 @@ final class FirestoreMemberDirectoryTests: XCTestCase {
     XCTAssertEqual(gateway.chunkSizes, [])
   }
 
+  /// N2: Firestore answers a new listener from the cache first, even online. A cached "no document" waits for the
+  /// server, which says there is no assignment: an empty list, not `.unavailable` (the second subscription on).
+  func testACachedMissingDocumentWaitsForTheServer() async {
+    let gateway = FakeMemberGateway(snapshots: [
+      MemberIdsSnapshot(ids: [], exists: false, isFromCache: true),
+      MemberIdsSnapshot(ids: [], exists: false, isFromCache: false),
+    ])
+    let result = await collect(FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway))
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions, [[]])
+  }
+
+  /// Offline with the listener open: no server answer within `serverWait` fails with `.unavailable`.
+  func testACachedMissingDocumentWithoutAServerAnswerFails() async {
+    let gateway = FakeMemberGateway(snapshots: [MemberIdsSnapshot(ids: [], exists: false, isFromCache: true)],
+                                    keepListenerOpen: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway, serverWait: .milliseconds(100))
+    let result = await collect(directory)
+    XCTAssertEqual(result.error, .unavailable)
+    XCTAssertEqual(result.emissions.count, 0)
+  }
+
   func testOfflineWithoutACachedAssignmentFailsInsteadOfShowingEmpty() async {
     let gateway = FakeMemberGateway(snapshots: [MemberIdsSnapshot(ids: [], exists: false, isFromCache: true)])
     let result = await collect(FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway))
@@ -104,6 +126,76 @@ final class FirestoreMemberDirectoryTests: XCTestCase {
     XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a"]])
   }
 
+  /// N4: a read for a stale cached list (a member unassigned since) is denied before the server's snapshot arrives.
+  /// The denial waits for the server, whose new `memberIds` replace it.
+  func testADeniedReadForACachedListWaitsForTheServer() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a", "x"]), .server(["a"])], gateFirstRead: true, failFirstRead: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway)
+    let collecting = Task { await collect(directory) }
+    let reading = await eventually { gateway.isFirstReadWaiting }
+    XCTAssertTrue(reading)
+    gateway.releaseFirstRead()
+    let denied = await eventually { gateway.failedReads == 1 }
+    XCTAssertTrue(denied)
+    try? await Task.sleep(nanoseconds: 200_000_000)  // the denial reaches the directory before the snapshot
+    gateway.sendNextSnapshot()
+    let newer = await eventually { gateway.completedReads >= 1 }
+    XCTAssertTrue(newer)
+    gateway.finishSnapshots()
+    let result = await collecting.value
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a"]])
+  }
+
+  /// Without a server answer within `serverWait` the denial for the cached list stands.
+  func testADeniedReadForACachedListFailsWithoutAServerAnswer() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a", "x"])], gateFirstRead: true, failFirstRead: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway, serverWait: .milliseconds(100))
+    let collecting = Task { await collect(directory) }
+    let reading = await eventually { gateway.isFirstReadWaiting }
+    XCTAssertTrue(reading)
+    gateway.releaseFirstRead()
+    let result = await collecting.value
+    XCTAssertEqual(result.error, .permissionDenied)
+    XCTAssertEqual(result.emissions.count, 0)
+  }
+
+  /// Once the server confirms the cached `memberIds`, a failure of their read is final at once.
+  func testADeniedReadIsFinalOnceTheServerConfirmsTheList() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a", "x"]), .server(["a", "x"])], gateFirstRead: true,
+                                    failFirstRead: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway, serverWait: .seconds(60))
+    let collecting = Task { await collect(directory) }
+    let reading = await eventually { gateway.isFirstReadWaiting }
+    XCTAssertTrue(reading)
+    gateway.sendNextSnapshot()
+    try? await Task.sleep(nanoseconds: 200_000_000)  // the confirmation reaches the directory before the denial
+    let started = Date()
+    gateway.releaseFirstRead()
+    let result = await collecting.value
+    XCTAssertEqual(result.error, .permissionDenied)
+    XCTAssertLessThan(Date().timeIntervalSince(started), 10, "failed without waiting for serverWait")
+    XCTAssertEqual(gateway.chunkSizes, [2], "the confirmation started no second read")
+  }
+
+  /// A snapshot with unchanged `memberIds` (a metadata change) starts no read.
+  func testUnchangedMemberIdsStartNoRead() async {
+    let gateway = FakeMemberGateway(snapshots: [.server(["a"]), .server(["a"])])
+    let result = await collect(FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway))
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a"]])
+    XCTAssertEqual(gateway.chunkSizes, [1])
+  }
+
+  /// A list read from the cache is read again when the server confirms its `memberIds`, to refresh the members.
+  func testAListReadFromTheCacheIsReadAgainWhenTheServerConfirmsIt() async {
+    let gateway = FakeMemberGateway(snapshots: [.cached(["a"]), .server(["a"])], cachedUsers: ["a"])
+    let result = await collect(FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway))
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions.map { $0.map(\.id) }, [["a"], ["a"]])
+    XCTAssertEqual(gateway.chunkSizes, [1, 1])
+  }
+
   /// L3: when the consumer goes away, the read in flight is cancelled and the listener removed.
   func testCancellingTheConsumerCancelsTheReadAndTheListener() async {
     let gateway = FakeMemberGateway(snapshots: [.server(["a"])], gateFirstRead: true, keepListenerOpen: true)
@@ -157,6 +249,7 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
   private var _chunkSizes: [Int] = []
   private var chunkCalls = 0
   private var _completedReads = 0
+  private var _failedReads = 0
   private var firstReadGate: CheckedContinuation<Void, Never>?
   private var firstReadReleased = false
   private var _firstReadWaiting = false
@@ -178,6 +271,7 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
 
   var chunkSizes: [Int] { lock.withLock { _chunkSizes } }
   var completedReads: Int { lock.withLock { _completedReads } }
+  var failedReads: Int { lock.withLock { _failedReads } }
   var isFirstReadWaiting: Bool { lock.withLock { _firstReadWaiting } }
   var firstReadWasCancelled: Bool { lock.withLock { _firstReadCancelled } }
   var listenerRemoved: Bool { lock.withLock { _listenerRemoved } }
@@ -241,6 +335,7 @@ final class FakeMemberGateway: MemberDirectoryGateway, @unchecked Sendable {
       }
       if Task.isCancelled { lock.withLock { _firstReadCancelled = true } }
       if failFirstRead {
+        lock.withLock { _failedReads += 1 }
         throw NSError(domain: FirestoreErrorDomain, code: FirestoreErrorCode.Code.permissionDenied.rawValue)
       }
     }

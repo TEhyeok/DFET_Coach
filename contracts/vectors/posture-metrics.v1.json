@@ -1,0 +1,851 @@
+{
+  "contract": "posture-metric-vectors",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/v1/09_ALGORITHMS_SPEC.md section 5.10 and card DF-201; synthetic coordinates only",
+  "schemaVersion": 1,
+  "rounding": "halfAwayFromZero",
+  "cases": [
+    {
+      "id": "PM-01",
+      "trace": [
+        "AC-ASM-03.1",
+        "AC-DF-201.1"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "options": {
+        "includePelvicTilt": false
+      },
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.55,
+          "y": 0.45,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "craniovertebralAngle",
+          "value": 45.0,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-02",
+      "trace": [
+        "AC-ASM-03.1",
+        "AC-DF-201.1"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.6,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.4,
+          "y": 0.41,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 2.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-03",
+      "trace": [
+        "AC-ASM-03.4",
+        "AC-DF-201.3"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 1600,
+        "height": 1200
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.5625,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "craniovertebralAngle",
+          "value": 50.2,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-04",
+      "trace": [
+        "AC-ASM-03.2",
+        "AC-DF-201.2"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 2,
+      "options": {
+        "includePelvicTilt": false
+      },
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.5517145162,
+          "y": 0.4517754335,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "Q rotated by -2 deg about the centre; computed without the +2 deg correction it reads 43.0",
+      "expected": [
+        {
+          "metricCode": "craniovertebralAngle",
+          "value": 45.0,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-05",
+      "trace": [
+        "F-ASM-03.3",
+        "AC-DF-201.6"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.55,
+          "y": 0.525,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "craniovertebralAngle",
+          "value": -26.6,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-06",
+      "trace": [
+        "F-ASM-03.3"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "earLeft",
+          "x": 0.575,
+          "y": 0.35,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "earRight",
+          "x": 0.425,
+          "y": 0.345,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "headTiltFrontal",
+          "value": 1.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-07",
+      "trace": [
+        "F-ASM-03.4",
+        "AC-DF-201.6"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.6,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.4,
+          "y": 0.4003,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 0.0,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-08",
+      "trace": [
+        "AC-ASM-03.3",
+        "AC-DF-201.4"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "earLeft",
+          "x": 0.575,
+          "y": 0.35,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "earRight",
+          "x": 0.425,
+          "y": 0.345,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionLeft",
+          "x": 0.6,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.4,
+          "y": 0.41,
+          "origin": "manual",
+          "confirmed": false
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "headTiltFrontal",
+          "value": 1.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        },
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 2.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoAuto"
+        }
+      ]
+    },
+    {
+      "id": "PM-09",
+      "trace": [
+        "AC-ASM-03.6",
+        "AC-DF-201.5"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "asisLeft",
+          "x": 0.575,
+          "y": 0.65,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "asisRight",
+          "x": 0.425,
+          "y": 0.66,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": []
+    },
+    {
+      "id": "PM-10",
+      "trace": [
+        "F-ASM-04.2",
+        "AC-DF-201.5"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "options": {
+        "includePelvicTilt": true
+      },
+      "landmarks": [
+        {
+          "code": "asisLeft",
+          "x": 0.575,
+          "y": 0.65,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": []
+    },
+    {
+      "id": "PM-11",
+      "trace": [
+        "V1-09 §1.3",
+        "ASM-P1b-03"
+      ],
+      "kind": "rounding",
+      "rounding": [
+        {
+          "input": 2.25,
+          "expected": 2.3
+        },
+        {
+          "input": -2.25,
+          "expected": -2.3
+        },
+        {
+          "input": 44.98,
+          "expected": 45.0
+        },
+        {
+          "input": 50.52,
+          "expected": 50.5
+        }
+      ]
+    },
+    {
+      "id": "PM-12",
+      "trace": [
+        "AC-ASM-03.2"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 2,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.6034290324,
+          "y": 0.403550867,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.403201872,
+          "y": 0.4065648759,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "without the +2 deg correction it reads 0.9",
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 2.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-13",
+      "trace": [
+        "AC-ASM-03.4"
+      ],
+      "view": "front",
+      "image": {
+        "width": 1600,
+        "height": 1200
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.625,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.375,
+          "y": 0.55,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "normalized coordinates would give 11.3",
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 8.5,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-14",
+      "trace": [
+        "V-POS-05"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.4,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.6,
+          "y": 0.41,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expectedBlockingReasons": [
+        {
+          "reason": "sidesSwapped",
+          "metricCode": "shoulderTiltAngle"
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 2.9,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-15",
+      "trace": [
+        "F-ASM-03.3"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "options": {
+        "includePelvicTilt": true
+      },
+      "landmarks": [
+        {
+          "code": "asisLeft",
+          "x": 0.575,
+          "y": 0.65,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "asisRight",
+          "x": 0.425,
+          "y": 0.66,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "pelvicTiltFrontal",
+          "value": 3.8,
+          "unit": "deg",
+          "side": "left",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-16",
+      "trace": [
+        "ASM-P1b-01"
+      ],
+      "view": "sagittalRight",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusRight",
+          "x": 0.45,
+          "y": 0.45,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expected": [
+        {
+          "metricCode": "craniovertebralAngle",
+          "value": 45.0,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-17",
+      "trace": [
+        "V-POS-03"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.50015,
+          "y": 0.5002,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expectedError": {
+        "error": "degenerateGeometry",
+        "metricCode": "craniovertebralAngle"
+      }
+    },
+    {
+      "id": "PM-18",
+      "trace": [
+        "ASM-05-19"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.95,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "acromionRight",
+          "x": 0.05,
+          "y": 0.4006,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "dy = 1.2 px is at least 1 px, but 0.0382 deg rounds to 0.0, so side is none",
+      "expected": [
+        {
+          "metricCode": "shoulderTiltAngle",
+          "value": 0.0,
+          "unit": "deg",
+          "side": "none",
+          "sourceGrade": "photoManual"
+        }
+      ]
+    },
+    {
+      "id": "PM-19",
+      "trace": [
+        "AC-ASM-02.1",
+        "AC-DF-201.7"
+      ],
+      "kind": "confirmability",
+      "options": {
+        "includePelvicTilt": false
+      },
+      "views": [
+        {
+          "view": "front",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "earLeft",
+              "x": 0.575,
+              "y": 0.35,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "earRight",
+              "x": 0.425,
+              "y": 0.345,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionLeft",
+              "x": 0.6,
+              "y": 0.4,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionRight",
+              "x": 0.4,
+              "y": 0.41,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        },
+        {
+          "view": "sagittalLeft",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "c7",
+              "x": 0.5,
+              "y": 0.5,
+              "origin": "auto",
+              "confirmed": false
+            },
+            {
+              "code": "tragusLeft",
+              "x": 0.55,
+              "y": 0.45,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        }
+      ],
+      "expectedConfirmability": {
+        "canConfirm": false,
+        "missing": [],
+        "blockingLandmarks": [
+          "c7"
+        ]
+      }
+    },
+    {
+      "id": "PM-20",
+      "trace": [
+        "AC-ASM-02.2",
+        "AC-DF-201.7"
+      ],
+      "kind": "confirmability",
+      "options": {
+        "includePelvicTilt": false
+      },
+      "views": [
+        {
+          "view": "front",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "earLeft",
+              "x": 0.575,
+              "y": 0.35,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "earRight",
+              "x": 0.425,
+              "y": 0.345,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionLeft",
+              "x": 0.6,
+              "y": 0.4,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionRight",
+              "x": 0.4,
+              "y": 0.41,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        },
+        {
+          "view": "sagittalLeft",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "c7",
+              "x": 0.5,
+              "y": 0.5,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "tragusLeft",
+              "x": 0.55,
+              "y": 0.45,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        }
+      ],
+      "expectedConfirmability": {
+        "canConfirm": true,
+        "missing": [],
+        "blockingLandmarks": []
+      }
+    }
+  ]
+}

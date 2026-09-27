@@ -7,7 +7,7 @@
   "required": ["contract"],
   "properties": {
     "contract": {
-      "enum": ["metric-catalog", "vocab", "prohibited-terms", "feature-flags"]
+      "enum": ["metric-catalog", "vocab", "prohibited-terms", "feature-flags", "posture-metric-vectors"]
     }
   },
   "allOf": [
@@ -38,6 +38,13 @@
         "required": ["contract"]
       },
       "then": { "$ref": "#/$defs/featureFlags" }
+    },
+    {
+      "if": {
+        "properties": { "contract": { "const": "posture-metric-vectors" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/postureMetricVectors" }
     }
   ],
   "$defs": {
@@ -533,6 +540,147 @@
           "type": "array",
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[a-z][A-Za-z_]*(\\([a-z][A-Za-z]*\\))?$" }
+        }
+      }
+    },
+    "postureMetricVectors": {
+      "description": "DF-201 posture metric vectors (V1-09 §5.10). View, landmark, metric, side, sourceGrade and unit values are cross-checked against vocab and the metric catalog by tool/contracts/generate.mjs; PostureMetricVectorTests runs every case.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "schemaVersion", "rounding", "cases"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "posture-metric-vectors" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "schemaVersion": { "const": 1 },
+        "rounding": { "const": "halfAwayFromZero" },
+        "cases": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/postureVectorCase" } }
+      }
+    },
+    "postureVectorCase": {
+      "description": "One case. kind absent (metrics): computeMetrics on one view, with expected results or expectedError. rounding: roundTenth rows. confirmability: views and the expected Confirmability.",
+      "type": "object",
+      "required": ["id", "trace"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^PM-[0-9]{2}$" },
+        "trace": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "kind": { "enum": ["rounding", "confirmability"] },
+        "note": { "type": "string" },
+        "view": { "type": "string" },
+        "image": { "$ref": "#/$defs/postureImage" },
+        "imageRotationDeg": { "type": "number" },
+        "options": { "type": "object", "additionalProperties": false, "properties": { "includePelvicTilt": { "type": "boolean" } } },
+        "landmarks": { "type": "array", "items": { "$ref": "#/$defs/postureLandmark" } },
+        "expected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["metricCode", "value", "unit", "side", "sourceGrade"],
+            "additionalProperties": false,
+            "properties": {
+              "metricCode": { "type": "string" },
+              "value": { "type": "number" },
+              "unit": { "type": "string" },
+              "side": { "type": "string" },
+              "sourceGrade": { "type": "string" }
+            }
+          }
+        },
+        "expectedBlockingReasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["reason"],
+            "additionalProperties": false,
+            "properties": {
+              "reason": { "enum": ["viewsIncomplete", "degenerateGeometry", "pairTooClose", "sidesSwapped", "landmarkNotInView"] },
+              "metricCode": { "type": "string" }
+            }
+          }
+        },
+        "expectedError": {
+          "type": "object",
+          "required": ["error"],
+          "additionalProperties": false,
+          "properties": {
+            "error": { "enum": ["coordinateOutOfRange", "zeroImageSize", "degenerateGeometry"] },
+            "metricCode": { "type": "string" }
+          }
+        },
+        "rounding": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["input", "expected"],
+            "additionalProperties": false,
+            "properties": { "input": { "type": "number" }, "expected": { "type": "number" } }
+          }
+        },
+        "views": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["view", "image", "imageRotationDeg", "landmarks"],
+            "additionalProperties": false,
+            "properties": {
+              "view": { "type": "string" },
+              "image": { "$ref": "#/$defs/postureImage" },
+              "imageRotationDeg": { "type": "number" },
+              "landmarks": { "type": "array", "items": { "$ref": "#/$defs/postureLandmark" } }
+            }
+          }
+        },
+        "expectedConfirmability": {
+          "type": "object",
+          "required": ["canConfirm", "missing", "blockingLandmarks"],
+          "additionalProperties": false,
+          "properties": {
+            "canConfirm": { "type": "boolean" },
+            "missing": { "type": "array", "items": { "type": "string" } },
+            "blockingLandmarks": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "rounding" } }, "required": ["kind"] }, "then": { "required": ["rounding"] } },
+        { "if": { "properties": { "kind": { "const": "confirmability" } }, "required": ["kind"] }, "then": { "required": ["views", "expectedConfirmability"] } },
+        {
+          "if": { "not": { "required": ["kind"] } },
+          "then": {
+            "required": ["view", "image", "imageRotationDeg", "landmarks"],
+            "oneOf": [{ "required": ["expected"] }, { "required": ["expectedError"] }]
+          }
+        }
+      ]
+    },
+    "postureImage": {
+      "type": "object",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": { "width": { "type": "number", "exclusiveMinimum": 0 }, "height": { "type": "number", "exclusiveMinimum": 0 } }
+    },
+    "postureLandmark": {
+      "description": "Stored landmark shape (PRD §9.2): normalized 0..1 coordinates, origin auto|manual, confirmed.",
+      "type": "object",
+      "required": ["code", "x", "y", "origin", "confirmed"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "origin": { "enum": ["auto", "manual"] },
+        "confirmed": { "type": "boolean" },
+        "suggested": {
+          "type": "object",
+          "required": ["x", "y", "confidence"],
+          "additionalProperties": false,
+          "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "confidence": { "type": "number" } }
         }
       }
     }

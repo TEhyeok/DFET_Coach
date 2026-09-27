@@ -68,6 +68,14 @@ export const INPUTS = [
     requires: [],
     emit: [swiftEmitters.featureFlags, dartEmitters.featureFlags, schemasEmitters.featureFlagsExample],
   },
+  {
+    // DF-201: posture metric vectors (V1-09 §5.10). Validated here (meta-schema + cross checks against vocab and the
+    // metric catalog) and run by the Swift PostureMetricVectorTests in place; nothing is generated from it.
+    file: 'vectors/posture-metrics.v1.json',
+    key: 'postureMetricVectors',
+    requires: ['vocab', 'metricCatalog'],
+    emit: [],
+  },
 ];
 
 // Outputs built from more than one input. `partial: true` renders with whichever inputs are present.
@@ -163,8 +171,54 @@ function identifierErrors(values, pointer, { vocab }) {
   return errors;
 }
 
-export function crossCheckErrors(loaded) {
+// DF-201: every code in the posture vectors must exist in vocab or the metric catalog.
+function postureVectorErrors(loaded) {
+  const vectors = loaded.postureMetricVectors?.doc;
+  const vocab = loaded.vocab?.doc;
+  const catalog = loaded.metricCatalog?.doc;
+  if (!vectors || !vocab || !catalog) return [];
+  const p = `contracts/${loaded.postureMetricVectors.file}`;
   const errors = [];
+  const values = (key) => vocab.enums[key]?.values ?? [];
+  const metricCodes = catalog.metrics.map((m) => m.metricCode);
+  const check = (value, allowed, at, what) => {
+    if (value !== undefined && !allowed.includes(value)) errors.push(`${at}: "${value}" is not in ${what}`);
+  };
+  const checkLandmarks = (list, at) => (list ?? []).forEach((l, j) => {
+    check(l.code, values('landmarkCode'), `${at}/${j}/code`, 'vocab landmarkCode');
+    if (l.x < 0 || l.x > 1 || l.y < 0 || l.y > 1) errors.push(`${at}/${j}: coordinates must be in 0..1`);
+  });
+  const seen = new Map();
+  vectors.cases.forEach((c, i) => {
+    const at = `${p}#/cases/${i}`;
+    if (seen.has(c.id)) errors.push(`${at}/id: duplicate id "${c.id}" (first at #/cases/${seen.get(c.id)})`);
+    else seen.set(c.id, i);
+    check(c.view, values('postureView'), `${at}/view`, 'vocab postureView');
+    checkLandmarks(c.landmarks, `${at}/landmarks`);
+    (c.views ?? []).forEach((v, j) => {
+      check(v.view, values('postureView'), `${at}/views/${j}/view`, 'vocab postureView');
+      checkLandmarks(v.landmarks, `${at}/views/${j}/landmarks`);
+    });
+    (c.expected ?? []).forEach((e, j) => {
+      const et = `${at}/expected/${j}`;
+      check(e.metricCode, metricCodes, `${et}/metricCode`, 'the metric catalog');
+      check(e.side, values('side'), `${et}/side`, 'vocab side');
+      check(e.sourceGrade, values('sourceGrade'), `${et}/sourceGrade`, 'vocab sourceGrade');
+      check(e.unit, values('unit'), `${et}/unit`, 'vocab unit');
+    });
+    for (const r of c.expectedBlockingReasons ?? []) check(r.metricCode, metricCodes, `${at}/expectedBlockingReasons`, 'the metric catalog');
+    check(c.expectedError?.metricCode, metricCodes, `${at}/expectedError/metricCode`, 'the metric catalog');
+    for (const list of ['missing', 'blockingLandmarks']) {
+      (c.expectedConfirmability?.[list] ?? []).forEach((code, j) => {
+        check(code, values('landmarkCode'), `${at}/expectedConfirmability/${list}/${j}`, 'vocab landmarkCode');
+      });
+    }
+  });
+  return errors;
+}
+
+export function crossCheckErrors(loaded) {
+  const errors = [...postureVectorErrors(loaded)];
   const vocab = loaded.vocab?.doc;
   if (vocab) {
     const v = `contracts/${loaded.vocab.file}`;

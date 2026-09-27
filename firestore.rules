@@ -357,6 +357,7 @@ service cloud.firestore {
           && parent().status == 'finalized'
           && isAccessTrainer(parent())
           && canWriteFor(parent())
+          && hasConsent(memberKeyOf(parent()), 'healthData')
           && incoming().keys().hasOnly(['authorUid', 'createdAt', 'reason', 'text',
                                         'changedFields', 'previousValues'])
           && incoming().keys().hasAll(['authorUid', 'createdAt', 'reason', 'text'])

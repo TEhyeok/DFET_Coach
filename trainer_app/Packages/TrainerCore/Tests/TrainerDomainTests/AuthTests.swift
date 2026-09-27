@@ -22,7 +22,7 @@ final class AuthTests: XCTestCase {
   func testErrorAndLockMessageKeys() {
     XCTAssertEqual(AuthError.notTrainer.messageKey, "auth.notTrainer")
     XCTAssertEqual(AuthError.invalidCredentials.messageKey, "login.error.invalidCredentials")
-    XCTAssertEqual(AuthError.network.messageKey, "common.unavailable")
+    XCTAssertEqual(AuthError.network.messageKey, "login.error.network")
     XCTAssertEqual(AuthError.unknown(code: 17999).messageKey, "common.internal")
     XCTAssertEqual(AuthLockReason.claimRevoked.messageKey, "auth.sessionLocked")
   }

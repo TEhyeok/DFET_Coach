@@ -24,7 +24,7 @@ public enum AuthError: Error, Equatable, Sendable {
     switch self {
     case .notTrainer: return "auth.notTrainer"
     case .invalidCredentials: return "login.error.invalidCredentials"
-    case .network: return "common.unavailable"
+    case .network: return "login.error.network"
     case .unknown: return "common.internal"
     }
   }

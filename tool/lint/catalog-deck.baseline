@@ -1,0 +1,35 @@
+# Deck keys that had no V1-12 §4.9 row when tool/lint/catalog-deck.mjs was introduced (#174): the P1a trainer keys of
+# backlog/P1a.md §5.3 "덱 추가 요청" (copy_ko 1.0.1, CF-20), listed there instead of in §4.9.
+# Add the row in the right §4.9 table, then delete the key here. New keys never go on this list.
+chart.legend.left
+chart.legend.right
+chart.rejected.mixedSource
+chart.summary
+sync.reason.consentRejected
+sync.reason.fileTooLarge
+tr01.remove
+tr01.syncFailed
+tr02.import.done
+tr02.import.linkExisting
+tr02.import.menu
+tr02.import.notice
+tr02.import.registerPending
+tr02.import.skip
+tr02.import.title
+tr02.import.unreadable
+tr02.menu.addToday
+tr03.measureMenu
+tr03.measureMenu.bodyComposition
+tr03.measureMenu.circumference
+tr03.migrated
+tr04.quickNote.counter
+tr05.addendum.reason.other
+tr05.addendum.reason.supplement
+tr05.addendum.text
+tr05.continueFromPrevious.none
+tr05.legacy.show
+tr11.correct.confirm
+tr11.deviceChanged
+tr11.deviceModel.add
+tr11.more
+tr11.reportPhoto.add

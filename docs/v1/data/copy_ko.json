@@ -1,7 +1,7 @@
 {
   "docId": "V1-12-D3",
   "title": "D-FET Coach v1 문구 덱(ko)",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "status": "ready",
   "updated": "2026-09-24",
   "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#4-문구-키-체계",
@@ -18,7 +18,7 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 551, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 93, "trainer": 552, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -717,7 +717,8 @@
     "login.email": {"ko": "이메일", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "group": "tr15"},
     "login.password": {"ko": "비밀번호", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "group": "tr15"},
     "login.submit": {"ko": "로그인", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "group": "tr15"},
-    "login.error.invalidCredentials": {"ko": "이메일 또는 비밀번호가 맞지 않아요.", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "note": "Auth 오류 코드 wrongPassword·userNotFound·invalidCredential(DF-012)", "group": "tr15"},
+    "login.error.invalidCredentials": {"ko": "이메일 또는 비밀번호가 맞지 않아요.", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "note": "Auth 오류 코드 wrongPassword·userNotFound·invalidCredential·invalidEmail·userDisabled(DF-012)", "group": "tr15"},
+    "login.error.network": {"ko": "네트워크에 연결할 수 없어요. 연결을 확인하고 다시 시도해 주세요.", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-02"], "screens": "로그인", "note": "Auth 오류 코드 networkError·URL 오류(DF-012). 서버 쪽 일시 오류는 common.internal", "group": "tr15"},
     "tr15.title": {"ko": "설정", "audience": "trainer", "phase": "P0", "prdRefs": ["TR-15"], "screens": "TR-15", "group": "tr15"},
     "tr15.account": {"ko": "계정", "audience": "trainer", "phase": "P0", "prdRefs": ["TR-15"], "screens": "TR-15", "group": "tr15"},
     "tr15.signOut": {"ko": "로그아웃", "audience": "trainer", "phase": "P0", "prdRefs": ["NFR-08"], "screens": "TR-15", "group": "tr15"},
@@ -856,7 +857,7 @@
     "a11y.beta": {"ko": "실측 대조 전 베타 참고값", "audience": "trainer", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "TR-13", "group": "notify"},
     "mb.a11y.metric": {"ko": "{metricName} {value}{unit}, {date}, 출처 {source}", "audience": "member", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "MB-01, MB-02", "args": ["metricName", "value", "unit", "date", "source"], "note": "회원 변화 문장은 자격 있는 지표만 뒤에 덧붙임", "group": "notify"}
   },
-  "changeLog": [
+  "changeLog": [{"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"}, 
     {"version": "1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "P1a §5.3 '덱 추가 요청' 표의 트레이너 P1a 키 32개 추가(CF-20, sync.reason.consentRejected·sync.reason.fileTooLarge 포함), counts.trainer 537로 갱신. 기존 키 변경 없음"}
   ]
 }

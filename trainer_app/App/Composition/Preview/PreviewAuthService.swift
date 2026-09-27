@@ -11,10 +11,13 @@ final class PreviewAuthService: AuthService, @unchecked Sendable {
   static let memberEmail = "member@example.invalid"
   /// Always fails as `.network`.
   static let offlineEmail = "offline@example.invalid"
+  /// Signs in with `password`; the next `refreshClaims()` (app returns to the foreground) revokes the claim.
+  static let revokedEmail = "revoked@example.invalid"
   static let password = "preview-only-password"
 
   private let lock = NSLock()
   private var current: TrainerSession?
+  private var revokeOnRefresh = false
   private var continuations: [UUID: AsyncStream<TrainerSession?>.Continuation] = [:]
 
   func signIn(email: String, password: String) async throws -> TrainerSession {
@@ -23,8 +26,9 @@ final class PreviewAuthService: AuthService, @unchecked Sendable {
       throw AuthError.notTrainer
     case Self.offlineEmail:
       throw AuthError.network
-    case Self.trainerEmail where password == Self.password:
+    case Self.trainerEmail where password == Self.password, Self.revokedEmail where password == Self.password:
       let session = TrainerSession(uid: "syn-trainer", displayName: "SYN-TRAINER")
+      lock.withLock { revokeOnRefresh = email.lowercased() == Self.revokedEmail }
       publish(session)
       return session
     default:
@@ -49,7 +53,10 @@ final class PreviewAuthService: AuthService, @unchecked Sendable {
     }
   }
 
-  func refreshClaims() async {}
+  func refreshClaims() async {
+    let revoke = lock.withLock { current != nil && revokeOnRefresh }
+    if revoke { publish(nil) }
+  }
 
   private func publish(_ session: TrainerSession?) {
     lock.withLock {

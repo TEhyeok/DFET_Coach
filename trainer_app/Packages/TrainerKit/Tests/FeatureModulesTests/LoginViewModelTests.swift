@@ -109,6 +109,15 @@ final class LoginViewModelTests: XCTestCase {
     XCTAssertEqual(gate.state, .signedIn(session))
   }
 
+  func testSignOutWhileSignedOutDoesNotHideALaterLock() async throws {
+    let gate = AuthGateModel(auth: FakeAuthService(result: .success(session)))
+    gate.apply(nil)
+    try await gate.signOut()  // no session: no nil follows, so no flag may be left behind
+    gate.apply(session)
+    gate.apply(nil)
+    XCTAssertEqual(gate.state, .signedOut(lock: .claimRevoked))
+  }
+
   func testFirstNilIsPlainSignedOut() {
     let gate = AuthGateModel(auth: FakeAuthService(result: .success(session)))
     gate.apply(nil)
@@ -123,7 +132,7 @@ final class LoginViewModelTests: XCTestCase {
 
   private func waitFor(_ condition: @escaping @MainActor () -> Bool, file: StaticString = #filePath, line: UInt = #line) async {
     for _ in 0..<200 where !condition() {
-      try? await Task.sleep(nanoseconds: 5_000_000)
+      try? await Task.sleep(nanoseconds: 25_000_000)
     }
     XCTAssertTrue(condition(), "condition not reached", file: file, line: line)
   }

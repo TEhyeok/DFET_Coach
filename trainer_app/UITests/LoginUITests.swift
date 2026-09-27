@@ -35,6 +35,28 @@ final class LoginUITests: XCTestCase {
     XCTAssertFalse(app.otherElements["login.root"].exists)
   }
 
+  /// AC-DF-012.3 on screen: the claim is revoked while signed in; returning to the foreground re-checks it and the
+  /// login screen shows the lock notice (`--preview-login`, synthetic `revoked@example.invalid`).
+  @MainActor
+  func testClaimRevokedShowsLockNotice_TC_DF012_04() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-login"]
+    app.launch()
+    XCTAssertTrue(app.otherElements["login.root"].waitForExistence(timeout: 30))
+
+    signIn(app, email: "revoked@example.invalid", password: "preview-only-password")
+    XCTAssertTrue(app.otherElements["app.root"].waitForExistence(timeout: 10))
+    XCTAssertFalse(element("auth.locked", in: app).exists)
+
+    XCUIDevice.shared.press(.home)
+    app.activate()
+    let notice = element("auth.locked", in: app)
+    XCTAssertTrue(notice.waitForExistence(timeout: 15))
+    XCTAssertEqual(notice.label, "트레이너 권한이 회수되어 로그아웃되었습니다. 관리자에게 문의하세요.")
+    XCTAssertTrue(app.otherElements["login.root"].exists)
+    attachScreenshot(app, name: "TC-DF012-04 claim revoked")
+  }
+
   private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {
     app.descendants(matching: .any)[identifier].firstMatch
   }

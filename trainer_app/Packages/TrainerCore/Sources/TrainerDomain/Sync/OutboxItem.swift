@@ -55,6 +55,9 @@ public enum OutboxItemState: Equatable, Sendable {
   case acked
   case failed
   case blocked(OutboxBlockedReason)
+  /// Terminal: a newer consent capture of the same member replaced this unsent one. It is never sent, retried or
+  /// counted as pending, so an older grant can never reach the server after a newer capture (V1-05 §12.3).
+  case superseded
 
   /// LocalStore `OutboxItem.state` raw value.
   public var storageValue: String {
@@ -64,6 +67,7 @@ public enum OutboxItemState: Equatable, Sendable {
     case .acked: return "acked"
     case .failed: return "failed"
     case .blocked: return "blocked"
+    case .superseded: return "superseded"
     }
   }
 }

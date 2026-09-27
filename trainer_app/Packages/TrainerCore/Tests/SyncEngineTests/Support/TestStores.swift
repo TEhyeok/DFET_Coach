@@ -7,7 +7,9 @@ actor ControllableStore: OutboxStore {
   private var items: [UUID: OutboxItem]
   private var failingLoads: Int
   private var failSaves = false
+  private var failPredicate: (@Sendable (OutboxItem) -> Bool)?
   private var holdPredicate: (@Sendable (OutboxItem) -> Bool)?
+  private(set) var savedIds: [UUID] = []
   private var held: [CheckedContinuation<Void, Never>] = []
 
   init(_ items: [OutboxItem] = [], failingLoads: Int = 0) {
@@ -24,7 +26,8 @@ actor ControllableStore: OutboxStore {
   }
 
   func save(_ item: OutboxItem) async throws {
-    if failSaves { throw CocoaError(.fileWriteNoPermission) }
+    if failSaves || failPredicate?(item) == true { throw CocoaError(.fileWriteNoPermission) }
+    savedIds.append(item.id)
     if let holdPredicate, holdPredicate(item) {
       await withCheckedContinuation { held.append($0) }
     }
@@ -33,6 +36,9 @@ actor ControllableStore: OutboxStore {
 
   func item(_ id: UUID) -> OutboxItem? { items[id] }
   func setFailSaves(_ fail: Bool) { failSaves = fail }
+  func failSaves(where predicate: (@Sendable (OutboxItem) -> Bool)?) { failPredicate = predicate }
+  /// Deletes rows behind the engine's back, as LocalStore retention does (AS-32).
+  func remove(_ ids: [UUID]) { for id in ids { items[id] = nil } }
   func holdSaves(where predicate: @escaping @Sendable (OutboxItem) -> Bool) { holdPredicate = predicate }
   var heldCount: Int { held.count }
 

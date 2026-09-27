@@ -3,9 +3,10 @@ import TrainerDomain
 
 /// Persistence of Outbox items. The app's implementation maps to the LocalStore `OutboxItem` model (DF-014).
 ///
-/// `insert` stores a new row. `update` replaces an existing row and must do nothing when the row is gone: LocalStore
-/// retention (AS-32) may delete a row while the engine's save of it is already running, and that save must not bring
-/// the row back.
+/// `insert` stores a new row and must be idempotent (an insert retried after a save that did commit replaces the row).
+/// `update` replaces an existing row and must do nothing, without throwing, when the row is gone: LocalStore retention
+/// (AS-32) may delete a row while the engine's save of it is already running, and that save must not bring the row
+/// back. Throw only when the store itself is unavailable; the engine then pauses sending until unlock or `start()`.
 public protocol OutboxStore: Sendable {
   func loadAll() async throws -> [OutboxItem]
   func insert(_ item: OutboxItem) async throws

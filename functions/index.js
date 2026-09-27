@@ -44,6 +44,9 @@ exports.clinicalApi = onRequest(
   })
 );
 
+// 현장 동의 기록과 memberConsentStates 파생(DF-109, V1-06 §6.2). asia-northeast3 v2 onCall.
+exports.recordConsent = require('./src/consent/recordConsent').recordConsent;
+
 /**
  * 관리자 권한 확인 헬퍼 함수
  */

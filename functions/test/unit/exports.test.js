@@ -37,7 +37,7 @@ const LEGACY_EXPORTS = [
 
 // Exports added after DF-037. Every new export must be listed here; each must register in REGION
 // (asia-northeast3) through src/shared/region.js (AC-DF-037.1, TC-DF037-02).
-const NEW_EXPORTS = Object.freeze([]);
+const NEW_EXPORTS = Object.freeze(['recordConsent']);
 
 // Firestore triggers run in the database location, not necessarily REGION (ASM-P0-10). List each new
 // trigger export here; it must then register in FIRESTORE_TRIGGER_REGION instead of REGION.

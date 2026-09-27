@@ -10,8 +10,9 @@ import TrainerDomain
 /// - `sessionStream()` follows `addIDTokenDidChangeListener`; a token without the claim signs out, so the
 ///   stream emits `nil` (AC-DF-012.3, NFR-08).
 /// - When the token cannot be checked because the device is offline, the cached sign-in is kept: the trainer
-///   works local-first, and Firestore/Storage rules enforce the claim on every server request anyway. Any other
-///   token error (disabled account, revoked or invalid token) signs out (`SessionTokenDecision`).
+///   works local-first, and Firestore/Storage rules enforce the claim on every server request anyway. Backend
+///   hiccups (internal error, too many requests) are treated the same way. Firebase itself signs out on a disabled
+///   account or an invalid or revoked token; any other token error signs out here (`SessionTokenDecision`).
 /// - Errors are logged as codes only; the provider message (which can contain the email) is never logged
 ///   (AC-DF-012.4, NFR-10).
 public final class FirebaseAuthService: AuthService, Sendable {
@@ -90,7 +91,7 @@ public final class FirebaseAuthService: AuthService, Sendable {
         }
         user.getIDTokenResult(forcingRefresh: false) { [self] result, error in
           let outcome: SessionTokenDecision.Outcome = result.map { .claims($0.claims) }
-            ?? (error.map(FirebaseAuthErrorMapper.map) == .network ? .networkError : .otherError)
+            ?? (error.map(FirebaseAuthErrorMapper.isTransient) == true ? .networkError : .otherError)
           switch SessionTokenDecision.decide(outcome, listenerUid: user.uid, currentUid: Auth.auth().currentUser?.uid) {
           case .emit:
             continuation.yield(FirebaseAuthService.session(for: user))
@@ -117,9 +118,9 @@ public final class FirebaseAuthService: AuthService, Sendable {
         logger.notice("claim refresh: trainer claim missing, signing out")
         signOutLogged()
       }
-    } catch where FirebaseAuthErrorMapper.map(error) == .network {
-      // Offline: keep the session; the next foreground refresh tries again.
-      logger.notice("claim refresh deferred: offline")
+    } catch where FirebaseAuthErrorMapper.isTransient(error) {
+      // Offline or a backend hiccup: keep the session; the next foreground refresh tries again.
+      logger.notice("claim refresh deferred: code=\((error as NSError).code, privacy: .public)")
     } catch {
       logger.notice("claim refresh failed: code=\((error as NSError).code, privacy: .public), signing out")
       signOutLogged()
@@ -152,15 +153,24 @@ enum SessionTokenDecision: Equatable {
     case let .claims(claims):
       return TrainerClaims.isTrainer(claims) ? .emit : .signOut
     case .networkError:
-      return .emit  // offline: keep the cached sign-in (type comment of FirebaseAuthService)
+      return .emit  // offline or transient: keep the cached sign-in (type comment of FirebaseAuthService)
     case .otherError:
-      return .signOut  // disabled account, revoked or invalid token: fail closed
+      return .signOut  // any other token failure (for example the keychain): fail closed
     }
   }
 }
 
 /// Maps Firebase Auth errors to `AuthError` without looking at the message text.
 enum FirebaseAuthErrorMapper {
+  /// Errors after which a token check should simply be tried again later: no network, a Firebase internal error
+  /// (for example a 5xx without a JSON body) or rate limiting.
+  static func isTransient(_ error: Error) -> Bool {
+    if map(error) == .network { return true }
+    let ns = error as NSError
+    return ns.domain == AuthErrorDomain
+      && (ns.code == AuthErrorCode.internalError.rawValue || ns.code == AuthErrorCode.tooManyRequests.rawValue)
+  }
+
   static func map(_ error: Error) -> AuthError {
     if let authError = error as? AuthError { return authError }
     let ns = error as NSError

@@ -27,6 +27,15 @@ final class FirebaseAuthErrorMapperTests: XCTestCase {
     XCTAssertEqual(FirebaseAuthErrorMapper.map(NSError(domain: "other", code: 7)), .unknown(code: 7))
   }
 
+  func testTransientErrorsKeepTheSession() {
+    XCTAssertTrue(FirebaseAuthErrorMapper.isTransient(authError(.networkError)))
+    XCTAssertTrue(FirebaseAuthErrorMapper.isTransient(authError(.internalError)))
+    XCTAssertTrue(FirebaseAuthErrorMapper.isTransient(authError(.tooManyRequests)))
+    XCTAssertTrue(FirebaseAuthErrorMapper.isTransient(NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)))
+    XCTAssertFalse(FirebaseAuthErrorMapper.isTransient(authError(.keychainError)))
+    XCTAssertFalse(FirebaseAuthErrorMapper.isTransient(authError(.userDisabled)))
+  }
+
   func testAuthErrorPassesThrough() {
     XCTAssertEqual(FirebaseAuthErrorMapper.map(AuthError.notTrainer), .notTrainer)
   }

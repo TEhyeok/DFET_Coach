@@ -21,8 +21,9 @@ final class TrainerRouteTests: XCTestCase {
     XCTAssertEqual(TrainerRoute.memberDetail(uid: "syn-0001").trID, "TR-03")
   }
 
-  func testInitialRouteFollowsSoapV2() {
+  /// V1-07 §4.0 follows soapV2 once TR-01 exists; during the DEC-22 MVP the first screen is always TR-02.
+  func testInitialRouteIsMembersWhileTodayIsHidden() {
     XCTAssertEqual(TrainerRoute.initial(flags: .allOff), .members)
-    XCTAssertEqual(TrainerRoute.initial(flags: FeatureFlags(soapV2: true)), .today)
+    XCTAssertEqual(TrainerRoute.initial(flags: FeatureFlags(soapV2: true)), ShellScope.showsToday ? .today : .members)
   }
 }

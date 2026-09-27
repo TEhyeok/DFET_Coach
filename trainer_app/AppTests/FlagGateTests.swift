@@ -14,18 +14,20 @@ final class FlagGateTests: XCTestCase {
     .lidar: [.lidarBeta],
   ]
 
-  func testAllOffShowsOnlyTodayMembersSettings_AC_DF_017_2() {
-    XCTAssertEqual(FlagGate.visibleEntries(on: .sidebar, flags: .allOff), [.today, .members, .settings])
+  /// DEC-22 MVP: TR-01 is hidden by `ShellScope.showsToday`, so the sidebar is 회원·설정 (DF-017 MVP section).
+  func testAllOffShowsOnlyMembersSettings_AC_DF_017_2() {
+    XCTAssertFalse(ShellScope.showsToday)
+    XCTAssertEqual(FlagGate.visibleEntries(on: .sidebar, flags: .allOff), [.members, .settings])
     XCTAssertEqual(FlagGate.visibleEntries(on: .memberDetail, flags: .allOff), [])
     let visible = EntryPoint.allCases.filter { FlagGate.isEntryVisible($0, flags: .allOff) }
-    XCTAssertEqual(visible.map(\.trID), ["TR-01", "TR-02", "TR-15"])
+    XCTAssertEqual(visible.map(\.trID), ["TR-02", "TR-15"])
   }
 
   func testEachKeyAloneTable_TC_DF017_02() {
     for key in FeatureFlags.Key.allCases {
       let flags = FeatureFlags(enabled: [key])
       for entry in EntryPoint.allCases {
-        let expected = requiredKeys[entry].map { $0.contains(key) } ?? true
+        let expected = entry == .today ? ShellScope.showsToday : (requiredKeys[entry].map { $0.contains(key) } ?? true)
         XCTAssertEqual(FlagGate.isEntryVisible(entry, flags: flags), expected, "\(key.rawValue) on, \(entry.rawValue)")
       }
     }
@@ -33,7 +35,8 @@ final class FlagGateTests: XCTestCase {
 
   func testAllOnShowsEveryEntry() {
     let flags = FeatureFlags(enabled: Set(FeatureFlags.Key.allCases))
-    XCTAssertEqual(EntryPoint.allCases.filter { FlagGate.isEntryVisible($0, flags: flags) }, EntryPoint.allCases)
+    XCTAssertEqual(EntryPoint.allCases.filter { FlagGate.isEntryVisible($0, flags: flags) },
+                   EntryPoint.allCases.filter { $0 != .today || ShellScope.showsToday })
   }
 
   func testMemberAppFlagsGateNothingInTheTrainerApp() {

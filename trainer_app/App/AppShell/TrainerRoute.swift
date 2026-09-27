@@ -41,8 +41,8 @@ enum TrainerRoute: Hashable, CaseIterable {
   }
 
   /// First sidebar selection after launch. V1-07 §4.0: `.today`, or `.members` while `soapV2` is off
-  /// (the session board has nothing to start without SOAP v2).
+  /// (the session board has nothing to start without SOAP v2). Always `.members` while TR-01 is hidden (`ShellScope`).
   static func initial(flags: FeatureFlags) -> TrainerRoute {
-    flags.soapV2 ? .today : .members
+    ShellScope.showsToday && flags.soapV2 ? .today : .members
   }
 }

@@ -2,7 +2,8 @@ import XCTest
 
 /// DF-017 AppShell UI tests. Every launch uses `--preview-*` (DEBUG, synthetic data, no Firebase).
 final class AppShellUITests: XCTestCase {
-  private let sidebarIDs: Set<String> = ["nav.today", "nav.members", "nav.settings"]
+  /// DEC-22 MVP: TR-01 '오늘' is hidden (`ShellScope.showsToday`), so the sidebar has two items (DF-017 MVP section).
+  private let sidebarIDs: Set<String> = ["nav.members", "nav.settings"]
 
   override func setUpWithError() throws {
     continueAfterFailure = false
@@ -13,10 +14,10 @@ final class AppShellUITests: XCTestCase {
     XCUIDevice.shared.orientation = .landscapeLeft
   }
 
-  /// TC-DF017-05 (AC-DF-017.2, AC-DF-017.4): three sidebar items with every flag off; the selection survives
+  /// TC-DF017-05 (AC-DF-017.2, AC-DF-017.4): the sidebar items with every flag off (two in the MVP); the selection survives
   /// landscape -> portrait -> landscape.
   @MainActor
-  func testSidebarThreeItemsAndSelectionSurvivesRotation_TC_DF017_05() throws {
+  func testSidebarItemsAndSelectionSurviveRotation_TC_DF017_05() throws {
     let app = launch(["--preview-empty"])
     XCTAssertEqual(sidebarItems(in: app), sidebarIDs)
 
@@ -50,7 +51,7 @@ final class AppShellUITests: XCTestCase {
   @MainActor
   func testOverriddenFlagEntryOpensComingSoon_AC_DF_017_5() throws {
     let app = launch(["--preview-members", "--preview-flags=soapV2"])
-    // soapV2 on: the default route is TR-01; go to the member list first.
+    // The first screen is TR-02 in the MVP; tapping it keeps the test valid once TR-01 returns.
     element("nav.members", in: app).tap()
     openFirstMember(in: app)
     let start = element("tr03.entry.startSession", in: app)

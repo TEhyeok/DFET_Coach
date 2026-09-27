@@ -84,11 +84,18 @@ enum EntryPoint: String, CaseIterable, Identifiable {
   }
 }
 
+/// Shell-wide scope constants (not flags). DEC-22 MVP: TR-01 '오늘' (DF-125 session board) is hidden; the sidebar is
+/// 회원·설정 and the first screen is TR-02. DF-125 sets `showsToday` back to true (DF-017 MVP section).
+enum ShellScope {
+  static let showsToday = false
+}
+
 /// Pure visibility table for entry points (AC-DF-017.2, TC-DF017-02).
 enum FlagGate {
   static func isEntryVisible(_ entry: EntryPoint, flags: FeatureFlags) -> Bool {
     switch entry {
-    case .today, .members, .settings: return true
+    case .today: return ShellScope.showsToday
+    case .members, .settings: return true
     case .startSession: return flags.soapV2
     case .bodyComposition, .circumference: return flags.bodyComposition
     case .postureCapture: return flags.bodyAssessment

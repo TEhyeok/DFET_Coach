@@ -19,13 +19,13 @@ public enum AuthError: Error, Equatable, Sendable {
   case network
   case unknown(code: Int)
 
-  /// String-catalog key for the login screen (`App/Resources/Localizable.xcstrings`).
+  /// V1-12 deck key shown on the login screen (`App/Resources/Localizable.xcstrings`).
   public var messageKey: String {
     switch self {
-    case .notTrainer: return "auth.error.notTrainer"
-    case .invalidCredentials: return "auth.error.invalidCredentials"
-    case .network: return "auth.error.network"
-    case .unknown: return "auth.error.unknown"
+    case .notTrainer: return "auth.notTrainer"
+    case .invalidCredentials: return "login.error.invalidCredentials"
+    case .network: return "common.unavailable"
+    case .unknown: return "common.internal"
     }
   }
 }
@@ -37,7 +37,7 @@ public enum AuthLockReason: Equatable, Sendable {
 
   public var messageKey: String {
     switch self {
-    case .claimRevoked: return "auth.locked.claimRevoked"
+    case .claimRevoked: return "auth.sessionLocked"
     }
   }
 }

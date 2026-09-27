@@ -21,7 +21,7 @@ final class LoginViewModelTests: XCTestCase {
 
     XCTAssertEqual(auth.phasesSeen, [.signingIn])
     XCTAssertEqual(model.phase, .failed(.notTrainer))
-    XCTAssertEqual(model.errorKey, "auth.error.notTrainer")
+    XCTAssertEqual(model.errorKey, "auth.notTrainer")
     XCTAssertEqual(auth.signInEmails, ["member@example.invalid"], "email is trimmed")
     XCTAssertEqual(model.password, "pw", "a failed attempt keeps the password for a retry")
   }
@@ -32,7 +32,7 @@ final class LoginViewModelTests: XCTestCase {
     model.email = "trainer@example.invalid"
     model.password = "wrong"
     await model.submit()
-    XCTAssertEqual(model.errorKey, "auth.error.invalidCredentials")
+    XCTAssertEqual(model.errorKey, "login.error.invalidCredentials")
 
     auth.result = .success(session)
     model.password = "right"
@@ -48,11 +48,11 @@ final class LoginViewModelTests: XCTestCase {
     model.email = "a@example.invalid"
     model.password = "pw"
     await model.submit()
-    XCTAssertEqual(model.errorKey, "auth.error.network")
+    XCTAssertEqual(model.errorKey, "common.unavailable")
 
     auth.result = .failure(.unknown(code: 17999))
     await model.submit()
-    XCTAssertEqual(model.errorKey, "auth.error.unknown")
+    XCTAssertEqual(model.errorKey, "common.internal")
   }
 
   func testCannotSubmitWithoutEmailOrPassword() async {

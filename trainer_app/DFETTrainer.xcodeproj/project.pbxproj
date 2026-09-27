@@ -19,6 +19,7 @@
 		26C51C60B03CC9264172463F /* ShellNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */; };
 		3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = C0A547249E8270079960845F /* TrainerContracts */; };
 		3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909035E39F699E8176D5FF52 /* EmulatorSupport.swift */; };
+		397F3BEDDCF10EF3D2A84E66 /* RemoteWriterEmulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA5A7BB6E81DFD2AF51F44B /* RemoteWriterEmulatorTests.swift */; };
 		39E1C9B716CBCCA3205F348F /* FeatureSettings in Frameworks */ = {isa = PBXBuildFile; productRef = F9D4AA520F29F8910FA570FF /* FeatureSettings */; };
 		3A22C28EC7BB3AF2BC7E5CC2 /* LoginUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854758AF4B96BE69AC17340B /* LoginUITests.swift */; };
 		4BDA5246C1EA4E69ABC00AC2 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D9FBE0E75D5BA3F84155BF /* AppEnvironment.swift */; };
@@ -95,6 +96,7 @@
 		7E726F1893F83B5B473A6E62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		854758AF4B96BE69AC17340B /* LoginUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginUITests.swift; sourceTree = "<group>"; };
 		8F7B59614A09DA9394B5A21D /* RootSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootSplitView.swift; sourceTree = "<group>"; };
+		8FA5A7BB6E81DFD2AF51F44B /* RemoteWriterEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteWriterEmulatorTests.swift; sourceTree = "<group>"; };
 		909035E39F699E8176D5FF52 /* EmulatorSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorSupport.swift; sourceTree = "<group>"; };
 		97FB9368CC4956DDCA5B12ED /* AuthEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthEmulatorTests.swift; sourceTree = "<group>"; };
 		9A0FD1840027C365FCC0D466 /* LayoutModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutModeTests.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				97FB9368CC4956DDCA5B12ED /* AuthEmulatorTests.swift */,
 				0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */,
 				42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */,
+				8FA5A7BB6E81DFD2AF51F44B /* RemoteWriterEmulatorTests.swift */,
 				6F250018DA32CC81685CF457 /* Support */,
 			);
 			path = IntegrationTests;
@@ -481,6 +484,7 @@
 				3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */,
 				57601A9F2F62C726CEFB54F8 /* IntegrationPlaceholderTests.swift in Sources */,
 				73E67DF911CF2D2213939E78 /* MemberDirectoryEmulatorTests.swift in Sources */,
+				397F3BEDDCF10EF3D2A84E66 /* RemoteWriterEmulatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

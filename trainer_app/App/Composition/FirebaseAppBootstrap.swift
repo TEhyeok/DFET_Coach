@@ -26,4 +26,9 @@ extension AppBootstrap {
   static func liveMemberDirectory(trainerUid: String) -> any MemberDirectory {
     FirestoreMemberDirectory(trainerUid: trainerUid)
   }
+
+  /// FirebaseData's `RemoteWriter` for the signed-in trainer (DF-104); the SyncEngine's document writes.
+  static func liveRemoteWriter(trainerUid: String) -> any RemoteWriter {
+    FirestoreRemoteWriter(trainerUid: trainerUid)
+  }
 }

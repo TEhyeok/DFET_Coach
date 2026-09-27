@@ -61,20 +61,24 @@ enum EmulatorDocuments {
   /// Firestore emulator port 18080 (FirebaseBootstrap.EmulatorPort.firestore, firebase.json).
   private static let base = "http://127.0.0.1:18080/v1/projects/demo-dfet/databases/(default)/documents"
 
-  /// Creates or replaces `path` with string and string-array fields.
+  /// Creates or replaces `path`. Fields may be strings, booleans, integers, doubles, dates, string lists and maps
+  /// of these.
   static func put(_ path: String, _ fields: [String: Any]) async throws {
-    var encoded: [String: Any] = [:]
-    for (key, value) in fields {
-      switch value {
-      case let text as String:
-        encoded[key] = ["stringValue": text]
-      case let list as [String]:
-        encoded[key] = ["arrayValue": ["values": list.map { ["stringValue": $0] }]]
-      default:
-        XCTFail("unsupported field \(key)")
-      }
+    _ = try await EmulatorREST.send("PATCH", "\(base)/\(path)", ["fields": try fields.mapValues(encode)])
+  }
+
+  /// Firestore REST value encoding.
+  private static func encode(_ value: Any) throws -> [String: Any] {
+    switch value {
+    case let text as String: return ["stringValue": text]
+    case let flag as Bool: return ["booleanValue": flag]
+    case let number as Int: return ["integerValue": String(number)]
+    case let number as Double: return ["doubleValue": number]
+    case let date as Date: return ["timestampValue": ISO8601DateFormatter().string(from: date)]
+    case let list as [String]: return ["arrayValue": ["values": list.map { ["stringValue": $0] }]]
+    case let map as [String: Any]: return ["mapValue": ["fields": try map.mapValues(encode)]]
+    default: throw NSError(domain: "EmulatorDocuments", code: 1, userInfo: [NSLocalizedDescriptionKey: "unsupported value"])
     }
-    _ = try await EmulatorREST.send("PATCH", "\(base)/\(path)", ["fields": encoded])
   }
 }
 

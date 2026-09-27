@@ -50,16 +50,17 @@ public final class FirebaseAuthService: AuthService, @unchecked Sendable {
   }
 
   public func sessionStream() -> AsyncStream<TrainerSession?> {
-    AsyncStream { continuation in
+    let logger = logger
+    return AsyncStream { continuation in
       let handle = Auth.auth().addIDTokenDidChangeListener { _, user in
         guard let user else {
           continuation.yield(nil)
           return
         }
-        user.getIDTokenResult(forcingRefresh: false) { [logger] result, error in
+        user.getIDTokenResult(forcingRefresh: false) { result, error in
           if let result {
             if TrainerClaims.isTrainer(result.claims) {
-              continuation.yield(Self.session(for: user))
+              continuation.yield(FirebaseAuthService.session(for: user))
             } else {
               // Claim gone: sign out. The listener fires again with `nil`.
               logger.notice("session locked: trainer claim missing")
@@ -68,7 +69,7 @@ public final class FirebaseAuthService: AuthService, @unchecked Sendable {
           } else {
             // Offline or token service unavailable: keep the cached sign-in (see type comment).
             logger.notice("token check deferred: code=\(((error as NSError?)?.code ?? 0), privacy: .public)")
-            continuation.yield(Self.session(for: user))
+            continuation.yield(FirebaseAuthService.session(for: user))
           }
         }
       }

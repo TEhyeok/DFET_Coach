@@ -42,11 +42,18 @@ final class LoginUITests: XCTestCase {
   private func signIn(_ app: XCUIApplication, email: String, password: String) {
     replaceText(in: element("auth.email", in: app), with: email)
     replaceText(in: element("auth.password", in: app), with: password)
-    element("auth.submit", in: app).tap()
+    let submit = element("auth.submit", in: app)
+    XCTAssertTrue(submit.isEnabled)
+    if submit.isHittable {
+      submit.tap()
+    } else {
+      element("auth.password", in: app).typeText("\n")  // the keyboard covers the button: submit from the field
+    }
   }
 
+  /// Clears the field and types `text`. Tapping near the trailing edge puts the cursor after any existing text.
   private func replaceText(in field: XCUIElement, with text: String) {
-    field.tap()
+    field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
     if let current = field.value as? String, !current.isEmpty, current != field.placeholderValue {
       field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
     }

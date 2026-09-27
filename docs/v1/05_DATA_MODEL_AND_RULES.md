@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-05 |
-| 버전 | v1.0.6 |
+| 버전 | v1.0.7 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1267,12 +1267,12 @@ MIG-03 이관 문서(레거시 원문 보존)
           && optStrMax(p, 'nextSession', 2000)
           && optStrMax(p, 'homeExercise', 2000);
       }
+      // 정확한 문자열 비교. noteId를 정규식에 넣으면 '.', '*' 같은 메타 문자가 다른 노트 경로와 맞을 수 있다.
       function validInk(d) {
         return d.get('inkPath', null) == null
-          || (d.inkPath is string
-              && d.inkPath.matches('soapInk/' + noteId + '/[0-9]+[.]drawing')
-              && d.get('inkRevision', null) is int
-              && d.inkRevision >= 1);
+          || (d.get('inkRevision', null) is int
+              && d.inkRevision >= 1
+              && d.inkPath == 'soapInk/' + noteId + '/' + string(d.inkRevision) + '.drawing');
       }
       function validSoapContent(d) {
         return notFuture(d.sessionDate)
@@ -2926,3 +2926,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0.4 | 2026-09-28 | §12.2 Outbox `state`에 `superseded`(영구 거부 뒤 더 새 캡처가 acked된 동의 캡처) 추가, §12.3에 최신 동의 기준 `blocked` 저장·재계산과 동의 캡처의 엄격한 순서 규칙 명시 | DF-015 | 없음 |
 | v1.0.5 | 2026-09-28 | R-32(규칙 매트릭스·테스트 파일 표) 추가. §7 `soap_notes`·`postureAssessments` delete 규칙에 `resource == null && isTrainer()`(없는 문서 삭제는 성공) 추가: Outbox가 응답을 잃고 다시 보낸 draft 삭제가 영구 실패가 되지 않고, 클라이언트가 읽을 수 없는 문서를 삭제된 것으로 오판하지 않는다 | DF-104 | 없음 |
 | v1.0.6 | 2026-09-28 | §12.2 `LocalPendingMemberDraft`를 구현(DF-108)에 맞춤: `outboxItemId` 추가, 상태·오류는 Outbox 항목에서 읽고 `acked`면 `LocalOutboxStore`가 행 삭제. `OutboxItem.ackConfirmed`(V1_1), `superseded`는 DF-108 저장 어댑터 | DF-108 | 없음 |
+| v1.0.7 | 2026-09-28 | §7.3 `validInk`를 §5.1 경로 정의와 맞춤: `inkPath`를 정규식이 아니라 `'soapInk/' + noteId + '/' + string(inkRevision) + '.drawing'`과 정확히 비교한다(noteId의 정규식 메타 문자로 다른 노트 경로를 가리키거나 경로 번호와 `inkRevision`이 달라지는 것을 막는다, 교차 리뷰) | — | 없음 |

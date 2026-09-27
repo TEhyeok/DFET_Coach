@@ -15,6 +15,8 @@ enum PreviewScenario: String, CaseIterable {
   /// Like `members`, but the list waits until the test taps `preview.releaseMembers`, so the loading skeleton can be
   /// checked however slow the launch is (AC-DF-013.5).
   case membersSlow = "members-slow"
+  /// DesignSystem component gallery (DF-016, TC-DF016-04): no shell, synthetic values.
+  case designSystem = "design-system"
 }
 
 /// Scripted result of the DEBUG preview member directory.
@@ -86,7 +88,7 @@ struct PreviewEnvironment {
     case .members, .membersSlow:
       return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") },
                       waitsForRelease: scenario == .membersSlow)
-    case .membersEmpty, .empty, .login, .unitTestHost:
+    case .membersEmpty, .empty, .login, .unitTestHost, .designSystem:
       return .members([])
     case .membersError:
       return .failure(.permissionDenied)

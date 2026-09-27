@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "a11y.metric" : {
+      "comment" : "V1-12 · §8.6 A-03, AC-C-01.3 · args: metricName, value, unit, side, source, date, status",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@%3$@, %4$@, 출처 %5$@, %6$@, 변화 %7$@"
+          }
+        }
+      }
+    },
     "app.config.missing" : {
       "comment" : "V1-12 · V1-04 §8.1",
       "extractionState" : "manual",
@@ -45,6 +57,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "계정 권한이 바뀌어 다시 로그인해야 해요."
+          }
+        }
+      }
+    },
+    "change.pendingPolicy" : {
+      "comment" : "V1-12 · §6.0.3, §7.6, AC-C-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "산정 준비 중"
           }
         }
       }
@@ -145,8 +169,20 @@
         }
       }
     },
+    "common.notEntered" : {
+      "comment" : "V1-12 · F-SOAP-01.2, F-SOAP-01.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미입력"
+          }
+        }
+      }
+    },
     "common.retry" : {
-      "comment" : "V1-12 · §8.4 · §9.6",
+      "comment" : "V1-12 · §8.4, §9.6",
       "extractionState" : "manual",
       "localizations" : {
         "ko" : {
@@ -225,6 +261,666 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "D-FET Trainer 로그인"
+          }
+        }
+      }
+    },
+    "metric.bmi.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체질량지수(BMI)"
+          }
+        }
+      }
+    },
+    "metric.bodyFatMassKg.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방량"
+          }
+        }
+      }
+    },
+    "metric.bodyFatPercent.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방률"
+          }
+        }
+      }
+    },
+    "metric.calfCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "종아리 둘레"
+          }
+        }
+      }
+    },
+    "metric.chestCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가슴둘레"
+          }
+        }
+      }
+    },
+    "metric.craniovertebralAngle.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두개척추각(CVA)"
+          }
+        }
+      }
+    },
+    "metric.headTiltFrontal.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "머리 기울기(정면, 참고)"
+          }
+        }
+      }
+    },
+    "metric.hipCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "엉덩이둘레"
+          }
+        }
+      }
+    },
+    "metric.mmtGrade.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "근력 등급(MMT 0–5)"
+          }
+        }
+      }
+    },
+    "metric.painNrs.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "통증 점수(NRS 0–10)"
+          }
+        }
+      }
+    },
+    "metric.pelvicTiltFrontal.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "골반 기울기(정면, 참고)"
+          }
+        }
+      }
+    },
+    "metric.romDeg.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관절가동범위(AROM)"
+          }
+        }
+      }
+    },
+    "metric.shoulderTiltAngle.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어깨 높이차(견봉선 기울기각)"
+          }
+        }
+      }
+    },
+    "metric.skeletalMuscleMassKg.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "골격근량"
+          }
+        }
+      }
+    },
+    "metric.thighCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "허벅지 둘레"
+          }
+        }
+      }
+    },
+    "metric.totalBodyWaterL.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체수분"
+          }
+        }
+      }
+    },
+    "metric.upperArmCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상완 둘레"
+          }
+        }
+      }
+    },
+    "metric.visceralFatLevel.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내장지방 레벨"
+          }
+        }
+      }
+    },
+    "metric.waistCircumference.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "허리둘레"
+          }
+        }
+      }
+    },
+    "metric.weightKg.name" : {
+      "comment" : "V1-12 · 부록 A.1, B.8",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체중"
+          }
+        }
+      }
+    },
+    "side.bilateral" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "양측"
+          }
+        }
+      }
+    },
+    "side.higher.left" : {
+      "comment" : "V1-12 · F-ASM-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽이 높음"
+          }
+        }
+      }
+    },
+    "side.higher.right" : {
+      "comment" : "V1-12 · F-ASM-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽이 높음"
+          }
+        }
+      }
+    },
+    "side.left" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽"
+          }
+        }
+      }
+    },
+    "side.level" : {
+      "comment" : "V1-12 · F-ASM-03.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌우 높이 같음"
+          }
+        }
+      }
+    },
+    "side.lower.left" : {
+      "comment" : "V1-12 · F-ASM-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽이 낮음"
+          }
+        }
+      }
+    },
+    "side.lower.right" : {
+      "comment" : "V1-12 · F-ASM-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽이 낮음"
+          }
+        }
+      }
+    },
+    "side.none" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        }
+      }
+    },
+    "side.right" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽"
+          }
+        }
+      }
+    },
+    "sourceGrade.aiAppearance" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 외형 · 실측 아님"
+          }
+        }
+      }
+    },
+    "sourceGrade.derived" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계산값"
+          }
+        }
+      }
+    },
+    "sourceGrade.device" : {
+      "comment" : "V1-12 · §7.1 · args: deviceModel",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 측정 · %@"
+          }
+        }
+      }
+    },
+    "sourceGrade.modelEstimate" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모델 추정"
+          }
+        }
+      }
+    },
+    "sourceGrade.observedSection" : {
+      "comment" : "V1-12 · §6.3, §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관측 단면 · 실측 대조 전 · 베타/참고"
+          }
+        }
+      }
+    },
+    "sourceGrade.photoAuto" : {
+      "comment" : "V1-12 · §7.1, §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 자동 추정 · 스크리닝"
+          }
+        }
+      }
+    },
+    "sourceGrade.photoAuto.chip" : {
+      "comment" : "V1-12 · §6.5.0",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스크리닝"
+          }
+        }
+      }
+    },
+    "sourceGrade.photoManual" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 측정(확정)"
+          }
+        }
+      }
+    },
+    "sourceGrade.selfReport" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "본인 보고"
+          }
+        }
+      }
+    },
+    "sourceGrade.tape" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "줄자 실측"
+          }
+        }
+      }
+    },
+    "sourceGrade.trainerObserved" : {
+      "comment" : "V1-12 · §7.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트레이너 관찰"
+          }
+        }
+      }
+    },
+    "sync.awaitingConsent" : {
+      "comment" : "V1-12 · §6.0.3, F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인 대기"
+          }
+        }
+      }
+    },
+    "sync.failedRetry" : {
+      "comment" : "V1-12 · C-05",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 실패 · 다시 시도"
+          }
+        }
+      }
+    },
+    "sync.localKept" : {
+      "comment" : "V1-12 · F-SOAP-01.5, ADR-002",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본은 이 기기에 남아 있어요."
+          }
+        }
+      }
+    },
+    "sync.localSaved" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기에 저장됨"
+          }
+        }
+      }
+    },
+    "sync.localSavedWithPending" : {
+      "comment" : "V1-12 · §8.4, AC-IA-03 · args: count",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기에 저장됨 · 동기화 대기 %lld건"
+          }
+        }
+      }
+    },
+    "sync.pendingCount" : {
+      "comment" : "V1-12 · §8.4 · args: count",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 대기 %lld건"
+          }
+        }
+      }
+    },
+    "sync.reason.consentRejected" : {
+      "comment" : "V1-12 · F-PRIV-03.7, §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 기록이 거부돼 서버가 저장을 받지 않았어요."
+          }
+        }
+      }
+    },
+    "sync.reason.fileTooLarge" : {
+      "comment" : "V1-12 · §9.5, §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필기 파일이 너무 커서 올리지 못했어요."
+          }
+        }
+      }
+    },
+    "sync.reason.network" : {
+      "comment" : "V1-12 · NFR-05",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크에 연결되면 자동으로 다시 보내요."
+          }
+        }
+      }
+    },
+    "sync.reason.retryLimit" : {
+      "comment" : "V1-12 · ADR-002",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여러 번 시도했지만 보내지 못했어요."
+          }
+        }
+      }
+    },
+    "sync.reason.ruleDenied" : {
+      "comment" : "V1-12 · C-05",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "권한이나 동의 조건이 맞지 않아 서버가 저장을 받지 않았어요."
+          }
+        }
+      }
+    },
+    "sync.reason.uploadMismatch" : {
+      "comment" : "V1-12 · ADR-002",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일 확인값이 맞지 않아 다시 올려요."
+          }
+        }
+      }
+    },
+    "sync.syncFailed" : {
+      "comment" : "V1-12 · §6.0.3, C-05",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 실패"
+          }
+        }
+      }
+    },
+    "sync.synced" : {
+      "comment" : "V1-12 · §6.0.3, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화됨"
+          }
+        }
+      }
+    },
+    "sync.syncing" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 중"
           }
         }
       }
@@ -393,6 +1089,114 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설정"
+          }
+        }
+      }
+    },
+    "unit.cm" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cm"
+          }
+        }
+      }
+    },
+    "unit.deg" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "°"
+          }
+        }
+      }
+    },
+    "unit.grade" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "등급"
+          }
+        }
+      }
+    },
+    "unit.kg" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kg"
+          }
+        }
+      }
+    },
+    "unit.kgPerM2" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kg/m²"
+          }
+        }
+      }
+    },
+    "unit.level" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "레벨"
+          }
+        }
+      }
+    },
+    "unit.liter" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L"
+          }
+        }
+      }
+    },
+    "unit.percent" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%"
+          }
+        }
+      }
+    },
+    "unit.point" : {
+      "comment" : "V1-12 · 부록 A.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "점"
           }
         }
       }

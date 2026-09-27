@@ -92,6 +92,15 @@ jobs:
             -destination "id=${UDID}" -clonedSourcePackagesDirPath trainer_app/.spm \
             -skip-testing:DFETTrainerIntegrationTests -resultBundlePath build/sim.xcresult \
             CODE_SIGNING_ALLOWED=NO | tee build/sim.log
+      # DF-016: a missing snapshot reference is recorded on this runtime and fails the run; the recorded images come
+      # back as an artifact to commit (V1-10: references come from the CI runtime). PR runs only (C3).
+      - name: Upload recorded snapshot references
+        if: ${{ github.event_name == 'pull_request' && failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-references
+          path: trainer_app/Packages/TrainerKit/Tests/DesignSystemTests/__Snapshots__/
+          if-no-files-found: ignore
       - name: Release build without plist (AC-DF-008.4)
         run: |
           set -o pipefail

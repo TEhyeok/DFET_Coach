@@ -16,6 +16,7 @@
 		129EA549E5ED99C16EAA6536 /* LaunchConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */; };
 		1EBD89607252B2BCC5170CCE /* ConfigurationMissingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */; };
 		1F13C474BA7BD74B81C46908 /* TrainerRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38EEEC11818BCEACCF17CB /* TrainerRoute.swift */; };
+		21016F27F64D10C55A51D8BA /* DesignSystemGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D3D5F99B8129FB20119C60 /* DesignSystemGallery.swift */; };
 		26C51C60B03CC9264172463F /* ShellNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC3FE9DE204242F4C020E53 /* ShellNavigationTests.swift */; };
 		3074294E2901AF7392E89BDA /* TrainerContracts in Frameworks */ = {isa = PBXBuildFile; productRef = C0A547249E8270079960845F /* TrainerContracts */; };
 		3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909035E39F699E8176D5FF52 /* EmulatorSupport.swift */; };
@@ -46,10 +47,12 @@
 		9F51DBABA0675EF19DF8E138 /* FlagGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45DB07F4D84B7CEF59AB139 /* FlagGateTests.swift */; };
 		9FB4B7E66D55D31F703C5A78 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D418DDB6FE7A9E5B1EE7D72E /* AppRootView.swift */; };
 		A138F141CD54E5AD508068E9 /* LaunchSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */; };
+		A52E9864585720E6A31BDC48 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = DFA5ECC237DB881D8A8C8D68 /* DesignSystem */; };
 		A9922B465BD8209A1B6DDEFC /* ShellNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F046A4B44321C9D58C49BB5 /* ShellNavigation.swift */; };
 		C291854537C060CA84046BC0 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C000499462B611098130F997 /* AppEnvironmentTests.swift */; };
 		D046B697803EE95CA411C44E /* RootSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7B59614A09DA9394B5A21D /* RootSplitView.swift */; };
 		D0C20FECB0166D5536A88C55 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A5FA9FD51FE87125AA7512 /* AppDelegate.swift */; };
+		D4F67EC0195EC2D830374B5B /* DesignSystemUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFBBEA4FC5048B72EB23990 /* DesignSystemUITests.swift */; };
 		E3768360841175B1914390F4 /* PreviewRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59E06AC20B5D7040AA4FB5C /* PreviewRootView.swift */; };
 		E638EBB868DF8BB352ABB795 /* DFETTrainerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03664F32BFCD1F18818FADEC /* DFETTrainerApp.swift */; };
 		EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */; };
@@ -79,6 +82,7 @@
 		03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchConfiguration.swift; sourceTree = "<group>"; };
 		0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationPlaceholderTests.swift; sourceTree = "<group>"; };
 		0EE4FCF1C60E92D842BC3D08 /* FirebaseAppBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAppBootstrap.swift; sourceTree = "<group>"; };
+		0EFBBEA4FC5048B72EB23990 /* DesignSystemUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemUITests.swift; sourceTree = "<group>"; };
 		0F3195DBB113071C1729DFF8 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		26CED118F5617BB2A0D946F5 /* LaunchConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchConfigurationTests.swift; sourceTree = "<group>"; };
 		2F046A4B44321C9D58C49BB5 /* ShellNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellNavigation.swift; sourceTree = "<group>"; };
@@ -87,6 +91,7 @@
 		3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMissingView.swift; sourceTree = "<group>"; };
 		42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberDirectoryEmulatorTests.swift; sourceTree = "<group>"; };
 		50ECB81A5339CA06FC9F7F06 /* PreviewEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewEnvironment.swift; sourceTree = "<group>"; };
+		56D3D5F99B8129FB20119C60 /* DesignSystemGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemGallery.swift; sourceTree = "<group>"; };
 		6323C19401ADD26FD1C651CB /* ComingSoonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComingSoonView.swift; sourceTree = "<group>"; };
 		6F6DB0354FEB83D61BCC59B8 /* DFETTrainerIntegrationTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DFETTrainerIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		70D9FBE0E75D5BA3F84155BF /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
@@ -140,6 +145,7 @@
 				01014D391AFB42F7677A085F /* FeatureAuth in Frameworks */,
 				7D5314178491C7D26C38F5D3 /* FeatureMembers in Frameworks */,
 				39E1C9B716CBCCA3205F348F /* FeatureSettings in Frameworks */,
+				A52E9864585720E6A31BDC48 /* DesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,6 +197,7 @@
 		5D67D9B8D7FDCA1748EF55E1 /* Preview */ = {
 			isa = PBXGroup;
 			children = (
+				56D3D5F99B8129FB20119C60 /* DesignSystemGallery.swift */,
 				DFA953C800FB9A18028D9BFF /* PreviewAuthService.swift */,
 				50ECB81A5339CA06FC9F7F06 /* PreviewEnvironment.swift */,
 				AE3CAFC636A970BD4BD19DA2 /* PreviewMemberDirectory.swift */,
@@ -234,6 +241,7 @@
 			isa = PBXGroup;
 			children = (
 				9F50A2ACEDADA4F1FE4CF3A8 /* AppShellUITests.swift */,
+				0EFBBEA4FC5048B72EB23990 /* DesignSystemUITests.swift */,
 				3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */,
 				854758AF4B96BE69AC17340B /* LoginUITests.swift */,
 				CDE105CB32756FE7A6026CAC /* MemberListUITests.swift */,
@@ -316,6 +324,7 @@
 				9D2552AAC50D61D67E8AB3F7 /* FeatureAuth */,
 				AE2D3BB43833A3B85224EFD7 /* FeatureMembers */,
 				F9D4AA520F29F8910FA570FF /* FeatureSettings */,
+				DFA5ECC237DB881D8A8C8D68 /* DesignSystem */,
 			);
 			productName = DFETTrainer;
 			productReference = F9F436C4D507C2BCEE57CE2C /* DFETTrainer.app */;
@@ -470,6 +479,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F959AD1FB0578C0CF0768C49 /* AppShellUITests.swift in Sources */,
+				D4F67EC0195EC2D830374B5B /* DesignSystemUITests.swift in Sources */,
 				A138F141CD54E5AD508068E9 /* LaunchSmokeTests.swift in Sources */,
 				3A22C28EC7BB3AF2BC7E5CC2 /* LoginUITests.swift in Sources */,
 				0973ECFF1B7A3C9C308388B2 /* MemberListUITests.swift in Sources */,
@@ -498,6 +508,7 @@
 				9CB9F5E4BE7C4D1DBCBAB914 /* ComingSoonView.swift in Sources */,
 				1EBD89607252B2BCC5170CCE /* ConfigurationMissingView.swift in Sources */,
 				E638EBB868DF8BB352ABB795 /* DFETTrainerApp.swift in Sources */,
+				21016F27F64D10C55A51D8BA /* DesignSystemGallery.swift in Sources */,
 				570857CC88730D21B2DD08FA /* FirebaseAppBootstrap.swift in Sources */,
 				6F59723484D1967BDF093DDA /* FlagGate.swift in Sources */,
 				EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */,
@@ -912,6 +923,10 @@
 		C0A547249E8270079960845F /* TrainerContracts */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TrainerContracts;
+		};
+		DFA5ECC237DB881D8A8C8D68 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignSystem;
 		};
 		F9D4AA520F29F8910FA570FF /* FeatureSettings */ = {
 			isa = XCSwiftPackageProductDependency;

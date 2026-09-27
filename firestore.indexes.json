@@ -67,6 +67,179 @@
         {"fieldPath": "createdBy", "order": "ASCENDING"},
         {"fieldPath": "createdAt", "order": "DESCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "soap_notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "sessionDate", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "soap_notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "sessionDate", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "soap_notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "sessionDate", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "soap_notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "pendingMemberId", "order": "ASCENDING"},
+        {"fieldPath": "sessionDate", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "postureAssessments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "capturedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "postureAssessments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "capturedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "postureAssessments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "pendingMemberId", "order": "ASCENDING"},
+        {"fieldPath": "capturedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "bodyCompositionRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "bodyCompositionRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "bodyCompositionRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "pendingMemberId", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "circumferenceMeasurements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "metricCode", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "circumferenceMeasurements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "metricCode", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "circumferenceMeasurements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "pendingMemberId", "order": "ASCENDING"},
+        {"fieldPath": "metricCode", "order": "ASCENDING"},
+        {"fieldPath": "measuredAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "bodyScans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "takenAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "memberSummaries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "sharedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "pendingMembers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "trainerId", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "consentRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "subjectUid", "order": "ASCENDING"},
+        {"fieldPath": "recordedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "consentRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "pendingMemberId", "order": "ASCENDING"},
+        {"fieldPath": "recordedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "rightsRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "dueAt", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "auditLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "memberUid", "order": "ASCENDING"},
+        {"fieldPath": "at", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []

@@ -77,9 +77,12 @@ final class AppEnvironmentTests: XCTestCase {
         arguments: [argument], isDebug: true, bootstrap: AppBootstrap(plistPresent: false) { _ in }) else { return nil }
       return preview.memberScript
     }
-    XCTAssertEqual(script("--preview-members-empty"), .members([]))
+    XCTAssertEqual(script("--preview-members-empty"), .members([], delaySeconds: 0))
     XCTAssertEqual(script("--preview-members-error"), .failure(.permissionDenied))
-    guard case let .members(rows)? = script("--preview-members") else { return XCTFail("expected rows") }
+    guard case let .members(rows, delay)? = script("--preview-members") else { return XCTFail("expected rows") }
+    XCTAssertEqual(delay, 0)
+    guard case let .members(_, slowDelay)? = script("--preview-members-slow") else { return XCTFail("expected rows") }
+    XCTAssertEqual(slowDelay, 8)
     XCTAssertEqual(rows.map(\.id), ["syn-0001", "syn-0002", "syn-0003"])
   }
 

@@ -12,11 +12,14 @@ enum PreviewScenario: String, CaseIterable {
   case members
   case membersEmpty = "members-empty"
   case membersError = "members-error"
+  /// Like `members`, but the list arrives after 8 s so the loading skeleton can be checked (AC-DF-013.5). The delay
+  /// outlasts XCUITest's launch and idle waits.
+  case membersSlow = "members-slow"
 }
 
 /// Scripted result of the DEBUG preview member directory.
 enum PreviewMemberScript: Equatable {
-  case members([Member])
+  case members([Member], delaySeconds: Double = 0)
   case failure(MemberDirectoryError)
 }
 
@@ -79,8 +82,9 @@ struct PreviewEnvironment {
   /// What the preview `MemberDirectory` returns (DF-013). An error stays an error, never an empty list.
   var memberScript: PreviewMemberScript {
     switch scenario {
-    case .members:
-      return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") })
+    case .members, .membersSlow:
+      return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") },
+                      delaySeconds: scenario == .membersSlow ? 8 : 0)
     case .membersEmpty, .empty, .login, .unitTestHost:
       return .members([])
     case .membersError:

@@ -43,6 +43,16 @@ final class MemberListUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["SYN-0001"].exists)
   }
 
+  /// AC-DF-013.5: while the first list loads the skeleton shows, then the rows replace it.
+  @MainActor
+  func testSkeletonWhileLoading() throws {
+    let app = launch(["--preview-members-slow"])
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    XCTAssertFalse(element("tr02.empty", in: app).exists)
+    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 15))
+    XCTAssertFalse(element("tr02.loading", in: app).exists)
+  }
+
   private func launch(_ arguments: [String]) -> XCUIApplication {
     let app = XCUIApplication()
     app.launchArguments = arguments

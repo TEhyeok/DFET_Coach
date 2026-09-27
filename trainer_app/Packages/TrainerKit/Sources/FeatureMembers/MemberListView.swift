@@ -15,9 +15,12 @@ public struct MemberListView: View {
     self.onSelect = onSelect
   }
 
+  @ScaledMetric(relativeTo: .headline) private var avatarSize: CGFloat = 40
+
   public var body: some View {
     content
-      .task { model.start() }
+      .onAppear { model.start() }
+      .onDisappear { model.stop() }
   }
 
   @ViewBuilder
@@ -31,7 +34,7 @@ public struct MemberListView: View {
         List {
           ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
             Button { onSelect(member) } label: {
-              MemberRow(member: member)
+              MemberRow(member: member, avatarSize: avatarSize)
             }
             .buttonStyle(.plain)
             .listRowBackground(member.id == selectedID ? Color.accentColor.opacity(0.15) : nil)
@@ -43,12 +46,13 @@ public struct MemberListView: View {
       .accessibilityElement(children: .contain)
       .accessibilityIdentifier("tr02.list")
     case .empty:
-      // No next action: assignment happens in admin_web, and DF-113 adds the pending-member rows and entry point.
+      // No next action here: assignment happens in admin_web, and DF-113 adds the pending-member rows and the
+      // '대기 회원 추가' entry point (recorded in the DF-013 MVP section).
       Text("tr02.empty")
         .font(.headline)
         .foregroundStyle(.secondary)
         .multilineTextAlignment(.center)
-      .padding(24)
+        .padding(24)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .accessibilityElement(children: .combine)
       .accessibilityIdentifier("tr02.empty")
@@ -69,13 +73,17 @@ public struct MemberListView: View {
     }
   }
 
-  /// Placeholder rows while the first list loads (AC-DF-013.5).
+  /// Placeholder rows while the first list loads (AC-DF-013.5): one accessibility element read as '불러오는 중'.
   private var skeleton: some View {
-    List(0..<4, id: \.self) { _ in
-      MemberRow(member: Member(id: "", displayName: "XXXXXXXXXX", trainerId: nil))
+    VStack(spacing: 0) {
+      List(0..<3, id: \.self) { _ in
+        MemberRow(member: Member(id: "", displayName: "XXXXXXXXXX", trainerId: nil), avatarSize: avatarSize)
+      }
+      .redacted(reason: .placeholder)
+      .allowsHitTesting(false)
     }
-    .redacted(reason: .placeholder)
-    .allowsHitTesting(false)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(Text("common.loading"))
     .accessibilityIdentifier("tr02.loading")
   }
 }
@@ -83,16 +91,17 @@ public struct MemberListView: View {
 /// One member row: a locally drawn initials avatar and the display name. No remote image (AC-DF-013.6, NFR-11).
 struct MemberRow: View {
   let member: Member
+  let avatarSize: CGFloat
 
   var body: some View {
     HStack(spacing: 12) {
       Text(verbatim: member.initials)
         .font(.headline)
         .foregroundStyle(.white)
-        .frame(width: 40, height: 40)
+        .frame(width: avatarSize, height: avatarSize)
         .background(Circle().fill(Color.secondary))
         .accessibilityHidden(true)
-      Text(verbatim: member.displayName)
+      Text(verbatim: member.displayName.isEmpty ? member.initials : member.displayName)
         .font(.body)
       Spacer(minLength: 0)
     }

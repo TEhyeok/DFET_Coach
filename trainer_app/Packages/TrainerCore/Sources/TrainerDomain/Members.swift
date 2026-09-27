@@ -1,7 +1,8 @@
 import Foundation
 
-/// An assigned member as TR-02 shows it (DF-013). Only `displayName` and `trainerId` are read from `users/{uid}`;
-/// email and body data never reach the trainer app (AC-DF-013, NFR-02). `id` is the Firebase uid (`MemberKey.uid`).
+/// An assigned member as TR-02 shows it (DF-013). Only `displayName` and `trainerId` are used; no other field of
+/// `users/{uid}` reaches the app's model or UI. `id` is the Firebase uid (`MemberKey.uid`). (The Firestore cache still
+/// holds the whole document; see `FirestoreMemberDirectory`.)
 public struct Member: Identifiable, Hashable, Sendable {
   public let id: String
   public let displayName: String

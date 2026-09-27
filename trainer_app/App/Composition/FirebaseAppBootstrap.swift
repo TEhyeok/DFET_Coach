@@ -32,10 +32,11 @@ extension AppBootstrap {
     FirestoreRemoteWriter(trainerUid: trainerUid)
   }
 
-  /// The signed-in trainer's shell services (DF-108): FirebaseData's member directory, and registration on the
-  /// LocalStore partition with the SyncEngine sending to FirebaseData.
+  /// The signed-in trainer's shell services (DF-108, DF-018): FirebaseData's member directory, registration on the
+  /// LocalStore partition with the SyncEngine sending to FirebaseData, its queue for TR-15 and the full logout.
   @MainActor
-  static func liveServices(trainerUid: String) -> ShellServices {
+  static func liveServices(session: TrainerSession) -> ShellServices {
+    let trainerUid = session.uid
     let runtime = SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
       SyncRemote(
         writer: liveRemoteWriter(trainerUid: trainerUid), uploader: StorageBinaryUploader(),
@@ -44,6 +45,10 @@ extension AppBootstrap {
     }
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
-      registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar())
+      registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
+      syncQueue: runtime?.engine ?? SessionRuntime.UnavailableSyncQueue(),
+      signOut: LiveSessionSignOut(
+        trainerUid: trainerUid, auth: liveAuthService(), teardownRemote: { try await FirestoreSessionTeardown.run() }),
+      accountName: session.displayName)
   }
 }

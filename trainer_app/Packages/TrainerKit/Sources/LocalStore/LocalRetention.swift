@@ -92,6 +92,61 @@ public struct LocalRetention {
     return report
   }
 
+  /// Logout (DF-018, NFR-08, ASM-P0-17): removes what the server already has and keeps everything it does not.
+  ///
+  /// - Outbox items that are acked or superseded are deleted.
+  /// - A draft (SOAP, measurement) or a server-confirmed consent capture is deleted once none of its Outbox items is
+  ///   still waiting; with it go its binaries whose upload was verified.
+  /// - Anything still waiting (queued, in flight, failed, blocked) stays with its draft and files, tied to
+  ///   `trainerUid`, and is sent after the same trainer signs in again. Nothing unsynced is ever deleted here.
+  /// - Device settings (today list, filters, quick phrases, stations) stay: they hold no health record.
+  @discardableResult
+  public func purgeSynced() throws -> LocalRetentionReport {
+    var report = LocalRetentionReport()
+    var filesToRemove: [String] = []
+
+    let outbox = try context.fetchOwned(OutboxItem.self, by: trainerUid)
+    let finished: Set<String> = [LocalOutboxState.acked.rawValue, LocalOutboxState.superseded.rawValue]
+    let waiting = outbox.filter { !finished.contains($0.state) }
+    let waitingRefs = Set(waiting.map(\.entityRef))
+    let waitingBinaries = Set(waiting.compactMap(\.binaryId))
+    for item in outbox where finished.contains(item.state) {
+      report.destroyedOutboxItemIds.append(item.id)
+      context.delete(item)
+    }
+
+    var freedBinaries: [UUID] = []
+    for draft in try context.fetchOwned(LocalSoapDraft.self, by: trainerUid) where !waitingRefs.contains(draft.entityRef) {
+      report.destroyedSoapNoteIds.append(draft.noteId)
+      if let ink = draft.inkBinaryId { freedBinaries.append(ink) }
+      context.delete(draft)
+    }
+    for draft in try context.fetchOwned(LocalMeasurementDraft.self, by: trainerUid)
+    where !waitingRefs.contains(draft.entityRef) {
+      report.destroyedMeasurementRecordIds.append(draft.recordId)
+      if let photo = draft.reportPhotoBinaryId { freedBinaries.append(photo) }
+      context.delete(draft)
+    }
+    for capture in try context.fetchOwned(LocalConsentCapture.self, by: trainerUid)
+    where capture.serverConfirmedAt != nil && !waitingRefs.contains(capture.entityRef) {
+      report.destroyedCaptureIds.append(capture.captureId)
+      freedBinaries.append(capture.signatureBinaryId)
+      context.delete(capture)
+    }
+
+    // A binary goes with its record only when the server has the file (verified) and no waiting item needs it.
+    let freed = Set(freedBinaries).subtracting(waitingBinaries)
+    for binary in try context.fetchOwned(LocalBinary.self, by: trainerUid)
+    where freed.contains(binary.id) && binary.verifiedAt != nil {
+      report.destroyedBinaryIds.append(binary.id)
+      filesToRemove.append(binary.relativePath)
+      context.delete(binary)
+    }
+    if context.hasChanges { try context.save() }
+    for relativePath in filesToRemove { removeFile(relativePath, report: &report) }
+    return report
+  }
+
   /// Removes one file, recording a failure instead of throwing. Returns true when a file was removed.
   @discardableResult
   private func removeFile(_ relativePath: String, report: inout LocalRetentionReport) -> Bool {

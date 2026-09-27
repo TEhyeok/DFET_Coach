@@ -27,7 +27,8 @@ public enum LocalStoreError: Error, Equatable, Sendable {
 /// name needs no entity id at write time. Recorded as a Deviation with a V1-04 §9.2 doc follow-up (DF-014).
 ///
 /// `trainerKey` is the first 16 hex digits of SHA-256(uid) so the uid itself never appears in a path (NFR-10).
-/// Logging out deletes the whole partition.
+/// Logout keeps the partition: only what the server already has is purged, and unsynced records stay for the same
+/// trainer's next sign-in (DF-018, ASM-P0-17).
 public struct LocalStoreLocation: Equatable, Sendable {
   public static let directoryName = "TrainerKit"
   public static let storeFileName = "LocalStore.store"

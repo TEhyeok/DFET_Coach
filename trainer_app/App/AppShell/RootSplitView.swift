@@ -1,5 +1,6 @@
 import FeatureConsent
 import FeatureMembers
+import FeatureSettings
 import SwiftUI
 import TrainerDomain
 
@@ -11,7 +12,15 @@ import TrainerDomain
 /// (Split View, Slide Over or Stage Manager resize) converts `navigation` to `stackPath` and back through
 /// `ShellNavigation`, so the user stays on the same TR screen.
 struct RootSplitView: View {
-  let flags: FeatureFlags
+  private let baseFlags: FeatureFlags
+  /// The environment's flags; in DEBUG with TR-15's local override applied (AC-DF-018.4).
+  private var flags: FeatureFlags {
+    #if DEBUG
+    DebugFlagOverrides.shared.apply(to: baseFlags)
+    #else
+    baseFlags
+    #endif
+  }
 
   @Environment(\.horizontalSizeClass) private var sizeClass
   /// Regular layout state. While compact, `stackPath` is the live state and this is rebuilt when widening.
@@ -24,11 +33,16 @@ struct RootSplitView: View {
   @State private var sheet: ShellSheet?
   /// TR-02 (DF-013). Kept in state so the subscription survives layout changes.
   @State private var memberList: MemberListViewModel
+  /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
+  @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
 
   init(flags: FeatureFlags, services: ShellServices) {
-    self.flags = flags
+    baseFlags = flags
     registrar = services.registrar
+    _settings = State(initialValue: SettingsViewModel(
+      queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
+      version: Self.appVersion))
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
     _memberList = State(initialValue: MemberListViewModel(directory: services.memberDirectory))
   }
@@ -169,7 +183,7 @@ struct RootSplitView: View {
     case .today:
       ComingSoonView().container("tr01.root")
     case .settings:
-      ComingSoonView().container("tr15.root")
+      SettingsView(model: settings, baseFlags: baseFlags).container("tr15.root")
     case .members, .memberDetail:
       // SwiftUI folds single-child wrappers onto the List's collection view, where the outermost identifier wins.
       // The hidden spacer makes this a real container, so `tr02.root` and FeatureMembers' `tr02.list` both exist.
@@ -179,6 +193,14 @@ struct RootSplitView: View {
       }
       .container("tr02.root")
     }
+  }
+
+  /// `CFBundleShortVersionString (CFBundleVersion)` for TR-15 (AC-DF-018.5).
+  static var appVersion: String {
+    let info = Bundle.main.infoDictionary
+    let short = info?["CFBundleShortVersionString"] as? String ?? "?"
+    let build = info?["CFBundleVersion"] as? String ?? "?"
+    return "\(short) (\(build))"
   }
 
   /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack.

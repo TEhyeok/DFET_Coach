@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-04 |
-| 버전 | v1.0.4 |
+| 버전 | v1.0.5 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -865,7 +865,7 @@ sequenceDiagram
 
 - 흐름은 dfet:trainer_ios/DFETTrainer/Features/Login/LoginView.swift:226-249와 같다(claim 없으면 즉시 signOut과 오류, :236-241).
 - **claim 회수 잠금**(NFR-08): 토큰 갱신에서 claim이 사라지면 세션을 `nil`로 보내고 잠금 화면을 띄운다. 로컬 파티션은 지우지 않는다(같은 uid 재로그인 시 재개). 규칙도 `isTrainer()`를 확인하므로 서버 쓰기는 거부된다.
-- **로그아웃**(NFR-08, DF-018): ① 미동기 n건이면 경고('동기화 후 로그아웃' / '취소' / '미동기 n건 삭제하고 로그아웃') ② 모든 리스너 해제 ③ `Firestore.terminate()` → `clearPersistence()` ④ `Auth.auth().signOut()` ⑤ LocalStore 파티션과 다운로드 캐시 삭제 ⑥ `AppEnvironment` 재생성. 수용 기준: `Auth.auth().currentUser == nil`(반례 dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:160-165).
+- **로그아웃**(NFR-08, DF-018, ASM-P0-17): ① 미동기 n건이면 경고('지금 동기화' / '기록을 기기에 두고 로그아웃' / '취소'. 삭제 선택지는 없다) ② `SyncEngine.stop()` ③ 모든 리스너 해제(`FirestoreListenerRegistry`) ④ `Firestore.terminate()` → `clearPersistence()`(다음 인스턴스에 설정 다시 적용) ⑤ `Auth.auth().signOut()` ⑥ `LocalRetention.purgeSynced()`: 서버에 있는 행·파일만 지우고, 미동기 행·파일은 trainerUid 파티션에 남아 같은 계정으로 다시 로그인하면 이어서 보낸다 ⑦ 세션 런타임 폐기. 수용 기준: `Auth.auth().currentUser == nil`(반례 dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:160-165).
 - **공용 iPad**: LocalStore는 트레이너별 파티션이라 다른 트레이너가 로그인해도 이전 트레이너의 draft가 보이지 않는다(ASM-04-14).
 
 ### 12.3 규칙 계층과 App Check
@@ -1307,3 +1307,4 @@ NFR-15의 수치는 모두 가설 목표이며 P1a·P1b 측정 후 §12.7에서 
 | v1.0.2 | 2026-09-26 | DF-039: §6.4 이식 대응 요약의 AppDelegate 줄 번호를 보관 브랜치 tip `82c6ee9` 기준 범위로 갱신, FeatureToday·FeatureConsent 행과 이식 제외 목록 추가, 코드 근거 표기 갱신 | — | 없음 |
 | v1.0.3 | 2026-09-27 | DF-015: §10.4 `pendingCount()` 정의를 항목 수로 맞추고(AC-DF-015.7), 백오프·재시도 한도, 자동 재시도(`retryExhausted`), 오프라인·저장 실패 멈춤, 엔터티 단위 순서와 최신 동의 관문을 구현 기준으로 명시. §11 계산 우선순위의 구현 차이 기록 | — | ASM-04-06(최대 간격 자동 재시도 지속)은 DF-015 카드와 달라 구현하지 않음 |
 | v1.0.4 | 2026-09-28 | DF-108 검토 반영: §10.4 구현 기준에 `signedOut`(세션이 돌아올 때까지 멈춤, 실패 아님)과 항목 단위 로컬 문제 처리 추가 | — | — |
+| v1.0.5 | 2026-09-28 | §12.2 로그아웃을 DF-018·ASM-P0-17에 맞춤: 미동기 기록은 삭제하지 않고 파티션에 남겨 재로그인 뒤 이어서 보낸다('미동기 n건 삭제하고 로그아웃' 선택지 제거), 엔진 정지·리스너 레지스트리·동기화 완료분만 정리 | DF-018 | 없음 |

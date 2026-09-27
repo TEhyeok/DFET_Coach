@@ -157,6 +157,18 @@
         }
       }
     },
+    "common.disclaimer.short" : {
+      "comment" : "V1-12 · §3.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운동 지도와 건강관리 기록용이며 진단이나 치료를 위한 정보가 아닙니다."
+          }
+        }
+      }
+    },
     "common.internal" : {
       "comment" : "V1-12 · V1-06 §3.6",
       "extractionState" : "manual",
@@ -1237,6 +1249,210 @@
         }
       }
     },
+    "tr15.account" : {
+      "comment" : "V1-12 · TR-15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계정"
+          }
+        }
+      }
+    },
+    "tr15.debug.flagOverride" : {
+      "comment" : "V1-12 · ADR-010",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[DEBUG] 기능 플래그 로컬 설정"
+          }
+        }
+      }
+    },
+    "tr15.queue.empty" : {
+      "comment" : "V1-12 · TR-15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보낼 기록이 없어요"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.bodyComposition" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성 기록"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.circumference" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘레 기록"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.consent" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 기록"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.other" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기록"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.pendingMember" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기 회원 등록"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.posture" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체형 평가"
+          }
+        }
+      }
+    },
+    "tr15.queue.kind.soap" : {
+      "comment" : "V1-12 · TR-15, NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세션 기록"
+          }
+        }
+      }
+    },
+    "tr15.queue.retryAll" : {
+      "comment" : "V1-12 · TR-15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모두 다시 시도"
+          }
+        }
+      }
+    },
+    "tr15.queue.title" : {
+      "comment" : "V1-12 · TR-15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드 대기열"
+          }
+        }
+      }
+    },
+    "tr15.signOut" : {
+      "comment" : "V1-12 · NFR-08",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그아웃"
+          }
+        }
+      }
+    },
+    "tr15.signOut.confirm" : {
+      "comment" : "V1-12 · NFR-08",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기록을 기기에 두고 로그아웃"
+          }
+        }
+      }
+    },
+    "tr15.signOut.question" : {
+      "comment" : "V1-12 · TR-15, NFR-08",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그아웃할까요?"
+          }
+        }
+      }
+    },
+    "tr15.signOut.syncNow" : {
+      "comment" : "V1-12 · TR-15, NFR-08",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 동기화"
+          }
+        }
+      }
+    },
+    "tr15.signOut.unsyncedWarning" : {
+      "comment" : "V1-12 · NFR-08 · args: count",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 서버에 올라가지 않은 기록이 %lld건 있어요. 로그아웃해도 이 기기에 남고, 같은 계정으로 다시 로그인하면 이어서 보내요."
+          }
+        }
+      }
+    },
     "tr15.title" : {
       "comment" : "V1-12 · TR-15",
       "extractionState" : "manual",
@@ -1245,6 +1461,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설정"
+          }
+        }
+      }
+    },
+    "tr15.version" : {
+      "comment" : "V1-12 · TR-15 · args: version",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 버전 %@"
           }
         }
       }

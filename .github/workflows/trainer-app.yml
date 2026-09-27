@@ -110,6 +110,13 @@ jobs:
           xcodebuild build -project trainer_app/DFETTrainer.xcodeproj -scheme DFETTrainer \
             -configuration Release -destination 'generic/platform=iOS' \
             -clonedSourcePackagesDirPath trainer_app/.spm CODE_SIGNING_ALLOWED=NO | tee build/release.log
+      - name: Release binary has no DEBUG flag override (TC-DF018-05)
+        run: |
+          app=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Release-iphoneos/*.app' -maxdepth 6 -type d | head -1)
+          binary="$app/$(defaults read "$app/Info.plist" CFBundleExecutable)"
+          test -f "$binary"
+          if strings "$binary" | grep -q 'DebugFlagOverride'; then echo "::error::DebugFlagOverride found in the Release binary"; exit 1; fi
+          echo "no DebugFlagOverride in $(basename "$binary")"
       # AC-DF-034.2: pull_request never injects (same-repo PRs can read repository secrets, so the event decides).
       # Every step above ran without the plist; the two steps below add a Release build with it on main and manual runs.
       - name: Inject Firebase config (main push and manual runs only)

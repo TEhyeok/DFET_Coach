@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.5 |
+| 버전 | v1.0.6 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 836개(트레이너 552, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 845개(트레이너 561, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -1173,11 +1173,20 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr15.title` | 설정 | trainer | P0 | TR-15 |  |
 | `tr15.account` | 계정 | trainer | P0 | TR-15 |  |
 | `tr15.signOut` | 로그아웃 | trainer | P0 | NFR-08 |  |
-| `tr15.signOut.unsyncedWarning` | 아직 서버에 올라가지 않은 기록이 {count}건 있어요. 로그아웃하면 이 기기에서 지워져요. | trainer | P0 | NFR-08 |  |
-| `tr15.signOut.confirm` | 그래도 로그아웃 | trainer | P0 | NFR-08 |  |
+| `tr15.signOut.unsyncedWarning` | 아직 서버에 올라가지 않은 기록이 {count}건 있어요. 로그아웃해도 이 기기에 남고, 같은 계정으로 다시 로그인하면 이어서 보내요. | trainer | P0 | NFR-08 | 미동기 기록은 trainerUid에 묶여 남는다(DF-018, ASM-P0-17). 삭제 선택지는 없다 |
+| `tr15.signOut.confirm` | 기록을 기기에 두고 로그아웃 | trainer | P0 | NFR-08 | 미동기 n건이 있을 때의 로그아웃 버튼(DF-018) |
 | `tr15.queue.title` | 업로드 대기열 | trainer | P0 | TR-15 |  |
 | `tr15.queue.retryAll` | 모두 다시 시도 | trainer | P0 | TR-15 |  |
 | `tr15.queue.empty` | 보낼 기록이 없어요 | trainer | P0 | TR-15 |  |
+| `tr15.signOut.question` | 로그아웃할까요? | trainer | P0 | TR-15, NFR-08 | 미동기 0건일 때 확인 한 번(V1-07 §5.6) |
+| `tr15.signOut.syncNow` | 지금 동기화 | trainer | P0 | TR-15, NFR-08 | retryAll 뒤 남은 건수를 다시 보인다(AC-DF-018.2) |
+| `tr15.queue.kind.soap` | 세션 기록 | trainer | P0 | TR-15, NFR-06 | 대기열 항목 종류. 회원 이름·경로는 보이지 않는다(AC-DF-018.3) |
+| `tr15.queue.kind.bodyComposition` | 신체조성 기록 | trainer | P0 | TR-15, NFR-06 | 같음 |
+| `tr15.queue.kind.circumference` | 둘레 기록 | trainer | P0 | TR-15, NFR-06 | 같음 |
+| `tr15.queue.kind.posture` | 체형 평가 | trainer | P0 | TR-15, NFR-06 | 같음 |
+| `tr15.queue.kind.pendingMember` | 대기 회원 등록 | trainer | P0 | TR-15, NFR-06 | 같음 |
+| `tr15.queue.kind.consent` | 동의 기록 | trainer | P0 | TR-15, NFR-06 | 같음 |
+| `tr15.queue.kind.other` | 기록 | trainer | P0 | TR-15, NFR-06 | 같음 |
 | `tr15.station.title` | 촬영 스테이션 | trainer | P1b | F-ASM-01.2 |  |
 | `tr15.quickPhrases` | 빠른 문구 | trainer | P1a | F-SOAP-07.1 |  |
 | `tr15.version` | 앱 버전 {version} | trainer | P0 | TR-15 |  |
@@ -2203,3 +2212,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.3 | 2026-09-28 | DF-013: `common.loading`(트레이너 전용, TR-02 스켈레톤 접근성 라벨) 추가, §2 덱 키 수를 덱의 `counts`와 맞춤 | #169 | 없음 |
 | v1.0.4 | 2026-09-28 | DF-203: `tr07.station.default`·`tr07.station.defaultSummary`(args name, height, distance), 복장 라벨 `clothing.*` 3키 추가, §4.1 vocab 값 라벨 이름공간 행, §2 덱 키 수 갱신 | #172 | 없음 |
 | v1.0.5 | 2026-09-28 | 트레이너 카탈로그 드리프트 정리: DF-012·DF-017이 카드 제안 키(`auth.field.*`, `auth.error.*`, `nav.*` 등)로 쓴 문구를 덱 키(`login.*`, `auth.notTrainer`, `auth.sessionLocked`, `common.internal`, `tr01/02/15.title`)로 바꾸고, 덱에 없던 `app.title`, `app.config.missing`, `login.error.invalidCredentials`, `login.error.network`와 v1.0.2 표에만 있던 라벨 5키를 덱 JSON에 추가. §4.1 `app.*` 행, §4.5 `nav.*` 식별자 예외, §4.7 5항·§7.9·ASM-12-22를 `catalog-deck.mjs` 차단 검사로 변경, §10.2 X-12, `login.error.network` 추가 | #174 | 없음 |
+| v1.0.6 | 2026-09-28 | DF-018: 로그아웃 문구를 '미동기 기록은 기기에 남고 다시 로그인하면 이어서 보낸다'(ASM-P0-17)로 고침(`tr15.signOut.unsyncedWarning`, `tr15.signOut.confirm`), `tr15.signOut.question`·`tr15.signOut.syncNow`, 대기열 항목 종류 `tr15.queue.kind.*` 7키 추가 | DF-018 | 없음 |

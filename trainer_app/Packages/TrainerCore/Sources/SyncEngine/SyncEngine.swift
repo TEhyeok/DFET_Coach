@@ -79,11 +79,17 @@ public actor SyncEngine {
   private var flushWaiters: [CheckedContinuation<Void, Never>] = []
   private var stateSubscribers: [LocalEntityRef: [UUID: StateSubscriber]] = [:]
   private var countSubscribers: [UUID: CountSubscriber] = [:]
+  private var failedSubscribers: [UUID: FailedSubscriber] = [:]
   private var idleWaiters: [CheckedContinuation<Void, Never>] = []
 
   private struct StateSubscriber {
     let continuation: AsyncStream<SyncState>.Continuation
     var last: SyncState
+  }
+
+  private struct FailedSubscriber {
+    let continuation: AsyncStream<[OutboxItem]>.Continuation
+    var last: [OutboxItem]
   }
 
   private struct CountSubscriber {
@@ -269,6 +275,21 @@ public actor SyncEngine {
 
   /// Number of items that are not acked (failed and blocked included), now and after every change
   /// (AC-DF-015.7, M-G3).
+  /// Items that failed and wait for the trainer's '다시 시도' (TR-15 upload queue, DF-018), oldest first. The
+  /// current list, then every change.
+  public func failedItems() async -> AsyncStream<[OutboxItem]> {
+    _ = await ensureLoaded()
+    let (stream, continuation) = AsyncStream.makeStream(of: [OutboxItem].self)
+    let id = UUID()
+    let current = computeFailedItems()
+    failedSubscribers[id] = FailedSubscriber(continuation: continuation, last: current)
+    continuation.yield(current)
+    continuation.onTermination = { [weak self] _ in
+      Task { await self?.removeFailedSubscriber(id: id) }
+    }
+    return stream
+  }
+
   public func pendingCount() async -> AsyncStream<Int> {
     _ = await ensureLoaded()
     let (stream, continuation) = AsyncStream.makeStream(of: Int.self)
@@ -752,6 +773,14 @@ public actor SyncEngine {
       items: entityItems.map(SyncStateCalculator.Item.init))
   }
 
+  private func computeFailedItems() -> [OutboxItem] {
+    items.values.filter { $0.state == .failed }.sorted { ($0.createdAt, $0.sequence) < ($1.createdAt, $1.sequence) }
+  }
+
+  private func removeFailedSubscriber(id: UUID) {
+    failedSubscribers[id] = nil
+  }
+
   private func computePendingCount() -> Int {
     items.values.filter { $0.state != .acked && $0.state != .superseded }.count
   }
@@ -769,6 +798,13 @@ public actor SyncEngine {
       subscriber.continuation.yield(count)
       countSubscribers[id]?.last = count
     }
+    if !failedSubscribers.isEmpty {
+      let failed = computeFailedItems()
+      for (id, subscriber) in failedSubscribers where subscriber.last != failed {
+        subscriber.continuation.yield(failed)
+        failedSubscribers[id]?.last = failed
+      }
+    }
   }
 
   private func removeStateSubscriber(ref: LocalEntityRef, id: UUID) {
@@ -785,3 +821,6 @@ public actor SyncEngine {
 private struct CallableAck: Decodable, Sendable {
   init(from decoder: Decoder) throws {}
 }
+
+/// TR-15 reads the queue through this protocol (DF-018).
+extension SyncEngine: SyncQueueService {}

@@ -200,7 +200,8 @@ public enum PendingWritesObserver {
           guard let snapshot else { return }
           continuation.yield(snapshot.metadata.hasPendingWrites)
         }
-      continuation.onTermination = { _ in registration.remove() }
+      let token = FirestoreListenerRegistry.shared.add(registration)
+      continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }
 }

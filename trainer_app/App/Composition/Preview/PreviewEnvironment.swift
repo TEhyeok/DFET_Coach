@@ -17,6 +17,8 @@ enum PreviewScenario: String, CaseIterable {
   case membersSlow = "members-slow"
   /// DesignSystem component gallery (DF-016, TC-DF016-04): no shell, synthetic values.
   case designSystem = "design-system"
+  /// TR-15 with two synthetic failed Outbox items (DF-018, TC-DF018-04).
+  case queueFailed = "queue-failed"
 }
 
 /// Scripted result of the DEBUG preview member directory.
@@ -88,7 +90,7 @@ struct PreviewEnvironment {
     case .members, .membersSlow:
       return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") },
                       waitsForRelease: scenario == .membersSlow)
-    case .membersEmpty, .empty, .login, .unitTestHost, .designSystem:
+    case .membersEmpty, .empty, .login, .unitTestHost, .designSystem, .queueFailed:
       return .members([])
     case .membersError:
       return .failure(.permissionDenied)

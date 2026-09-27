@@ -182,3 +182,24 @@ final class SyncEngineDeleteTests: XCTestCase {
     XCTAssertFalse(remote.hasDocument("soap_notes/n1"))
   }
 }
+
+/// DF-018: the TR-15 upload queue lists failed items and drops them when the trainer retries.
+final class SyncEngineFailedItemsTests: XCTestCase {
+  func testFailedItemsListsPermanentFailuresUntilRetried() async {
+    let remote = FakeRemote()
+    remote.fail("soap_notes/n1", with: [.permissionDenied])
+    let engine = makeTestEngine(remote: remote)
+    let item = OutboxFixtures.create(member: "m1", note: "n1")
+    await engine.enqueue(item)
+    await engine.start()
+    await idle(engine)
+    var stream = await engine.failedItems().makeAsyncIterator()
+    let failed = await stream.next()
+    XCTAssertEqual(failed?.map(\.id), [item.id])
+    XCTAssertEqual(failed?.first?.lastErrorCode, "permission-denied")
+    await engine.retry(item.id)
+    await idle(engine)
+    let afterRetry = await stream.next()
+    XCTAssertEqual(afterRetry?.map(\.id), [], "the retried item left the queue once it was acked")
+  }
+}

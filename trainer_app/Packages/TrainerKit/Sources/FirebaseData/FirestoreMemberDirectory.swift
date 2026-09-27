@@ -131,7 +131,8 @@ private final class AssignedMembersRun {
   private var readIds: [String]?
   private var readTask: Task<Void, Never>?
   private var reading = false
-  /// A server snapshot has shown `readIds`, so a failure of their read is final.
+  /// A server snapshot has shown `readIds`, so a failure of their read is final. (A confirmation that arrives after
+  /// the failure reads the list once more instead; that read's failure is final.)
   private var confirmed = false
   private var lastReadFromCache = false
   /// A failure that stands unless the server's snapshot says otherwise within `serverWait`.
@@ -200,8 +201,10 @@ private final class AssignedMembersRun {
 
   private func receive(_ snapshot: MemberIdsSnapshot) -> Bool {
     if !snapshot.exists, snapshot.isFromCache {
-      // The cache does not know the document (offline, or a listener's first answer): only the server can say
-      // there is no assignment.
+      // Going offline after the server said there is no document: nothing changed.
+      if readIds == [], confirmed { return false }
+      // Otherwise the cache does not know the document (offline, or a listener's first answer): only the server can
+      // say there is no assignment.
       holdForServer(.unavailable)
       return false
     }

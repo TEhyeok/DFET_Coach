@@ -10,7 +10,8 @@ actor ControllableStore: OutboxStore {
   private var failPredicate: (@Sendable (OutboxItem) -> Bool)?
   private var holdPredicate: (@Sendable (OutboxItem) -> Bool)?
   private(set) var savedIds: [UUID] = []
-  private var held: [CheckedContinuation<Void, Never>] = []
+  /// Held saves; each resumes with whether it fails.
+  private var held: [CheckedContinuation<Bool, Never>] = []
 
   init(_ items: [OutboxItem] = [], failingLoads: Int = 0) {
     self.items = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
@@ -31,6 +32,8 @@ actor ControllableStore: OutboxStore {
 
   private var holdingLoads = false
   private var heldLoads: [CheckedContinuation<Void, Never>] = []
+  /// The next `count` loads fail (the store cannot be read, e.g. while locked).
+  func failNextLoads(_ count: Int) { failingLoads = count }
   /// The next loads read the rows, then wait until `releaseLoads()`.
   func holdLoads() { holdingLoads = true }
   var heldLoadCount: Int { heldLoads.count }
@@ -53,7 +56,8 @@ actor ControllableStore: OutboxStore {
     if failSaves || failPredicate?(item) == true { throw CocoaError(.fileWriteNoPermission) }
     savedIds.append(item.id)
     if let holdPredicate, holdPredicate(item) {
-      await withCheckedContinuation { held.append($0) }
+      let fails = await withCheckedContinuation { held.append($0) }
+      if fails { throw CocoaError(.fileWriteNoPermission) }
     }
     if insert || items[item.id] != nil { items[item.id] = item }  // an update never brings back a deleted row
   }
@@ -66,10 +70,11 @@ actor ControllableStore: OutboxStore {
   func holdSaves(where predicate: @escaping @Sendable (OutboxItem) -> Bool) { holdPredicate = predicate }
   var heldCount: Int { held.count }
 
-  func releaseSaves() {
+  /// Lets the held saves finish; with `failing`, they fail instead (later saves are not affected).
+  func releaseSaves(failing: Bool = false) {
     holdPredicate = nil
     let waiting = held
     held = []
-    waiting.forEach { $0.resume() }
+    waiting.forEach { $0.resume(returning: failing) }
   }
 }

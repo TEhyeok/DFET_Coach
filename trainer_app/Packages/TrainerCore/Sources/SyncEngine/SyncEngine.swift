@@ -20,7 +20,8 @@ public enum SyncEngineModule {
 /// - Consent captures of a member are per-type changes (grant healthData, withdraw bodyImaging, …), so every one is
 ///   sent, strictly in `sequence` order: a capture waits while an older one is queued, in flight or failed after
 ///   transient errors. Only a capture the server rejected for good stops holding the rest; once a newer capture is
-///   acked it becomes `superseded` and can no longer be resent out of order.
+///   acked it becomes `superseded` and can no longer be resent out of order. One that failed on the device (unreadable
+///   by this build, malformed) is no rejection: it keeps holding the rest and is never superseded.
 ///
 /// Failures
 /// - Rule rejections and bad requests fail at once (AC-DF-015.3). Transient errors, unverified uploads and writes that
@@ -28,15 +29,18 @@ public enum SyncEngineModule {
 /// - `retry(_:)` and `retryAll()` are the trainer's "다시 시도". Automatic triggers use `retryExhausted()`, which never
 ///   resends a rule rejection.
 /// - `protectedDataUnavailable` (device locked, ASM-P0-29) and a failed local save pause sending until
-///   `protectedDataDidBecomeAvailable()` or `start()`; the attempt is not counted.
-/// - `signedOut` (the Outbox's trainer is not the signed-in user) pauses sending until `start()`, which the app calls
-///   when that trainer's session is back; the attempt is not counted and nothing fails.
+///   `protectedDataDidBecomeAvailable()` or `start()`; the attempt is not counted. A reply or save failure that
+///   started before the unlock or `start()` does not pause again.
+/// - `signedOut` (the Outbox's trainer is not the signed-in user) and `unauthenticated` (the server did not accept the
+///   session) pause sending until `start()`, which the app calls when that trainer's session is back; the attempt is
+///   not counted and nothing fails (V1-06 §8.7).
 ///
 /// State
 /// - Every in-memory transition happens without a suspension point, then `flush()` writes the changed items to the
 ///   `OutboxStore` in order. So an actor re-entry never sees a half-applied change.
 /// - `start()` puts items left `inFlight` by a killed process back in the queue; `RemoteWriter.createIfAbsent` then
-///   avoids a second create (AC-DF-015.5). If loading fails, nothing is sent until a later `start()` loads.
+///   avoids a second create (AC-DF-015.5). If loading, or `start()`'s re-read of the store, fails, nothing is sent
+///   until a later `start()` or unlock reads it.
 /// - The engine never deletes a local item (a failed item keeps its payload, NFR-06). Rows that LocalStore retention
 ///   deletes (AS-32) leave through `discard(ids:)` or are dropped when `start()` re-reads the store.
 ///
@@ -80,7 +84,7 @@ public actor SyncEngine {
   private var stateSubscribers: [LocalEntityRef: [UUID: StateSubscriber]] = [:]
   private var countSubscribers: [UUID: CountSubscriber] = [:]
   private var failedSubscribers: [UUID: FailedSubscriber] = [:]
-  private var idleWaiters: [CheckedContinuation<Void, Never>] = []
+  private var idleWaiters: [UUID: CheckedContinuation<Void, Never>] = [:]
 
   private struct StateSubscriber {
     let continuation: AsyncStream<SyncState>.Continuation
@@ -112,10 +116,19 @@ public actor SyncEngine {
     }
   }
 
-  /// Error codes that `retryExhausted()` may resend: transient failures only.
+  /// Error codes that `retryExhausted()` may resend: transient failures only. `unauthenticated` waits for the session
+  /// instead of failing an item; an item that did fail with it is transient too.
   private static let transientCodes: Set<String> = [
     RemoteError.unavailable.code, RemoteError.deadlineExceeded.code, RemoteError.unknown("").code,
-    LocalFailure.uploadUnverified.code, LocalFailure.writeUncommitted.code,
+    RemoteError.unauthenticated.code, LocalFailure.uploadUnverified.code, LocalFailure.writeUncommitted.code,
+  ]
+
+  /// Error codes of a permanent server rejection (`RetryPolicy` `.permanent`, and a rejected consent). Only a consent
+  /// capture that failed with one of these stops holding later captures and can become `superseded` (V1-05 §12.3); a
+  /// local failure (`local-unreadable`, `malformed-item`) is not the server's answer.
+  private static let rejectionCodes: Set<String> = [
+    RemoteError.permissionDenied.code, RemoteError.failedPrecondition.code, RemoteError.invalidArgument.code,
+    RemoteError.notFound.code, RemoteError.alreadyExists.code, "consent-rejected",
   ]
 
   /// `jitter` returns a value in -1...1; the default is uniform random.
@@ -143,7 +156,13 @@ public actor SyncEngine {
       logger.error("sync not started: outbox load failed")
       return
     }
-    await reconcileWithStore()
+    guard await reconcileWithStore() else {
+      // Rows retention deleted may still be in memory: sending them would bring back what it destroyed (AS-32).
+      running = false
+      signalIdleIfNeeded()
+      logger.error("sync not started: outbox reload failed")
+      return
+    }
     // A stop() while the store was loading wins: the app asked to stop last.
     guard startRequested else { return }
     running = true
@@ -311,10 +330,25 @@ public actor SyncEngine {
   }
 
   /// Returns when nothing can be sent right now: no member is running and no queued item is due, or sending is
-  /// stopped or paused. It never schedules work itself, so tests of the backoff wakeup stay honest.
+  /// stopped or paused. It never schedules work itself, so tests of the backoff wakeup stay honest. Cancelling the
+  /// caller ends the wait at once, so logout can bound it while a call never returns (V1-04 §12.2 ②).
   public func waitUntilIdle() async {
-    if isIdle { return }
-    await withCheckedContinuation { idleWaiters.append($0) }
+    let id = UUID()
+    await withTaskCancellationHandler {
+      await withCheckedContinuation { continuation in
+        if isIdle || Task.isCancelled {
+          continuation.resume()
+        } else {
+          idleWaiters[id] = continuation
+        }
+      }
+    } onCancel: {
+      Task { await self.endIdleWait(id) }
+    }
+  }
+
+  private func endIdleWait(_ id: UUID) {
+    idleWaiters.removeValue(forKey: id)?.resume()
   }
 
   // MARK: - Loading and persistence
@@ -361,20 +395,21 @@ public actor SyncEngine {
 
   /// Drops in-memory rows the store no longer has (retention ran while the app was away). Only rows known to be
   /// stored before the read started are candidates, so an item enqueued or first saved during the read is never
-  /// dropped; unsaved and in-flight rows are kept too.
-  private func reconcileWithStore() async {
+  /// dropped; unsaved and in-flight rows are kept too. False when the store could not be read.
+  private func reconcileWithStore() async -> Bool {
     let candidates = persisted
     let stored: [OutboxItem]
     do {
       stored = try await store.loadAll()
     } catch {
-      return
+      return false
     }
     let present = Set(stored.map(\.id))
     let gone = candidates.filter { id in
       !present.contains(id) && !dirty.contains(id) && items[id].map { $0.state != .inFlight } == true
     }
     if !gone.isEmpty { discard(ids: Array(gone)) }
+    return true
   }
 
   private func markDirty(_ id: UUID) {
@@ -382,7 +417,8 @@ public actor SyncEngine {
   }
 
   /// Writes every changed item, latest value first come first served. Concurrent callers wait for the same flush.
-  /// A failed save keeps the item dirty and pauses sending until unlock or `start()`.
+  /// A failed save keeps the item dirty and pauses sending until unlock or `start()`. A save that fails after an
+  /// unlock or `start()` arrived while it was out is tried again at once: the pause would belong to before them.
   private func flush() async {
     if flushing {
       await withCheckedContinuation { flushWaiters.append($0) }
@@ -392,6 +428,7 @@ public actor SyncEngine {
     while !pausedForStorage, let id = dirty.first {
       dirty.remove(id)
       guard let item = items[id] else { continue }
+      let epoch = unlockEpoch
       do {
         if persisted.contains(id) {
           try await store.update(item)
@@ -401,6 +438,7 @@ public actor SyncEngine {
         }
       } catch {
         dirty.insert(id)
+        guard unlockEpoch == epoch else { continue }  // unlocked or restarted while the save was out
         pausedForStorage = true
         logger.error("outbox save failed: stage=\(item.stage.rawValue, privacy: .public); sending paused")
       }
@@ -520,8 +558,8 @@ public actor SyncEngine {
 
   private func signalIdleIfNeeded() {
     guard !idleWaiters.isEmpty, isIdle else { return }
-    let waiters = idleWaiters
-    idleWaiters = []
+    let waiters = idleWaiters.values
+    idleWaiters = [:]
     waiters.forEach { $0.resume() }
   }
 
@@ -705,26 +743,28 @@ public actor SyncEngine {
     }
   }
 
-  /// Whether an older capture must go before later ones: it can still be sent.
+  /// Whether an older capture must go before later ones: it can still be sent. Only the server's permanent rejection
+  /// lets later ones pass; a capture that failed on the device (unreadable, malformed) holds them until it is sent.
   private func holdsLaterCaptures(_ capture: OutboxItem) -> Bool {
     switch capture.state {
     case .queued, .inFlight, .blocked: return true
-    case .failed: return Self.transientCodes.contains(capture.lastErrorCode ?? "")
+    case .failed: return !Self.rejectionCodes.contains(capture.lastErrorCode ?? "")
     case .acked, .superseded: return false
     }
   }
 
-  /// Once a newer capture is acked, older captures that are still unsent (rejected for good, or a rejection the trainer
-  /// retried while the newer one was out) can never be sent in order again: they become `superseded` so nothing
-  /// resends them after the newer one (V1-05 §12.3). A member makes one call at a time, so a capture retried while a
-  /// newer one is in flight is still queued when that one is acked, and is superseded right there.
+  /// Once a newer capture is acked, older captures that are still unsent (rejected for good by the server, or a
+  /// rejection the trainer retried while the newer one was out) can never be sent in order again: they become
+  /// `superseded` so nothing resends them after the newer one (V1-05 §12.3). A member makes one call at a time, so a
+  /// capture retried while a newer one is in flight is still queued when that one is acked, and is superseded right
+  /// there. A capture that failed on the device is never superseded: it was not rejected.
   private func supersedeRejectedConsents(for member: MemberKey) {
     guard let newestAcked = items.values
       .filter({ $0.memberKey == member && $0.stage == .consent && $0.state == .acked })
       .map(\.sequence).max()
     else { return }
-    for (id, item) in items where item.memberKey == member && item.stage == .consent
-      && item.sequence < newestAcked && (item.state == .failed || item.state == .queued) {
+    for (id, item) in items where item.memberKey == member && item.stage == .consent && item.sequence < newestAcked
+      && (item.state == .queued || (item.state == .failed && Self.rejectionCodes.contains(item.lastErrorCode ?? ""))) {
       items[id]?.state = .superseded
       markDirty(id)
     }

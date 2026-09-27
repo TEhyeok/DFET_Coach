@@ -96,6 +96,25 @@ final class SettingsViewModelTests: XCTestCase {
     XCTAssertFalse(model.signOutFailed)
   }
 
+  /// Cross-review: records still waiting (queued after '모두 다시 시도' offline, in flight, awaiting consent) with none
+  /// failed are not "nothing to send"; the queue says how many wait. Only an empty Outbox is empty.
+  func testTheQueueIsEmptyOnlyWhenNothingWaits() async {
+    let waiting = SettingsViewModel(queue: FakeQueue(count: 2), signOut: FakeSignOut(), accountName: nil,
+                                    version: "1.0 (1)")
+    await started(waiting, count: 2)
+    XCTAssertEqual(waiting.queueNotice, .waiting(2))
+
+    let empty = SettingsViewModel(queue: FakeQueue(count: 0), signOut: FakeSignOut(), accountName: nil,
+                                  version: "1.0 (1)")
+    await started(empty, count: 0)
+    XCTAssertEqual(empty.queueNotice, .empty)
+
+    let failed = SettingsViewModel(queue: FakeQueue(count: 3, failed: [failedItem()]), signOut: FakeSignOut(),
+                                   accountName: nil, version: "1.0 (1)")
+    await started(failed, count: 3, failed: 1)
+    XCTAssertNil(failed.queueNotice, "the failed items are listed")
+  }
+
   /// AC-DF-018.3: failed items arrive from the queue and '다시 시도' goes to the right item.
   func testFailedItemsAndRetry() async {
     let item = failedItem()

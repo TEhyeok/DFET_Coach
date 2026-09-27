@@ -50,4 +50,62 @@ final class SessionSignOutEmulatorTests: XCTestCase {
     let again = try await firstValue(of: AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid).observeAssignedMembers())
     XCTAssertEqual(again, [])
   }
+
+  /// Cross-review: when Auth fails to sign out, the trainer stays signed in on a torn-down Firestore. TR-02's stream
+  /// ends with its removed listener (`.unavailable`, so the list offers '다시 시도') instead of waiting forever, and
+  /// subscribing again works on the fresh instance.
+  @MainActor
+  func testAFailedLogoutEndsTheMemberStreamAndItSubscribesAgain() async throws {
+    let trainer = try await EmulatorAccounts.create(claims: ["trainer": true])
+    try await EmulatorDocuments.put("trainers/\(trainer.uid)", [
+      "trainerId": trainer.uid, "memberIds": [String](), "approvalStatus": "approved",
+    ])
+    _ = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
+    let members = AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid).observeAssignedMembers()
+    let ended = Ending()
+    let subscriber = Task {
+      do {
+        for try await _ in members {}
+        ended.set(nil)
+      } catch {
+        ended.set(error as? MemberDirectoryError)
+      }
+    }
+    defer { subscriber.cancel() }
+    for _ in 0..<100 where FirestoreListenerRegistry.shared.count == 0 {
+      try await Task.sleep(nanoseconds: 50_000_000)
+    }
+    XCTAssertGreaterThan(FirestoreListenerRegistry.shared.count, 0, "the member list listener never registered")
+
+    let signOut = LiveSessionSignOut(
+      trainerUid: trainer.uid, signOutAuth: { throw AuthError.unknown(code: 1) },
+      teardownRemote: { try await FirestoreSessionTeardown.run() })
+    do {
+      try await signOut.signOut()
+      XCTFail("expected the sign-out error")
+    } catch {}
+    XCTAssertEqual(Auth.auth().currentUser?.uid, trainer.uid, "still signed in")
+    for _ in 0..<100 where !ended.isSet {
+      try await Task.sleep(nanoseconds: 50_000_000)
+    }
+    XCTAssertEqual(ended.error, .unavailable, "the stream ended instead of waiting on a removed listener")
+
+    let again = try await firstValue(of: AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid).observeAssignedMembers())
+    XCTAssertEqual(again, [])
+  }
+}
+
+/// How a stream ended: set once, with its error (nil when it finished).
+private final class Ending: @unchecked Sendable {
+  private let lock = NSLock()
+  private var ended = false
+  private var _error: MemberDirectoryError?
+  var isSet: Bool { lock.withLock { ended } }
+  var error: MemberDirectoryError? { lock.withLock { _error } }
+  func set(_ error: MemberDirectoryError?) {
+    lock.withLock {
+      ended = true
+      _error = error
+    }
+  }
 }

@@ -8,28 +8,38 @@ public final class FirestoreListenerRegistry: @unchecked Sendable {
   public static let shared = FirestoreListenerRegistry()
 
   private let lock = NSLock()
-  private var registrations: [UUID: any ListenerRegistration] = [:]
+  private var registrations: [UUID: Registration] = [:]
 
-  /// Keeps `registration` until `remove(_:)` or `removeAll()`.
-  func add(_ registration: any ListenerRegistration) -> UUID {
+  private struct Registration {
+    let listener: any ListenerRegistration
+    let onRemoved: @Sendable () -> Void
+  }
+
+  /// Keeps `registration` until `remove(_:)` or `removeAll()`. `onRemoved` ends the stream the listener feeds when
+  /// `removeAll()` takes it away: a removed listener never calls back, so a screen kept after a failed logout would
+  /// otherwise wait on it forever instead of offering '다시 시도' and subscribing again.
+  func add(_ registration: any ListenerRegistration, onRemoved: @escaping @Sendable () -> Void) -> UUID {
     let token = UUID()
-    lock.withLock { registrations[token] = registration }
+    lock.withLock { registrations[token] = Registration(listener: registration, onRemoved: onRemoved) }
     return token
   }
 
   /// Removes one listener (its stream ended).
   func remove(_ token: UUID) {
     let registration = lock.withLock { registrations.removeValue(forKey: token) }
-    registration?.remove()
+    registration?.listener.remove()
   }
 
-  /// Removes every listener (logout).
+  /// Removes every listener and ends its stream (logout).
   public func removeAll() {
-    let all = lock.withLock { () -> [any ListenerRegistration] in
+    let all = lock.withLock { () -> [Registration] in
       defer { registrations.removeAll() }
       return Array(registrations.values)
     }
-    all.forEach { $0.remove() }
+    for registration in all {
+      registration.listener.remove()
+      registration.onRemoved()
+    }
   }
 
   public var count: Int { lock.withLock { registrations.count } }

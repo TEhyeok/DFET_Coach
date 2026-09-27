@@ -69,6 +69,9 @@ public enum RemoteError: Error, Equatable, Sendable {
   /// The trainer the Outbox belongs to is not the signed-in user (signed out, claim lost, or another trainer). Nothing
   /// was sent; the item waits for that trainer's next session (DF-108 H1).
   case signedOut
+  /// The server did not accept the session's credentials (`unauthenticated`: the session ended or its token was
+  /// refused). Nothing was written; like `signedOut`, the item waits for the trainer's session (V1-06 §3.6, §8.7).
+  case unauthenticated
   case unknown(String)
 
   /// Stable code stored in `OutboxItem.lastErrorCode` and shown to support. Never contains paths or uids.
@@ -83,6 +86,7 @@ public enum RemoteError: Error, Equatable, Sendable {
     case .deadlineExceeded: return "deadline-exceeded"
     case .protectedDataUnavailable: return "protected-data-unavailable"
     case .signedOut: return "signed-out"
+    case .unauthenticated: return "unauthenticated"
     case .unknown: return "unknown"
     }
   }

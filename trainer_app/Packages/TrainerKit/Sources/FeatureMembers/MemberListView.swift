@@ -18,9 +18,10 @@ public struct MemberListView: View {
   @ScaledMetric(relativeTo: .headline) private var avatarSize: CGFloat = 40
 
   public var body: some View {
+    // No stop on disappear: a size-class change shows a second list before the first one disappears, and the
+    // subscription belongs to the shell's model, which cancels it when it is released (sign-out).
     content
       .onAppear { model.start() }
-      .onDisappear { model.stop() }
   }
 
   @ViewBuilder

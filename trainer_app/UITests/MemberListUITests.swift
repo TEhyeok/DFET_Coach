@@ -53,6 +53,21 @@ final class MemberListUITests: XCTestCase {
     XCTAssertFalse(element("tr02.loading", in: app).exists)
   }
 
+  /// A size-class change while the list loads keeps the subscription: the new list appears before the old one
+  /// disappears, so a stop on disappear would cancel the only subscription and leave the skeleton forever.
+  @MainActor
+  func testResizeWhileLoadingKeepsTheSubscription() throws {
+    let app = launch(["--preview-members-slow", "--preview-width=375", "--preview-resizable"])
+    let toggle = element("preview.toggleWidth", in: app)
+    XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+    element("nav.members", in: app).tap()
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    toggle.tap()  // wide
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    toggle.tap()  // narrow again
+    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 20), "the list was lost on resize")
+  }
+
   private func launch(_ arguments: [String]) -> XCUIApplication {
     let app = XCUIApplication()
     app.launchArguments = arguments

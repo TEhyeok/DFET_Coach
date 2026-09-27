@@ -80,12 +80,15 @@ final class MemberListViewModelTests: XCTestCase {
     XCTAssertEqual(model.state, .loading)
   }
 
-  func testStopEndsTheSubscription() async {
+  /// Screens never stop the subscription (a resize shows a second list first); releasing the model ends it.
+  func testReleasingTheModelEndsTheSubscription() async {
     let directory = ControlledDirectory()
-    let model = MemberListViewModel(directory: directory)
-    model.start()
+    var model: MemberListViewModel? = MemberListViewModel(directory: directory)
+    model?.start()
     await waitFor { directory.activeSubscriptions == 1 }
-    model.stop()
+    model?.start()  // a second screen appearing
+    await waitFor { directory.activeSubscriptions == 1 }
+    model = nil
     await waitFor { directory.activeSubscriptions == 0 }
   }
 

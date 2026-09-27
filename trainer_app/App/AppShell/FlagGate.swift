@@ -51,12 +51,12 @@ enum EntryPoint: String, CaseIterable, Identifiable {
     }
   }
 
-  /// String catalog key of the label (V1-12 `data/copy_ko.json`).
+  /// String catalog key of the label (V1-12 `data/copy_ko.json`; the sidebar uses the screens' titles).
   var titleKey: String {
     switch self {
-    case .today: return "nav.today"
-    case .members: return "nav.members"
-    case .settings: return "nav.settings"
+    case .today: return "tr01.title"
+    case .members: return "tr02.title"
+    case .settings: return "tr15.title"
     case .startSession: return "tr03.startSession"
     case .bodyComposition: return "tr11.title"
     case .circumference: return "tr12.title"
@@ -69,7 +69,7 @@ enum EntryPoint: String, CaseIterable, Identifiable {
 
   var accessibilityID: String {
     switch surface {
-    case .sidebar: return titleKey
+    case .sidebar: return "nav.\(rawValue)"  // stable identifiers, independent of the copy keys
     case .memberDetail: return "tr03.entry.\(rawValue)"
     }
   }

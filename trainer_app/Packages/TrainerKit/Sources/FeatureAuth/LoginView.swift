@@ -17,7 +17,7 @@ public struct LoginView: View {
 
   public var body: some View {
     VStack(alignment: .leading, spacing: 20) {
-      Text("auth.login.title")
+      Text("login.title")
         .font(.largeTitle.weight(.semibold))
         .accessibilityAddTraits(.isHeader)
 
@@ -29,7 +29,7 @@ public struct LoginView: View {
       }
 
       VStack(spacing: 12) {
-        TextField("auth.field.email", text: $model.email)
+        TextField("login.email", text: $model.email)
           .textContentType(.username)
           .keyboardType(.emailAddress)
           .textInputAutocapitalization(.never)
@@ -38,7 +38,7 @@ public struct LoginView: View {
           .submitLabel(.next)
           .onSubmit { focused = .password }
           .accessibilityIdentifier("auth.email")
-        SecureField("auth.field.password", text: $model.password)
+        SecureField("login.password", text: $model.password)
           .textContentType(.password)
           .focused($focused, equals: .password)
           .submitLabel(.go)
@@ -57,7 +57,7 @@ public struct LoginView: View {
       Button(action: submit) {
         HStack {
           if model.phase == .signingIn { ProgressView() }
-          Text("auth.submit.title")
+          Text("login.submit")
         }
         .frame(maxWidth: .infinity)
       }

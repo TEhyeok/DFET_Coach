@@ -191,5 +191,7 @@ jobs:
         with:
           node-version: "22"
       - run: node --test tool/lint/test/prohibited-terms.test.mjs    # TC-DF010-01~05
+      - run: node --test tool/lint/test/catalog-deck.test.mjs       # 카탈로그가 문구 덱을 따른다(docs/v1/12 §4.7)
+      - run: node tool/lint/catalog-deck.mjs --check                 # 덱에 없는 키·다른 문장·자리표시자 차단
       # 보고서를 job 로그와 Step Summary 표로 남긴다(AC-DF-010.2, AC-DF-010.6)
       - run: node tool/lint/prohibited-terms.mjs --mode="${COPY_LINT_MODE:-report}" --summary "$GITHUB_STEP_SUMMARY"

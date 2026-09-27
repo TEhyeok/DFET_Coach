@@ -21,14 +21,14 @@ final class LoginUITests: XCTestCase {
     XCTAssertFalse(app.otherElements["app.root"].exists)
 
     signIn(app, email: "member@example.invalid", password: "anything")
-    assertError(app, "트레이너 권한이 없는 계정입니다. 관리자에게 권한 부여를 요청하세요.")
+    assertError(app, "트레이너 권한이 없는 계정이에요. 트레이너 계정으로 로그인하세요.")
     attachScreenshot(app, name: "TC-DF012-04 notTrainer")
 
     signIn(app, email: "trainer@example.invalid", password: "wrong")
-    assertError(app, "이메일 또는 비밀번호가 맞지 않습니다.")
+    assertError(app, "이메일 또는 비밀번호가 맞지 않아요.")
 
     signIn(app, email: "offline@example.invalid", password: "anything")
-    assertError(app, "네트워크에 연결할 수 없습니다. 연결을 확인한 뒤 다시 시도하세요.")
+    assertError(app, "서버에 연결할 수 없어요. 잠시 뒤 다시 시도해 주세요.")
 
     signIn(app, email: "trainer@example.invalid", password: "preview-only-password")
     XCTAssertTrue(app.otherElements["app.root"].waitForExistence(timeout: 10))
@@ -52,7 +52,7 @@ final class LoginUITests: XCTestCase {
     app.activate()
     let notice = element("auth.locked", in: app)
     XCTAssertTrue(notice.waitForExistence(timeout: 15))
-    XCTAssertEqual(notice.label, "트레이너 권한이 회수되어 로그아웃되었습니다. 관리자에게 문의하세요.")
+    XCTAssertEqual(notice.label, "계정 권한이 바뀌어 다시 로그인해야 해요.")
     XCTAssertTrue(app.otherElements["login.root"].exists)
     attachScreenshot(app, name: "TC-DF012-04 claim revoked")
   }

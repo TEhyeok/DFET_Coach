@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.4 |
+| 버전 | v1.0.5 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 827개(트레이너 543, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 835개(트레이너 551, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -264,6 +264,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 
 | 네임스페이스 | 용도 | 대상 기본값 |
 |---|---|---|
+| `app.*` | 트레이너 앱 이름·구성 누락 화면 | trainer |
 | `common.*` | 두 앱 공통 버튼·상태·고지, 모르는 messageKey 대체 문장(`common.<code>`) | shared(`common.comingSoon`, `common.unparsed`, `common.loading`은 trainer) |
 | `sync.*`, `soap.status.*`, `posture.status.*`, `record.*` | 저장 상태·기록 상태 | trainer |
 | `sourceGrade.*`, `reliability.*`, `mdc.*`, `change.*`, `reason.*`, `series.*`, `condition.*`, `chart.*` | 트레이너 표시 어휘(§3) | trainer(`chart.lineHelp`는 shared) |
@@ -358,7 +359,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 2. 플랫폼 카탈로그(§4.4)에 같은 키·같은 문장으로 옮겨 적는다.
 3. `node tool/lint/prohibited-terms.mjs`가 덱과 카탈로그를 모두 검사한다. 회원 대상 문장은 회원 세트까지 통과해야 한다.
 4. 회원 노출 문구(`member`, `shared`, `notification`, `marketing`, `consentDraft`)를 바꾸는 PR은 `regulatory` 라벨을 달고 소유자가 diff를 직접 읽고 병합한다([V1-01](01_AGILE_WORKING_AGREEMENT.md)).
-5. 덱과 카탈로그의 불일치(키는 있는데 문장이 다름, 카탈로그에만 있는 키)는 copy-lint `--check-deck`이 경고로 보고한다(§7.9, ASM-12-22).
+5. 트레이너 카탈로그와 덱의 불일치(카탈로그에만 있는 키, 문장이 다름, 번호 없는 복수 자리표시자, 회원·관리자 대상 키, `V1-12`로 시작하지 않는 주석), 덱 문장의 자리표시자·`args` 불일치, §4.9 표 행과 덱의 불일치는 `node tool/lint/catalog-deck.mjs`가 copy-lint job에서 **차단**한다. 카탈로그 항목은 손으로 쓰지 않고 `node tool/lint/catalog-deck.mjs --add <키>...`로 덱에서 옮겨 적는다(ASM-12-22의 경고 단계를 건너뜀).
 
 ### 4.8 동의 문서 초안(법률 검토 대기)
 
@@ -394,6 +395,8 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `common.noNorm` | 규준 없음 | shared | P1b | §7.7, C-04 |  |
 | `common.unparsed` | 해석 불가 | trainer | P0 | F-SOAP-06.2 | 알 수 없는 metricCode·레거시 표기 원문 보존 표시 |
 | `common.devDefect` | 처리하지 못했어요. 문제가 계속되면 관리자에게 알려 주세요. | shared | P0 | V1-06 §3.6 | '개발 결함'으로 분류된 messageKey의 사용자 문장 |
+| `app.title` | D-FET Trainer | trainer | P0 | TR-01 | 앱 이름(사이드바 제목). 번역하지 않음(DF-017) |
+| `app.config.missing` | 앱 구성 파일이 없어 서버에 연결할 수 없어요. 관리자에게 문의해 주세요. | trainer | P0 | V1-04 §8.1 | GoogleService-Info.plist 없는 빌드(DF-017) |
 | `common.disclaimer.short` | 운동 지도와 건강관리 기록용이며 진단이나 치료를 위한 정보가 아닙니다. | shared | P0 | §3.1 | §3.1 원문 그대로. allowEntries AE-01로 허용(부정문 고지) |
 | `common.disclaimer.member` | 이 기록은 운동 지도를 돕는 참고 자료예요. 불편이 계속되면 의료진과 상담하세요. | member | P2 | §3.1 | 회원 리포트·요약 하단 |
 
@@ -1164,6 +1167,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `login.email` | 이메일 | trainer | P0 | NFR-02 |  |
 | `login.password` | 비밀번호 | trainer | P0 | NFR-02 |  |
 | `login.submit` | 로그인 | trainer | P0 | NFR-02 |  |
+| `login.error.invalidCredentials` | 이메일 또는 비밀번호가 맞지 않아요. | trainer | P0 | NFR-02 | Auth 오류 코드 wrongPassword·userNotFound·invalidCredential(DF-012). 네트워크는 `common.unavailable`, 그 밖은 `common.internal` |
 | `tr15.title` | 설정 | trainer | P0 | TR-15 |  |
 | `tr15.account` | 계정 | trainer | P0 | TR-15 |  |
 | `tr15.signOut` | 로그아웃 | trainer | P0 | NFR-08 |  |
@@ -2195,3 +2199,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.2 | 2026-09-25 | Sprint 01 문서 후속(PR #104): contracts `labelsKo`에만 있던 라벨 5키(`reliabilityTier.tier1`, `measurementStatus.active`, `circumferenceProtocolId.*`)를 문구 덱에 추가 | #113 | 없음 |
 | v1.0.3 | 2026-09-28 | DF-013: `common.loading`(트레이너 전용, TR-02 스켈레톤 접근성 라벨) 추가, §2 덱 키 수를 덱의 `counts`와 맞춤 | #169 | 없음 |
 | v1.0.4 | 2026-09-28 | DF-203: `tr07.station.default`·`tr07.station.defaultSummary`(args name, height, distance), 복장 라벨 `clothing.*` 3키 추가, §4.1 vocab 값 라벨 이름공간 행, §2 덱 키 수 갱신 | #172 | 없음 |
+| v1.0.5 | 2026-09-28 | 트레이너 카탈로그 드리프트 정리: DF-012·DF-017이 카드 제안 키(`auth.field.*`, `auth.error.*`, `nav.*` 등)로 쓴 문구를 덱 키(`login.*`, `auth.notTrainer`, `auth.sessionLocked`, `common.unavailable`, `common.internal`, `tr01/02/15.title`)로 바꾸고, 덱에 없던 `app.title`, `app.config.missing`, `login.error.invalidCredentials`와 v1.0.2 표에만 있던 라벨 5키를 덱 JSON에 추가. §4.1 `app.*` 행, §4.7 5항을 `catalog-deck.mjs` 차단 검사로 변경 | #PR | 없음 |

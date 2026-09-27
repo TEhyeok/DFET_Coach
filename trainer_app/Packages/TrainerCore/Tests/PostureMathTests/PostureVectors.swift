@@ -102,6 +102,7 @@ extension ConfirmBlocker {
     case .landmarkNotInView: return "landmarkNotInView"
     case .coordinateOutOfRange: return "coordinateOutOfRange"
     case .zeroImageSize: return "zeroImageSize"
+    case .invalidRotation: return "invalidRotation"
     }
   }
 
@@ -109,6 +110,16 @@ extension ConfirmBlocker {
     switch self {
     case let .degenerateGeometry(m), let .pairTooClose(m), let .sidesSwapped(m): return m
     default: return nil
+    }
+  }
+
+  /// The blocker a computation error implies.
+  static func from(_ error: PostureMathError) -> ConfirmBlocker {
+    switch error {
+    case let .coordinateOutOfRange(code): return .coordinateOutOfRange(code)
+    case .zeroImageSize: return .zeroImageSize
+    case let .degenerateGeometry(metric): return .degenerateGeometry(metric)
+    case .invalidRotation: return .invalidRotation
     }
   }
 }

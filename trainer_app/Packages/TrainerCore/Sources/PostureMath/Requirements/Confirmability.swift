@@ -16,6 +16,8 @@ public enum ConfirmBlocker: Equatable, Hashable, Sendable {
   case coordinateOutOfRange(LandmarkCode)
   /// V-POS-02: the view's image has no size.
   case zeroImageSize
+  /// The stored roll correction is not a finite number.
+  case invalidRotation
 }
 
 public struct Confirmability: Equatable, Sendable {
@@ -87,6 +89,7 @@ public enum PostureConfirmation {
       reasons.append(.coordinateOutOfRange(landmark.code))
     }
     guard input.imageSize.width > 0, input.imageSize.height > 0 else { return reasons + [.zeroImageSize] }
+    guard input.imageRotationDeg.isFinite else { return reasons + [.invalidRotation] }
     guard !reasons.contains(where: { if case .coordinateOutOfRange = $0 { return true } else { return false } }) else {
       return reasons
     }

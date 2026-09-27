@@ -92,6 +92,8 @@ public enum PostureMathError: Error, Equatable, Sendable {
   case zeroImageSize
   /// The points are closer than 1 px, so no angle exists (V-POS-03).
   case degenerateGeometry(MetricCode)
+  /// `imageRotationDeg` is not a finite number.
+  case invalidRotation
 }
 
 /// One view of an assessment, as the calculator and the confirmability rule read it.
@@ -153,6 +155,7 @@ public enum PostureMetricCalculator {
     // Every stored coordinate is checked, used or not (AC-ASM-02.4).
     for landmark in input.landmarks { try PostureViewInput.validate(landmark) }
     guard input.imageSize.width > 0, input.imageSize.height > 0 else { throw PostureMathError.zeroImageSize }
+    guard input.imageRotationDeg.isFinite else { throw PostureMathError.invalidRotation }
 
     switch input.view {
     case .sagittalLeft, .sagittalRight:

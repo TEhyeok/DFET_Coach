@@ -1,3 +1,4 @@
+import FeatureBodyComposition
 import TrainerDomain
 
 /// What the shell's screens use, for one signed-in trainer (live) or a preview scenario.
@@ -12,6 +13,9 @@ struct ShellServices {
   let signOut: any SessionSignOut
   /// TR-15 계정 row.
   let accountName: String?
+  /// TR-03 body composition section and TR-11 (DF-127, DF-130): the LocalStore measurement store and device list, and
+  /// the members' effective consent.
+  let bodyComposition: BodyCompositionServices
 }
 
 /// Sheets the shell presents over the current screen (V1-07 §3.2: TR-14 is a sheet, not a column route).

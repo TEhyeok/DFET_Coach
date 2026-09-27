@@ -49,9 +49,17 @@ final class SessionSignOutOrderTests: XCTestCase {
     }
   }
 
+  /// Server reads that never answer (DF-127): the logout order does not depend on them.
+  private struct NoReads: BodyCompositionRecordSource, ConsentStateSource {
+    func observeRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error> {
+      AsyncThrowingStream { _ in }
+    }
+    func observe(member: MemberKey) -> AsyncStream<ConsentState?> { AsyncStream { _ in } }
+  }
+
   private var remote: SyncRemote {
-    SyncRemote(writer: NoRemote(), uploader: NoRemote(), callable: NoRemote(), currentUid: { nil },
-               sessions: { AsyncStream { _ in } })
+    SyncRemote(writer: NoRemote(), uploader: NoRemote(), callable: NoRemote(), bodyCompositionRecords: NoReads(),
+               consentStates: NoReads(), currentUid: { nil }, sessions: { AsyncStream { _ in } })
   }
 
   override func tearDown() async throws {

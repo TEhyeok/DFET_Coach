@@ -1,17 +1,24 @@
+import FeatureBodyComposition
 import Foundation
 import LocalStore
 import Network
 import os
 import SwiftData
 import SyncEngine
+import TrainerContracts
 import TrainerDomain
 import UIKit
 
-/// The remote side of the SyncEngine for one trainer (FirebaseData, built in `FirebaseAppBootstrap`).
+/// The remote side of the SyncEngine for one trainer (FirebaseData, built in `FirebaseAppBootstrap`), and the server
+/// reads the local-first stores merge with.
 struct SyncRemote {
   let writer: any RemoteWriter
   let uploader: any BinaryUploader
   let callable: any CallableClient
+  /// The server's body composition records (DF-130), merged with this device's unsynced ones.
+  let bodyCompositionRecords: any BodyCompositionRecordSource
+  /// `memberConsentStates` (DF-111 MVP); guards read it only through `EffectiveConsent`.
+  let consentStates: any ConsentStateSource
   /// The signed-in user's uid at this moment; every send checks it (`SessionBoundRemote`).
   let currentUid: @Sendable () -> String?
   /// The auth session, current value first; the runtime sends only while it is this trainer's.
@@ -81,6 +88,10 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
+  /// TR-11 saves and the body composition reads (DF-127, DF-130), on the same partition and Outbox.
+  let measurements: LocalMeasurementStore
+  /// The members' effective consent: server state only until DF-110 brings local consent captures.
+  let consent: any EffectiveConsentSource
   /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
   let container: ModelContainer
   let location: LocalStoreLocation
@@ -109,6 +120,16 @@ final class SessionRuntime {
     self.engine = engine
     sessions = remote.sessions
     registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
+    let consent = ServerEffectiveConsentSource(states: remote.consentStates)
+    self.consent = consent
+    measurements = LocalMeasurementStore(
+      outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) }, server: remote.bodyCompositionRecords,
+      consent: { member in await EffectiveConsent.current(from: consent, member: member) })
+  }
+
+  /// TR-03/TR-11 services of this runtime.
+  var bodyComposition: BodyCompositionServices {
+    BodyCompositionServices(store: measurements, devices: measurements, consent: consent)
   }
 
   /// Created for a signed-in session, so sending starts now; then it follows the session.
@@ -215,6 +236,31 @@ final class SessionRuntime {
   }
 
   struct LocalStoreUnavailable: Error {}
+
+  /// Body composition when the LocalStore could not be opened: reads fail ('불러오기 실패'), saves fail and say so.
+  struct UnavailableMeasurements: MeasurementStore, DeviceModelCatalog {
+    func saveBodyComposition(member: MemberKey, draft: BodyCompositionDraft) async throws -> String {
+      throw LocalStoreUnavailable()
+    }
+
+    func observeBodyCompositionRecords(member: MemberKey, since: Date)
+      -> AsyncThrowingStream<[BodyCompositionRecord], Error>
+    {
+      AsyncThrowingStream { $0.finish(throwing: LocalStoreUnavailable()) }
+    }
+
+    func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error> {
+      AsyncThrowingStream { $0.finish(throwing: LocalStoreUnavailable()) }
+    }
+
+    func recentDeviceModels() async throws -> [String] { [] }
+
+    func addDeviceModel(_ name: String) async throws -> String { throw LocalStoreUnavailable() }
+
+    static func services(consent: any EffectiveConsentSource) -> BodyCompositionServices {
+      BodyCompositionServices(store: UnavailableMeasurements(), devices: UnavailableMeasurements(), consent: consent)
+    }
+  }
 
   /// The TR-15 queue when the LocalStore could not be opened: nothing is pending, nothing to retry.
   struct UnavailableSyncQueue: SyncQueueService {

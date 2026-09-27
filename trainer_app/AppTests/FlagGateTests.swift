@@ -19,6 +19,7 @@ final class FlagGateTests: XCTestCase {
     XCTAssertFalse(ShellScope.showsToday)
     XCTAssertEqual(FlagGate.visibleEntries(on: .sidebar, flags: .allOff), [.members, .settings])
     XCTAssertEqual(FlagGate.visibleEntries(on: .memberDetail, flags: .allOff), [])
+    XCTAssertEqual(FlagGate.visibleEntries(on: .measureMenu, flags: .allOff), [], "no item, no '측정 입력' menu")
     let visible = EntryPoint.allCases.filter { FlagGate.isEntryVisible($0, flags: .allOff) }
     XCTAssertEqual(visible.map(\.trID), ["TR-02", "TR-15"])
   }
@@ -42,12 +43,27 @@ final class FlagGateTests: XCTestCase {
   func testMemberAppFlagsGateNothingInTheTrainerApp() {
     let flags = FeatureFlags(gut: true, blood: true, insights: true)
     XCTAssertEqual(FlagGate.visibleEntries(on: .memberDetail, flags: flags), [])
+    XCTAssertEqual(FlagGate.visibleEntries(on: .measureMenu, flags: flags), [])
   }
 
-  /// AC-DF-017.5: gated entries have no screen yet, so a DEBUG override that turns them on opens `common.comingSoon`.
+  /// AC-DF-127.11: TR-03 '측정 입력' holds '신체조성' (TR-11 sheet) and '둘레(줄자)' (DF-129, coming soon); both follow
+  /// `bodyComposition`, so the flag off leaves neither the items nor the menu.
+  func testMeasureMenuFollowsBodyComposition_AC_DF_127_11() {
+    let on = FeatureFlags(enabled: [.bodyComposition])
+    XCTAssertEqual(FlagGate.visibleEntries(on: .measureMenu, flags: on), [.bodyComposition, .circumference])
+    XCTAssertEqual(FlagGate.visibleEntries(on: .measureMenu, flags: on).map(\.titleKey),
+                   ["tr03.measureMenu.bodyComposition", "tr03.measureMenu.circumference"])
+    XCTAssertEqual(EntryPoint.bodyComposition.destination, .bodyCompositionEntry)
+    XCTAssertEqual(EntryPoint.circumference.destination, .comingSoon)
+    let off = FeatureFlags(enabled: Set(FeatureFlags.Key.allCases).subtracting([.bodyComposition]))
+    XCTAssertEqual(FlagGate.visibleEntries(on: .measureMenu, flags: off), [])
+  }
+
+  /// AC-DF-017.5: gated entries without a screen yet open `common.comingSoon` when a DEBUG override turns them on.
+  /// TR-11 is the first with a screen (DF-127).
   func testGatedEntriesOpenComingSoon_AC_DF_017_5() {
-    for entry in EntryPoint.allCases where entry.surface == .memberDetail {
-      XCTAssertEqual(entry.destination, .comingSoon, entry.rawValue)
+    for entry in EntryPoint.allCases where entry.surface != .sidebar {
+      XCTAssertEqual(entry.destination, entry == .bodyComposition ? .bodyCompositionEntry : .comingSoon, entry.rawValue)
       XCTAssertTrue(entry.accessibilityID.hasPrefix("tr03.entry."), entry.rawValue)
     }
     XCTAssertEqual(EntryPoint.today.destination, .route(.today))

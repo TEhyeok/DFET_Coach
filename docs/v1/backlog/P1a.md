@@ -2099,6 +2099,25 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - 왜 필요한가: 흐름 2: TR-11 신체조성 수기 입력
 - 지금 만든다: 카드 전체 범위(분석 이벤트 AC 제외). AC-DF-127.4의 동의 판단(② 없음 → 저장 비활성, `awaitingConsent` → 로컬 저장만)은 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-127.10(`bodycomp_record_saved`)과 TC-127-11은 만들지 않는다
+- 구현 기록(입력 → 기기 저장·Outbox → 추이까지 한 줄로 이은 수직 조각. DF-128의 `SeriesSegmenter`, DF-130 차트, DF-111 MVP 조각의 `EffectiveConsent`를 함께 묶었다):
+  - `TrainerDomain`(도메인 브랜치 `claude/DF-127-domain`): 공용 `NumberParser`(`Common/`), `BodyCompositionKey`(범위·소수 자리는 metric-catalog), `BMICalculator`(반올림 1자리, 200 초과는 파생 없음), `TimeOfDayBand(measuredAt:)`(서울 시각), `BodyCompositionDraft`, `BodyCompositionValidator`(오류·경고와 덱 키), `BodyCompositionPayload`(키 집합을 firestore.rules `bcKeys()`와 테스트로 대조), `BodyCompositionRecord`(읽기 모델), `MeasurementStore` 프로토콜. 같은 브랜치에서 DF-128의 `SeriesSegmenter`(DF-216 API 그대로)와 DF-111 MVP 조각의 `EffectiveConsent`·`ConsentState`도 먼저 만들었다.
+  - 이 조각에서 더한 순수 타입: `BodyCompositionRecordSource`(서버 기록), `DeviceModelCatalog`(기기 목록), `BodyCompositionRecordMerge`(서버 기록 + 이 기기 미동기 기록, 기록 id당 하나, 서버 사본 우선), `ServerEffectiveConsentSource`, `EffectiveConsent.current(from:member:timeout:)`(값을 받지 못하면 `.none`이라 저장을 거부한다).
+  - 저장 구현은 카드의 `SyncEngine/Stores/MeasurementStoreImpl.swift`가 아니라 `LocalStore/LocalMeasurementStore`다(DF-108 등록과 같은 이유: SyncEngine은 LocalStore를 모른다). 순서는 검증 → 동의 ② 확인(`blocked`면 `consentRequired`) → `LocalMeasurementDraft` + Outbox 2단계 `createDocument`(`bodyCompositionRecords/{id}`, 필드는 `BodyCompositionPayload.fields`) + 기기 사용 기록을 한 번에 저장(`LocalOutboxStore.insertMeasurement`, DF-108 `insertPendingMember`와 같은 규칙) → 엔진에 전달. `awaitingConsent`도 같은 경로로 기기에 저장되고 엔진이 붙잡는다(DF-015).
+  - 기기 목록([ASM-P1a-14](#9-가정asm-p1a-nn)): `LocalStoreSchemaV1_2`(가벼운 이관, V1_1은 동결)의 `DeviceModelEntry {id, trainerUid, name, lastUsedAt}`. 이 iPad의 목록이고 동기화하지 않으며 로그아웃 뒤에도 남는다(스테이션과 같은 기기 설정). 기록을 저장하면 그 기기가 맨 위로 온다. 기본값은 이 회원의 직전 active 기록 기기, 없으면 최근 사용 기기(V1-09 §10.3).
+  - 읽기(`observeBodyCompositionRecords`): FirebaseData `FirestoreBodyCompositionRecords`와 이 기기의 미동기 draft(Outbox 항목이 acked·superseded가 아닌 것)를 합친다. 쿼리는 `trainerId == uid && memberUid(대기 회원은 pendingMemberId) == m && measuredAt >= 12개월 전 order by measuredAt desc`이고 기존 복합 인덱스 두 개와 맞는지 FirebaseDataTests가 firestore.indexes.json을 읽어 확인한다(인덱스 추가 없음). `status == active` 조건은 새 인덱스가 필요해 쿼리에 넣지 않고 `BodyCompositionSeries`가 voided를 뺀다. 리스너는 `FirestoreListenerRegistry`에 등록되어 로그아웃 때 지워진다. 서버 첫 응답 전에는 내보내지 않고, 서버 오류는 스트림 실패다('불러오기 실패', 빈 목록 아님). 동기화된 draft는 읽지 않으므로 서버에서 파기된 기록이 이 기기 추이에 남지 않는다.
+  - 동의: `FirestoreConsentStates`(`memberConsentStates/{memberKey}` 리스너. 읽기 거부는 동의 없음으로 닫힌다) → `ServerEffectiveConsentSource`. DF-111 `EffectiveConsentResolver`(로컬 현장 동의 합치기)는 DF-110 현장 동의가 아직 없어 만들지 않았다. 로컬 캡처가 없으면 결과가 같다.
+  - 화면 `FeatureBodyComposition`: `BodyCompositionEntryView`(`/// TR-11`, 시트)는 값과 단위, 빈칸 '미측정', 쉼표 소수점, 기기 선택과 '기기 추가', 측정 일시(기본 지금, 편집 가능), 공복 '공복'/'공복 아님'(기본 없음, '모름'은 ⋯ 메뉴에만), 읽기 전용 시간대, ②가 있을 때만 키 행, BMI 파생 또는 '미측정', 필드 아래 범위 오류, 저장을 막지 않는 교차 경고(경고가 있으면 저장 버튼이 '확인했어요, 저장하기'), 저장이 꺼진 이유 목록, ② 없음 → 저장 비활성과 '건강정보 동의 필요', `awaitingConsent` → '동의 확인 대기'. 저장하면 같은 시트가 기록 보기(`BodyCompositionRecordView`: 값·BMI·메타와 미니 추이)로 바뀐다. 상태는 `BodyCompositionEntryModel`(검증은 매번 `BodyCompositionValidator`)과 회원별 `BodyCompositionMemberModel`(기록·동의 구독)이다.
+  - TR-03 진입(AC-DF-127.11): TR-03이 아직 DF-113·DF-114 전 자리 표시라 카드의 `FeatureMembers/Detail/MemberDetailView.swift`가 아니라 App의 `MemberDetailShell`에 `tr03.measureMenu` 메뉴를 넣었다. 항목은 '신체조성'(TR-11 시트)과 '둘레(줄자)'(DF-129 전까지 '추후 추가 예정')이고 둘 다 `bodyComposition`을 따르므로 꺼지면 메뉴도 없다(`EntryPoint.Surface.measureMenu`, `Destination.bodyCompositionEntry`).
+  - TR-03 신체조성 요약(`BodyCompositionSection`, `bodyComposition` 켜짐일 때만): 최근 체중·체지방률·골격근량 `MetricRow`와 미니 추이. 저장 결과가 TR-03에서 바로 보이게 하려고 넣었다. DF-114의 헤더 Metric Row(AC-DF-114.9)가 들어오면 그쪽으로 옮긴다.
+  - 문구: 덱 v1.0.8에 `tr03.section.bodyComposition`, `tr11.fasting.more`(⋯ 메뉴 접근성 이름), `tr11.record.title` 추가(V1-12 v1.0.9 §4.9 행). 화면이 쓰는 덱 키 38개를 `catalog-deck.mjs --add`로 카탈로그에 옮겼다.
+  - 미리보기: `--preview-members --preview-flags=bodyComposition`은 실제 `LocalMeasurementStore`(메모리 LocalStore, Outbox는 보내지 않음)에 합성 서버 기록을 붙인다. SYN-0001은 최근 5개월 6건(InBody 570 3건 → InBody 970 3건, 뒤 3건은 키 170으로 BMI 파생), 미리보기 회원은 모두 ①②③ 동의.
+  - 테스트: TrainerCoreTests `BodyCompositionSourcesTests`(병합·기기 이름·동의 5건), LocalStoreTests `LocalMeasurementStoreTests`(한 번 저장과 Outbox 필드 == 페이로드, 재시작 뒤 항목 유지, ② 게이트 4값, 잘못된 draft, 서버 + 미동기 병합과 ack 뒤 서버 사본, voided 없는 시리즈, 서버 오류, 기기 목록 2건, V1_1 → V1_2 이관 10건)와 스키마 테스트 갱신, FeatureModulesTests `BodyCompositionEntryModelTests`(저장 비활성 조건, ② 게이트 5값, 범위 오류 문구 '0~100% 사이로 입력하세요', 경고여도 저장, BMI, 기본값·기기 변경 안내·기기 추가, 차트 모델, `users` 읽기 없음 코드 검색 13건), FirebaseDataTests(쿼리 필드와 인덱스 2건), DFETTrainerTests `FlagGateTests`(측정 입력 메뉴), UI `BodyCompositionUITests`(SYN-0001 → 측정 입력 > 신체조성 → 공복·체중 '62,4' → 저장 → 추이 요약 '기록 7개'·'최소 62.4kg'·'산정 준비 중', TR-03에도 반영 / 플래그 꺼짐 메뉴 없음).
+  - 편차·남은 일:
+    - AC-DF-127.10(분석 이벤트)은 MVP 밖이라 없다.
+    - 대기 회원의 `pendingMembers/{p}.heightCm` update와 그 값을 키 기본값으로 쓰는 부분([ASM-P1a-41](#9-가정asm-p1a-nn))은 없다. TR-02에 대기 회원 행이 아직 없다(DF-113). 가입 회원은 직전 기록의 `derived.heightCmUsed`와 그 측정일을 기본값으로 쓴다.
+    - TC-127-02·03·05의 규칙·에뮬레이터 확인과 `DFETTrainerIntegrationTests` 시나리오는 이 조각에서 돌리지 않았다. 페이로드 키 집합과 값 범위는 firestore.rules를 읽는 단위 테스트로 대조한다.
+    - V1-07 §3.7의 `unknown`(동의 상태를 한 번도 받지 못함)은 따로 두지 않았다. 모르는 동안 저장 버튼은 꺼져 있고 문구는 없으며, 저장소도 5초 안에 동의 값을 받지 못하면 거부한다.
+    - 시뮬레이터에서 값 칸에 입력하는 중(키보드 표시) 같은 Form의 다른 행 버튼(공복 선택)을 누르면 첫 탭은 입력 종료로 쓰이고 두 번째 탭에 선택된다. 저장 버튼은 첫 탭에 동작한다. 실기기 확인은 DF-140.
 
 ---
 
@@ -2319,6 +2338,18 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 스프린트: S10(원래 계획 S12). 상태: 할 일
 - 왜 필요한가: 흐름 4: 공통 차트 규칙(출처 칩, '산정 준비 중', 보간 금지)과 TR-11 신체조성 미니 추이(둘레 추이는 DF-215 TR-10)
 - 지금 만든다: 카드 전체 범위
+- 구현 기록:
+  - 차트 브랜치 `claude/DF-130-chart`: `DesignSystem/Charts`의 `SeriesTrendChart`(Swift Charts, 세그먼트별 `LineMark(series:)`로 보간·연결 없음, 날짜 비례 x축, 끊김 점선과 `series.break.*` 사유, 좌우는 선 모양·점 모양·범례), `SeriesChartModel`(등급이 둘 이상이면 `chart.rejected.mixedSource`, v2 지표·v1이 보이지 않는 등급은 숨김), `ChangeBadge`(`.pendingPolicy` '산정 준비 중', 판정 불가는 `ReasonCode` 없이 만들 수 없음), `AXChartDescriptor`와 요약 문장. 덱 `chart.summary`에 `{period}`·`{status}`를 더했고 `chart.empty`·`chart.measuredAt`을 추가했다. TrainerDomain 타입을 쓰지 않는 DesignSystem 전용 모델이라 카드의 `SeriesChartModel { unit, sourceGrade?, segments: [SeriesSegment] }` 모양과 다르다.
+  - 이 조각: `FeatureBodyComposition/Record/SeriesChartMapping`(`SeriesSegmenter` 결과 → `ChartSegment`. 세그먼트 id가 Charts series 값, 사유는 기기·프로토콜·조건, 출처 칩의 기기는 최신 점의 기기, 배지 `.pendingPolicy`)과 `BodyCompositionMiniTrend`(`/// TR-11` 미니 추이: 체중·체지방률·골격근량 중 하나를 세그먼트로 고름, 최근 12개월, 불러오는 중·실패·빈 상태). TR-11 기록 보기와 TR-03 신체조성 요약에 붙였다.
+  - 데이터 경로: `MeasurementStore.observeBodyCompositionRecords`(서버 기록 + 이 기기 미동기 기록, DF-127 구현 기록) → `BodyCompositionSeries.points`(active만, 등급 없는 기록 제외) → `SeriesSegmenter`. 카드의 `observeSeries(member:metricCode:sourceGrade:)`를 지표마다 따로 구독하지 않고 기록 스트림 하나로 세 지표를 그린다. `observeSeries(member:metricCode:since:)`도 같은 스트림으로 구현되어 있다.
+  - 저장 직후: 로컬 저장이 같은 회원의 구독을 깨우므로 서버 반영 전에도 새 기록이 곧바로 추이의 점이 된다(오프라인 포함).
+  - 테스트: FeatureModulesTests(기기 A 2회·B 1회 → 세그먼트 2개와 `.deviceChanged(from:to:)`, voided 제외, 공복 변경 → `conditionMismatch(fasting)`, 점 없음 → 빈 차트), LocalStoreTests(`observeSeries`의 voided 제외), UI `BodyCompositionUITests`(TC-130-11 일부: 요약 문장의 기록 수·최솟값·'산정 준비 중'). 차트 컴포넌트 자체의 단위·스냅샷·UI 테스트는 차트 브랜치 것이다.
+  - 편차·남은 일:
+    - AC-DF-130.7(레이더 없음) 화면 식별자 검사는 따로 두지 않았다. 신체조성 화면에는 `SeriesTrendChart` 외의 차트가 없다(코드 검토).
+    - AC-DF-130.8의 static-guards 규칙은 DesignSystemTests 소스 테스트로 대신한다(차트 브랜치 편차).
+    - 미니 추이 스냅샷(TC-130-11 스냅샷 부분)은 추가하지 않았다. 기준 이미지는 DF-016 흐름대로 CI iOS 26.2 런타임에서 만든다.
+    - 점 탭 툴팁과 밴드(P3)는 없다.
+    - DF-016 `DesignSystemUITests` 탭 대상 테스트는 가로 방향(앞 스위트가 남긴 방향)에서 차트가 붙어 길어진 갤러리(lazy List)를 스크롤한 뒤 맨 위 `sync.badge.reason`을 찾지 못해 실패했다. 스크롤 전에 확인하도록 고쳤다.
 
 ---
 

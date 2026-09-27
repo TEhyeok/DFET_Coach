@@ -1,5 +1,6 @@
 #if DEBUG
 import FeatureAuth
+import FeatureBodyComposition
 import SwiftUI
 import UIKit
 
@@ -18,6 +19,8 @@ struct PreviewRootView: View {
   @State private var registrar = PreviewPendingMemberRegistrar()
   /// TR-15's Outbox view (DF-018), in memory.
   @State private var queue: PreviewSyncQueue
+  /// TR-03 body composition and TR-11 (DF-127, DF-130): an in-memory LocalStore over synthetic records.
+  @State private var bodyComposition = PreviewBodyComposition.services()
 
   init(preview: PreviewEnvironment) {
     self.preview = preview
@@ -54,7 +57,7 @@ struct PreviewRootView: View {
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
         registrar: registrar, syncQueue: queue, signOut: signOut,
-        accountName: "SYN-TRAINER"))
+        accountName: "SYN-TRAINER", bodyComposition: bodyComposition))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)

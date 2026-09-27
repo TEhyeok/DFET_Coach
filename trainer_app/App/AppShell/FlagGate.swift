@@ -6,10 +6,14 @@ enum EntryPoint: String, CaseIterable, Identifiable {
   enum Surface: Equatable {
     case sidebar
     case memberDetail
+    /// TR-03's '측정 입력' menu (`tr03.measureMenu`, AC-DF-127.11). No visible item, no menu.
+    case measureMenu
   }
 
   enum Destination: Equatable {
     case route(TrainerRoute)
+    /// TR-11 as a sheet over TR-03 (DF-127, V1-07 §3.2).
+    case bodyCompositionEntry
     /// The flag is on but the screen does not exist yet: show `common.comingSoon` (AC-DF-017.5).
     case comingSoon
   }
@@ -20,8 +24,10 @@ enum EntryPoint: String, CaseIterable, Identifiable {
   case settings        // TR-15
   // TR-03 member detail actions
   case startSession    // TR-04 (soapV2)
+  // TR-03 '측정 입력' menu
   case bodyComposition // TR-11 (bodyComposition)
   case circumference   // TR-12 (bodyComposition)
+  // TR-03 member detail actions
   case postureCapture  // TR-07 -> TR-08 -> TR-09 (bodyAssessment)
   case compare         // TR-10 (bodyAssessment or bodyComposition, V1-07 §3.2)
   case share           // TR-06 (memberShare)
@@ -32,6 +38,7 @@ enum EntryPoint: String, CaseIterable, Identifiable {
   var surface: Surface {
     switch self {
     case .today, .members, .settings: return .sidebar
+    case .bodyComposition, .circumference: return .measureMenu
     default: return .memberDetail
     }
   }
@@ -58,8 +65,8 @@ enum EntryPoint: String, CaseIterable, Identifiable {
     case .members: return "tr02.title"
     case .settings: return "tr15.title"
     case .startSession: return "tr03.startSession"
-    case .bodyComposition: return "tr11.title"
-    case .circumference: return "tr12.title"
+    case .bodyComposition: return "tr03.measureMenu.bodyComposition"
+    case .circumference: return "tr03.measureMenu.circumference"
     case .postureCapture: return "tr07.title"
     case .compare: return "tr10.title"
     case .share: return "tr06.preview"
@@ -70,7 +77,7 @@ enum EntryPoint: String, CaseIterable, Identifiable {
   var accessibilityID: String {
     switch surface {
     case .sidebar: return "nav.\(rawValue)"  // stable identifiers, independent of the copy keys
-    case .memberDetail: return "tr03.entry.\(rawValue)"
+    case .memberDetail, .measureMenu: return "tr03.entry.\(rawValue)"
     }
   }
 
@@ -79,6 +86,7 @@ enum EntryPoint: String, CaseIterable, Identifiable {
     case .today: return .route(.today)
     case .members: return .route(.members)
     case .settings: return .route(.settings)
+    case .bodyComposition: return .bodyCompositionEntry  // DF-127
     default: return .comingSoon  // screens arrive in P1a/P1b/P2
     }
   }

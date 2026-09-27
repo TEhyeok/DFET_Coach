@@ -13,6 +13,9 @@ final class DesignSystemUITests: XCTestCase {
     app.launchArguments = ["--preview-design-system"]
     app.launch()
     XCTAssertTrue(element("preview.designSystem", in: app).waitForExistence(timeout: 30))
+    // The failed badge's reason is at the top of a lazy List: check it before scrolling, or a landscape run (the
+    // orientation earlier suites leave) scrolls it out of the tree (AC-DF-016.1).
+    XCTAssertTrue(element("sync.badge.reason", in: app).waitForExistence(timeout: 5))
     for id in ["sync.badge.retry", "empty.action"] {
       let target = element(id, in: app)
       if !target.exists { app.swipeUp() }
@@ -21,11 +24,10 @@ final class DesignSystemUITests: XCTestCase {
       XCTAssertGreaterThanOrEqual(target.frame.height, 44, id)
     }
     XCTAssertFalse(element("metric.row.waistCircumference", in: app).exists, "a value without a source has no row")
-    // The rendered row speaks the full template (AC-DF-016.5), and a failed badge shows its reason (AC-DF-016.1).
+    // The rendered row speaks the full template (AC-DF-016.5).
     let weight = element("metric.row.weightKg", in: app)
     XCTAssertTrue(weight.exists)
     XCTAssertEqual(weight.label, "체중 72.4kg, 출처 기기 측정 · SYN-DEVICE, 2026.09.21, 변화 산정 준비 중")
-    XCTAssertTrue(element("sync.badge.reason", in: app).exists)
   }
 
   /// TC-130-10 in the app (AC-DF-130.10): the gallery's device-change chart reads the summary sentence, with the

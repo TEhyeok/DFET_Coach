@@ -14,7 +14,7 @@ import TrainerDomain
 public actor LocalOutboxStore: OutboxStore, ModelActor {
   public nonisolated let modelContainer: ModelContainer
   public nonisolated let modelExecutor: any ModelExecutor
-  private let trainerUid: String
+  let trainerUid: String
   private let binaries: LocalBinaryStore?
   /// The last sequence handed out per member key, so two callers never get the same one (V1-05 §12.2).
   private var reservedSequences: [String: Int64] = [:]
@@ -84,7 +84,7 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
   }
 
   /// Inserts the row, or rewrites it when the id is already there (a retried insert after a save that committed).
-  private func put(_ item: TrainerDomain.OutboxItem) throws {
+  func put(_ item: TrainerDomain.OutboxItem) throws {
     if let existing = try row(item.id) {
       apply(item, to: existing)
       return
@@ -108,7 +108,7 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
     }
   }
 
-  private func saveOrRollback() throws {
+  func saveOrRollback() throws {
     do {
       try modelContext.save()
     } catch {

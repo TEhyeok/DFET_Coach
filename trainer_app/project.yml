@@ -55,6 +55,8 @@ targets:
         product: FeatureSettings
       - package: TrainerKit
         product: DesignSystem
+      - package: TrainerKit
+        product: FeatureBodyComposition
     postBuildScripts:
       - name: Copy Firebase config if present
         basedOnDependencyAnalysis: false

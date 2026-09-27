@@ -1,7 +1,7 @@
 {
   "docId": "V1-12-D3",
   "title": "D-FET Coach v1 문구 덱(ko)",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "status": "ready",
   "updated": "2026-09-28",
   "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#4-문구-키-체계",
@@ -18,7 +18,7 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 567, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 93, "trainer": 570, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -434,6 +434,7 @@
     "tr03.measureMenu": {"ko": "측정 입력", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-03"], "screens": "TR-03", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-127", "group": "tr03"},
     "tr03.measureMenu.bodyComposition": {"ko": "신체조성", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-03", "TR-11"], "screens": "TR-03", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-127", "group": "tr03"},
     "tr03.measureMenu.circumference": {"ko": "둘레(줄자)", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-03", "TR-12"], "screens": "TR-03", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-129", "group": "tr03"},
+    "tr03.section.bodyComposition": {"ko": "신체조성", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-03", "TR-11"], "screens": "TR-03", "note": "TR-03 신체조성 요약(최근 값·미니 추이) 머리글. DF-127·DF-130 MVP 조각", "group": "tr03"},
     "tr04.start.prompt": {"ko": "오늘 작성 중인 기록이 있어요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-SOAP-01.8"], "screens": "TR-04", "group": "tr04"},
     "tr04.start.continue": {"ko": "이어쓰기", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-SOAP-01.8"], "screens": "TR-04", "group": "tr04"},
     "tr04.start.new": {"ko": "새 세션", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-SOAP-01.8"], "screens": "TR-04", "group": "tr04"},
@@ -655,6 +656,8 @@
     "tr11.miniTrend": {"ko": "최근 추이", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-11"], "screens": "TR-11", "group": "tr11"},
     "tr11.more": {"ko": "추가 항목", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.1"], "screens": "TR-11", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-127", "group": "tr11"},
     "tr11.deviceChanged": {"ko": "기기가 바뀌어 이전 기록과 비교할 수 없습니다", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-03.4"], "screens": "TR-11", "note": "PRD 문구 그대로. P1a §5.3 덱 추가 요청(CF-20), 카드 DF-128", "group": "tr11"},
+    "tr11.fasting.more": {"ko": "다른 선택", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "note": "공복 여부 보조 메뉴(⋯)의 접근성 이름. '모름'은 이 메뉴에만(AC-DF-127.9)", "group": "tr11"},
+    "tr11.record.title": {"ko": "신체조성 기록", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-11"], "screens": "TR-11", "note": "TR-11 보기 모드(저장한 기록 읽기 전용 + 미니 추이) 제목", "group": "tr11"},
     "tr12.title": {"ko": "둘레 입력", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-12"], "screens": "TR-12", "group": "tr12"},
     "tr12.addSite": {"ko": "부위 추가", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-ASM-06.1"], "screens": "TR-12", "group": "tr12"},
     "tr12.trial": {"ko": "{n}회", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-ASM-06.4"], "screens": "TR-12", "args": ["n"], "group": "tr12"},
@@ -872,7 +875,8 @@
     "a11y.beta": {"ko": "실측 대조 전 베타 참고값", "audience": "trainer", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "TR-13", "group": "notify"},
     "mb.a11y.metric": {"ko": "{metricName} {value}{unit}, {date}, 출처 {source}", "audience": "member", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "MB-01, MB-02", "args": ["metricName", "value", "unit", "date", "source"], "note": "회원 변화 문장은 자격 있는 지표만 뒤에 덧붙임", "group": "notify"}
   },
-  "changeLog": [{"version": "1.0.7", "date": "2026-09-28", "title": "추이 차트 문구", "summary": "DF-130 chart.summary에 {period}·{status} 추가와 끊김 수 '곳'(AC-DF-130.10), chart.empty·chart.measuredAt 추가, counts.trainer 567"},
+  "changeLog": [{"version": "1.0.8", "date": "2026-09-28", "title": "TR-11 화면 조각", "summary": "DF-127·DF-130 화면: tr03.section.bodyComposition, tr11.fasting.more, tr11.record.title 추가, counts.trainer 570. 기존 키 변경 없음"},
+    {"version": "1.0.7", "date": "2026-09-28", "title": "추이 차트 문구", "summary": "DF-130 chart.summary에 {period}·{status} 추가와 끊김 수 '곳'(AC-DF-130.10), chart.empty·chart.measuredAt 추가, counts.trainer 567"},
     {"version": "1.0.6", "date": "2026-09-28", "title": "TR-11 검증 문구", "summary": "DF-127 BodyCompositionValidator 오류 문구 tr11.deviceModel.required·tr11.deviceModel.tooLong·tr11.measuredAt.future·tr11.number.invalid 추가, counts.trainer 565. 기존 키 변경 없음"},
     {"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"},
     {"version": "1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "P1a §5.3 '덱 추가 요청' 표의 트레이너 P1a 키 32개 추가(CF-20, sync.reason.consentRejected·sync.reason.fileTooLarge 포함), counts.trainer 537로 갱신. 기존 키 변경 없음"}

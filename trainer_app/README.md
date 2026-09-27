@@ -87,7 +87,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 |---|---|
 | `--preview-empty` | Shell with every flag off and no members |
 | `--preview-login` | Signed-out state: login placeholder (`login.root`) until DF-012 |
-| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`) |
+| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`). With `--preview-flags=bodyComposition`, TR-03 has '측정 입력 > 신체조성' (TR-11) and a body composition section: SYN-0001 has six synthetic records (a device change), all three have consent ①②③, and TR-11 saves go to an in-memory LocalStore that sends nothing (DF-127, DF-130) |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
 | `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |

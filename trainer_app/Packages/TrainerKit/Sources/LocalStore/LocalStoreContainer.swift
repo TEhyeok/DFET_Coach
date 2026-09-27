@@ -78,7 +78,7 @@ public struct LocalStoreLocation: Equatable, Sendable {
   }
 }
 
-/// Builds the SwiftData container for the current schema (`LocalStoreCurrentSchema`, DF-014, DF-108, ADR-002).
+/// Builds the SwiftData container for the current schema (`LocalStoreCurrentSchema`, DF-014, DF-108, DF-127, ADR-002).
 public enum LocalStoreContainer {
   /// The current versioned schema.
   public static var schema: Schema { Schema(versionedSchema: LocalStoreCurrentSchema.self) }

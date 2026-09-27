@@ -325,6 +325,30 @@
         }
       }
     },
+    "common.saveAction" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장하기"
+          }
+        }
+      }
+    },
+    "common.unmeasured" : {
+      "comment" : "V1-12 · §6.0.3, F-BC-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미측정"
+          }
+        }
+      }
+    },
     "condition.clothing" : {
       "comment" : "V1-12 · §7.4",
       "extractionState" : "manual",
@@ -393,6 +417,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "촬영 방향"
+          }
+        }
+      }
+    },
+    "consent.state.awaiting" : {
+      "comment" : "V1-12 · F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인 대기"
           }
         }
       }
@@ -1249,6 +1285,42 @@
         }
       }
     },
+    "timeOfDay.evening" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁(17시 이후)"
+          }
+        }
+      }
+    },
+    "timeOfDay.midday" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "낮(11~17시)"
+          }
+        }
+      }
+    },
+    "timeOfDay.morning" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오전(11시 전)"
+          }
+        }
+      }
+    },
     "tr01.title" : {
       "comment" : "V1-12 · TR-01",
       "extractionState" : "manual",
@@ -1293,6 +1365,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "회원"
+          }
+        }
+      }
+    },
+    "tr03.empty" : {
+      "comment" : "V1-12 · §8.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 기록이 없어요"
+          }
+        }
+      }
+    },
+    "tr03.measureMenu" : {
+      "comment" : "V1-12 · TR-03",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 입력"
+          }
+        }
+      }
+    },
+    "tr03.measureMenu.bodyComposition" : {
+      "comment" : "V1-12 · TR-03, TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성"
+          }
+        }
+      }
+    },
+    "tr03.measureMenu.circumference" : {
+      "comment" : "V1-12 · TR-03, TR-12",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘레(줄자)"
+          }
+        }
+      }
+    },
+    "tr03.section.bodyComposition" : {
+      "comment" : "V1-12 · TR-03, TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성"
           }
         }
       }
@@ -1377,6 +1509,330 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "비교"
+          }
+        }
+      }
+    },
+    "tr11.atLeastOne" : {
+      "comment" : "V1-12 · F-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정값을 하나 이상 입력하세요"
+          }
+        }
+      }
+    },
+    "tr11.bmi.needsHeight" : {
+      "comment" : "V1-12 · F-BC-01.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키를 입력하면 BMI가 계산돼요"
+          }
+        }
+      }
+    },
+    "tr11.consentNeeded" : {
+      "comment" : "V1-12 · AC-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건강정보 동의 필요"
+          }
+        }
+      }
+    },
+    "tr11.cross.fatMassOverWeight" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방량이 체중보다 커요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.cross.fatPercentMismatch" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방률과 체지방량·체중 비율이 크게 달라요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.cross.muscleOverWeight" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "골격근량이 체중 이상이에요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.deviceChanged" : {
+      "comment" : "V1-12 · F-BC-03.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기가 바뀌어 이전 기록과 비교할 수 없습니다"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 모델"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.add" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 추가"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.required" : {
+      "comment" : "V1-12 · F-BC-01.2, AC-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 모델을 골라 주세요"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.tooLong" : {
+      "comment" : "V1-12 · F-BC-01.2, R-17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 이름은 64자까지 쓸 수 있어요"
+          }
+        }
+      }
+    },
+    "tr11.fasting" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부"
+          }
+        }
+      }
+    },
+    "tr11.fasting.more" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 선택"
+          }
+        }
+      }
+    },
+    "tr11.fasting.no" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 아님"
+          }
+        }
+      }
+    },
+    "tr11.fasting.required" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부를 골라 주세요"
+          }
+        }
+      }
+    },
+    "tr11.fasting.unknown" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모름"
+          }
+        }
+      }
+    },
+    "tr11.fasting.yes" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복"
+          }
+        }
+      }
+    },
+    "tr11.height" : {
+      "comment" : "V1-12 · F-BC-01.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키(트레이너 측정)"
+          }
+        }
+      }
+    },
+    "tr11.measuredAt" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 일시"
+          }
+        }
+      }
+    },
+    "tr11.measuredAt.future" : {
+      "comment" : "V1-12 · F-BC-01.2, §9.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 일시가 지금보다 늦어요. 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.miniTrend" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 추이"
+          }
+        }
+      }
+    },
+    "tr11.more" : {
+      "comment" : "V1-12 · F-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가 항목"
+          }
+        }
+      }
+    },
+    "tr11.number.invalid" : {
+      "comment" : "V1-12 · F-BC-03.1, F-BC-03.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "숫자로 입력하세요. 소수점 아래는 한 자리까지예요"
+          }
+        }
+      }
+    },
+    "tr11.range.generic" : {
+      "comment" : "V1-12 · F-BC-03.2 · args: min, max, unit",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@~%2$@%3$@ 사이로 입력하세요"
+          }
+        }
+      }
+    },
+    "tr11.record.title" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성 기록"
+          }
+        }
+      }
+    },
+    "tr11.saveAnyway" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인했어요, 저장하기"
+          }
+        }
+      }
+    },
+    "tr11.timeOfDayBand" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간대"
           }
         }
       }

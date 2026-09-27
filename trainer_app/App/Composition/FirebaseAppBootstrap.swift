@@ -33,8 +33,9 @@ extension AppBootstrap {
     FirestoreRemoteWriter(trainerUid: trainerUid)
   }
 
-  /// The signed-in trainer's shell services (DF-108, DF-018): FirebaseData's member directory, registration on the
-  /// LocalStore partition with the SyncEngine sending to FirebaseData, its queue for TR-15 and the full logout.
+  /// The signed-in trainer's shell services (DF-108, DF-018, DF-127): FirebaseData's member directory, registration and
+  /// body composition on the LocalStore partition with the SyncEngine sending to FirebaseData (the body composition
+  /// reads merge FirebaseData's records and consent state), its queue for TR-15 and the full logout.
   /// `gate` signs the trainer out as a user sign-out (no claim-revoked notice); tests without a gate pass nil.
   @MainActor
   static func liveServices(session: TrainerSession, gate: AuthGateModel? = nil) -> ShellServices {
@@ -42,7 +43,10 @@ extension AppBootstrap {
     let runtime = SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
       SyncRemote(
         writer: liveRemoteWriter(trainerUid: trainerUid), uploader: StorageBinaryUploader(),
-        callable: FunctionsCallableClient(), currentUid: { FirebaseAuthService.currentUid() },
+        callable: FunctionsCallableClient(),
+        bodyCompositionRecords: FirestoreBodyCompositionRecords(trainerUid: trainerUid),
+        consentStates: FirestoreConsentStates(),
+        currentUid: { FirebaseAuthService.currentUid() },
         sessions: { liveAuthService().sessionStream() })
     }
     return ShellServices(
@@ -59,6 +63,8 @@ extension AppBootstrap {
           }
         },
         teardownRemote: { try await FirestoreSessionTeardown.run() }),
-      accountName: session.displayName)
+      accountName: session.displayName,
+      bodyComposition: runtime?.bodyComposition ?? SessionRuntime.UnavailableMeasurements.services(
+        consent: ServerEffectiveConsentSource(states: FirestoreConsentStates())))
   }
 }

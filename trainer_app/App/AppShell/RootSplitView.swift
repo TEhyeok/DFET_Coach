@@ -1,3 +1,4 @@
+import FeatureBodyComposition
 import FeatureConsent
 import FeatureMembers
 import FeatureSettings
@@ -36,10 +37,13 @@ struct RootSplitView: View {
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
+  /// TR-03 body composition and TR-11 (DF-127, DF-130).
+  private let bodyComposition: BodyCompositionServices
 
   init(flags: FeatureFlags, services: ShellServices) {
     baseFlags = flags
     registrar = services.registrar
+    bodyComposition = services.bodyComposition
     _settings = State(initialValue: SettingsViewModel(
       queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
       version: Self.appVersion))
@@ -231,36 +235,93 @@ struct RootSplitView: View {
   }
 
   private func memberDetail(uid: String) -> some View {
-    MemberDetailShell(entries: FlagGate.visibleEntries(on: .memberDetail, flags: flags)) { entry in
+    MemberDetailShell(member: .uid(uid), flags: flags, bodyComposition: bodyComposition) { entry in
       if entry.destination == .comingSoon {
         comingSoonEntry = entry
       }
     }
+    .id(uid)  // another member gets a fresh body composition subscription
     .container("tr03.root")
   }
 }
 
-/// TR-03 placeholder: only the flag-gated action row. The screen itself arrives in P1a.
+/// TR-03 until DF-113/DF-114 build the screen: the flag-gated actions — the '측정 입력' menu (AC-DF-127.11) and the
+/// other entry points — and, with `bodyComposition`, the member's body composition (latest values, mini trend). TR-11
+/// opens as a sheet over it (V1-07 §3.2).
 private struct MemberDetailShell: View {
-  let entries: [EntryPoint]
-  let open: (EntryPoint) -> Void
+  private let entries: [EntryPoint]
+  private let measureEntries: [EntryPoint]
+  private let open: (EntryPoint) -> Void
+  /// nil while `bodyComposition` is off: no section, no subscription.
+  @State private var bodyComposition: BodyCompositionMemberModel?
+  @State private var showsBodyCompositionEntry = false
   @Environment(\.layoutMode) private var layoutMode
+
+  init(member: MemberKey, flags: FeatureFlags, bodyComposition services: BodyCompositionServices,
+       open: @escaping (EntryPoint) -> Void) {
+    entries = FlagGate.visibleEntries(on: .memberDetail, flags: flags)
+    measureEntries = FlagGate.visibleEntries(on: .measureMenu, flags: flags)
+    self.open = open
+    _bodyComposition = State(initialValue: flags.bodyComposition
+      ? BodyCompositionMemberModel(member: member, services: services) : nil)
+  }
 
   var body: some View {
     let layout = layoutMode == .regular
       ? AnyLayout(HStackLayout(spacing: 12))
       : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
     ScrollView {
-      layout {
-        ForEach(entries) { entry in
-          Button(String(localized: String.LocalizationValue(entry.titleKey))) { open(entry) }
-            .buttonStyle(.bordered)
-            .accessibilityIdentifier(entry.accessibilityID)
+      VStack(alignment: .leading, spacing: 24) {
+        layout {
+          if !measureEntries.isEmpty {
+            measureMenu
+          }
+          ForEach(entries) { entry in
+            Button(Self.title(entry)) { select(entry) }
+              .buttonStyle(.bordered)
+              .accessibilityIdentifier(entry.accessibilityID)
+          }
+        }
+        if let bodyComposition {
+          BodyCompositionSection(model: bodyComposition)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(24)
     }
+    .sheet(isPresented: $showsBodyCompositionEntry) {
+      if let bodyComposition {
+        BodyCompositionSheet(memberModel: bodyComposition) { showsBodyCompositionEntry = false }
+      }
+    }
+  }
+
+  /// '측정 입력': one item per visible measurement screen; no item, no menu (AC-DF-127.11).
+  private var measureMenu: some View {
+    Menu {
+      ForEach(measureEntries) { entry in
+        Button(Self.title(entry)) { select(entry) }
+          .accessibilityIdentifier(entry.accessibilityID)
+      }
+    } label: {
+      Label(String(localized: "tr03.measureMenu"), systemImage: "plus.circle")
+    }
+    .menuStyle(.button)
+    .buttonStyle(.bordered)
+    .accessibilityIdentifier("tr03.measureMenu")
+  }
+
+  private func select(_ entry: EntryPoint) {
+    if entry.destination == .bodyCompositionEntry {
+      showsBodyCompositionEntry = true
+    } else {
+      open(entry)
+    }
+  }
+
+  /// The key is a `String` value, so `LocalizationValue` looks it up as it is (SE-0213).
+  private static func title(_ entry: EntryPoint) -> String {
+    String(localized: String.LocalizationValue(entry.titleKey))
   }
 }
 

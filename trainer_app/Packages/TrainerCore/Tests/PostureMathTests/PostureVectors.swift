@@ -32,8 +32,21 @@ struct PostureVectorCase: Decodable {
     let side: Side
     let sourceGrade: SourceGrade
   }
-  struct Reason: Decodable { let reason: String; let metricCode: MetricCode? }
-  struct ExpectedError: Decodable { let error: String; let metricCode: MetricCode? }
+  struct Reason: Decodable { let reason: String; let metricCode: MetricCode?; let landmarkCode: LandmarkCode? }
+  struct ExpectedError: Decodable {
+    let error: String
+    let metricCode: MetricCode?
+    let landmarkCode: LandmarkCode?
+
+    var mathError: PostureMathError? {
+      switch error {
+      case "coordinateOutOfRange": return landmarkCode.map { .coordinateOutOfRange($0) }
+      case "zeroImageSize": return .zeroImageSize
+      case "degenerateGeometry": return metricCode.map { .degenerateGeometry($0) }
+      default: return nil
+      }
+    }
+  }
   struct RoundingCase: Decodable { let input: Double; let expected: Double }
   struct View: Decodable {
     let view: PostureView
@@ -87,6 +100,8 @@ extension ConfirmBlocker {
     case .pairTooClose: return "pairTooClose"
     case .sidesSwapped: return "sidesSwapped"
     case .landmarkNotInView: return "landmarkNotInView"
+    case .coordinateOutOfRange: return "coordinateOutOfRange"
+    case .zeroImageSize: return "zeroImageSize"
     }
   }
 

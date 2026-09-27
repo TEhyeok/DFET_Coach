@@ -846,6 +846,188 @@
         "missing": [],
         "blockingLandmarks": []
       }
+    },
+    {
+      "id": "PM-21",
+      "trace": [
+        "V-POS-01",
+        "AC-ASM-02.4",
+        "AC-DF-201.8"
+      ],
+      "view": "sagittalLeft",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "c7",
+          "x": 0.5,
+          "y": 0.5,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusLeft",
+          "x": 0.55,
+          "y": 0.45,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "tragusRight",
+          "x": 0.5,
+          "y": 1.2,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "an unused landmark out of range still refuses the whole computation",
+      "expectedError": {
+        "error": "coordinateOutOfRange",
+        "landmarkCode": "tragusRight"
+      }
+    },
+    {
+      "id": "PM-22",
+      "trace": [
+        "V-POS-02"
+      ],
+      "view": "front",
+      "image": {
+        "width": 0,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "acromionLeft",
+          "x": 0.6,
+          "y": 0.4,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "expectedError": {
+        "error": "zeroImageSize"
+      }
+    },
+    {
+      "id": "PM-23",
+      "trace": [
+        "AC-ASM-02.1",
+        "AC-DF-201.7"
+      ],
+      "kind": "confirmability",
+      "options": {
+        "includePelvicTilt": false
+      },
+      "note": "manual-required c7 left auto blocks even when confirmed",
+      "views": [
+        {
+          "view": "front",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "earLeft",
+              "x": 0.575,
+              "y": 0.35,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "earRight",
+              "x": 0.425,
+              "y": 0.345,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionLeft",
+              "x": 0.6,
+              "y": 0.4,
+              "origin": "manual",
+              "confirmed": true
+            },
+            {
+              "code": "acromionRight",
+              "x": 0.4,
+              "y": 0.41,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        },
+        {
+          "view": "sagittalLeft",
+          "image": {
+            "width": 2000,
+            "height": 2000
+          },
+          "imageRotationDeg": 0,
+          "landmarks": [
+            {
+              "code": "c7",
+              "x": 0.5,
+              "y": 0.5,
+              "origin": "auto",
+              "confirmed": true
+            },
+            {
+              "code": "tragusLeft",
+              "x": 0.55,
+              "y": 0.45,
+              "origin": "manual",
+              "confirmed": true
+            }
+          ]
+        }
+      ],
+      "expectedConfirmability": {
+        "canConfirm": false,
+        "missing": [],
+        "blockingLandmarks": [
+          "c7"
+        ]
+      }
+    },
+    {
+      "id": "PM-24",
+      "trace": [
+        "V-POS-03"
+      ],
+      "view": "front",
+      "image": {
+        "width": 2000,
+        "height": 2000
+      },
+      "imageRotationDeg": 0,
+      "landmarks": [
+        {
+          "code": "earLeft",
+          "x": 0.5002,
+          "y": 0.35,
+          "origin": "manual",
+          "confirmed": true
+        },
+        {
+          "code": "earRight",
+          "x": 0.5,
+          "y": 0.345,
+          "origin": "manual",
+          "confirmed": true
+        }
+      ],
+      "note": "a front pair less than 1 px apart horizontally has no angle",
+      "expectedError": {
+        "error": "degenerateGeometry",
+        "metricCode": "headTiltFrontal"
+      }
     }
   ]
 }

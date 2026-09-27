@@ -21,6 +21,36 @@ final class GeometryTests: XCTestCase {
     }
   }
 
+  /// §5.1 step 2: every stored coordinate is checked, including landmarks this view does not use.
+  func test_AC_DF_201_8_unusedOutOfRangeLandmarkRefusesTheComputation() {
+    let sagittal = [
+      LandmarkValue(code: .c7, point: NormalizedPoint(x: 0.5, y: 0.5), origin: .manual, confirmed: true),
+      LandmarkValue(code: .tragusLeft, point: NormalizedPoint(x: 0.55, y: 0.45), origin: .manual, confirmed: true),
+      LandmarkValue(code: .tragusRight, point: NormalizedPoint(x: 0.5, y: 1.2), origin: .manual, confirmed: true),
+    ]
+    XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(view: .sagittalLeft, imageSize: size, imageRotationDeg: 0, landmarks: sagittal)) {
+      XCTAssertEqual($0 as? PostureMathError, .coordinateOutOfRange(.tragusRight))
+    }
+    let front = [
+      LandmarkValue(code: .acromionLeft, point: NormalizedPoint(x: 0.6, y: 0.4), origin: .manual, confirmed: true),
+      LandmarkValue(code: .acromionRight, point: NormalizedPoint(x: 0.4, y: 0.41), origin: .manual, confirmed: true),
+      LandmarkValue(code: .asisLeft, point: NormalizedPoint(x: -0.1, y: 0.6), origin: .manual, confirmed: true),
+    ]
+    XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(view: .front, imageSize: size, imageRotationDeg: 0, landmarks: front)) {
+      XCTAssertEqual($0 as? PostureMathError, .coordinateOutOfRange(.asisLeft), "pelvic is off, the ASIS is still checked")
+    }
+  }
+
+  func testAFrontPairUnderOnePixelApartIsDegenerate() {
+    let ears = [
+      LandmarkValue(code: .earLeft, point: NormalizedPoint(x: 1000.4 / 2000, y: 0.35), origin: .manual, confirmed: true),
+      LandmarkValue(code: .earRight, point: NormalizedPoint(x: 0.5, y: 0.345), origin: .manual, confirmed: true),
+    ]
+    XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(view: .front, imageSize: size, imageRotationDeg: 0, landmarks: ears)) {
+      XCTAssertEqual($0 as? PostureMathError, .degenerateGeometry(.headTiltFrontal))
+    }
+  }
+
   func test_AC_ASM_02_5_recomputeIsDeterministic() throws {
     let landmarks = [
       LandmarkValue(code: .acromionLeft, point: NormalizedPoint(x: 0.6034290325, y: 0.403550867), origin: .manual, confirmed: true),

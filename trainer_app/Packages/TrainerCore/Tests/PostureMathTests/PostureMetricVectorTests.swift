@@ -59,6 +59,11 @@ final class PostureMetricVectorTests: XCTestCase {
       ])
     XCTAssertEqual(result.first { $0.metricCode == .shoulderTiltAngle }?.sourceGrade, .photoAuto)
     XCTAssertEqual(result.first { $0.metricCode == .headTiltFrontal }?.sourceGrade, .photoManual)
+    // CVA on its own view keeps photoManual when its landmarks are confirmed.
+    let cva = try PostureMetricCalculator.computeMetrics(
+      view: .sagittalLeft, imageSize: square, imageRotationDeg: 0,
+      landmarks: [landmark(.c7, 1000, 1000, in: square), landmark(.tragusLeft, 1100, 900, in: square)])
+    XCTAssertEqual(cva.first?.sourceGrade, .photoManual)
   }
 
   func test_AC_ASM_03_6_pelvicTiltOffByDefault() throws {
@@ -86,7 +91,7 @@ final class PostureMetricVectorTests: XCTestCase {
     let file = try PostureVectorFile.load()
     XCTAssertEqual(file.contract, "posture-metric-vectors")
     XCTAssertEqual(file.rounding, "halfAwayFromZero")
-    XCTAssertEqual(file.cases.map(\.id), (1...20).map { String(format: "PM-%02d", $0) })
+    XCTAssertEqual(file.cases.map(\.id), (1...24).map { String(format: "PM-%02d", $0) })
     for vector in file.cases {
       switch vector.kind {
       case "rounding":
@@ -106,17 +111,29 @@ final class PostureMetricVectorTests: XCTestCase {
       default:
         let input = try XCTUnwrap(vector.input, vector.id)
         if let expectedError = vector.expectedError {
+          let expected = try XCTUnwrap(expectedError.mathError, "\(vector.id): unknown expectedError")
           XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(input, options: vector.metricOptions), vector.id) { error in
-            XCTAssertEqual(error as? PostureMathError, .degenerateGeometry(try! XCTUnwrap(expectedError.metricCode)), vector.id)
+            XCTAssertEqual(error as? PostureMathError, expected, vector.id)
           }
+          // The same input can never be confirmed.
+          let blockers = PostureConfirmation.geometryBlockers(input, options: vector.metricOptions)
+          XCTAssertFalse(blockers.isEmpty, "\(vector.id): an input that cannot be computed must block confirmation")
           continue
         }
         let results = try PostureMetricCalculator.computeMetrics(input, options: vector.metricOptions)
         XCTAssertEqual(results.map(\.asExpected), vector.expected ?? [], vector.id)
-        for reason in vector.expectedBlockingReasons ?? [] {
+        if let reasons = vector.expectedBlockingReasons {
           let blockers = PostureConfirmation.geometryBlockers(input, options: vector.metricOptions)
-          XCTAssertTrue(blockers.contains { $0.vectorReason == reason.reason && $0.vectorMetric == reason.metricCode },
-                        "\(vector.id): \(reason.reason) not in \(blockers)")
+          for reason in reasons {
+            XCTAssertTrue(blockers.contains { $0.vectorReason == reason.reason && $0.vectorMetric == reason.metricCode },
+                          "\(vector.id): \(reason.reason) not in \(blockers)")
+          }
+          // With a valid other view, the blocker alone keeps the assessment from being confirmed.
+          let other = PostureViewInput(
+            view: input.view == .front ? .sagittalLeft : .front, imageSize: input.imageSize, imageRotationDeg: 0,
+            landmarks: [])
+          XCTAssertFalse(PostureConfirmation.confirmability(views: [input, other], options: vector.metricOptions).canConfirm,
+                         vector.id)
         }
       }
     }

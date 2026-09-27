@@ -184,9 +184,10 @@ function postureVectorErrors(loaded) {
   const check = (value, allowed, at, what) => {
     if (value !== undefined && !allowed.includes(value)) errors.push(`${at}: "${value}" is not in ${what}`);
   };
-  const checkLandmarks = (list, at) => (list ?? []).forEach((l, j) => {
+  // A case that expects coordinateOutOfRange carries its out-of-range landmark on purpose.
+  const checkLandmarks = (list, at, allowOutOfRange = false) => (list ?? []).forEach((l, j) => {
     check(l.code, values('landmarkCode'), `${at}/${j}/code`, 'vocab landmarkCode');
-    if (l.x < 0 || l.x > 1 || l.y < 0 || l.y > 1) errors.push(`${at}/${j}: coordinates must be in 0..1`);
+    if (!allowOutOfRange && (l.x < 0 || l.x > 1 || l.y < 0 || l.y > 1)) errors.push(`${at}/${j}: coordinates must be in 0..1`);
   });
   const seen = new Map();
   vectors.cases.forEach((c, i) => {
@@ -194,7 +195,10 @@ function postureVectorErrors(loaded) {
     if (seen.has(c.id)) errors.push(`${at}/id: duplicate id "${c.id}" (first at #/cases/${seen.get(c.id)})`);
     else seen.set(c.id, i);
     check(c.view, values('postureView'), `${at}/view`, 'vocab postureView');
-    checkLandmarks(c.landmarks, `${at}/landmarks`);
+    checkLandmarks(c.landmarks, `${at}/landmarks`, c.expectedError?.error === 'coordinateOutOfRange');
+    if (c.image && (c.image.width <= 0 || c.image.height <= 0) && c.expectedError?.error !== 'zeroImageSize') {
+      errors.push(`${at}/image: size must be positive unless the case expects zeroImageSize`);
+    }
     (c.views ?? []).forEach((v, j) => {
       check(v.view, values('postureView'), `${at}/views/${j}/view`, 'vocab postureView');
       checkLandmarks(v.landmarks, `${at}/views/${j}/landmarks`);
@@ -206,8 +210,12 @@ function postureVectorErrors(loaded) {
       check(e.sourceGrade, values('sourceGrade'), `${et}/sourceGrade`, 'vocab sourceGrade');
       check(e.unit, values('unit'), `${et}/unit`, 'vocab unit');
     });
-    for (const r of c.expectedBlockingReasons ?? []) check(r.metricCode, metricCodes, `${at}/expectedBlockingReasons`, 'the metric catalog');
+    for (const r of c.expectedBlockingReasons ?? []) {
+      check(r.metricCode, metricCodes, `${at}/expectedBlockingReasons`, 'the metric catalog');
+      check(r.landmarkCode, values('landmarkCode'), `${at}/expectedBlockingReasons`, 'vocab landmarkCode');
+    }
     check(c.expectedError?.metricCode, metricCodes, `${at}/expectedError/metricCode`, 'the metric catalog');
+    check(c.expectedError?.landmarkCode, values('landmarkCode'), `${at}/expectedError/landmarkCode`, 'vocab landmarkCode');
     for (const list of ['missing', 'blockingLandmarks']) {
       (c.expectedConfirmability?.[list] ?? []).forEach((code, j) => {
         check(code, values('landmarkCode'), `${at}/expectedConfirmability/${list}/${j}`, 'vocab landmarkCode');

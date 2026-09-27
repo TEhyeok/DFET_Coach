@@ -11,7 +11,9 @@
 //   health values, names, emails, uids, paths or free text in details (NFR-10).
 //
 // `unauthenticated` is outside the six domain codes: only src/shared/auth.js raises it, through
-// authRequired(). Legacy exports keep their own `{success, message}` responses and errors.
+// authRequired(). `internal` is raised only through internalError(), for exceptions that are not
+// HttpsErrors (V1-06 §3.2 step 6: the original message never reaches the client). Legacy exports keep
+// their own `{success, message}` responses and errors.
 
 const {HttpsError} = require('firebase-functions/v2/https');
 
@@ -78,6 +80,15 @@ function authRequired() {
   });
 }
 
+function internalError() {
+  return new HttpsError('internal', 'common.internal', {
+    messageKey: 'common.internal',
+    retryable: true,
+    fields: [],
+    violations: [],
+  });
+}
+
 function ok(payload = {}) {
   if (!isPlainObject(payload)) {
     throw new TypeError('ok: payload must be a plain object');
@@ -88,4 +99,4 @@ function ok(payload = {}) {
   return {ok: true, ...payload};
 }
 
-module.exports = {STANDARD_CODES, authRequired, fail, ok};
+module.exports = {STANDARD_CODES, authRequired, fail, internalError, ok};

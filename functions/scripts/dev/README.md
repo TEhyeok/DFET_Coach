@@ -58,6 +58,13 @@ firebase emulators:exec --only auth,firestore,storage,functions --project demo-d
 
 P1a 추가분(published 동의 문서 5종, 대기 회원 `SYNTHpending00000001`)과 오류 주입 변형(`emulator-seed.no-consent.v1.json`, `emulator-seed.consent-fail.v1.json`)은 DF-107이 같은 형식으로 더한다.
 
+DF-107 시드 전에 에뮬레이터에서 `recordConsent`를 쓰려면 MVP 테스트 동의 문서 ①②③(`<type>--test-1`)을 게시 스크립트로 넣는다(DF-109). 에뮬레이터 프로젝트는 `FIRESTORE_EMULATOR_HOST`가 있어야 실행된다.
+
+```bash
+FIRESTORE_EMULATOR_HOST=127.0.0.1:18080 \
+  node functions/scripts/publish-test-consent-documents.js --apply --project demo-dfet
+```
+
 ## 시드 파일 형식
 
 ```json

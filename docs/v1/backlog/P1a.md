@@ -846,6 +846,20 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 뒤로 미룬다: 서명 PNG 저장, uid 회원 경로와 접근 키 동기화(DF-025), 철회(DF-112), 감사 기록 확장
 - 실회원 전 복원(재계획 항목): MVP는 현장 동의의 서명 필수 검증(ASM-P1a-03, F-PRIV-03.2)을 끄고 배포한다. 실회원 투입 전에 서명 필수 검증과 서명 PNG 저장(AC-DF-109.2)을 되살린다. MVP에서 서명 없이 만든 `consentRecords`·`memberConsentStates`는 테스트 회원 전용이며 실회원 투입 전에 정리한다. 이것은 개발 데이터 규칙이며 법률 판단이 아니다
 - MVP에서 기다리지 않는 의존: DF-025(uid 회원 접근 키, MVP 밖), DF-032(AD-03 화면 대신 시드·게시 스크립트로 테스트 동의 문서를 만든다)
+- 구현 기록(MVP):
+  - `functions/src/consent/recordConsent.js`(`recordConsent` = `callableV2`, asia-northeast3, 512MiB, `recordConsentCore({db, now, auth, data})`), `core/deriveConsentState.js`(순수 `derive(prev, newRecords)`, `toResponseState`), `core/validateRequest.js`(스키마·V1·V7·V9·V10 + `assertMvpScope`). `index.js`에 export 한 줄. 공용 `errors.internalError()`(HttpsError가 아닌 예외 → `internal`/`common.internal`, 로그에는 오류 코드만)를 더했다.
+  - 한 트랜잭션에서 읽기를 먼저 한다: `consentRecords where clientCaptureId == X` → 있으면 비교 뒤 재생(`replayed: true`, 쓰기 없음) 또는 `already-exists`/`idempotency.keyReused` → `pendingMembers/{p}`·`memberConsentStates/{p}`·`consentDocumentVersions/{v}` → V11·V2·V5·V8 → 레코드 N건 create(자동 ID, `recordedAt`은 호출당 서버 `Timestamp` 하나) → 상태 `set(merge)`. 서명이 없어서 트랜잭션 밖 사전 확인(§6.2.4 1단계)은 두지 않았다.
+  - MVP 게이트 `failed-precondition`/`consent.unsupportedInMvp`(`details.fields`에 필드): `memberKey.memberUid`, `channel == 'memberApp'`, ④⑤, ②③ `withdraw`, `signaturePngBase64`. ① `withdraw`는 스펙대로 `consent.requiredWithdrawNotSupported`. V1-06 §6.2.6에 키를 더했다.
+  - 게이트를 두는 이유: 가입 회원(uid)은 기존 앱의 실회원일 수 있어 서명 없는 동의를 받지 않는다(DEC-22 '실회원 데이터는 MVP에 넣지 않는다'). 철회와 ④는 후속 처리(DF-112·DF-025)가 없으면 상태만 바뀐다.
+  - 감사(`auditLogs.consentChanged`)와 커밋 뒤 처리(AC-DF-109.8)는 쓰지 않는다(DEC-22 '감사' 연기, ①②③ grant에는 후속 처리 대상이 없다).
+  - 편차:
+    - `documentVersion`은 `DocId`(점 불가)가 아니라 점을 허용하는 형식(`^[A-Za-z0-9_.-]{1,128}$`, `.`·`..` 제외)으로 검사한다. V1-05 §4.13 ID `{consentType}--{version}`의 예 `healthData--1.0`을 받기 위해서다.
+    - 대기 회원이 있고 생성자가 호출자이지만 `status != 'pending'`이면 `not-found`/`member.notFound`(V11)다. 생성자가 아니면 상태와 상관없이 `permission-denied`/`member.pendingNotOwned`(V2).
+    - 재생은 저장된 레코드의 `recordedBy`가 호출자여야 한다. 다른 트레이너가 같은 키를 보내면 `idempotency.keyReused`다(남의 캡처 결과를 돌려주지 않는다).
+    - `recordIds`와 `state` 키는 요청 순서가 아니라 유형 순서(①②③④⑤)다. 재생 때 선택 순서가 달라도 같은 `recordIds`가 온다.
+    - 선택 필드(`signaturePngBase64`, `capturedAt`, `reconfirmOf`)는 `null`을 '없음'으로 받는다.
+  - 게시 스크립트 `functions/scripts/publish-test-consent-documents.js`: 기본 dry-run(아무 데도 연결하지 않고 문서 3개를 출력). `--apply --project <id>`는 소유자만(서울 `dfetmanage`, 자격 증명은 ADC). 에뮬레이터 프로젝트(`demo-*` 등)는 `FIRESTORE_EMULATOR_HOST`가 있어야 하고, 실제 프로젝트는 그 변수가 있으면 거부한다. ID `required--test-1`·`healthData--test-1`·`bodyImaging--test-1`, 본문은 덱 `consentDraft.*`(G-04 전 초안) 그대로에 제목 앞 `[테스트] `, `privacyPolicyVersion: 'test-placeholder'`, 보유기간 개월 수(Q-24 미정)는 `N`. published 문서는 불변이라 같은 ID가 다른 내용으로 있으면 아무것도 쓰지 않고 종료 코드 1이다.
+  - 테스트: 단위 `test/unit/consent/*`(derive 표, validateRequest·MVP 게이트, 게시 스크립트 빌더·가드·dry-run, export 메타), e2e `test/e2e/recordConsent.e2e.test.js`(①②③ 기록·상태, 유형별 파생, 멱등 재생·동시 호출·키 재사용, 인증, 비소유·없음·비pending, 미게시·retired·없음·유형 불일치, ① 먼저, Functions 에뮬레이터 HTTP 경로와 오류 모양), 규칙 `test/rules/consent_state.rules.test.js`(대기 회원 생성자의 두 컬렉션 쓰기 거부, `derive()` 모양의 상태로 R-01 허용·거부).
 
 ---
 

@@ -804,6 +804,7 @@ function resolveAccessKey(collection, record, ctx) {
 | `consent.requiredFirst` | failed-precondition | V8 | ① 먼저 |
 | `consent.reconfirmMismatch` | invalid-argument | V9 | 개발 결함 |
 | `consent.capturedAtOutOfRange` | invalid-argument | V10 | 7일 지난 로컬 캡처는 파기(AS-32) |
+| `consent.unsupportedInMvp` | failed-precondition | MVP 범위(DEC-22, DF-109 MVP)가 받지 않는 요청: `memberKey.memberUid`, `channel == 'memberApp'`, ④⑤ 유형, ② ③ `withdraw`, `signaturePngBase64`. `details.fields`에 그 필드. MVP 뒤 해당 스토리(DF-025·DF-112·서명 복원·P2)가 이 조건을 하나씩 지운다 | 개발 결함(MVP 트레이너 앱은 보내지 않는다) |
 
 #### 6.2.7 부수효과·감사·레이트 리밋
 
@@ -2652,3 +2653,4 @@ Q-DEV-01·02는 다른 문서(ADR-015, AS-DEV-08)에서 이미 쓴다.
 | v1.0 | 2026-09-24 | CJH(AI 에이전트, 릴리스 편집) | TC-06-SYN 경로를 `Packages/TrainerCore/Tests/SyncEngineTests`로 고침(V1-04 §6.2) |
 | v1.0(정합 패스 2) | 2026-09-24 | CJH(AI 에이전트) | 배포 명령 --project, consentDocumentVersions ID `--`, markSummaryViewed DF-335·MB-02·MB-04, §8.6 Outbox 이름을 V1-05에 맞춤, §7.8 audit-reviews 추가, 시드 경로, CF-06-NN·ASM-06-NN 이름 변경 |
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: R2·R5·R7·R10 결정 반영(ASM-06-32~34), §7.8 추가 |
+| v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109 MVP 구현) | §6.2.6에 MVP 전용 `consent.unsupportedInMvp` 추가. 구현 편차는 [DF-109 구현 기록](backlog/P1a.md#df-109-recordconsent와-memberconsentstates-파생서명-저장을-구현한다) |

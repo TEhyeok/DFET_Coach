@@ -117,7 +117,7 @@ test('TC-DF037-02 AC-DF-037.1 wrappers refuse a caller-supplied region and bad a
 // ---------------------------------------------------------------------------------------------
 // errors.js (AC-DF-037.3, TC-DF037-03)
 
-const {STANDARD_CODES, authRequired, fail, ok} = require('../../src/shared/errors');
+const {STANDARD_CODES, authRequired, fail, internalError, ok} = require('../../src/shared/errors');
 
 function captureFailure(fn) {
   try {
@@ -193,6 +193,14 @@ test('TC-DF037-03 authRequired is the only unauthenticated error and uses auth.r
   assert.equal(error.code, 'unauthenticated');
   assert.equal(error.message, 'auth.required');
   assert.equal(error.details.messageKey, 'auth.required');
+});
+
+test('DF-109 internalError is internal/common.internal, retryable, with no details beyond the key (V1-06 §3.2)', () => {
+  const error = internalError();
+  assert.ok(error instanceof HttpsError);
+  assert.equal(error.code, 'internal');
+  assert.equal(error.message, 'common.internal');
+  assert.deepEqual(error.details, {messageKey: 'common.internal', retryable: true, fields: [], violations: []});
 });
 
 // ---------------------------------------------------------------------------------------------

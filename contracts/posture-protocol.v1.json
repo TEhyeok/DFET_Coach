@@ -1,0 +1,14 @@
+{
+  "contract": "posture-protocol",
+  "version": 1,
+  "revision": 1,
+  "source": "docs/v1/backlog/P1b.md DF-203 and V1-09 section 3.1; draft values (ASM-P1b-05, DEC-21) until the owner confirms protocol v1 (DF-915)",
+  "status": "draft-until-DF-915",
+  "protocolVersion": "posture-v1",
+  "levelToleranceDeg": 1.0,
+  "pitchToleranceDeg": 2.0,
+  "cameraHeightCm": { "min": 90, "max": 110 },
+  "cameraDistanceM": { "min": 2.5, "max": 3.5 },
+  "clothingOptions": ["fitted", "regular", "unknown"],
+  "standardInstructionKey": "tr07.instruction.stand"
+}

@@ -7,7 +7,7 @@
   "required": ["contract"],
   "properties": {
     "contract": {
-      "enum": ["metric-catalog", "vocab", "prohibited-terms", "feature-flags", "posture-metric-vectors"]
+      "enum": ["metric-catalog", "vocab", "prohibited-terms", "feature-flags", "posture-metric-vectors", "posture-protocol"]
     }
   },
   "allOf": [
@@ -45,6 +45,13 @@
         "required": ["contract"]
       },
       "then": { "$ref": "#/$defs/postureMetricVectors" }
+    },
+    {
+      "if": {
+        "properties": { "contract": { "const": "posture-protocol" } },
+        "required": ["contract"]
+      },
+      "then": { "$ref": "#/$defs/postureProtocol" }
     }
   ],
   "$defs": {
@@ -668,6 +675,33 @@
           }
         }
       ]
+    },
+    "postureProtocol": {
+      "description": "Posture capture protocol (DF-203, V1-09 §3.1, ASM-P1b-05). The owner confirms the values with DF-915 and then removes status. clothingOptions are cross-checked against vocab clothing by tool/contracts/generate.mjs.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/header" }],
+      "required": ["contract", "version", "revision", "source", "protocolVersion", "levelToleranceDeg", "pitchToleranceDeg", "cameraHeightCm", "cameraDistanceM", "clothingOptions", "standardInstructionKey"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": { "const": "posture-protocol" },
+        "version": true,
+        "revision": true,
+        "source": true,
+        "status": { "const": "draft-until-DF-915" },
+        "protocolVersion": { "type": "string", "pattern": "^posture-v[0-9]+$", "maxLength": 32 },
+        "levelToleranceDeg": { "type": "number", "exclusiveMinimum": 0 },
+        "pitchToleranceDeg": { "type": "number", "exclusiveMinimum": 0 },
+        "cameraHeightCm": { "$ref": "#/$defs/postureRange" },
+        "cameraDistanceM": { "$ref": "#/$defs/postureRange" },
+        "clothingOptions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "standardInstructionKey": { "type": "string", "pattern": "^tr07(\\.[a-zA-Z0-9]+)+$", "description": "A copy_ko.json key (V1-12 §4.1); tool/contracts/test/posture-protocol.test.mjs checks that it exists." }
+      }
+    },
+    "postureRange": {
+      "type": "object",
+      "required": ["min", "max"],
+      "additionalProperties": false,
+      "properties": { "min": { "type": "number", "exclusiveMinimum": 0 }, "max": { "type": "number", "exclusiveMinimum": 0 } }
     },
     "postureImage": {
       "type": "object",

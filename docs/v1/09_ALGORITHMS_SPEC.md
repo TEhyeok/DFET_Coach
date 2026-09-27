@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-09 |
-| 버전 | v1.0.2 |
+| 버전 | v1.0.3 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -197,32 +197,38 @@ rotateAboutCenter(q, θ°, W, H)  : cx = W/2, cy = H/2, dx = q.x − cx, dy = q.
 
 프로토콜 수치는 코드에 하드코딩하지 않고 이 파일에서 생성한다(ASM-P1b-05). 값은 DF-915(소유자)가 확정하고, 그 전에는 `status: "draft-until-DF-915"`인 기본값으로 개발한다. 값을 바꾸면 `protocolVersion`을 올린다(F-ASM-01.2).
 
+DF-203이 만든 파일(revision 1)은 평평한 구조다. 계약 헤더(`contract`·`version`·`revision`·`source`)를 가지며 메타 스키마 `postureProtocol`로 검사하고, 생성기가 Swift `PostureProtocolV1`을 만든다.
+
 ```json
 {
-  "protocolVersion": "posture-v1",
+  "contract": "posture-protocol",
+  "version": 1,
+  "revision": 1,
+  "source": "…",
   "status": "draft-until-DF-915",
-  "shutterGate": {
-    "rollAbsMaxDeg": 1.0,
-    "pitchAbsMaxDeg": 2.0
-  },
-  "station": {
-    "cameraHeightCm": {"min": 90, "max": 110},
-    "cameraDistanceM": {"min": 2.5, "max": 3.5}
-  },
+  "protocolVersion": "posture-v1",
+  "levelToleranceDeg": 1.0,
+  "pitchToleranceDeg": 2.0,
+  "cameraHeightCm": { "min": 90, "max": 110 },
+  "cameraDistanceM": { "min": 2.5, "max": 3.5 },
   "clothingOptions": ["fitted", "regular", "unknown"],
-  "landmarkSet": {
-    "front": ["earLeft", "earRight", "acromionLeft", "acromionRight", "asisLeft", "asisRight"],
-    "sagittalLeft": ["tragusLeft", "c7"],
-    "sagittalRight": ["tragusRight", "c7"]
-  },
-  "headTiltPair": "ear",
-  "suggestionMinConfidence": 0.3,
-  "advisory": {
-    "lightingGoodMin": 0.5,
-    "lightingVeryDarkMax": 0.3
-  }
+  "standardInstructionKey": "tr07.instruction.stand"
 }
 ```
+
+이전 초안의 이름과의 대응, 그리고 아직 없는 필드:
+
+| 초안 필드 | revision 1 | 추가하는 스토리 |
+|---|---|---|
+| `shutterGate.rollAbsMaxDeg` | `levelToleranceDeg` | — |
+| `shutterGate.pitchAbsMaxDeg` | `pitchToleranceDeg` | — |
+| `station.cameraHeightCm`, `station.cameraDistanceM` | `cameraHeightCm`, `cameraDistanceM` | — |
+| (없음) | `standardInstructionKey`(문구 덱 키) | — |
+| `advisory.lightingGoodMin`, `advisory.lightingVeryDarkMax` | 없음 | DF-204(§3.3 조명 안내) |
+| `landmarkSet`, `suggestionMinConfidence` | 없음 | DF-207(§5 제안기) |
+| `headTiltPair` | 없음. `ear` 고정(F-ASM-03.4)이 PostureMath 코드에 있다 | 다른 쌍을 허용할 때 |
+
+필드를 더하는 스토리는 같은 파일의 `revision`을 올리고 메타 스키마와 생성기를 함께 고친다. 값이 바뀌지 않으므로 `protocolVersion`은 그대로다.
 
 - `clothingOptions`는 V1-05 ASM-05-04와 같다. `unknown`은 어떤 값과도 일치하지 않는다([§8.2](#82-조건-비교-함수)).
 - `headTiltPair: "ear"`는 F-ASM-03.4 고정이다. 눈 쌍으로 바꾸려면 `protocolVersion`을 올린다.
@@ -1960,3 +1966,4 @@ countBand(n):  0 → "0",  1…3 → "1to3",  4…6 → "4to6",  7…9 → "7to9
 | v1.0(정합 패스 2) | 2026-09-24 | family 5개·파생 비교 가족, 조건 키 `nrsScale`, ASM-09-01·C-09-02 해소(R5) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 카탈로그·vocab 정본을 V1-05 §13으로 고정(ASM-09-36), ASM-09-01·C-09-02 해소 표기, §8.1 `nrsScale` 대응 추가 | — | 없음 |
 | v1.0.2 | 2026-09-28 | §5.10 벡터 PM-21~PM-24(V-POS-01·02·03, 수동 필수 auto 확정)와 벡터 형식 설명 추가, 계산을 거부하는 입력은 확정도 차단함을 명시, C-09-14(정면 쌍 퇴화 시 뷰 전체 오류) 기록 | DF-201 | 없음 |
+| v1.0.3 | 2026-09-28 | §3.1을 DF-203이 만든 `contracts/posture-protocol.v1.json` revision 1(평평한 구조)에 맞추고, 초안 필드 대응과 아직 없는 필드(DF-204·DF-207)를 표로 기록 | DF-203 | 없음 |

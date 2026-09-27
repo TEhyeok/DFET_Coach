@@ -2115,7 +2115,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 편차·남은 일:
     - AC-DF-127.10(분석 이벤트)은 MVP 밖이라 없다.
     - 대기 회원의 `pendingMembers/{p}.heightCm` update와 그 값을 키 기본값으로 쓰는 부분([ASM-P1a-41](#9-가정asm-p1a-nn))은 없다. TR-02에 대기 회원 행이 아직 없다(DF-113). 가입 회원은 직전 기록의 `derived.heightCmUsed`와 그 측정일을 기본값으로 쓴다.
-    - TC-127-02·03·05의 규칙·에뮬레이터 확인과 `DFETTrainerIntegrationTests` 시나리오는 이 조각에서 돌리지 않았다. 페이로드 키 집합과 값 범위는 firestore.rules를 읽는 단위 테스트로 대조한다.
+    - TC-127-03·05는 `IntegrationTests/BodyCompositionEmulatorTests`로 만들어 `scripts/test_auth_emulator.sh`에 더했다. 에뮬레이터(demo-dfet, 저장소 규칙)에서 통과: ② 동의·플래그가 있는 담당 회원의 저장이 Outbox → SyncEngine → FirebaseData로 서버에 생성되고(키 집합, `values`는 `weightKg` 하나, `measuredAt` 어제·`createdAt` 서버 시각), 추이 쿼리가 서버에서 다시 읽는다. ② 없음이면 저장소가 거부한다. TC-127-02(R-17 거부, R-27 체지방률 0 허용)의 규칙 테스트는 새로 더하지 않았다. 페이로드 키 집합과 값 범위는 firestore.rules를 읽는 단위 테스트로 대조한다.
     - V1-07 §3.7의 `unknown`(동의 상태를 한 번도 받지 못함)은 따로 두지 않았다. 모르는 동안 저장 버튼은 꺼져 있고 문구는 없으며, 저장소도 5초 안에 동의 값을 받지 못하면 거부한다.
     - 시뮬레이터에서 값 칸에 입력하는 중(키보드 표시) 같은 Form의 다른 행 버튼(공복 선택)을 누르면 첫 탭은 입력 종료로 쓰이고 두 번째 탭에 선택된다. 저장 버튼은 첫 탭에 동작한다. 실기기 확인은 DF-140.
 

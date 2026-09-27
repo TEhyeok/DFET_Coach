@@ -19,6 +19,8 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
   private var _concurrent = 0
   private var _maxConcurrent = 0
   private var _unverifiedUploads: Set<String> = []
+  private var _uncommittedWrites: Set<String> = []
+  private var _payloads: [String: [JSONValue]] = [:]
   private let clock: (any SyncEngineTestClock)?
   private var _callTimes: [Date] = []
 
@@ -46,6 +48,20 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
     lock.withLock { _documents.contains(path) }
   }
 
+  /// Writes to `path` report `serverCommitted: false`.
+  func markWriteUncommitted(_ path: String) {
+    lock.withLock { _ = _uncommittedWrites.insert(path) }
+  }
+
+  func payloads(to target: String) -> [JSONValue] {
+    lock.withLock { _payloads[target] ?? [] }
+  }
+
+  /// Number of calls currently held by `hold(_:)` across all targets.
+  var waitingCount: Int {
+    lock.withLock { _holds.values.reduce(0) { $0 + $1.count } }
+  }
+
   func markUploadUnverified(_ path: String) {
     lock.withLock { _ = _unverifiedUploads.insert(path) }
   }
@@ -67,9 +83,10 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
     lock.withLock { !(_holds[target] ?? []).isEmpty }
   }
 
-  private func enter(_ kind: String, _ target: String) async throws {
+  private func enter(_ kind: String, _ target: String, payload: JSONValue? = nil) async throws {
     let error: RemoteError? = lock.withLock {
       _calls.append(Call(kind: kind, target: target))
+      if let payload { _payloads[target, default: []].append(payload) }
       if let clock { _callTimes.append(clock.currentDate) }
       _concurrent += 1
       _maxConcurrent = max(_maxConcurrent, _concurrent)
@@ -96,19 +113,19 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
   }
 
   func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck {
-    try await enter("create", path)
-    lock.withLock {
+    try await enter("create", path, payload: fields)
+    return lock.withLock {
       if !_documents.contains(path) {
         _documents.insert(path)
         _createWrites += 1
       }
+      return WriteAck(serverCommitted: !_uncommittedWrites.contains(path))
     }
-    return WriteAck(serverCommitted: true)
   }
 
   func update(path: String, fields: JSONValue) async throws -> WriteAck {
-    try await enter("update", path)
-    return WriteAck(serverCommitted: true)
+    try await enter("update", path, payload: fields)
+    return lock.withLock { WriteAck(serverCommitted: !_uncommittedWrites.contains(path)) }
   }
 
   func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
@@ -118,7 +135,7 @@ final class FakeRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked
   }
 
   func call<T: Decodable & Sendable>(_ name: String, _ payload: JSONValue) async throws -> T {
-    try await enter("call", name)
+    try await enter("call", name, payload: payload)
     return try JSONDecoder().decode(T.self, from: Data("{}".utf8))
   }
 }

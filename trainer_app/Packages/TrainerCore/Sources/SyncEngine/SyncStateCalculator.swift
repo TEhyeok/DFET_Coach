@@ -20,12 +20,19 @@ public enum SyncStateCalculator {
   }
 
   /// Rules, first match wins:
-  /// 1. the member's consent capture is not confirmed on the server, or an item waits for it: `awaitingConsent`
-  /// 2. any item failed: `syncFailed`
-  /// 3. every item acked, every write server-committed and every upload verified: `synced`
-  /// 4. any item attempted, in flight or acked: `syncing`
-  /// 5. otherwise (nothing attempted yet, or no items): `localSaved`. `synced` is never claimed without evidence.
-  public static func state(consentConfirmed: Bool, items: [Item]) -> SyncState {
+  /// 1. a step the entity depends on failed (the member's pending-member create): `syncFailed`
+  /// 2. the member's consent capture is not confirmed on the server, or an item waits for it: `awaitingConsent`
+  /// 3. any item failed: `syncFailed`
+  /// 4. every item acked, every write server-committed and every upload verified: `synced`
+  /// 5. any item attempted, in flight or acked: `syncing`
+  /// 6. otherwise (nothing attempted yet, or no items): `localSaved`. `synced` is never claimed without evidence.
+  ///
+  /// V1-04 §11 lists `failed` before `blocked`; here a missing consent wins (AC-DF-015.2, .6), and "offline" is not an
+  /// input: an item waiting for the network after an attempt reads `syncing` (V1-04 v1.0.3).
+  public static func state(consentConfirmed: Bool, upstreamFailed: Bool = false, items: [Item]) -> SyncState {
+    if upstreamFailed {
+      return .syncFailed
+    }
     if !consentConfirmed || items.contains(where: { $0.state == .blocked(.awaitingConsent) }) {
       return .awaitingConsent
     }

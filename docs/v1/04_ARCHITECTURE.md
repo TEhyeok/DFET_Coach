@@ -720,7 +720,11 @@ sequenceDiagram
 - **구현 기준(DF-015, ASM-P0-16 우선).** 위 표의 일시 오류 행과 달리, 구현은 카드 AC-DF-015.4를 따른다.
   - 백오프는 `min(2^n초, 15분) ± 20%`다(n = 연속 실패 횟수).
   - 연속 5회 실패하면 `syncFailed`로 멈추고 자동 재시도하지 않는다. '다시 시도'(`retry`)가 attempts를 0으로 돌린다.
-  - `protectedDataUnavailable`은 한도에 넣지 않고 잠금 해제까지 엔진을 멈춘다(ASM-P0-29).
+  - `protectedDataUnavailable`은 한도에 넣지 않고 잠금 해제까지 엔진을 멈춘다(ASM-P0-29). 로컬 저장 실패도 같은 방식으로 멈춘다.
+  - 앱의 자동 트리거(네트워크 복구, 포그라운드)는 `retryExhausted()`를 부른다. 이 호출은 일시 오류로 한도를 다 쓴 항목만 다시 보낸다. 규칙 거부는 트레이너의 '다시 시도'(`retry`, `retryAll`)로만 다시 보낸다.
+  - 오프라인이면(`networkDidChange(isReachable: false)`) 새 호출을 시작하지 않는다.
+  - 순서는 회원 안에서 한 번에 한 호출이다. 같은 엔터티 안에서는 `sequence` 순서를 지킨다. 실패한 항목은 자기 엔터티의 뒤 단계만 막고, 같은 회원의 다른 기록은 막지 않는다.
+  - 회원 단위 관문은 두 가지다. ⓪ 대기 회원 생성과 ① 그 회원의 **최신** 동의 캡처가 acked여야 기록을 보낸다.
 - 모든 실패 표시는 분석 이벤트 `save_failure_shown(entity_type, retry_result)` 하나로만 남긴다(§5.5).
 
 ### 10.5 멱등과 재조정
@@ -813,6 +817,9 @@ stateDiagram-v2
 | 6 | 모두 `acked`이고, 문서 리스너 스냅샷 `metadata.hasPendingWrites == false`, 관련 `LocalBinary` 업로드 대조 통과 | `synced` |
 
 - `WriteAck.serverCommitted`는 completion 성공으로 설정한다. 리스너가 없는 문서는 completion 성공과 업로드 대조로 6을 판정한다.
+- **구현 기준(DF-015, V1-04 v1.0.3).** `SyncStateCalculator`는 위 표와 두 가지가 다르다.
+  - 순서: ⓪ 실패 → `syncFailed`, 동의 미확인 → `awaitingConsent`, 항목 실패 → `syncFailed`, 모두 확인 → `synced`, 시도함 → `syncing`, 그 밖 → `localSaved`다. 동의 미확인이 항목 실패보다 앞선다(AC-DF-015.2·.6).
+  - 온라인 여부는 입력이 아니다. 한 번 시도한 뒤 네트워크를 기다리는 항목은 `syncing`이다.
 - SOAP의 '확정 대기'는 노트 상태 라벨이며 syncState와 **함께** 표시한다(PRD §6.0.3).
 - 반례: 결과와 무관하게 450ms 뒤 '저장됨'(dfet:trainer_ios/DFETTrainer/Domain/TrainerStore.swift:177-191). 새 앱의 `SyncStateBadge`는 `SyncStatusProvider.syncState(for:)` 스트림만 렌더한다.
 
@@ -1295,4 +1302,4 @@ NFR-15의 수치는 모두 가설 목표이며 P1a·P1b 측정 후 §12.7에서 
 | v1.0(정합 패스 2) | 2026-09-24 | project.yml `optional: true` 제거·postBuildScripts, 픽스처 복사 제거(R4), §9.1·§10.2를 V1-05 §12에 맞춤, clientRequestId → requestId/clientCaptureId(R5), 시드·포트 담당(R2) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: R2·R4·R5 반영, ASM-04-21·ASM-04-22 추가 | — | 없음 |
 | v1.0.2 | 2026-09-26 | DF-039: §6.4 이식 대응 요약의 AppDelegate 줄 번호를 보관 브랜치 tip `82c6ee9` 기준 범위로 갱신, FeatureToday·FeatureConsent 행과 이식 제외 목록 추가, 코드 근거 표기 갱신 | — | 없음 |
-| v1.0.3 | 2026-09-27 | DF-015: §10.4 `pendingCount()` 정의를 항목 수로 맞추고(AC-DF-015.7), 백오프·재시도 한도의 구현 기준(ASM-P0-16, AC-DF-015.4)을 표 아래에 명시 | — | ASM-04-06(최대 간격 자동 재시도 지속)은 DF-015 카드와 달라 구현하지 않음 |
+| v1.0.3 | 2026-09-27 | DF-015: §10.4 `pendingCount()` 정의를 항목 수로 맞추고(AC-DF-015.7), 백오프·재시도 한도, 자동 재시도(`retryExhausted`), 오프라인·저장 실패 멈춤, 엔터티 단위 순서와 최신 동의 관문을 구현 기준으로 명시. §11 계산 우선순위의 구현 차이 기록 | — | ASM-04-06(최대 간격 자동 재시도 지속)은 DF-015 카드와 달라 구현하지 않음 |

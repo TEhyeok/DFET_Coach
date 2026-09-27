@@ -1,7 +1,7 @@
 {
   "docId": "V1-12-D3",
   "title": "D-FET Coach v1 문구 덱(ko)",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "status": "ready",
   "updated": "2026-09-28",
   "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#4-문구-키-체계",
@@ -18,7 +18,7 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 561, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 93, "trainer": 565, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -625,7 +625,10 @@
     "tr11.consentNeeded": {"ko": "건강정보 동의 필요", "audience": "trainer", "phase": "P1a", "prdRefs": ["AC-PRIV-01.1"], "screens": "TR-11", "note": "저장 버튼 비활성", "group": "tr11"},
     "tr11.deviceModel": {"ko": "기기 모델", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
     "tr11.deviceModel.add": {"ko": "기기 추가", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-127", "group": "tr11"},
+    "tr11.deviceModel.required": {"ko": "기기 모델을 골라 주세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2", "AC-BC-01.1"], "screens": "TR-11", "note": "저장 버튼 비활성. DF-127 BodyCompositionIssue.deviceModelMissing", "group": "tr11"},
+    "tr11.deviceModel.tooLong": {"ko": "기기 이름은 64자까지 쓸 수 있어요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2", "R-17"], "screens": "TR-11", "note": "규칙 strRange(deviceModel, 1, 64). DF-127 BodyCompositionIssue.deviceModelTooLong", "group": "tr11"},
     "tr11.measuredAt": {"ko": "측정 일시", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
+    "tr11.measuredAt.future": {"ko": "측정 일시가 지금보다 늦어요. 다시 확인하세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2", "§9.1"], "screens": "TR-11", "note": "지금 + 5분까지 허용(measuredAtOk). DF-127 BodyCompositionIssue.measuredAtInFuture", "group": "tr11"},
     "tr11.fasting": {"ko": "공복 여부", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
     "tr11.fasting.yes": {"ko": "공복", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
     "tr11.fasting.no": {"ko": "공복 아님", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
@@ -635,6 +638,7 @@
     "tr11.height": {"ko": "키(트레이너 측정)", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.3"], "screens": "TR-11", "note": "② 이후", "group": "tr11"},
     "tr11.bmi.needsHeight": {"ko": "키를 입력하면 BMI가 계산돼요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.3"], "screens": "TR-11", "group": "tr11"},
     "tr11.atLeastOne": {"ko": "측정값을 하나 이상 입력하세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.1"], "screens": "TR-11", "group": "tr11"},
+    "tr11.number.invalid": {"ko": "숫자로 입력하세요. 소수점 아래는 한 자리까지예요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-03.1", "F-BC-03.2"], "screens": "TR-11", "note": "쉼표 소수점은 허용, 부호·지수·단위·둘째 자리는 거부(V1-09 §10.1). DF-127 BodyCompositionIssue.notANumber", "group": "tr11"},
     "tr11.range.generic": {"ko": "{min}~{max}{unit} 사이로 입력하세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-03.2"], "screens": "TR-11, TR-12", "args": ["min", "max", "unit"], "note": "범위는 metric-catalog range", "group": "tr11"},
     "tr11.cross.fatMassOverWeight": {"ko": "체지방량이 체중보다 커요. 결과지를 다시 확인하세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-03.3"], "screens": "TR-11", "note": "경고, 저장 허용", "group": "tr11"},
     "tr11.cross.muscleOverWeight": {"ko": "골격근량이 체중 이상이에요. 결과지를 다시 확인하세요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-03.3"], "screens": "TR-11", "group": "tr11"},
@@ -866,7 +870,8 @@
     "a11y.beta": {"ko": "실측 대조 전 베타 참고값", "audience": "trainer", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "TR-13", "group": "notify"},
     "mb.a11y.metric": {"ko": "{metricName} {value}{unit}, {date}, 출처 {source}", "audience": "member", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "MB-01, MB-02", "args": ["metricName", "value", "unit", "date", "source"], "note": "회원 변화 문장은 자격 있는 지표만 뒤에 덧붙임", "group": "notify"}
   },
-  "changeLog": [{"version": "1.0.6", "date": "2026-09-28", "title": "말투 통일", "summary": "tr14.register.under14Blocked 두 번째 문장을 해요체로 맞춤(아이폰 화면 점검). 키 추가·삭제 없음"},{"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"},
+  "changeLog": [{"version": "1.0.7", "date": "2026-09-28", "title": "TR-11 검증 문구", "summary": "DF-127 BodyCompositionValidator 오류 문구 tr11.deviceModel.required·tr11.deviceModel.tooLong·tr11.measuredAt.future·tr11.number.invalid 추가, counts.trainer 565. 기존 키 변경 없음"},
+    {"version": "1.0.6", "date": "2026-09-28", "title": "말투 통일", "summary": "tr14.register.under14Blocked 두 번째 문장을 해요체로 맞춤(아이폰 화면 점검). 키 추가·삭제 없음"},{"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"},
     {"version": "1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "P1a §5.3 '덱 추가 요청' 표의 트레이너 P1a 키 32개 추가(CF-20, sync.reason.consentRejected·sync.reason.fileTooLarge 포함), counts.trainer 537로 갱신. 기존 키 변경 없음"}
   ]
 }

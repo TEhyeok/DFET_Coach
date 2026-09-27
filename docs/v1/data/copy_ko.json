@@ -1,7 +1,7 @@
 {
   "docId": "V1-12-D3",
   "title": "D-FET Coach v1 문구 덱(ko)",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "status": "ready",
   "updated": "2026-09-28",
   "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#4-문구-키-체계",
@@ -18,7 +18,7 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 565, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 93, "trainer": 567, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -162,9 +162,11 @@
     "chart.singlePoint": {"ko": "비교할 측정이 없습니다 · 판정 불가", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-VIZ-03.10"], "screens": "TR-10, TR-11 미니 추이", "group": "change"},
     "chart.lineHelp": {"ko": "점 사이 직선은 보기 위한 연결이며 그 사이 값을 뜻하지 않아요.", "audience": "shared", "phase": "P1a", "prdRefs": ["F-VIZ-03.4"], "screens": "TR-10, MB-02 도움말", "group": "change"},
     "chart.rejected.mixedSource": {"ko": "출처가 다른 값은 한 차트에 그리지 않아요", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-07.2", "C-02"], "screens": "TR-10, TR-11 미니 추이", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-130", "group": "change"},
-    "chart.summary": {"ko": "{metricName} 추이, 기록 {count}개, 최소 {min}, 최대 {max}, 끊김 {breaks}, 출처 {source}", "audience": "trainer", "phase": "P1a", "prdRefs": ["A-03", "AC-A11Y-02"], "screens": "TR-10, TR-11 미니 추이", "args": ["metricName", "count", "min", "max", "breaks", "source"], "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-130", "group": "change"},
+    "chart.summary": {"ko": "{metricName} 추이, {period}, 기록 {count}개, 최소 {min}, 최대 {max}, 끊김 {breaks}곳, 출처 {source}, 변화 {status}", "audience": "trainer", "phase": "P1a", "prdRefs": ["A-03", "AC-A11Y-02"], "screens": "TR-10, TR-11 미니 추이", "args": ["metricName", "period", "count", "min", "max", "breaks", "source", "status"], "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-130. {period}는 첫·마지막 측정일(yyyy.MM.dd~yyyy.MM.dd, 같은 날이면 하나), {status}는 change.pendingPolicy 또는 change.indeterminate.withReason(AC-DF-130.10)", "group": "change"},
     "chart.legend.left": {"ko": "왼쪽", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-07", "A-02"], "screens": "TR-10, TR-11 미니 추이", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-130", "group": "change"},
     "chart.legend.right": {"ko": "오른쪽", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-07", "A-02"], "screens": "TR-10, TR-11 미니 추이", "note": "P1a §5.3 덱 추가 요청(CF-20), 카드 DF-130", "group": "change"},
+    "chart.empty": {"ko": "아직 추이로 볼 기록이 없어요", "audience": "trainer", "phase": "P1a", "prdRefs": ["§8.4", "C-04"], "screens": "TR-10, TR-11 미니 추이", "note": "점이 0개인 차트(DF-130). 0으로 채운 선을 그리지 않는다", "group": "change"},
+    "chart.measuredAt": {"ko": "측정일", "audience": "trainer", "phase": "P1a", "prdRefs": ["A-03"], "screens": "TR-10, TR-11 미니 추이", "note": "오디오 그래프(AXChartDescriptor)의 x축 이름(DF-130)", "group": "change"},
     "series.break.device": {"ko": "기기 변경: {from} → {to}", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-03.3"], "screens": "TR-10, TR-11", "args": ["from", "to"], "group": "change"},
     "series.break.protocol": {"ko": "프로토콜 변경", "audience": "trainer", "phase": "P1b", "prdRefs": ["F-VIZ-03.3"], "screens": "TR-10", "group": "change"},
     "series.break.condition": {"ko": "조건 불일치: {condition}", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-03.3"], "screens": "TR-10, TR-11", "args": ["condition"], "group": "change"},
@@ -870,7 +872,8 @@
     "a11y.beta": {"ko": "실측 대조 전 베타 참고값", "audience": "trainer", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "TR-13", "group": "notify"},
     "mb.a11y.metric": {"ko": "{metricName} {value}{unit}, {date}, 출처 {source}", "audience": "member", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "MB-01, MB-02", "args": ["metricName", "value", "unit", "date", "source"], "note": "회원 변화 문장은 자격 있는 지표만 뒤에 덧붙임", "group": "notify"}
   },
-  "changeLog": [{"version": "1.0.7", "date": "2026-09-28", "title": "TR-11 검증 문구", "summary": "DF-127 BodyCompositionValidator 오류 문구 tr11.deviceModel.required·tr11.deviceModel.tooLong·tr11.measuredAt.future·tr11.number.invalid 추가, counts.trainer 565. 기존 키 변경 없음"},
+  "changeLog": [{"version": "1.0.8", "date": "2026-09-28", "title": "추이 차트 문구", "summary": "DF-130 chart.summary에 {period}·{status} 추가와 끊김 수 '곳'(AC-DF-130.10), chart.empty·chart.measuredAt 추가, counts.trainer 567"},
+    {"version": "1.0.7", "date": "2026-09-28", "title": "TR-11 검증 문구", "summary": "DF-127 BodyCompositionValidator 오류 문구 tr11.deviceModel.required·tr11.deviceModel.tooLong·tr11.measuredAt.future·tr11.number.invalid 추가, counts.trainer 565. 기존 키 변경 없음"},
     {"version": "1.0.6", "date": "2026-09-28", "title": "말투 통일", "summary": "tr14.register.under14Blocked 두 번째 문장을 해요체로 맞춤(아이폰 화면 점검). 키 추가·삭제 없음"},{"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"},
     {"version": "1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "P1a §5.3 '덱 추가 요청' 표의 트레이너 P1a 키 32개 추가(CF-20, sync.reason.consentRejected·sync.reason.fileTooLarge 포함), counts.trainer 537로 갱신. 기존 키 변경 없음"}
   ]

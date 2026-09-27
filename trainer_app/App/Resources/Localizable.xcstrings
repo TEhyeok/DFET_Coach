@@ -61,6 +61,18 @@
         }
       }
     },
+    "change.indeterminate.withReason" : {
+      "comment" : "V1-12 · §6.0.3, C-03 · args: reason",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "판정 불가 · %@"
+          }
+        }
+      }
+    },
     "change.pendingPolicy" : {
       "comment" : "V1-12 · §6.0.3, §7.6, AC-C-03.1",
       "extractionState" : "manual",
@@ -69,6 +81,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "산정 준비 중"
+          }
+        }
+      }
+    },
+    "chart.empty" : {
+      "comment" : "V1-12 · §8.4, C-04",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 추이로 볼 기록이 없어요"
+          }
+        }
+      }
+    },
+    "chart.legend.left" : {
+      "comment" : "V1-12 · F-VIZ-07, A-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽"
+          }
+        }
+      }
+    },
+    "chart.legend.right" : {
+      "comment" : "V1-12 · F-VIZ-07, A-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽"
+          }
+        }
+      }
+    },
+    "chart.measuredAt" : {
+      "comment" : "V1-12 · A-03",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정일"
+          }
+        }
+      }
+    },
+    "chart.rejected.mixedSource" : {
+      "comment" : "V1-12 · F-VIZ-07.2, C-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처가 다른 값은 한 차트에 그리지 않아요"
+          }
+        }
+      }
+    },
+    "chart.singlePoint" : {
+      "comment" : "V1-12 · F-VIZ-03.10",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비교할 측정이 없습니다 · 판정 불가"
+          }
+        }
+      }
+    },
+    "chart.summary" : {
+      "comment" : "V1-12 · A-03, AC-A11Y-02 · args: metricName, period, count, min, max, breaks, source, status",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 추이, %2$@, 기록 %3$lld개, 최소 %4$@, 최대 %5$@, 끊김 %6$@곳, 출처 %7$@, 변화 %8$@"
           }
         }
       }
@@ -225,6 +321,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다시 시도"
+          }
+        }
+      }
+    },
+    "condition.clothing" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복장"
+          }
+        }
+      }
+    },
+    "condition.fasting" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부"
+          }
+        }
+      }
+    },
+    "condition.side" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측면"
+          }
+        }
+      }
+    },
+    "condition.station" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영 스테이션"
+          }
+        }
+      }
+    },
+    "condition.timeOfDayBand" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 시간대"
+          }
+        }
+      }
+    },
+    "condition.view" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영 방향"
           }
         }
       }
@@ -537,6 +705,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "체중"
+          }
+        }
+      }
+    },
+    "reason.betaMetric" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "베타 지표"
+          }
+        }
+      }
+    },
+    "reason.conditionMismatch" : {
+      "comment" : "V1-12 · §7.4, B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조건 불일치"
+          }
+        }
+      }
+    },
+    "reason.deviceChanged" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 변경"
+          }
+        }
+      }
+    },
+    "reason.noComparison" : {
+      "comment" : "V1-12 · B.4, F-VIZ-03.10",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비교할 측정 없음"
+          }
+        }
+      }
+    },
+    "reason.noMdc" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MDC 미확보"
+          }
+        }
+      }
+    },
+    "reason.protocolChanged" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로토콜 변경"
+          }
+        }
+      }
+    },
+    "reason.referenceMetric" : {
+      "comment" : "V1-12 · B.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "참고 지표"
+          }
+        }
+      }
+    },
+    "series.break.condition" : {
+      "comment" : "V1-12 · F-VIZ-03.3 · args: condition",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조건 불일치: %@"
+          }
+        }
+      }
+    },
+    "series.break.device" : {
+      "comment" : "V1-12 · F-VIZ-03.3 · args: from, to",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 변경: %1$@ → %2$@"
+          }
+        }
+      }
+    },
+    "series.break.protocol" : {
+      "comment" : "V1-12 · F-VIZ-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로토콜 변경"
           }
         }
       }

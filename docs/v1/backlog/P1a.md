@@ -283,7 +283,7 @@ public enum MemberKey: Hashable, Codable, Sendable { case uid(String), pending(S
 | `tr11.correct.confirm` | 이 기록을 무효 처리하고 고쳐 입력할까요? | — | DF-128 | F-BC-03.5 |
 | `tr11.deviceChanged` | 기기가 바뀌어 이전 기록과 비교할 수 없습니다 | — | DF-128 | F-BC-03.4(PRD 문구 그대로) |
 | `chart.rejected.mixedSource` | 출처가 다른 값은 한 차트에 그리지 않아요 | — | DF-130 | F-VIZ-07.2, C-02 |
-| `chart.summary` | {metricName} 추이, 기록 {count}개, 최소 {min}, 최대 {max}, 끊김 {breaks}, 출처 {source} | metricName, count, min, max, breaks, source | DF-130 | A-03, AC-A11Y-02 |
+| `chart.summary` | {metricName} 추이, {period}, 기록 {count}개, 최소 {min}, 최대 {max}, 끊김 {breaks}곳, 출처 {source}, 변화 {status} | metricName, period, count, min, max, breaks, source, status | DF-130 | A-03, AC-A11Y-02 |
 | `chart.legend.left` | 왼쪽 | — | DF-130 | F-VIZ-07, A-02 |
 | `chart.legend.right` | 오른쪽 | — | DF-130 | F-VIZ-07, A-02 |
 | `sync.reason.consentRejected` | 동의 기록이 거부돼 서버가 저장을 받지 않았어요. | — | DF-111 | F-PRIV-03.7, §6.0.3 |

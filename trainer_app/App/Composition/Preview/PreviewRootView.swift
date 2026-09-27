@@ -1,6 +1,7 @@
 #if DEBUG
 import FeatureAuth
 import SwiftUI
+import SyncEngine
 import UIKit
 
 /// DEBUG-only root for `--preview-*` launches: synthetic data, no Firebase.
@@ -16,6 +17,8 @@ struct PreviewRootView: View {
   @State private var memberGate = PreviewMemberGate()
   /// TR-14 registrations of this launch (DF-108), in memory.
   @State private var registrar = PreviewPendingMemberRegistrar()
+  /// TR-14 consent captures of this launch (DF-110), in memory; published versions and server state are synthetic.
+  @State private var consent = PreviewConsentStore()
   /// TR-15's Outbox view (DF-018), in memory.
   @State private var queue: PreviewSyncQueue
 
@@ -53,7 +56,9 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        registrar: registrar, syncQueue: queue, signOut: signOut,
+        registrar: registrar, consentDocuments: consent, consentRecorder: consent,
+        effectiveConsent: EffectiveConsentResolver(server: consent, captures: consent), syncQueue: queue,
+        signOut: signOut,
         accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)

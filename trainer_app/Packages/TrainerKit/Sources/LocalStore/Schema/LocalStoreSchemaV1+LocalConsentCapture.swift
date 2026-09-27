@@ -3,27 +3,23 @@ import SwiftData
 import TrainerContracts
 import TrainerDomain
 
-extension LocalStoreSchemaV1_2 {
-  /// In-person consent capture (V1-05 §12.2). While `captureState == pending` the member's other Outbox items are
-  /// `blocked(awaitingConsent)`. Unconfirmed captures are destroyed after `expiresAt` (AS-32, `LocalRetention`).
-  /// `captureState`, `syncState`, `lastErrorCode` and `serverConfirmedAt` follow the capture's `callConsent` Outbox
-  /// item (`LocalOutboxStore`, DF-110).
+/// Frozen V1 (and V1_1) shape of `LocalConsentCapture`, kept only so SwiftData can migrate older stores (DF-110). Do
+/// not change it: the current model is `LocalStoreSchemaV1_2.LocalConsentCapture` in Models/LocalConsentCapture.swift.
+extension LocalStoreSchemaV1 {
+  /// In-person consent capture (V1-05 §12.2).
   @Model
   final class LocalConsentCapture {
-    /// Lowercase UUID string, equal to the request `clientCaptureId` and to the Outbox item's `requestId`.
+    /// UUID string, equal to the request `clientCaptureId`.
     @Attribute(.unique) var captureId: String
     var trainerUid: String
     var memberKey: String
     /// `[{consentType, action, documentVersion}]`.
     var selectionsJSON: Data
-    /// The signature PNG (`LocalBinary`). Optional since V1_2 (DF-110): the MVP records consent without a signature
-    /// (DF-109/DF-110 MVP) and a withdrawal may come without one (ASM-P1a-03).
-    var signatureBinaryId: UUID?
+    var signatureBinaryId: UUID
     var capturedAt: Date
     /// `LocalConsentCaptureState` raw value.
     var captureState: String
     var serverRecordIds: [String]
-    /// When this device learned that `recordConsent` succeeded (device clock).
     var serverConfirmedAt: Date?
     /// `capturedAt + LocalRetention.window` (AS-32).
     var expiresAt: Date
@@ -35,7 +31,7 @@ extension LocalStoreSchemaV1_2 {
       trainerUid: String,
       memberKey: MemberKey,
       selectionsJSON: Data,
-      signatureBinaryId: UUID?,
+      signatureBinaryId: UUID,
       capturedAt: Date,
       captureState: LocalConsentCaptureState = .pending,
       serverRecordIds: [String] = [],
@@ -56,13 +52,5 @@ extension LocalStoreSchemaV1_2 {
       self.syncState = syncState.rawValue
       self.lastErrorCode = lastErrorCode
     }
-
-    var entityRef: String { LocalEntityRef.consent(captureId: captureId) }
-  }
-}
-
-extension LocalConsentCapture: TrainerScopedModel {
-  static func ownedBy(_ trainerUid: String) -> Predicate<LocalConsentCapture> {
-    #Predicate<LocalConsentCapture> { $0.trainerUid == trainerUid }
   }
 }

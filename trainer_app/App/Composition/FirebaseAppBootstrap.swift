@@ -1,6 +1,7 @@
 import FeatureAuth
 import FirebaseData
 import Foundation
+import SyncEngine
 import TrainerDomain
 
 extension AppBootstrap {
@@ -33,8 +34,9 @@ extension AppBootstrap {
     FirestoreRemoteWriter(trainerUid: trainerUid)
   }
 
-  /// The signed-in trainer's shell services (DF-108, DF-018): FirebaseData's member directory, registration on the
-  /// LocalStore partition with the SyncEngine sending to FirebaseData, its queue for TR-15 and the full logout.
+  /// The signed-in trainer's shell services (DF-108, DF-018, DF-110): FirebaseData's member directory, registration
+  /// and consent captures on the LocalStore partition with the SyncEngine sending to FirebaseData, the effective
+  /// consent (FirebaseData's `memberConsentStates` listener + local captures), its queue for TR-15 and the full logout.
   /// `gate` signs the trainer out as a user sign-out (no claim-revoked notice); tests without a gate pass nil.
   @MainActor
   static func liveServices(session: TrainerSession, gate: AuthGateModel? = nil) -> ShellServices {
@@ -45,9 +47,14 @@ extension AppBootstrap {
         callable: FunctionsCallableClient(), currentUid: { FirebaseAuthService.currentUid() },
         sessions: { liveAuthService().sessionStream() })
     }
+    let consent = FirestoreConsentService()
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
+      consentDocuments: consent,
+      consentRecorder: runtime?.consentRecorder ?? SessionRuntime.UnavailableConsentRecorder(),
+      effectiveConsent: EffectiveConsentResolver(
+        server: consent, captures: runtime?.consentCaptures ?? SessionRuntime.NoConsentCaptures()),
       syncQueue: runtime?.engine ?? SessionRuntime.UnavailableSyncQueue(),
       signOut: LiveSessionSignOut(
         trainerUid: trainerUid,

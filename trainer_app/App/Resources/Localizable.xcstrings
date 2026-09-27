@@ -217,6 +217,18 @@
         }
       }
     },
+    "common.onlineRequired" : {
+      "comment" : "V1-12 · §7, F-SOAP-05.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "온라인 필요"
+          }
+        }
+      }
+    },
     "common.retry" : {
       "comment" : "V1-12 · §8.4, §9.6",
       "extractionState" : "manual",
@@ -225,6 +237,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다시 시도"
+          }
+        }
+      }
+    },
+    "consent.requiredFirst" : {
+      "comment" : "V1-12 · F-LINK-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "① 필수 동의를 먼저 받아야 해요."
+          }
+        }
+      }
+    },
+    "consent.state.awaiting" : {
+      "comment" : "V1-12 · F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인 대기"
+          }
+        }
+      }
+    },
+    "consent.type.bodyImaging" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "③ 신체 사진·영상·3D 정보"
+          }
+        }
+      }
+    },
+    "consent.type.healthData" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "② 건강정보 수집·이용"
+          }
+        }
+      }
+    },
+    "consent.type.required" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "① 서비스 이용 필수 동의"
           }
         }
       }
@@ -985,6 +1057,30 @@
         }
       }
     },
+    "tr02.consent.needed" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 필요"
+          }
+        }
+      }
+    },
+    "tr02.consent.ok" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 ①②③"
+          }
+        }
+      }
+    },
     "tr02.empty" : {
       "comment" : "V1-12 · §8.4",
       "extractionState" : "manual",
@@ -1125,6 +1221,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LiDAR 관측 단면(베타)"
+          }
+        }
+      }
+    },
+    "tr14.consent.documentMissing" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게시된 동의 문서가 없어 진행할 수 없어요. 관리자에게 문의하세요."
+          }
+        }
+      }
+    },
+    "tr14.consent.grant" : {
+      "comment" : "V1-12 · F-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의"
+          }
+        }
+      }
+    },
+    "tr14.consent.handToMember" : {
+      "comment" : "V1-12 · F-PRIV-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 화면은 회원님이 직접 읽고 선택합니다"
+          }
+        }
+      }
+    },
+    "tr14.consent.refuse" : {
+      "comment" : "V1-12 · F-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의하지 않음"
+          }
+        }
+      }
+    },
+    "tr14.consent.returnToTrainer" : {
+      "comment" : "V1-12 · F-PRIV-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트레이너에게 돌려주세요"
+          }
+        }
+      }
+    },
+    "tr14.consent.submit" : {
+      "comment" : "V1-12 · F-PRIV-03.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 내용으로 제출"
+          }
+        }
+      }
+    },
+    "tr14.consent.title" : {
+      "comment" : "V1-12 · F-PRIV-03",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 받기"
+          }
+        }
+      }
+    },
+    "tr14.consent.version" : {
+      "comment" : "V1-12 · F-PRIV-01.2 · args: version",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "문서 버전 %@"
           }
         }
       }

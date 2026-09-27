@@ -235,6 +235,24 @@ final class LocalRetentionTests: XCTestCase {
     XCTAssertTrue(store.fileExists(relativePath: kept.relativePath))
   }
 
+  /// DF-110 MVP captures have no signature: an expired one is destroyed with its member's waiting items, no file.
+  func testAnExpiredUnsignedCaptureIsDestroyed() throws {
+    let now = Synthetic.now
+    context.insert(LocalConsentCapture(
+      captureId: "capture-unsigned", trainerUid: Synthetic.trainerA, memberKey: Synthetic.memberA,
+      selectionsJSON: Synthetic.json, signatureBinaryId: nil, capturedAt: now - LocalRetention.window - minute))
+    let blocked = insertOutbox(entityRef: "soap:n1", member: Synthetic.memberA, stage: .document,
+                               kind: .createDocument, state: .blocked)
+    try context.save()
+
+    let report = try retention.purge(now: now)
+
+    XCTAssertEqual(report.destroyedCaptureIds, ["capture-unsigned"])
+    XCTAssertEqual(report.destroyedOutboxItemIds, [blocked.id])
+    XCTAssertEqual(report.destroyedBinaryIds, [])
+    XCTAssertTrue(try context.fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).isEmpty)
+  }
+
   func test_TC_DF014_04_captureExpiresAtIsCapturedAtPlusWindow() {
     let capture = LocalConsentCapture(captureId: "c", trainerUid: Synthetic.trainerA, memberKey: Synthetic.memberA,
                                       selectionsJSON: Synthetic.json, signatureBinaryId: UUID(), capturedAt: Synthetic.now)

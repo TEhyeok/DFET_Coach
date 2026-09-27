@@ -23,16 +23,27 @@ final class LocalStoreSchemaTests: XCTestCase {
   }
 
   /// DF-108: V1_1 adds `LocalPendingMemberDraft` and `OutboxItem.ackConfirmed`, with one lightweight stage from V1.
-  func testSchemaV1_1IsCurrentAndMigratesFromV1() throws {
+  func testSchemaV1_1AddsThePendingMemberDraft() throws {
     XCTAssertEqual(LocalStoreSchemaV1_1.versionIdentifier, Schema.Version(1, 1, 0))
     let names = Set(LocalStoreSchemaV1_1.models.map { String(describing: $0) })
     XCTAssertEqual(names, Self.v1ModelNames.union(["LocalPendingMemberDraft"]))
-    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), names)
     let outbox = try XCTUnwrap(LocalStoreContainer.schema.entities.first { $0.name == "OutboxItem" })
     XCTAssertTrue(try XCTUnwrap(outbox.attributes.first { $0.name == "ackConfirmed" }).isOptional)
+  }
+
+  /// DF-110: V1_2 is current and makes `LocalConsentCapture.signatureBinaryId` optional (MVP captures have no
+  /// signature), with a lightweight stage from V1_1.
+  func testSchemaV1_2IsCurrentWithAnOptionalSignature() throws {
+    XCTAssertEqual(LocalStoreSchemaV1_2.versionIdentifier, Schema.Version(1, 2, 0))
+    XCTAssertEqual(LocalStoreCurrentSchema.versionIdentifier, LocalStoreSchemaV1_2.versionIdentifier)
+    let names = Set(LocalStoreSchemaV1_2.models.map { String(describing: $0) })
+    XCTAssertEqual(names, Self.v1ModelNames.union(["LocalPendingMemberDraft"]))
+    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), names)
+    let capture = try XCTUnwrap(LocalStoreContainer.schema.entities.first { $0.name == "LocalConsentCapture" })
+    XCTAssertTrue(try XCTUnwrap(capture.attributes.first { $0.name == "signatureBinaryId" }).isOptional)
     XCTAssertEqual(LocalStoreMigrationPlan.schemas.map { String(describing: $0) },
-                   ["LocalStoreSchemaV1", "LocalStoreSchemaV1_1"])
-    XCTAssertEqual(LocalStoreMigrationPlan.stages.count, 1)
+                   ["LocalStoreSchemaV1", "LocalStoreSchemaV1_1", "LocalStoreSchemaV1_2"])
+    XCTAssertEqual(LocalStoreMigrationPlan.stages.count, 2)
   }
 
   func test_TC_DF014_01_AC_DF_014_1_everyModelHasANonOptionalTrainerUidAttribute() throws {

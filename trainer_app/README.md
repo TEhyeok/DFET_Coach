@@ -87,7 +87,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 |---|---|
 | `--preview-empty` | Shell with every flag off and no members |
 | `--preview-login` | Signed-out state: login placeholder (`login.root`) until DF-012 |
-| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`) |
+| `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`). TR-14 registration and its consent step work in memory: synthetic published versions (`{type}--1.0`), captures never sent, no server state (①②③ granted reads '동의 확인 대기') |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
 | `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |

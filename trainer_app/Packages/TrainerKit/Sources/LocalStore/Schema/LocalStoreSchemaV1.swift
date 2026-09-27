@@ -4,8 +4,9 @@ import SwiftData
 ///
 /// Holds the entities whose 'schema' column in V1-05 §12.2 is V1. Every entity carries `trainerUid` and every
 /// query adds `trainerUid == session uid` (AC-DF-014.1). Later stories add `LocalStoreSchemaV1_1`, `V1_2`… and a
-/// matching `LocalStoreMigrationPlan` stage in the same PR (`LocalPendingMemberDraft` → V1_1 in DF-108,
-/// `LocalAssessmentDraft` → DF-203). New attributes must be optional or have a default (lightweight migration).
+/// matching `LocalStoreMigrationPlan` stage in the same PR (`LocalPendingMemberDraft` → V1_1 in DF-108, an optional
+/// `LocalConsentCapture.signatureBinaryId` → V1_2 in DF-110, `LocalAssessmentDraft` → DF-203). New attributes must be
+/// optional or have a default (lightweight migration).
 ///
 /// The `@Model` classes are nested here so a later version can redeclare them; the module-level typealiases below
 /// always point at the current version. All `@Model` classes are `internal` (V1-05 §12.1 access level).
@@ -27,21 +28,26 @@ public enum LocalStoreSchemaV1: VersionedSchema {
   }
 }
 
-/// Migration plan (V1-04 §9.3). Every stage so far is lightweight (additive changes only).
+/// Migration plan (V1-04 §9.3). Every stage so far is lightweight (additive changes and one attribute made optional).
 public enum LocalStoreMigrationPlan: SchemaMigrationPlan {
-  public static var schemas: [any VersionedSchema.Type] { [LocalStoreSchemaV1.self, LocalStoreSchemaV1_1.self] }
+  public static var schemas: [any VersionedSchema.Type] {
+    [LocalStoreSchemaV1.self, LocalStoreSchemaV1_1.self, LocalStoreSchemaV1_2.self]
+  }
   public static var stages: [MigrationStage] {
-    [.lightweight(fromVersion: LocalStoreSchemaV1.self, toVersion: LocalStoreSchemaV1_1.self)]
+    [
+      .lightweight(fromVersion: LocalStoreSchemaV1.self, toVersion: LocalStoreSchemaV1_1.self),
+      .lightweight(fromVersion: LocalStoreSchemaV1_1.self, toVersion: LocalStoreSchemaV1_2.self),
+    ]
   }
 }
 
 /// The current schema version.
-public typealias LocalStoreCurrentSchema = LocalStoreSchemaV1_1
+public typealias LocalStoreCurrentSchema = LocalStoreSchemaV1_2
 
 // Current-version names used by the rest of the module (V1-05 §12.1: inside LocalStore `OutboxItem` is the @Model).
 typealias LocalSoapDraft = LocalStoreSchemaV1.LocalSoapDraft
 typealias LocalMeasurementDraft = LocalStoreSchemaV1.LocalMeasurementDraft
-typealias LocalConsentCapture = LocalStoreSchemaV1.LocalConsentCapture
+typealias LocalConsentCapture = LocalStoreSchemaV1_2.LocalConsentCapture
 typealias OutboxItem = LocalStoreSchemaV1_1.OutboxItem
 typealias LocalBinary = LocalStoreSchemaV1.LocalBinary
 typealias TodayListEntry = LocalStoreSchemaV1.TodayListEntry

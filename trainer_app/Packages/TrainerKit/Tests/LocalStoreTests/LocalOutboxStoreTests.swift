@@ -282,4 +282,33 @@ final class LocalOutboxStoreTests: XCTestCase {
     XCTAssertNil(rows.first?.ackConfirmed)
     XCTAssertEqual(try current.fetchOwned(LocalPendingMemberDraft.self, by: Synthetic.trainerA).count, 0)
   }
+
+  /// A V1_1 store (DF-108) opens with V1_2 (DF-110): a signed capture keeps its signature, and an unsigned one can be
+  /// saved afterwards.
+  @MainActor
+  func testAV1_1StoreMigratesToV1_2() throws {
+    let temp = try TemporaryDirectory()
+    self.temp = temp
+    let url = temp.url.appendingPathComponent("v1_1.sqlite")
+    let signature = UUID()
+    do {
+      let v1_1 = try ModelContainer(for: Schema(versionedSchema: LocalStoreSchemaV1_1.self),
+                                    configurations: [ModelConfiguration(url: url)])
+      let context = ModelContext(v1_1)
+      context.insert(LocalStoreSchemaV1.LocalConsentCapture(
+        captureId: "signed", trainerUid: Synthetic.trainerA, memberKey: Synthetic.memberA,
+        selectionsJSON: Synthetic.json, signatureBinaryId: signature, capturedAt: Synthetic.now))
+      try context.save()
+    }
+    let current = ModelContext(try LocalStoreContainer.make(url: url))
+    let signed = try XCTUnwrap(current.fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).first)
+    XCTAssertEqual(signed.captureId, "signed")
+    XCTAssertEqual(signed.signatureBinaryId, signature)
+    current.insert(LocalConsentCapture(
+      captureId: "unsigned", trainerUid: Synthetic.trainerA, memberKey: Synthetic.memberA,
+      selectionsJSON: Synthetic.json, signatureBinaryId: nil, capturedAt: Synthetic.now))
+    try current.save()
+    XCTAssertEqual(Set(try current.fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).map(\.captureId)),
+                   ["signed", "unsigned"])
+  }
 }

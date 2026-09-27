@@ -142,7 +142,7 @@ public struct LocalRetention {
     for capture in try context.fetchOwned(LocalConsentCapture.self, by: trainerUid)
     where capture.serverConfirmedAt != nil && !waitingRefs.contains(capture.entityRef) {
       report.destroyedCaptureIds.append(capture.captureId)
-      freedBinaries.append(capture.signatureBinaryId)
+      if let signature = capture.signatureBinaryId { freedBinaries.append(signature) }
       context.delete(capture)
     }
 
@@ -213,7 +213,7 @@ public struct LocalRetention {
       // question for the owner; until it is decided the conservative reading applies.
       for capture in expired where capture.memberKey == memberKey {
         destroyedRefs.insert(capture.entityRef)
-        destroyedBinaryIds.insert(capture.signatureBinaryId)
+        if let signature = capture.signatureBinaryId { destroyedBinaryIds.insert(signature) }
         report.destroyedCaptureIds.append(capture.captureId)
         context.delete(capture)
       }

@@ -925,6 +925,17 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 뒤로 미룬다: 서명 패드, 가입(uid) 회원 흐름, 동의 문서 전문 표시의 법률 문구(G-04 뒤), 재동의 배너(AC-DF-110.6 `needsReconsent`, `tr14.consent.revised`)
 - 결과 상태 칩은 DF-111 MVP 조각(S06)의 `EffectiveConsent`만 읽는다. `ConsentState` 타입은 DF-111이 먼저 만들었으므로 다시 만들지 않고, `FirestoreConsentService.observeState`를 DF-111의 `ConsentStateSource` 프로토콜 구현으로 둔다
 - 분석 이벤트 AC는 MVP 뒤(DF-126·DF-033): AC-DF-110.7(`onboarding_consent_completed`)과 TC-110-09는 만들지 않는다. `AnalyticsClient` 호출도 넣지 않는다
+- 구현 기록(DF-111 MVP 나머지와 한 PR):
+  - 화면: `FeatureConsent/Consent/ConsentStepView.swift`(`/// TR-14`)·`ConsentStepModel.swift`(카드의 `ConsentFlowView`·`ConsentFlowModel` 자리). 등록 뒤 `ShellSheet.consent(member:)`의 자리 표시를 대체했다(쓸어내려 닫기 없음, `tr14.consent.root` 값은 회원 키). 카드 ①②③마다 유형 이름(`consent.type.*`), 문서 버전(`tr14.consent.version`), '동의'·'동의하지 않음'(`tr14.consent.grant`·`refuse`, 식별자 `<키>.<type>`, VoiceOver 라벨에 유형 이름). 기본 선택·묶음 버튼 없음, 법률 문안 없음(머리 한 줄 `tr14.consent.handToMember`만). ④⑤·서명·건네기 화면은 만들지 않았다.
+  - 제출(`tr14.consent.submit`)은 ①②③에 모두 답하고 ①이 '동의'일 때만 켜진다. 기록은 '동의'한 유형의 `grant`만이다(거부는 기록하지 않음). ① '동의하지 않음'이면 ① 카드 아래 `consent.requiredFirst`를 보이고 아무것도 기록하지 않는다(V1-06 V8). 저장 뒤 `tr14.consent.returnToTrainer`와 결과 칩(`EffectiveConsent.chipState`: `tr02.consent.ok`·`consent.state.awaiting`·`tr02.consent.needed`).
+  - 편차: AC-DF-110.5(대기 회원 ① 거부 → `status='cancelled'`)는 만들지 않았다. 취소 경로는 DF-113의 `cancelPendingMember`(행 메뉴)이고, 동의 단계는 아무것도 기록하지 않고 닫힌다.
+  - 문서: 게시 버전은 `ConsentDocumentCatalog.publishedDocuments()`(FirebaseData `consentDocumentVersions where status == 'published'`)에서 유형별 최신(`ConsentFlowRules.latestPublished`). ①②③ 중 없는 유형이 있으면 `tr14.consent.documentMissing`(AC-DF-110.3). 캐시만으로 답했는데 빠진 유형이 있으면 '없음'이 아니라 `common.onlineRequired` + `common.retry`.
+  - 카드의 `ConsentService` 한 프로토콜은 셋으로 나눴다: `ConsentDocumentCatalog`(문서), `ConsentStateSource`(DF-111, 상태), `ConsentCaptureRecorder`(캡처). 철회(`withdraw`)는 DF-112. 캡처 저장은 `FirebaseData`가 아니라 `LocalStore/LocalConsentRecorder`다(DF-108과 같은 이유: 서버를 기다리지 않음). `FirestoreConsentService`는 문서 쿼리와 상태 리스너(`FirestoreListenerRegistry` 등록)만 한다.
+  - 캡처: `LocalConsentCapture`와 1단계 `callConsent` 항목(`requestId` = 캡처 UUID, `dependsOn` = 대기 회원 create 항목)을 한 번의 저장으로 쓰고(`LocalOutboxStore.insertConsentCapture`) 엔진에 넘긴다. 캡처 상태는 그 항목을 따른다(acked → `confirmed` + `serverConfirmedAt`, failed·superseded → `failed`, 나머지 → `pending`).
+  - 요청: `TrainerDomain/Consent/ConsentFlow.swift` `RecordConsentRequest.payload`가 V1-06 §6.2.1 키 `clientCaptureId`, `memberKey`(`{pendingMemberId}`·`{memberUid}`), `channel`(`trainerDeviceInPerson`), `selections`, `capturedAt`만 만든다. `signaturePngBase64` 없음(MVP), `reconfirmOf`는 회원 앱 전용이라 넣지 않는다. 테스트가 V1-06 본문의 스키마 JSON을 읽어 대조한다.
+  - 저장소: `LocalStoreSchemaV1_2`(경량 이관)에서 `LocalConsentCapture.signatureBinaryId`를 옵셔널로 했다(서명 없는 MVP 캡처, 서명 선택인 철회). V1-05 v1.0.7 §12.2.
+  - 확인 필요(CF 후보): V1-06 §3.12 `DocId` 패턴 `^[A-Za-z0-9_-]{1,128}$`에는 '.'이 없는데 §6.2.1은 `documentVersion`을 `DocId`로 두고, V1-05 §4.13 문서 ID는 `healthData--1.0`처럼 '.'을 가진다. 앱은 문서 ID를 그대로 보낸다. 서버 검증이 `DocId`를 그대로 쓰면 모든 요청이 `invalid-argument`가 된다.
+  - 미리보기: `--preview-members`에서 등록 → 동의 단계가 합성 게시 버전(`{type}--1.0`)과 메모리 캡처로 동작한다(서버 상태 없음: ①②③ 동의 뒤 칩은 '동의 확인 대기'). UI 테스트 `ConsentStepUITests`.
 
 ---
 
@@ -1001,6 +1012,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
 - MVP 뒤로 미룬다: ④⑤ 계산, 동의 거부 뒤 '다시 받기' UX(AC-DF-111.3, `consent.rejected.retake`. MVP에서 `rejected`는 칩에 '동의 필요'로 보인다), 철회(DF-112)와 재동의·재확인 UX(AC-DF-110.6 '재동의 필요', F-PRIV-03.8), 앱 활성화 시 `LocalRetention.purge` 호출과 TR-01 안내(AC-DF-111.4, `RetentionOnActivate`. TR-01은 MVP에서 숨긴다, DF-017 MVP 절), 오프라인 등록·동의·기록 순서 통합 시나리오(AC-DF-111.1·111.5, `AwaitingConsentIT`, TC-111-07 실기기). Outbox `dependsOn` 연결 자체는 DF-110 구현 노트대로 DF-110이 만든다
 - MVP에서 기다리지 않는 의존: DF-110(S07). 서버 상태를 `ConsentStateSource` 프로토콜로 받으므로 S06에 먼저 만들 수 있다. DF-015는 같은 S06이다(이 조각은 SyncEngine의 `awaitingConsent` 차단 로직을 쓰지 않고 캡처 상태만 읽는다)
 - 분석 이벤트 없음
+- 구현 기록(DF-110 MVP와 한 PR):
+  - `SyncEngine/EffectiveConsentResolver.swift`: 순수 `resolve(server:captures:serverObservedAt:)`와 회원별 `observe(member:) -> AsyncStream<EffectiveConsent>`(`EffectiveConsentSource` 구현). 유형마다 그 유형을 고른 가장 새 캡처가 서버 값과 함께 정한다: 서버 granted면 `granted`(대기·거부 캡처와 무관), 아니면 캡처 없음 `missing`·대기 `awaitingConsent`·거부 `rejected`(TC-111-06). 더한 규칙 두 가지: 대기 중인 `withdraw`는 곧바로 `missing`(DF-112가 같은 값을 읽음), `confirmed` 캡처는 서버 값을 따르되 확인 뒤 서버 값을 아직 받지 못했으면 `awaitingConsent`(callable 응답보다 리스너 갱신이 늦을 수 있음).
+  - 스트림은 두 공급원이 모두 한 번 답한 뒤 첫 값을 내고 같은 값은 반복하지 않는다. 서버 스트림이 끝나면(대기 회원의 `pendingMembers` 문서가 아직 서버에 없어 읽기 규칙이 소유를 증명하지 못함) 다음 로컬 캡처 변화 때 다시 구독한다. 그때가 서버 상태가 바뀔 때다.
+  - 카드의 `resolve(server:captures: [LocalConsentCapture])`는 값 타입 `ConsentCapture`(`TrainerDomain/Consent/ConsentCapture.swift`)로 받는다(SyncEngine은 LocalStore를 import하지 않음, ASM-04-02). 로컬 캡처 공급은 `ConsentCaptureSource.observeCaptures(member:)`, LocalStore 구현은 `LocalConsentCaptureStore`다. SwiftData 모델 액터 저장에는 iOS 17에서 쓸 변경 스트림이 없어, 캡처를 바꾸는 `LocalOutboxStore` 저장 뒤 프로세스 안 신호(`ConsentCaptureChanges`)로 다시 읽는다. 로그아웃 정리(`purgeSynced`)는 신호를 보내지 않는다(화면이 없어진 뒤).
+  - `FirestoreConsentService.observe(member:)`가 `ConsentStateSource` 구현이다(문서 없음 = nil, 리스너 실패 = nil 뒤 종료).
+  - 에뮬레이터: `IntegrationTests/ConsentStateEmulatorTests` — 대기 회원 문서가 서버에 없으면 상태 리스너가 거부돼 nil로 끝나고, 문서가 생기고 서버가 상태를 쓰면 유효 동의가 ①②③ granted, 다른 트레이너는 읽지 못한다. 게시 문서 쿼리는 published만 돌려준다.
 
 ---
 

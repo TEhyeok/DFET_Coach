@@ -36,10 +36,16 @@ struct RootSplitView: View {
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
+  private let consentDocuments: any ConsentDocumentCatalog
+  private let consentRecorder: any ConsentCaptureRecorder
+  private let effectiveConsent: any EffectiveConsentSource
 
   init(flags: FeatureFlags, services: ShellServices) {
     baseFlags = flags
     registrar = services.registrar
+    consentDocuments = services.consentDocuments
+    consentRecorder = services.consentRecorder
+    effectiveConsent = services.effectiveConsent
     _settings = State(initialValue: SettingsViewModel(
       queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
       version: Self.appVersion))
@@ -83,20 +89,11 @@ struct RootSplitView: View {
           onRegistered: { member in sheet = .consent(member: member) },
           onCancel: { sheet = nil })
       case let .consent(member):
-        NavigationStack {
-          ComingSoonView()
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button(String(localized: "common.close")) { sheet = nil }
-                  .accessibilityIdentifier("common.close")
-              }
-            }
-        }
-        .interactiveDismissDisabled()  // V1-07 §3.2: `.consent` is `sheet(.large, interactiveDismissDisabled)`
-        // The member key is a random pending ID, not personal data; UI tests read it (AC-DF-108.4).
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("tr14.consent.root")
-        .accessibilityValue(member.id)
+        // TR-14 consent step (DF-110). Not swipe-dismissable (V1-07 §3.2); `tr14.consent.root` carries the member ID.
+        ConsentStepView(
+          model: ConsentStepModel(member: member, documents: consentDocuments, recorder: consentRecorder,
+                                  consent: effectiveConsent),
+          onClose: { sheet = nil })
       }
     }
     .accessibilityElement(children: .contain)

@@ -2,6 +2,7 @@ import Foundation
 import os
 import SwiftData
 import SyncEngine
+import TrainerContracts
 import TrainerDomain
 
 /// The SyncEngine's `OutboxStore` on one trainer's LocalStore partition (DF-108, V1-04 §10.2, ADR-002).
@@ -18,14 +19,20 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
   private let binaries: LocalBinaryStore?
   /// The last sequence handed out per member key, so two callers never get the same one (V1-05 §12.2).
   private var reservedSequences: [String: Int64] = [:]
+  /// A consent capture row changed in the pending save; observers are told after it (`ConsentCaptureChanges`).
+  private var capturesChanged = false
+  private let now: @Sendable () -> Date
   private static let logger = Logger(subsystem: "kr.co.dfet.trainer", category: "outbox")
 
-  /// `binaries` resolves `LocalBinaryRef`s of upload items; nil when the caller has no binary items.
-  public init(container: ModelContainer, trainerUid: String, binaries: LocalBinaryStore?) {
+  /// `binaries` resolves `LocalBinaryRef`s of upload items; nil when the caller has no binary items. `now` stamps a
+  /// consent capture's `serverConfirmedAt`.
+  public init(container: ModelContainer, trainerUid: String, binaries: LocalBinaryStore?,
+              now: @escaping @Sendable () -> Date = { Date() }) {
     modelContainer = container
     modelExecutor = DefaultSerialModelExecutor(modelContext: ModelContext(container))
     self.trainerUid = trainerUid
     self.binaries = binaries
+    self.now = now
   }
 
   /// Every row. One this build cannot read is loaded as a failed item (`local-unreadable`, no payload), so it still
@@ -69,6 +76,30 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
     try saveOrRollback()
   }
 
+  /// An in-person consent capture and its `callConsent` item, in one save (DF-110): the capture never exists on the
+  /// device without the item that sends it, and the item never runs without the capture that shows its state. The
+  /// engine is told afterwards (`enqueue`), as for `insertPendingMember`. No signature in the MVP.
+  public func insertConsentCapture(_ capture: ConsentCapture, callItem item: TrainerDomain.OutboxItem) throws {
+    let selections = try JSONEncoder().encode(capture.selections)
+    modelContext.insert(LocalConsentCapture(
+      captureId: capture.captureId, trainerUid: trainerUid, memberKey: capture.member, selectionsJSON: selections,
+      signatureBinaryId: nil, capturedAt: capture.capturedAt))
+    capturesChanged = true
+    try put(item)
+    try saveOrRollback()
+  }
+
+  /// The Outbox item that creates `member` on the server while its local draft is still on the device (DF-108
+  /// `outboxItemId`); later items of the member depend on it. nil for a uid member or once the create is acked.
+  public func pendingMemberCreateItem(for member: MemberKey) throws -> UUID? {
+    guard case let .pending(id) = member else { return nil }
+    let uid = trainerUid
+    var descriptor = FetchDescriptor<LocalPendingMemberDraft>(
+      predicate: #Predicate { $0.pendingMemberId == id && $0.trainerUid == uid })
+    descriptor.fetchLimit = 1
+    return try modelContext.fetch(descriptor).first?.outboxItemId
+  }
+
   /// The next per-member sequence (V1-05 §12.2 `sequence` is monotonic per `memberKey`): above every stored row and
   /// every sequence already handed out, so concurrent callers and items not yet saved never share one.
   public func nextSequence(for member: MemberKey) throws -> Int64 {
@@ -106,6 +137,7 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
       item.entityRef == .pendingMember(id: id) {
       deletePendingMemberDraft(id)  // the server has it now (ASM-05-38)
     }
+    if item.kind == .callConsent { mirrorConsentCapture(item) }
   }
 
   private func saveOrRollback() throws {
@@ -113,8 +145,43 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
       try modelContext.save()
     } catch {
       modelContext.rollback()
+      capturesChanged = false
       throw error
     }
+    if capturesChanged {
+      capturesChanged = false
+      ConsentCaptureChanges.shared.post(for: modelContainer)
+    }
+  }
+
+  /// A capture's state follows its `callConsent` item (V1-04 §9.1): acked = confirmed (with the time this device
+  /// learned it), failed or superseded = failed, anything else = pending. `syncState` and `lastErrorCode` are the
+  /// item's too (V1-05 §12.1 cache).
+  private func mirrorConsentCapture(_ item: TrainerDomain.OutboxItem) {
+    let prefix = "consent:"
+    guard item.entityRef.rawValue.hasPrefix(prefix) else { return }
+    let captureId = String(item.entityRef.rawValue.dropFirst(prefix.count))
+    let uid = trainerUid
+    var descriptor = FetchDescriptor<LocalConsentCapture>(
+      predicate: #Predicate { $0.captureId == captureId && $0.trainerUid == uid })
+    descriptor.fetchLimit = 1
+    guard let row = try? modelContext.fetch(descriptor).first else { return }
+    let state: LocalConsentCaptureState
+    let sync: SyncState
+    switch item.state {
+    case .acked: (state, sync) = (.confirmed, .synced)
+    case .failed, .superseded: (state, sync) = (.failed, .syncFailed)
+    case .inFlight: (state, sync) = (.pending, .syncing)
+    case .queued: (state, sync) = (.pending, .localSaved)
+    case .blocked: (state, sync) = (.pending, .awaitingConsent)
+    }
+    guard row.captureState != state.rawValue || row.syncState != sync.rawValue || row.lastErrorCode != item.lastErrorCode
+    else { return }
+    row.captureState = state.rawValue
+    row.syncState = sync.rawValue
+    row.lastErrorCode = item.lastErrorCode
+    if state == .confirmed, row.serverConfirmedAt == nil { row.serverConfirmedAt = now() }
+    capturesChanged = true
   }
 
   private func deletePendingMemberDraft(_ id: String) {

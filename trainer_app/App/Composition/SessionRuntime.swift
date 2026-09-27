@@ -81,6 +81,10 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
+  /// TR-14 consent captures: saved with their `recordConsent` Outbox item (DF-110).
+  let consentRecorder: any ConsentCaptureRecorder
+  /// The partition's consent captures, for `EffectiveConsentResolver` (DF-111).
+  let consentCaptures: any ConsentCaptureSource
   /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
   let container: ModelContainer
   let location: LocalStoreLocation
@@ -109,6 +113,8 @@ final class SessionRuntime {
     self.engine = engine
     sessions = remote.sessions
     registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
+    consentRecorder = LocalConsentRecorder(outbox: outbox, enqueue: { await engine.enqueue($0) })
+    consentCaptures = LocalConsentCaptureStore(container: container, trainerUid: trainerUid)
   }
 
   /// Created for a signed-in session, so sending starts now; then it follows the session.
@@ -215,6 +221,20 @@ final class SessionRuntime {
   }
 
   struct LocalStoreUnavailable: Error {}
+
+  /// A consent recorder for a trainer whose LocalStore could not be opened: every save fails and says so on screen.
+  struct UnavailableConsentRecorder: ConsentCaptureRecorder {
+    func capture(member: MemberKey, selections: [ConsentSelection]) async throws -> String {
+      throw LocalStoreUnavailable()
+    }
+  }
+
+  /// No LocalStore, no local capture: the effective consent is the server's alone.
+  struct NoConsentCaptures: ConsentCaptureSource {
+    func observeCaptures(member: MemberKey) -> AsyncStream<[ConsentCapture]> {
+      AsyncStream { $0.yield([]) }
+    }
+  }
 
   /// The TR-15 queue when the LocalStore could not be opened: nothing is pending, nothing to retry.
   struct UnavailableSyncQueue: SyncQueueService {

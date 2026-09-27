@@ -75,7 +75,9 @@ public final class AuthGateModel {
 
   /// Follows the session stream until the task is cancelled. A `nil` after a signed-in state that the trainer
   /// did not ask for means the claim was revoked (AC-DF-012.3). A disabled account or revoked token ends the session
-  /// the same way and shows the same notice, which also tells the trainer to contact the administrator.
+  /// the same way and shows the same notice, which also tells the trainer to contact the administrator. At a cold
+  /// start whose cached token already expired without the claim, the first value is `nil` and the plain login screen
+  /// shows without the notice.
   public func observe() async {
     for await session in auth.sessionStream() {
       apply(session)

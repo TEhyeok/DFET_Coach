@@ -73,12 +73,12 @@ final class PreviewSyncQueue: SyncQueueService, @unchecked Sendable {
   }
 }
 
-/// DEBUG TR-15 logout: signs the preview account out, which returns `--preview-login` to the login gate.
+/// DEBUG TR-15 logout: signs the preview account out (through the gate in `--preview-login`, as the live app does).
 struct PreviewSessionSignOut: SessionSignOut {
-  let auth: PreviewAuthService
+  let run: @Sendable () async throws -> Void
 
   func signOut() async throws {
-    try await auth.signOut(discardUnsynced: false)
+    try await run()
   }
 }
 #endif

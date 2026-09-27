@@ -29,34 +29,42 @@ struct SessionBoundRemote: RemoteWriter, BinaryUploader, CallableClient {
     guard remote.currentUid() == trainerUid else { throw RemoteError.signedOut }
   }
 
-  func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck {
+  /// A call cut off by a sign-out fails with the SDK's auth error; that is the session ending, not a rule rejection,
+  /// so it waits for the next session too (#177 review M3).
+  private func send<T>(_ call: () async throws -> T) async throws -> T {
     try requireSession()
-    return try await remote.writer.createIfAbsent(path: path, fields: fields)
+    do {
+      return try await call()
+    } catch {
+      if remote.currentUid() != trainerUid { throw RemoteError.signedOut }
+      throw error
+    }
+  }
+
+  func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck {
+    try await send { try await remote.writer.createIfAbsent(path: path, fields: fields) }
   }
 
   func update(path: String, fields: JSONValue) async throws -> WriteAck {
-    try requireSession()
-    return try await remote.writer.update(path: path, fields: fields)
+    try await send { try await remote.writer.update(path: path, fields: fields) }
   }
 
   func delete(path: String) async throws -> WriteAck {
-    try requireSession()
-    return try await remote.writer.delete(path: path)
+    try await send { try await remote.writer.delete(path: path) }
   }
 
   func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
-    try requireSession()
-    return try await remote.uploader.upload(localURL: localURL, path: path, contentType: contentType, sha256: sha256)
+    try await send {
+      try await remote.uploader.upload(localURL: localURL, path: path, contentType: contentType, sha256: sha256)
+    }
   }
 
   func delete(path: String) async throws {
-    try requireSession()
-    try await remote.uploader.delete(path: path)
+    try await send { try await remote.uploader.delete(path: path) }
   }
 
   func call<T: Decodable & Sendable>(_ name: String, _ payload: JSONValue) async throws -> T {
-    try requireSession()
-    return try await remote.callable.call(name, payload)
+    try await send { try await remote.callable.call(name, payload) }
   }
 }
 
@@ -222,16 +230,26 @@ final class SessionRuntime {
   final class Cache {
     static let shared = Cache()
     private var current: SessionRuntime?
+    /// The runtime whose logout is running. A view update in that time gets it back, stopped, instead of a new one
+    /// that would start sending while Firestore is torn down (#177 review M2).
+    private var retiring: SessionRuntime?
 
-    /// Takes `trainerUid`'s runtime out, so a sign-in after this gets a fresh one (logout ⑦, V1-04 §12.2).
+    /// Logout ②: takes `trainerUid`'s runtime out of use (V1-04 §12.2).
     func retire(trainerUid: String) -> SessionRuntime? {
       guard let current, current.trainerUid == trainerUid else { return nil }
       self.current = nil
+      retiring = current
       return current
+    }
+
+    /// Logout ⑦, once Auth has signed out: the next sign-in gets a fresh runtime.
+    func finishRetiring(_ runtime: SessionRuntime) {
+      if retiring === runtime { retiring = nil }
     }
 
     /// Puts back a runtime whose logout failed; the trainer is still signed in, so it sends again.
     func reinstate(_ runtime: SessionRuntime) {
+      if retiring === runtime { retiring = nil }
       guard current == nil else { return }
       current = runtime
       runtime.activate()
@@ -239,6 +257,7 @@ final class SessionRuntime {
 
     func runtime(trainerUid: String, remote: () -> SyncRemote) -> SessionRuntime? {
       if let current, current.trainerUid == trainerUid { return current }
+      if let retiring, retiring.trainerUid == trainerUid { return retiring }
       current?.deactivate()
       current = nil
       do {

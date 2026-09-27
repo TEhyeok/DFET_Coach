@@ -34,10 +34,12 @@ struct PreviewRootView: View {
       } else if preview.scenario == .designSystem {
         DesignSystemGallery()
       } else if preview.isSignedIn {
-        shell
+        shell(signOut: PreviewSessionSignOut { [auth] in try await auth.signOut(discardUnsynced: false) })
       } else {
         // `--preview-login`: the real login gate with scripted synthetic accounts (DF-012).
-        AuthGate(auth: auth) { _ in shell }
+        AuthGate(auth: auth) { _, gate in
+          shell(signOut: PreviewSessionSignOut { try await gate.signOut(discardUnsynced: false) })
+        }
       }
     }
     .background(PreviewOrientationBridge(forcesLandscape: preview.forcesLandscape))
@@ -45,13 +47,13 @@ struct PreviewRootView: View {
 
   /// One view tree whatever the width, so toggling the simulation changes only the size class and frame, exactly
   /// like a real window resize, and `RootSplitView` keeps its state.
-  private var shell: some View {
+  private func shell(signOut: PreviewSessionSignOut) -> some View {
     let narrowWidth = isNarrow ? preview.simulatedWidth : nil
     return RootSplitView(
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        registrar: registrar, syncQueue: queue, signOut: PreviewSessionSignOut(auth: auth),
+        registrar: registrar, syncQueue: queue, signOut: signOut,
         accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)

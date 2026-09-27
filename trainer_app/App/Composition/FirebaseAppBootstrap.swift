@@ -1,3 +1,4 @@
+import FeatureAuth
 import FirebaseData
 import Foundation
 import TrainerDomain
@@ -34,8 +35,9 @@ extension AppBootstrap {
 
   /// The signed-in trainer's shell services (DF-108, DF-018): FirebaseData's member directory, registration on the
   /// LocalStore partition with the SyncEngine sending to FirebaseData, its queue for TR-15 and the full logout.
+  /// `gate` signs the trainer out as a user sign-out (no claim-revoked notice); tests without a gate pass nil.
   @MainActor
-  static func liveServices(session: TrainerSession) -> ShellServices {
+  static func liveServices(session: TrainerSession, gate: AuthGateModel? = nil) -> ShellServices {
     let trainerUid = session.uid
     let runtime = SessionRuntime.Cache.shared.runtime(trainerUid: trainerUid) {
       SyncRemote(
@@ -48,7 +50,15 @@ extension AppBootstrap {
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
       syncQueue: runtime?.engine ?? SessionRuntime.UnavailableSyncQueue(),
       signOut: LiveSessionSignOut(
-        trainerUid: trainerUid, auth: liveAuthService(), teardownRemote: { try await FirestoreSessionTeardown.run() }),
+        trainerUid: trainerUid,
+        signOutAuth: { @MainActor in
+          if let gate {
+            try await gate.signOut(discardUnsynced: false)
+          } else {
+            try await liveAuthService().signOut(discardUnsynced: false)
+          }
+        },
+        teardownRemote: { try await FirestoreSessionTeardown.run() }),
       accountName: session.displayName)
   }
 }

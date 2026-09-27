@@ -44,9 +44,12 @@ public enum FirestoreSessionTeardown {
     FirestoreListenerRegistry.shared.removeAll()
     let firestore = Firestore.firestore()
     try await firestore.terminate()
+    // Settings first, then the first use of the next instance (AC-DF-104.1), even when clearing fails: otherwise an
+    // emulator build's next instance would point at the production host.
+    defer {
+      Firestore.firestore().settings = FirestoreConfigurator.settings(emulatorHost: FirebaseBootstrap.emulatorHost)
+    }
     try await firestore.clearPersistence()
-    // Settings first, then the first use of the next instance (AC-DF-104.1).
-    Firestore.firestore().settings = FirestoreConfigurator.settings(emulatorHost: FirebaseBootstrap.emulatorHost)
     logger.info("firestore cache cleared")
   }
 }

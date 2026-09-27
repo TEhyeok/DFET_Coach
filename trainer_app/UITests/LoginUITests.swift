@@ -57,6 +57,28 @@ final class LoginUITests: XCTestCase {
     attachScreenshot(app, name: "TC-DF012-04 claim revoked")
   }
 
+  /// DF-018 (#177 review M1): a logout the trainer asks for on TR-15 returns to the login screen without the
+  /// claim-revoked notice.
+  @MainActor
+  func testSettingsLogoutReturnsToLoginWithoutTheLockNotice() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-login"]
+    app.launch()
+    XCTAssertTrue(app.otherElements["login.root"].waitForExistence(timeout: 30))
+    signIn(app, email: "trainer@example.invalid", password: "preview-only-password")
+    XCTAssertTrue(app.otherElements["app.root"].waitForExistence(timeout: 10))
+
+    element("nav.settings", in: app).tap()
+    XCTAssertTrue(element("tr15.logout", in: app).waitForExistence(timeout: 10))
+    element("tr15.logout", in: app).tap()
+    let alert = app.alerts.firstMatch
+    XCTAssertTrue(alert.waitForExistence(timeout: 10))
+    alert.buttons["로그아웃"].tap()
+
+    XCTAssertTrue(app.otherElements["login.root"].waitForExistence(timeout: 15))
+    XCTAssertFalse(element("auth.locked", in: app).exists, "an ordinary logout is not a revoked permission")
+  }
+
   private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {
     app.descendants(matching: .any)[identifier].firstMatch
   }

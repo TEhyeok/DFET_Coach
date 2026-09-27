@@ -7,7 +7,8 @@
 //
 // - 검사 대상(AC-DF-010.2): 아래 TARGETS의 문자열 리터럴과 문자열 카탈로그 값. 주석은 읽지 않는다(ASM-P0-07).
 //   한글이 없는 문자열은 건너뛴다(docs/v1/12 §7.8).
-// - 규칙 세트는 파일 경로의 pathRuleSets 첫 일치로 정한다(ASM-P0-08).
+// - 규칙 세트는 파일 경로의 pathRuleSets 첫 일치로 정한다(ASM-P0-08). 문구 덱(DECK_FILE)만 예외다: allowPaths의
+//   docs/**에 들지만 검사하고, 세트는 항목마다 audience로 정한다(docs/v1/12 §4.2, §7.7).
 // - 출력: 위반마다 `path:line:col [ruleSet/id] term → 대체어` 한 줄. --summary는 GitHub Step Summary용 표를 덧붙인다.
 // - 종료 코드: 0 = report 모드이거나 block 위반 0건, 1 = block 모드에서 severity block 위반 1건 이상,
 //   2 = 사용법·규칙 파일 오류. causalPatterns는 두 모드 모두 경고(warn)로만 보고한다(AC-DF-010.3).
@@ -16,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const RULES_FILE = 'contracts/prohibited-terms.v1.json';
+export const DECK_FILE = 'docs/v1/data/copy_ko.json';
 export const MODES = Object.freeze(['report', 'block']);
 
 // AC-DF-010.2 검사 대상. dir 아래를 재귀로 돌며 확장자가 맞는 파일만 읽는다.
@@ -28,7 +30,21 @@ export const TARGETS = Object.freeze([
   { dir: 'admin_web/lib', exts: ['.ts', '.tsx'] },
   { file: 'contracts/metric-catalog.v1.json' },
   { file: 'contracts/vocab.v1.json' },
+  { file: DECK_FILE },
 ]);
+
+// 덱 항목 audience → 규칙 세트(docs/v1/12 §4.2, 덱의 `audiences`와 같다). 회원이 읽는 문장(트레이너 앱의 shared 포함)은
+// 회원 세트까지 받는다. 모르는 audience도 더 엄격한 회원 세트로 본다. memberAbbreviation은 규칙 파일에 아직 없다.
+const MEMBER_READS = Object.freeze(['common', 'member', 'memberAbbreviation']);
+export const AUDIENCE_RULESETS = Object.freeze({
+  trainer: Object.freeze(['common', 'trainer']),
+  admin: Object.freeze(['common']),
+  member: MEMBER_READS,
+  shared: MEMBER_READS,
+  notification: MEMBER_READS,
+  marketing: MEMBER_READS,
+  consentDraft: MEMBER_READS,
+});
 
 const HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
 const ZERO_WIDTH = new Set(['​', '‌', '‍', '﻿']);
@@ -464,11 +480,32 @@ export function extractContractLabels(raw) {
   return items;
 }
 
+/**
+ * 문구 덱의 `strings.<key>.ko` 값(docs/v1/12 §7.8). 키와 audience의 규칙 세트(ruleSets)를 함께 넘긴다.
+ * note·screens·prdRefs는 읽지 않는다(문구가 아니라 근거·금지 사례를 적는 칸이다).
+ */
+export function extractDeck(raw) {
+  const doc = JSON.parse(raw);
+  const items = [];
+  let cursor = Math.max(0, raw.indexOf('"strings"'));
+  for (const [key, entry] of Object.entries(doc.strings ?? {})) {
+    if (typeof entry?.ko !== 'string') continue;
+    const keyAt = raw.indexOf(JSON.stringify(key), cursor);
+    if (keyAt !== -1) cursor = keyAt;
+    const { at, pos } = locateJsonString(raw, entry.ko, cursor);
+    cursor = at;
+    const ruleSets = Object.hasOwn(AUDIENCE_RULESETS, entry.audience) ? AUDIENCE_RULESETS[entry.audience] : MEMBER_READS;
+    items.push({ text: entry.ko, key, ruleSets, ...pos });
+  }
+  return items;
+}
+
 export function extractFile(rel, raw) {
   if (rel.endsWith('.swift')) return extractSwift(raw);
   if (rel.endsWith('.dart')) return extractDart(raw);
   if (rel.endsWith('.ts') || rel.endsWith('.tsx')) return extractTs(raw);
   if (rel.endsWith('.xcstrings')) return extractXcstrings(raw);
+  if (rel === DECK_FILE) return extractDeck(raw);
   if (rel.endsWith('.json')) return extractContractLabels(raw);
   return [];
 }
@@ -476,13 +513,15 @@ export function extractFile(rel, raw) {
 // ---------------------------------------------------------------------------------------------
 // 저장소 검사
 
-/** 경로의 규칙 세트(pathRuleSets 첫 일치). 일치가 없으면 null. */
+/** 경로의 규칙 세트(pathRuleSets 첫 일치). 일치가 없으면 null. 덱은 파일 단위 세트가 없다(항목의 ruleSets, extractDeck). */
 export function ruleSetsFor(rel, doc) {
+  if (rel === DECK_FILE) return [];
   const hit = doc.pathRuleSets.find((p) => matchGlob(p.glob, rel));
   return hit ? hit.ruleSets : null;
 }
 
 export function isSkipped(rel, doc) {
+  if (rel === DECK_FILE) return false; // allowPaths docs/**의 예외(docs/v1/12 §7.7)
   return doc.excludePaths.some((g) => matchGlob(g, rel)) || doc.allowPaths.some((g) => matchGlob(g, rel));
 }
 
@@ -526,7 +565,7 @@ export function lintSource(rel, raw, compiled, ruleSets = ruleSetsFor(rel, compi
   };
   const violations = [];
   for (const item of extractFile(rel, raw)) {
-    for (const h of scanText(item.text, compiled, { ruleSets, key: item.key, file: rel })) {
+    for (const h of scanText(item.text, compiled, { ruleSets: item.ruleSets ?? ruleSets, key: item.key, file: rel })) {
       const pos = item.origin !== undefined ? locate(item.origin + h.start) : { line: item.line, col: item.col + h.start };
       violations.push({ file: rel, ...pos, ...(item.key ? { key: item.key } : {}), ...h });
     }

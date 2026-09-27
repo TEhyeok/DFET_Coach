@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   BASELINE_FILE, CATALOG_FILE, DECK_FILE, DOC_FILE, addKeys, catalogErrors, catalogValue, deckErrors, formatCatalog,
-  readBaseline, tableErrors, tableRows,
+  readBaseline, swiftSources, tableErrors, tableRows, usedKeyErrors,
 } from '../catalog-deck.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -28,6 +28,8 @@ const deck = {
   },
 };
 
+const appSources = () => swiftSources(ROOT).map((file) => ({ file, text: readFileSync(path.join(ROOT, file), 'utf8') }));
+
 test('the repository catalog follows the deck, the §4.9 tables match it and its placeholders match args', () => {
   const realDeck = read(DECK_FILE);
   assert.deepEqual(deckErrors(realDeck), []);
@@ -35,6 +37,37 @@ test('the repository catalog follows the deck, the §4.9 tables match it and its
   assert.deepEqual(tableErrors(realDeck, doc, readBaseline(path.join(ROOT, BASELINE_FILE))), []);
   assert.ok(tableRows(doc).length > 700, 'the §4.9 tables were read');
   assert.deepEqual(catalogErrors(realDeck, read(CATALOG_FILE)), []);
+  assert.deepEqual(usedKeyErrors(realDeck, read(CATALOG_FILE), appSources()), []);
+});
+
+test('every deck key the app sources write as a literal is in the catalog; a deleted or emptied catalog fails', () => {
+  const realDeck = read(DECK_FILE);
+  const sources = appSources();
+  assert.ok(sources.some((s) => s.file.endsWith('FeatureAuth/LoginView.swift')), 'the app sources were read');
+  assert.ok(!sources.some((s) => /\/(Tests|Generated)\/|UITests/.test(s.file)), 'tests and generated code are not app sources');
+  const catalog = read(CATALOG_FILE);
+  delete catalog.strings['login.submit'];
+  const errors = usedKeyErrors(realDeck, catalog, sources);
+  assert.equal(errors.length, 1, JSON.stringify(errors));
+  assert.match(errors[0], /^trainer_app\/Packages\/TrainerKit\/Sources\/FeatureAuth\/LoginView\.swift:\d+: login\.submit is not in /);
+  assert.ok(usedKeyErrors(realDeck, { sourceLanguage: 'ko', strings: {} }, sources).length > 50, 'an empty catalog fails');
+});
+
+test('identifiers, comments and non-deck literals are not key uses', () => {
+  const text = [
+    'struct V: View {',
+    '  var body: some View {',
+    '    Text("fx.one")',
+    '      .accessibilityIdentifier("fx.plain")',
+    '    // Text("fx.two")',
+    '    Text(verbatim: "fx.none")',
+    '    Button("fx.n") {}.accessibilityIdentifier( "fx.n")',
+    '  }',
+    '}',
+  ].join('\n');
+  const errors = usedKeyErrors(deck, { strings: {} }, [{ file: 'trainer_app/App/V.swift', text }]);
+  assert.deepEqual(errors.map((e) => e.split(' ')[0]), ['trainer_app/App/V.swift:3:', 'trainer_app/App/V.swift:7:']);
+  assert.deepEqual(usedKeyErrors(deck, { strings: { 'fx.one': {}, 'fx.n': {} } }, [{ file: 'V.swift', text }]), []);
 });
 
 test('a §4.9 row without a deck entry, with other text or another audience fails', () => {
@@ -118,6 +151,15 @@ test('a deck key without a §4.9 row fails unless baselined, and a stale baselin
 test('deck text and args must name the same placeholders', () => {
   const bad = { strings: { 'fx.bad': { ko: '{name}님 {count}건', audience: 'trainer', args: ['count'] } } };
   assert.equal(deckErrors(bad).length, 1);
+});
+
+test('a placeholder used twice fails: with one arg the second %@ reads an argument nobody passes (V1-12 §4.3)', () => {
+  const once = { ko: '{name}님, {name}님의 기록', audience: 'trainer', args: ['name'] };
+  assert.equal(catalogValue(once), '%@님, %@님의 기록', 'both specifiers are unnumbered');
+  const twice = { strings: { 'fx.repeat': once, 'fx.repeat2': { ko: '{name} {count}건 {name}', audience: 'trainer', args: ['name', 'count'] } } };
+  const errors = deckErrors(twice);
+  assert.equal(errors.length, 2, JSON.stringify(errors));
+  assert.ok(errors.every((e) => /\{name\} appears more than once/.test(e)));
 });
 
 test('--add copies the deck sentence and refuses keys that are not for the app', () => {

@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.7 |
+| 버전 | v1.0.8 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -300,6 +300,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 ### 4.3 플레이스홀더
 
 - 덱의 표기는 `{name}`이다. 이름은 lowerCamel이며 각 항목의 `args`에 순서대로 적혀 있다.
+- 한 문장에 같은 자리표시자를 두 번 쓰지 않는다. 인자가 하나인 문장은 번호 없는 `%@`·`%lld`로 옮겨지므로 두 번째 자리가 넘기지 않은 인자를 읽는다(`catalog-deck.mjs`가 덱에서 차단).
 - 값은 **호출하는 쪽에서 이미 형식화한 문자열**로 넘긴다(§2.6 표기 규칙). 숫자 형식화를 번역 문자열에 맡기지 않는다. 예외는 개수(`{count}`)뿐이다.
 
 | 플랫폼 | 변환 규칙 | 예 |
@@ -360,7 +361,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 2. 플랫폼 카탈로그(§4.4)에 같은 키·같은 문장으로 옮겨 적는다.
 3. `node tool/lint/prohibited-terms.mjs`가 덱과 카탈로그를 모두 검사한다. 회원 대상 문장은 회원 세트까지 통과해야 한다.
 4. 회원 노출 문구(`member`, `shared`, `notification`, `marketing`, `consentDraft`)를 바꾸는 PR은 `regulatory` 라벨을 달고 소유자가 diff를 직접 읽고 병합한다([V1-01](01_AGILE_WORKING_AGREEMENT.md)).
-5. `node tool/lint/catalog-deck.mjs`가 copy-lint job에서 **차단**한다(ASM-12-22의 경고 단계를 건너뜀): 카탈로그에만 있는 키, 덱과 다른 문장(자리표시자 형식 포함: 정수 인자는 `%lld`, 나머지 `%@`), 회원·관리자 대상 키, ko 이외 로컬라이즈·변형·`translated` 아닌 상태, `V1-12 · `로 시작하지 않는 주석, 덱 문장의 자리표시자·`args` 불일치, §4.9 표 행과 덱의 불일치, §4.9 행이 없는 새 덱 키(도구 도입 전 키는 `tool/lint/catalog-deck.baseline`). 카탈로그 항목은 손으로 쓰지 않고 `node tool/lint/catalog-deck.mjs --add <키>...`로 덱에서 옮겨 적는다. TR-06 회원 미리보기(P2)가 `member` 키를 트레이너 앱에서 그릴 때 이 검사에 예외 목록을 더한다.
+5. `node tool/lint/catalog-deck.mjs`가 copy-lint job에서 **차단**한다(ASM-12-22의 경고 단계를 건너뜀): 카탈로그에만 있는 키, 덱과 다른 문장(자리표시자 형식 포함: 정수 인자는 `%lld`, 나머지 `%@`), 회원·관리자 대상 키, ko 이외 로컬라이즈·변형·`translated` 아닌 상태, `V1-12 · `로 시작하지 않는 주석, 덱 문장의 자리표시자·`args` 불일치와 같은 자리표시자의 반복(§4.3), 앱 소스(`trainer_app/App`, `trainer_app/Packages`의 테스트·`Generated` 밖) Swift 문자열 리터럴 가운데 카탈로그에 없는 덱 키(화면에 키가 그대로 보인다. `.accessibilityIdentifier(…)` 인자는 식별자라 제외(§4.5), 코드가 만드는 키(`reason.\(…)`)는 이 검사가 보지 못한다), §4.9 표 행과 덱의 불일치, §4.9 행이 없는 새 덱 키(도구 도입 전 키는 `tool/lint/catalog-deck.baseline`). 카탈로그 항목은 손으로 쓰지 않고 `node tool/lint/catalog-deck.mjs --add <키>...`로 덱에서 옮겨 적는다. TR-06 회원 미리보기(P2)가 `member` 키를 트레이너 앱에서 그릴 때 이 검사에 예외 목록을 더한다.
 
 ### 4.8 동의 문서 초안(법률 검토 대기)
 
@@ -1992,11 +1993,11 @@ export function matchRule(rule, text, { key } = {}) {
 
 | CI job | 실행 | 모드 | 필수 체크 | 스토리 |
 |---|---|---|---|---|
-| `copy-lint`(신규, ubuntu, Node 22) | `node tool/lint/prohibited-terms.mjs --mode=${COPY_LINT_MODE} --summary "$GITHUB_STEP_SUMMARY"` 전체 저장소. 트레이너 카탈로그(xcstrings)와 덱·§4.9 표의 불일치는 `node tool/lint/catalog-deck.mjs`가 **차단**(#174). 회원 앱 `*_copy.dart`의 덱 대조는 회원 앱 문구 스토리가 더한다 | S01~S04 `report`, DF-040 병합부터 `block`(저장소 변수 `COPY_LINT_MODE=block`) | DF-040부터 필수 | DF-010, DF-040 |
+| `copy-lint`(신규, ubuntu, Node 22) | `node tool/lint/prohibited-terms.mjs --mode=${COPY_LINT_MODE} --summary "$GITHUB_STEP_SUMMARY"` 전체 저장소(문구 덱은 `docs/**` 예외로 검사하고 항목별 `audience` 세트를 쓴다, §7.7). 덱 전체가 대상별 세트로 위반 0건, 키 정규식·중복 0인지는 `tool/lint/test/copy-deck.test.mjs`(TC-12-LN-07)가 모드와 무관하게 **차단**한다. 트레이너 카탈로그(xcstrings)와 덱·§4.9 표의 불일치는 `node tool/lint/catalog-deck.mjs`가 **차단**(#174). 회원 앱 `*_copy.dart`의 덱 대조는 회원 앱 문구 스토리가 더한다 | S01~S04 `report`, DF-040 병합부터 `block`(저장소 변수 `COPY_LINT_MODE=block`) | DF-040부터 필수 | DF-010, DF-040 |
 | `contracts`(신규) | 금지어 JSON 스키마 검증, `contracts/vectors/prohibited-terms.v1.json`을 Node 구현으로 실행, analytics·audit 레지스트리 식별자 검사(TC-12-AN-05) | block | 예 | DF-010, DF-033 |
 | `trainer-app`(macos-15) | `swift test`에서 `CopyGuardTests`가 같은 벡터를 Swift 구현으로 실행, `RegistryConformanceTests` | block | 예 | DF-120(인라인 경고), DF-126 |
 | `functions-and-rules` | `test/unit/summaries/prohibitedTerms.test.js`가 같은 벡터를 Functions 구현으로 실행(P2), createMemberSummary e2e 거부 케이스(AC-SOAP-05.5, AC-PRIV-06.2) | block | 예 | DF-309 |
-| `docs-and-backlog` | copy_ko.json 키 정규식·중복·필수 필드(audience, phase, prdRefs) 검사, 덱 전체 lint(대상별 세트), 이 문서 헤더 표준 | block | 경로 해당 시 | DF-001, DF-010 |
+| `docs-and-backlog` | copy_ko.json 필수 필드(audience, phase, prdRefs) 검사, 이 문서 헤더 표준(키 정규식·중복과 덱 전체 lint는 경로와 무관하게 도는 `copy-lint`의 TC-12-LN-07) | block | 경로 해당 시 | DF-001, DF-010 |
 | `static-guards` | `"저장됨"` 단독 리터럴(트레이너 앱), `setUserID`·`setUserProperty`, 회원 앱 원 기록 경로 문자열 등 grep 0건(ASM-12-19) | block | 예 | DF-011 |
 
 - 전환 조건(DF-040): `report` 모드 보고서의 block 위반이 0건(§7.12 기준선 처리 완료), allowEntries 검토 기록이 PR에 있음. 전환 뒤 위반을 들이는 PR은 병합할 수 없다.
@@ -2214,3 +2215,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.5 | 2026-09-28 | 트레이너 카탈로그 드리프트 정리: DF-012·DF-017이 카드 제안 키(`auth.field.*`, `auth.error.*`, `nav.*` 등)로 쓴 문구를 덱 키(`login.*`, `auth.notTrainer`, `auth.sessionLocked`, `common.internal`, `tr01/02/15.title`)로 바꾸고, 덱에 없던 `app.title`, `app.config.missing`, `login.error.invalidCredentials`, `login.error.network`와 v1.0.2 표에만 있던 라벨 5키를 덱 JSON에 추가. §4.1 `app.*` 행, §4.5 `nav.*` 식별자 예외, §4.7 5항·§7.9·ASM-12-22를 `catalog-deck.mjs` 차단 검사로 변경, §10.2 X-12, `login.error.network` 추가 | #174 | 없음 |
 | v1.0.6 | 2026-09-28 | DF-018: 로그아웃 문구를 '미동기 기록은 기기에 남고 다시 로그인하면 이어서 보낸다'(ASM-P0-17)로 고침(`tr15.signOut.unsyncedWarning`, `tr15.signOut.confirm`), `tr15.signOut.question`·`tr15.signOut.syncNow`, 대기열 항목 종류 `tr15.queue.kind.*` 7키 추가 | DF-018 | 없음 |
 | v1.0.7 | 2026-09-28 | `tr14.register.under14Blocked` 두 번째 문장을 해요체로 맞춤('지원하지 않아요'), 덱 v1.0.6 | — | 없음 |
+| v1.0.8 | 2026-09-28 | 린트 보강(교차 리뷰): 금지어 린트가 덱을 `docs/**` 예외로 읽고 항목별 `audience` 세트로 검사(§7.7, §7.9 `copy-lint`, TC-12-LN-07 `copy-deck.test.mjs`를 `docs-and-backlog`에서 옮김). §4.3 같은 자리표시자 반복 금지, §4.7 5항에 반복 자리표시자와 '앱 소스 리터럴의 덱 키가 카탈로그에 없음' 차단 추가. ASM-12-19 static-guards G11 구현 | — | 없음 |

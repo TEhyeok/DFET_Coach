@@ -11,10 +11,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  DECK_FILE,
   RULES_FILE,
   compileRules,
   extractContractLabels,
   extractDart,
+  extractDeck,
   extractSwift,
   extractTs,
   extractXcstrings,
@@ -196,6 +198,57 @@ test('TC-DF010-01 contracts: only nameKo and labelsKo values are checked', () =>
   assert.deepEqual(extractContractLabels(raw).map((i) => i.text), ['관찰', '치료 기록', '체형 점수']);
   const hits = lintSource('contracts/vocab.v1.json', raw, compiled);
   assert.deepEqual(hits.map((h) => [h.ruleId, h.key]), [['C1-03', 'enums.x.labelsKo.b'], ['C1-19', 'metrics.0.nameKo']]);
+});
+
+// 문구 덱(docs/v1/12 §4.2, §7.7, §7.8): 항목의 audience가 세트를 정한다. 트레이너 앱의 shared 문장(TR-14 동의 카드)은
+// 카탈로그에서 트레이너 세트만 받으므로 덱에서 회원 세트를 받아야 한다.
+const DECK_RAW = `${JSON.stringify({
+  docId: 'V1-12-D3',
+  legalReviewNote: '치료 (not a deck sentence)',
+  strings: {
+    'fx.shared': { ko: '기록이 개선됐어요.', audience: 'shared', prdRefs: ['§3.2 치료'], screens: 'TR-14 판정', note: '개선 금지' },
+    'fx.trainer': { ko: '기록이 개선됐어요.', audience: 'trainer', note: '치료 금지 사례' },
+    'fx.admin': { ko: '판정 기준', audience: 'admin' },
+    'fx.consent': { ko: '판정 결과', audience: 'consentDraft' },
+    'fx.unknown': { ko: '악화 없음', audience: 'constructor' },
+    'fx.common': { ko: '체형 교정', audience: 'trainer' },
+  },
+}, null, 2)}\n`;
+
+test('V1-12 §7.8 deck: strings.<key>.ko with its audience sets; note, screens and prdRefs are not read', () => {
+  const items = extractDeck(DECK_RAW);
+  assert.deepEqual(items.map((i) => [i.key, i.text, i.ruleSets.join('+')]), [
+    ['fx.shared', '기록이 개선됐어요.', 'common+member+memberAbbreviation'],
+    ['fx.trainer', '기록이 개선됐어요.', 'common+trainer'],
+    ['fx.admin', '판정 기준', 'common'],
+    ['fx.consent', '판정 결과', 'common+member+memberAbbreviation'],
+    ['fx.unknown', '악화 없음', 'common+member+memberAbbreviation'],
+    ['fx.common', '체형 교정', 'common+trainer'],
+  ]);
+  assert.deepEqual(ruleSetsFor(DECK_FILE, rulesDoc), [], 'no file-wide sets: every item carries its own');
+  const hits = lintSource(DECK_FILE, DECK_RAW, compiled);
+  assert.deepEqual(hits.map((h) => [h.key, `${h.ruleSet}/${h.ruleId}`, h.line]), [
+    ['fx.shared', 'member/C3-M-01', 6],
+    ['fx.consent', 'member/C3-M-03', 24],
+    ['fx.unknown', 'member/C3-M-02', 28],
+    ['fx.common', 'common/C1-05', 32],
+  ]);
+  assert.match(formatViolation(hits[0]), /^docs\/v1\/data\/copy_ko\.json:6:\d+ \[member\/C3-M-01\] 개선 → .+ \(key fx\.shared\)$/);
+});
+
+test('V1-12 §7.7 the deck is scanned although docs/** is an allow path; the rest of docs/ is not', () => {
+  withRepo({
+    [DECK_FILE]: DECK_RAW,
+    'docs/v1/data/other.json': '{"nameKo": "치료"}\n',
+    'docs/v1/notes.md': '치료\n',
+    'lib/main.dart': "const a = '관찰';\n",
+  }, (root) => {
+    assert.deepEqual(targetFiles(root, rulesDoc), [DECK_FILE, 'lib/main.dart']);
+    const r = run(root, '--mode=block');
+    assert.equal(r.code, 1, r.stdout);
+    assert.match(r.stdout, /^docs\/v1\/data\/copy_ko\.json:6:\d+ \[member\/C3-M-01\] 개선 → .+ \(key fx\.shared\)$/m);
+    assert.match(r.stdout, /4 violation\(s\) — 4 block, 0 warn — in 1 of 2 file\(s\)$/m);
+  });
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -435,7 +488,7 @@ test('TC-DF010-05 report on this checkout exits 0 and every line has the report 
   assert.match(summary, /^copy-lint \(report\): \d+ violation\(s\) — \d+ block, \d+ warn — in \d+ of \d+ file\(s\)$/);
   for (const l of lines) assert.match(l, LINE_FORMAT);
   const files = targetFiles(repoRoot, rulesDoc);
-  for (const rel of ['ios/Runner/AppDelegate.swift', 'trainer_app/App/Resources/Localizable.xcstrings', 'contracts/metric-catalog.v1.json', 'contracts/vocab.v1.json']) {
+  for (const rel of ['ios/Runner/AppDelegate.swift', 'trainer_app/App/Resources/Localizable.xcstrings', 'contracts/metric-catalog.v1.json', 'contracts/vocab.v1.json', DECK_FILE]) {
     assert.ok(files.includes(rel), `${rel} is scanned`);
   }
   for (const prefix of ['lib/', 'admin_web/app/', 'admin_web/components/', 'trainer_app/']) {

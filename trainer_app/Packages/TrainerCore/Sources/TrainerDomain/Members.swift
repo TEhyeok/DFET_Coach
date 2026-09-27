@@ -7,11 +7,14 @@ public struct Member: Identifiable, Hashable, Sendable {
   public let id: String
   public let displayName: String
   public let trainerId: String?
+  public let isPending: Bool
+  public var key: MemberKey { isPending ? .pending(id) : .uid(id) }
 
-  public init(id: String, displayName: String, trainerId: String?) {
+  public init(id: String, displayName: String, trainerId: String?, isPending: Bool = false) {
     self.id = id
     self.displayName = displayName
     self.trainerId = trainerId
+    self.isPending = isPending
   }
 
   /// Avatar text drawn locally (AC-DF-013.6, NFR-11: no external image request). Latin names with two or more words

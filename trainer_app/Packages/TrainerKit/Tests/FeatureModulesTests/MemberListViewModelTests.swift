@@ -92,6 +92,43 @@ final class MemberListViewModelTests: XCTestCase {
     await waitFor { directory.activeSubscriptions == 0 }
   }
 
+  func testDisplayNameSearchIgnoresCaseAndWhitespace_TC_113_04() {
+    let korean = Member(id: "SYN-korean", displayName: "가상 회원", trainerId: "SYN-trainer", isPending: true)
+    let latin = Member(id: "SYN-latin", displayName: "Jane Doe", trainerId: "SYN-trainer")
+    let members = [korean, latin]
+    XCTAssertEqual(MemberListViewModel.filter(members, query: "  가 상\n회  "), [korean])
+    XCTAssertEqual(MemberListViewModel.filter(members, query: "JANEdoE"), [latin])
+    XCTAssertEqual(MemberListViewModel.filter(members, query: "가상".decomposedStringWithCanonicalMapping), [korean])
+    XCTAssertEqual(MemberListViewModel.filter(members, query: "  \n"), members)
+    XCTAssertEqual(MemberListViewModel.filter(members, query: "없는회원"), [])
+    XCTAssertTrue(MemberListViewModel.filter(members, query: "가상").first?.isPending == true)
+  }
+
+  func testSearchKeepsFullStateAndLiveSubscription_TC_113_04() async {
+    let directory = ControlledDirectory()
+    let model = MemberListViewModel(directory: directory)
+    model.start()
+    directory.emit([a, b])
+    await waitFor { model.state == .loaded([self.a, self.b]) }
+    model.searchText = "가"
+    XCTAssertEqual(model.visibleMembers, [a])
+    XCTAssertEqual(model.state, .loaded([a, b]), "selected-member lookup still sees the complete directory")
+    model.searchText = "없는회원"
+    XCTAssertTrue(model.visibleMembers.isEmpty)
+    XCTAssertTrue(model.hasSearch)
+    XCTAssertEqual(model.state, .loaded([a, b]), "no search result is distinct from an empty directory")
+    model.searchText = "나"
+    directory.emit([b])
+    await waitFor { model.state == .loaded([self.b]) }
+    XCTAssertEqual(model.visibleMembers, [b])
+    model.start()
+    XCTAssertEqual(directory.activeSubscriptions, 1)
+    XCTAssertEqual(directory.totalSubscriptions, 1, "search does not reopen the directory")
+    model.searchText = " \n "
+    XCTAssertFalse(model.hasSearch)
+    XCTAssertEqual(model.visibleMembers, [b])
+  }
+
   private func waitFor(_ condition: @escaping @MainActor () -> Bool, file: StaticString = #filePath, line: UInt = #line) async {
     for _ in 0..<200 where !condition() {
       try? await Task.sleep(nanoseconds: 25_000_000)

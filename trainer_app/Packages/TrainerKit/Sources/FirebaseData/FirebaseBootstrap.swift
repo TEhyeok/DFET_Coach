@@ -27,12 +27,25 @@ public enum FirebaseBootstrap {
   /// Functions region for callables (ADR-017).
   public static let functionsRegion = "asia-northeast3"
 
-  /// Emulator ports (V1-10 §4.2, dfet:firebase.json). Auth and Functions ports are added to firebase.json by the seed story.
+  /// Default ports match firebase.json. DEBUG integration runs can isolate all emulators with one offset.
   public enum EmulatorPort {
-    public static let firestore = 18080
-    public static let storage = 19199
-    public static let auth = 19099
-    public static let functions = 5001
+    #if DEBUG
+    private static let offset: Int = {
+      guard let raw = ProcessInfo.processInfo.environment["DFET_EMULATOR_PORT_OFFSET"] else { return 0 }
+      guard !raw.isEmpty, raw.utf8.allSatisfy({ (48...57).contains($0) }),
+            let value = Int(raw), (0...46336).contains(value) else {
+        preconditionFailure("DFET_EMULATOR_PORT_OFFSET must be an integer from 0 through 46336")
+      }
+      return value
+    }()
+    #else
+    private static let offset = 0
+    #endif
+
+    public static let firestore = 18080 + offset
+    public static let storage = 19199 + offset
+    public static let auth = 19099 + offset
+    public static let functions = 5001 + offset
   }
 
   public static var appCheckProviderKind: AppCheckProviderKind {

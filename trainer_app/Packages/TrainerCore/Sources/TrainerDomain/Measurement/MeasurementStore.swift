@@ -14,6 +14,10 @@ public enum MeasurementStoreError: Error, Equatable, Sendable {
 /// and while consent ② only waits for the server (the SyncEngine holds the item, DF-015). DF-128 adds
 /// `attachReportPhoto` and `voidAndPrefill`, DF-129 the tape methods.
 public protocol MeasurementStore: Sendable {
+  /// This trainer's device names, most recently used first, shared across members on this device.
+  func recentDeviceModels() async throws -> [String]
+  /// Actual queue state for the saved record; `synced` requires a confirmed server write.
+  func observeBodyCompositionSyncState(recordID: String) async -> AsyncStream<SyncState>
   /// Validates the draft (`BodyCompositionValidator`, with the implementation's clock), stores it locally with a new
   /// document ID and enqueues `createDocument` at `BodyCompositionPayload.path(id:)` with
   /// `BodyCompositionPayload.fields(_:member:trainerUid:)`. Returns the record ID.
@@ -30,4 +34,11 @@ public protocol MeasurementStore: Sendable {
   /// For body composition metrics this is `BodyCompositionSeries.points(from:metricCode:)` over
   /// `observeBodyCompositionRecords`. Charts pass the result to `SeriesChartInput.make`.
   func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error>
+}
+
+public extension MeasurementStore {
+  func recentDeviceModels() async throws -> [String] { [] }
+  func observeBodyCompositionSyncState(recordID: String) async -> AsyncStream<SyncState> {
+    AsyncStream { $0.finish() }
+  }
 }

@@ -133,6 +133,18 @@
         }
       }
     },
+    "chart.lineHelp" : {
+      "comment" : "V1-12 · F-VIZ-03.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "점 사이 직선은 보기 위한 연결이며 그 사이 값을 뜻하지 않아요."
+          }
+        }
+      }
+    },
     "chart.measuredAt" : {
       "comment" : "V1-12 · A-03",
       "extractionState" : "manual",
@@ -253,6 +265,18 @@
         }
       }
     },
+    "common.confirm" : {
+      "comment" : "V1-12",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        }
+      }
+    },
     "common.devDefect" : {
       "comment" : "V1-12 · V1-06 §3.6",
       "extractionState" : "manual",
@@ -301,6 +325,18 @@
         }
       }
     },
+    "common.loadFailed.detail" : {
+      "comment" : "V1-12 · §9.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요."
+          }
+        }
+      }
+    },
     "common.loading" : {
       "comment" : "V1-12 · §8.4 · loading skeleton label",
       "extractionState" : "manual",
@@ -309,6 +345,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "불러오는 중"
+          }
+        }
+      }
+    },
+    "common.next" : {
+      "comment" : "V1-12",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음"
           }
         }
       }
@@ -333,6 +381,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다시 시도"
+          }
+        }
+      }
+    },
+    "common.saveAction" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장하기"
           }
         }
       }
@@ -429,6 +489,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "동의 확인 대기"
+          }
+        }
+      }
+    },
+    "consent.type.bodyImaging" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "③ 신체 사진·영상·3D 정보"
+          }
+        }
+      }
+    },
+    "consent.type.healthData" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "② 건강정보 수집·이용"
+          }
+        }
+      }
+    },
+    "consent.type.required" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "① 서비스 이용 필수 동의"
+          }
+        }
+      }
+    },
+    "consent.type.research" : {
+      "comment" : "V1-12 · F-PRIV-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⑤ 가명처리 연구 참여"
+          }
+        }
+      }
+    },
+    "consent.type.sharing" : {
+      "comment" : "V1-12 · F-PRIV-01, F-PRIV-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "④ 후임 담당 트레이너 인계"
           }
         }
       }
@@ -757,6 +877,18 @@
         }
       }
     },
+    "reason.betaMetric.detail" : {
+      "comment" : "V1-12 · §6.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "베타 값이라 같은 부위 나란히 보기만 제공합니다"
+          }
+        }
+      }
+    },
     "reason.conditionMismatch" : {
       "comment" : "V1-12 · §7.4, B.4",
       "extractionState" : "manual",
@@ -765,6 +897,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "조건 불일치"
+          }
+        }
+      }
+    },
+    "reason.conditionMismatch.detail" : {
+      "comment" : "V1-12 · §7.4 · args: condition",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 조건(%@)이 달라 비교할 수 없습니다"
           }
         }
       }
@@ -781,6 +925,18 @@
         }
       }
     },
+    "reason.deviceChanged.detail" : {
+      "comment" : "V1-12 · F-BC-03.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기가 바뀌어 이전 기록과 비교할 수 없습니다"
+          }
+        }
+      }
+    },
     "reason.noComparison" : {
       "comment" : "V1-12 · B.4, F-VIZ-03.10",
       "extractionState" : "manual",
@@ -789,6 +945,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "비교할 측정 없음"
+          }
+        }
+      }
+    },
+    "reason.noComparison.detail" : {
+      "comment" : "V1-12 · F-VIZ-03.10",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비교할 측정이 없습니다"
           }
         }
       }
@@ -805,6 +973,18 @@
         }
       }
     },
+    "reason.noMdc.detail" : {
+      "comment" : "V1-12 · §7.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 오차 기준(MDC)이 없어 변화를 판정하지 않습니다"
+          }
+        }
+      }
+    },
     "reason.protocolChanged" : {
       "comment" : "V1-12 · B.4",
       "extractionState" : "manual",
@@ -817,6 +997,18 @@
         }
       }
     },
+    "reason.protocolChanged.detail" : {
+      "comment" : "V1-12 · §7.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "촬영·측정 프로토콜 버전이 달라 비교할 수 없습니다"
+          }
+        }
+      }
+    },
     "reason.referenceMetric" : {
       "comment" : "V1-12 · B.4",
       "extractionState" : "manual",
@@ -825,6 +1017,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "참고 지표"
+          }
+        }
+      }
+    },
+    "reason.referenceMetric.detail" : {
+      "comment" : "V1-12 · §7.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "참고 지표라 값과 추이만 보여 줍니다"
           }
         }
       }
@@ -861,6 +1065,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "프로토콜 변경"
+          }
+        }
+      }
+    },
+    "series.break.timeline" : {
+      "comment" : "V1-12 · F-VIZ-05.1 · args: reason",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추이 끊김 · %@"
           }
         }
       }
@@ -1285,6 +1501,42 @@
         }
       }
     },
+    "timeOfDay.evening" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁(17시 이후)"
+          }
+        }
+      }
+    },
+    "timeOfDay.midday" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "낮(11~17시)"
+          }
+        }
+      }
+    },
+    "timeOfDay.morning" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오전(11시 전)"
+          }
+        }
+      }
+    },
     "tr01.title" : {
       "comment" : "V1-12 · TR-01",
       "extractionState" : "manual",
@@ -1305,6 +1557,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "대기 회원 추가"
+          }
+        }
+      }
+    },
+    "tr02.badge.pending" : {
+      "comment" : "V1-12 · F-LINK-01",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기"
           }
         }
       }
@@ -1345,6 +1609,30 @@
         }
       }
     },
+    "tr02.search" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원 검색"
+          }
+        }
+      }
+    },
+    "tr02.search.noResult" : {
+      "comment" : "V1-12 · AC-DF-113.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 결과가 없어요"
+          }
+        }
+      }
+    },
     "tr02.title" : {
       "comment" : "V1-12 · TR-02",
       "extractionState" : "manual",
@@ -1353,6 +1641,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "회원"
+          }
+        }
+      }
+    },
+    "tr03.measureMenu" : {
+      "comment" : "V1-12 · TR-03",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 입력"
+          }
+        }
+      }
+    },
+    "tr03.measureMenu.bodyComposition" : {
+      "comment" : "V1-12 · TR-03, TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신체조성"
           }
         }
       }
@@ -1513,6 +1825,30 @@
         }
       }
     },
+    "tr11.deviceModel" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 모델"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.recent" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 기기 선택"
+          }
+        }
+      }
+    },
     "tr11.deviceModel.required" : {
       "comment" : "V1-12 · F-BC-01.2, AC-BC-01.1",
       "extractionState" : "manual",
@@ -1537,6 +1873,42 @@
         }
       }
     },
+    "tr11.fasting" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부"
+          }
+        }
+      }
+    },
+    "tr11.fasting.more" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부 추가 선택"
+          }
+        }
+      }
+    },
+    "tr11.fasting.no" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 아님"
+          }
+        }
+      }
+    },
     "tr11.fasting.required" : {
       "comment" : "V1-12 · F-BC-01.2",
       "extractionState" : "manual",
@@ -1545,6 +1917,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "공복 여부를 골라 주세요"
+          }
+        }
+      }
+    },
+    "tr11.fasting.unknown" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모름"
+          }
+        }
+      }
+    },
+    "tr11.fasting.yes" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복"
+          }
+        }
+      }
+    },
+    "tr11.height" : {
+      "comment" : "V1-12 · F-BC-01.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키(트레이너 측정)"
+          }
+        }
+      }
+    },
+    "tr11.measuredAt" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 일시"
           }
         }
       }
@@ -1561,6 +1981,30 @@
         }
       }
     },
+    "tr11.more" : {
+      "comment" : "V1-12 · F-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가 항목"
+          }
+        }
+      }
+    },
+    "tr11.newEntry" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 측정 입력"
+          }
+        }
+      }
+    },
     "tr11.number.invalid" : {
       "comment" : "V1-12 · F-BC-03.1, F-BC-03.2",
       "extractionState" : "manual",
@@ -1569,6 +2013,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "숫자로 입력하세요. 소수점 아래는 한 자리까지예요"
+          }
+        }
+      }
+    },
+    "tr11.openConsent" : {
+      "comment" : "V1-12 · AC-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인하기"
           }
         }
       }
@@ -1585,6 +2041,78 @@
         }
       }
     },
+    "tr11.recentRecords" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 기록"
+          }
+        }
+      }
+    },
+    "tr11.records.empty" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 측정 기록이 없어요"
+          }
+        }
+      }
+    },
+    "tr11.records.loadFailed" : {
+      "comment" : "V1-12 · F-VIZ-05.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 기록을 불러오지 못했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "tr11.saveFailed" : {
+      "comment" : "V1-12 · NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기에 저장하지 못했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "tr11.saving" : {
+      "comment" : "V1-12 · NFR-06",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기에 저장하는 중"
+          }
+        }
+      }
+    },
+    "tr11.timeOfDayBand" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간대"
+          }
+        }
+      }
+    },
     "tr11.title" : {
       "comment" : "V1-12 · TR-11 entry (bodyComposition)",
       "extractionState" : "manual",
@@ -1593,6 +2121,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "신체조성 입력"
+          }
+        }
+      }
+    },
+    "tr11.trend.metric" : {
+      "comment" : "V1-12 · AC-DF-130.11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추이 항목"
+          }
+        }
+      }
+    },
+    "tr11.trend.title" : {
+      "comment" : "V1-12 · AC-DF-130.11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 12개월 추이"
+          }
+        }
+      }
+    },
+    "tr11.values" : {
+      "comment" : "V1-12 · F-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정값"
           }
         }
       }
@@ -1617,6 +2181,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LiDAR 관측 단면(베타)"
+          }
+        }
+      }
+    },
+    "tr14.consent.documentMissing" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게시된 동의 문서가 없어 진행할 수 없어요. 관리자에게 문의하세요."
+          }
+        }
+      }
+    },
+    "tr14.consent.grant" : {
+      "comment" : "V1-12 · F-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의"
+          }
+        }
+      }
+    },
+    "tr14.consent.handToMember" : {
+      "comment" : "V1-12 · F-PRIV-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 화면은 회원님이 직접 읽고 선택합니다"
+          }
+        }
+      }
+    },
+    "tr14.consent.items" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수집 항목"
+          }
+        }
+      }
+    },
+    "tr14.consent.purpose" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목적"
+          }
+        }
+      }
+    },
+    "tr14.consent.refusal" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "거부할 권리와 거부 시 불이익"
+          }
+        }
+      }
+    },
+    "tr14.consent.refuse" : {
+      "comment" : "V1-12 · F-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의하지 않음"
+          }
+        }
+      }
+    },
+    "tr14.consent.requiredRefusalConfirm" : {
+      "comment" : "V1-12 · F-LINK-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서비스 이용에 동의하지 않고 회원 등록을 취소할까요?"
+          }
+        }
+      }
+    },
+    "tr14.consent.requiredRefusedPending" : {
+      "comment" : "V1-12 · F-LINK-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필수 동의를 받지 않아 회원 등록을 취소했어요"
+          }
+        }
+      }
+    },
+    "tr14.consent.retention" : {
+      "comment" : "V1-12 · F-PRIV-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보유기간"
+          }
+        }
+      }
+    },
+    "tr14.consent.returnToTrainer" : {
+      "comment" : "V1-12 · F-PRIV-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트레이너에게 돌려주세요"
+          }
+        }
+      }
+    },
+    "tr14.consent.savedLocally" : {
+      "comment" : "V1-12 · F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 내용을 기기에 보관했어요. 동의 확인 상태는 위에 표시돼요."
+          }
+        }
+      }
+    },
+    "tr14.consent.submit" : {
+      "comment" : "V1-12 · F-PRIV-03.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 내용으로 제출"
+          }
+        }
+      }
+    },
+    "tr14.consent.title" : {
+      "comment" : "V1-12 · F-PRIV-03",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 받기"
+          }
+        }
+      }
+    },
+    "tr14.consent.version" : {
+      "comment" : "V1-12 · F-PRIV-01.2 · args: version",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "문서 버전 %@"
           }
         }
       }

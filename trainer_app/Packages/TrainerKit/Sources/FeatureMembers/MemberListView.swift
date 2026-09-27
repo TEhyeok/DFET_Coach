@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import TrainerDomain
 
@@ -5,14 +6,17 @@ import TrainerDomain
 /// `common.loadFailed`, `common.retry`; they replace the card's proposed `members.*` keys, V1-12 §1). The shell owns navigation: a row tap calls
 /// `onSelect`, and `selectedID` highlights the member shown in the detail column.
 public struct MemberListView: View {
-  private let model: MemberListViewModel
+  @Bindable private var model: MemberListViewModel
   private let selectedID: String?
   private let onSelect: (Member) -> Void
+  private let consentSource: (any EffectiveConsentSource)?
 
-  public init(model: MemberListViewModel, selectedID: String? = nil, onSelect: @escaping (Member) -> Void) {
+  public init(model: MemberListViewModel, selectedID: String? = nil,
+              consentSource: (any EffectiveConsentSource)? = nil, onSelect: @escaping (Member) -> Void) {
     self.model = model
     self.selectedID = selectedID
     self.onSelect = onSelect
+    self.consentSource = consentSource
   }
 
   @ScaledMetric(relativeTo: .headline) private var avatarSize: CGFloat = 40
@@ -21,6 +25,7 @@ public struct MemberListView: View {
     // No stop on disappear: a size-class change shows a second list before the first one disappears, and the
     // subscription belongs to the shell's model, which cancels it when it is released (sign-out).
     content
+      .searchable(text: $model.searchText, prompt: Text("tr02.search"))
       .onAppear { model.start() }
   }
 
@@ -29,26 +34,35 @@ public struct MemberListView: View {
     switch model.state {
     case .loading:
       skeleton
-    case let .loaded(members):
+    case .loaded:
       // A List does not expose its own identifier to XCUITest; the wrapping container does.
       VStack(spacing: 0) {
-        List {
-          ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
-            Button { onSelect(member) } label: {
-              MemberRow(member: member, avatarSize: avatarSize)
+        if model.visibleMembers.isEmpty {
+          Text("tr02.search.noResult")
+            .font(.headline)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityIdentifier("tr02.search.noResult")
+        } else {
+          List {
+            ForEach(Array(model.visibleMembers.enumerated()), id: \.element.key) { index, member in
+              Button { onSelect(member) } label: {
+                MemberRow(member: member, avatarSize: avatarSize, consentSource: consentSource)
+              }
+              .buttonStyle(.plain)
+              .listRowBackground(member.id == selectedID ? Color.accentColor.opacity(0.15) : nil)
+              .accessibilityIdentifier("tr02.row.\(index)")
+              .accessibilityAddTraits(member.id == selectedID ? .isSelected : [])
             }
-            .buttonStyle(.plain)
-            .listRowBackground(member.id == selectedID ? Color.accentColor.opacity(0.15) : nil)
-            .accessibilityIdentifier("tr02.row.\(index)")
-            .accessibilityAddTraits(member.id == selectedID ? .isSelected : [])
           }
         }
       }
       .accessibilityElement(children: .contain)
       .accessibilityIdentifier("tr02.list")
     case .empty:
-      // No next action here: assignment happens in admin_web, and DF-113 adds the pending-member rows and the
-      // '대기 회원 추가' entry point (recorded in the DF-013 MVP section).
+      // The shell owns the '대기 회원 추가' entry point and its sheet.
       Text("tr02.empty")
         .font(.headline)
         .foregroundStyle(.secondary)
@@ -93,6 +107,14 @@ public struct MemberListView: View {
 struct MemberRow: View {
   let member: Member
   let avatarSize: CGFloat
+  private let consentSource: (any EffectiveConsentSource)?
+  @State private var consent: EffectiveConsent?
+
+  init(member: Member, avatarSize: CGFloat, consentSource: (any EffectiveConsentSource)? = nil) {
+    self.member = member
+    self.avatarSize = avatarSize
+    self.consentSource = consentSource
+  }
 
   var body: some View {
     HStack(spacing: 12) {
@@ -102,11 +124,48 @@ struct MemberRow: View {
         .frame(width: avatarSize, height: avatarSize)
         .background(Circle().fill(Color.secondary))
         .accessibilityHidden(true)
-      Text(verbatim: member.displayName.isEmpty ? member.initials : member.displayName)
-        .font(.body)
+      VStack(alignment: .leading, spacing: TrainerSpacing.xs) {
+        Text(verbatim: member.displayName.isEmpty ? member.initials : member.displayName)
+          .font(.body)
+          .fixedSize(horizontal: false, vertical: true)
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: TrainerSpacing.xs) { badges }
+          VStack(alignment: .leading, spacing: TrainerSpacing.xs) { badges }
+        }
+      }
       Spacer(minLength: 0)
     }
     .frame(minHeight: 44)
     .contentShape(Rectangle())
+    .accessibilityElement(children: .combine)
+    .task(id: member.key) {
+      consent = nil
+      guard let consentSource else { return }
+      for await value in consentSource.observe(member: member.key) {
+        guard !Task.isCancelled else { return }
+        consent = value
+      }
+    }
+  }
+
+  @ViewBuilder private var badges: some View {
+    if member.isPending {
+      Text("tr02.badge.pending")
+        .font(.caption)
+        .padding(.horizontal, TrainerSpacing.s)
+        .padding(.vertical, TrainerSpacing.xxs)
+        .background(TrainerColor.neutral100, in: Capsule())
+        .accessibilityIdentifier("tr02.badge.pending")
+    }
+    if consentSource != nil {
+      let key = consent?.chipState.copyKey ?? "common.loading"
+      Text(String(localized: String.LocalizationValue(key), bundle: .main))
+        .font(.caption)
+        .foregroundStyle(TrainerColor.neutral700)
+        .padding(.horizontal, TrainerSpacing.s)
+        .padding(.vertical, TrainerSpacing.xxs)
+        .background(TrainerColor.neutral100, in: Capsule())
+        .accessibilityIdentifier("tr02.consent")
+    }
   }
 }

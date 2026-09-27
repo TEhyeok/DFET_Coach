@@ -1,4 +1,5 @@
 import FirebaseAuth
+import FirebaseData
 import Foundation
 import XCTest
 @testable import DFETTrainer
@@ -38,8 +39,8 @@ enum EmulatorAccounts {
     let password: String
   }
 
-  /// Auth emulator port 19099 (FirebaseBootstrap.EmulatorPort.auth, firebase.json).
-  private static let base = "http://127.0.0.1:19099/identitytoolkit.googleapis.com/v1/projects/demo-dfet"
+  /// Shares the app's DEBUG port offset; the project is always the synthetic demo project.
+  private static let base = "http://127.0.0.1:\(FirebaseBootstrap.EmulatorPort.auth)/identitytoolkit.googleapis.com/v1/projects/demo-dfet"
 
   static func create(claims: [String: Any]) async throws -> Account {
     let email = "it-\(UUID().uuidString.lowercased())@example.invalid"
@@ -58,8 +59,7 @@ enum EmulatorAccounts {
 
 /// Firestore emulator REST writes as the owner, which bypasses security rules (test setup only).
 enum EmulatorDocuments {
-  /// Firestore emulator port 18080 (FirebaseBootstrap.EmulatorPort.firestore, firebase.json).
-  private static let base = "http://127.0.0.1:18080/v1/projects/demo-dfet/databases/(default)/documents"
+  private static let base = "http://127.0.0.1:\(FirebaseBootstrap.EmulatorPort.firestore)/v1/projects/demo-dfet/databases/(default)/documents"
 
   /// Creates or replaces `path`. Fields may be strings, booleans, integers, doubles, dates, string lists and maps
   /// of these.

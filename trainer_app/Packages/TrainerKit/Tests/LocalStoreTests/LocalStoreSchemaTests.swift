@@ -22,17 +22,20 @@ final class LocalStoreSchemaTests: XCTestCase {
     XCTAssertFalse(names.contains("LocalAssessmentDraft"))
   }
 
-  /// DF-108: V1_1 adds `LocalPendingMemberDraft` and `OutboxItem.ackConfirmed`, with one lightweight stage from V1.
-  func testSchemaV1_1IsCurrentAndMigratesFromV1() throws {
+  /// DF-110 MVP: V1_2 keeps the V1_1 models and makes the deferred signature optional.
+  func testSchemaV1_2IsCurrentAndIncludesNullableConsentSignature() throws {
     XCTAssertEqual(LocalStoreSchemaV1_1.versionIdentifier, Schema.Version(1, 1, 0))
     let names = Set(LocalStoreSchemaV1_1.models.map { String(describing: $0) })
     XCTAssertEqual(names, Self.v1ModelNames.union(["LocalPendingMemberDraft"]))
-    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), names)
+    XCTAssertEqual(Set(LocalStoreContainer.schema.entities.map(\.name)), names.union(["DeviceModelEntry"]))
     let outbox = try XCTUnwrap(LocalStoreContainer.schema.entities.first { $0.name == "OutboxItem" })
     XCTAssertTrue(try XCTUnwrap(outbox.attributes.first { $0.name == "ackConfirmed" }).isOptional)
+    XCTAssertEqual(LocalStoreCurrentSchema.versionIdentifier, Schema.Version(1, 2, 0))
+    let capture = try XCTUnwrap(LocalStoreContainer.schema.entities.first { $0.name == "LocalConsentCapture" })
+    XCTAssertTrue(try XCTUnwrap(capture.attributes.first { $0.name == "signatureBinaryId" }).isOptional)
     XCTAssertEqual(LocalStoreMigrationPlan.schemas.map { String(describing: $0) },
-                   ["LocalStoreSchemaV1", "LocalStoreSchemaV1_1"])
-    XCTAssertEqual(LocalStoreMigrationPlan.stages.count, 1)
+                   ["LocalStoreSchemaV1", "LocalStoreSchemaV1_1", "LocalStoreSchemaV1_2"])
+    XCTAssertEqual(LocalStoreMigrationPlan.stages.count, 2)
   }
 
   func test_TC_DF014_01_AC_DF_014_1_everyModelHasANonOptionalTrainerUidAttribute() throws {
@@ -48,7 +51,7 @@ final class LocalStoreSchemaTests: XCTestCase {
     let expected: [String: String] = [
       "LocalSoapDraft": "noteId", "LocalMeasurementDraft": "recordId", "LocalConsentCapture": "captureId",
       "OutboxItem": "id", "LocalBinary": "id", "TodayListEntry": "id", "StationProfile": "id", "QuickPhrase": "id",
-      "FilterPreference": "key", "LocalPendingMemberDraft": "pendingMemberId",
+      "FilterPreference": "key", "LocalPendingMemberDraft": "pendingMemberId", "DeviceModelEntry": "id",
     ]
     for entity in LocalStoreContainer.schema.entities {
       let unique = entity.attributes.filter(\.isUnique).map(\.name)

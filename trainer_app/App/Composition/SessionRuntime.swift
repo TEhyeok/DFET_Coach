@@ -168,6 +168,7 @@ final class SessionRuntime {
 
   let trainerUid: String
   let engine: SyncEngine
+  let outbox: LocalOutboxStore
   let registrar: any PendingMemberRegistrar
   private let refresher: SessionRefresher
   /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
@@ -193,6 +194,7 @@ final class SessionRuntime {
     self.container = container
     self.location = location
     let outbox = LocalOutboxStore(container: container, trainerUid: trainerUid, binaries: LocalBinaryStore(location: location))
+    self.outbox = outbox
     let refresher = SessionRefresher(refresh: remote.refreshSession)
     self.refresher = refresher
     let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote, onUnauthenticated: refresher.unauthenticated)

@@ -1,7 +1,7 @@
 {
   "docId": "V1-12-D3",
   "title": "D-FET Coach v1 문구 덱(ko)",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "status": "ready",
   "updated": "2026-09-28",
   "canonicalDoc": "docs/v1/12_COPY_ANALYTICS_AND_LINT.md#4-문구-키-체계",
@@ -18,8 +18,23 @@
     "consentDraft": {"ruleSets": ["common", "member", "memberAbbreviation"], "target": "AD-03 동의 문서 draft 시드(앱 번들 제외)"}
   },
   "legalReviewNote": "legalReview=pendingG04 항목은 G-04 법률 검토 전 초안이다. 앱 번들에 넣지 않고 AD-03 draft 입력에만 쓴다. {retentionMonths}는 Q-24, {centerName}은 §6.7.0 센터명",
-  "counts": {"shared": 93, "trainer": 567, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
+  "counts": {"shared": 95, "trainer": 580, "member": 104, "admin": 57, "consentDraft": 26, "notification": 3, "marketing": 1},
   "strings": {
+    "tr14.consent.requiredRefusalConfirm": {"ko": "서비스 이용에 동의하지 않고 회원 등록을 취소할까요?", "audience": "shared", "phase": "P1a", "prdRefs": ["F-LINK-01.5"], "screens": "TR-14", "group": "tr14"},
+    "tr14.consent.savedLocally": {"ko": "선택한 내용을 기기에 보관했어요. 동의 확인 상태는 위에 표시돼요.", "audience": "shared", "phase": "P1a", "prdRefs": ["F-PRIV-03.7"], "screens": "TR-14", "group": "tr14"},
+    "tr11.values": {"ko": "측정값", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.1"], "screens": "TR-11", "group": "tr11"},
+    "tr11.deviceModel.recent": {"ko": "최근 기기 선택", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
+    "tr11.fasting.more": {"ko": "공복 여부 추가 선택", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-BC-01.2"], "screens": "TR-11", "group": "tr11"},
+    "tr11.openConsent": {"ko": "동의 확인하기", "audience": "trainer", "phase": "P1a", "prdRefs": ["AC-PRIV-01.1"], "screens": "TR-11", "group": "tr11"},
+    "tr11.saving": {"ko": "기기에 저장하는 중", "audience": "trainer", "phase": "P1a", "prdRefs": ["NFR-06"], "screens": "TR-11", "group": "tr11"},
+    "tr11.saveFailed": {"ko": "기기에 저장하지 못했어요. 다시 시도해 주세요.", "audience": "trainer", "phase": "P1a", "prdRefs": ["NFR-06"], "screens": "TR-11", "group": "tr11"},
+    "tr11.newEntry": {"ko": "새 측정 입력", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-11"], "screens": "TR-11", "group": "tr11"},
+    "tr11.trend.metric": {"ko": "추이 항목", "audience": "trainer", "phase": "P1a", "prdRefs": ["AC-DF-130.11"], "screens": "TR-11", "group": "tr11"},
+    "tr11.trend.title": {"ko": "최근 12개월 추이", "audience": "trainer", "phase": "P1a", "prdRefs": ["AC-DF-130.11"], "screens": "TR-11", "group": "tr11"},
+    "tr11.recentRecords": {"ko": "측정 기록", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-11"], "screens": "TR-11", "group": "tr11"},
+    "tr11.records.empty": {"ko": "아직 측정 기록이 없어요", "audience": "trainer", "phase": "P1a", "prdRefs": ["TR-11"], "screens": "TR-11", "group": "tr11"},
+    "tr11.records.loadFailed": {"ko": "측정 기록을 불러오지 못했어요. 다시 시도해 주세요.", "audience": "trainer", "phase": "P1a", "prdRefs": ["F-VIZ-05.6"], "screens": "TR-11", "group": "tr11"},
+    "tr02.search.noResult": {"ko": "검색 결과가 없어요", "audience": "trainer", "phase": "P1a", "prdRefs": ["AC-DF-113.5"], "screens": "TR-02", "group": "tr02"},
     "common.retry": {"ko": "다시 시도", "audience": "shared", "phase": "P0", "prdRefs": ["§8.4", "§9.6"], "screens": "전역", "group": "common"},
     "common.cancel": {"ko": "취소", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
     "common.confirm": {"ko": "확인", "audience": "shared", "phase": "P0", "prdRefs": [], "screens": "전역", "group": "common"},
@@ -872,7 +887,8 @@
     "a11y.beta": {"ko": "실측 대조 전 베타 참고값", "audience": "trainer", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "TR-13", "group": "notify"},
     "mb.a11y.metric": {"ko": "{metricName} {value}{unit}, {date}, 출처 {source}", "audience": "member", "phase": "P2", "prdRefs": ["§8.6 A-03"], "screens": "MB-01, MB-02", "args": ["metricName", "value", "unit", "date", "source"], "note": "회원 변화 문장은 자격 있는 지표만 뒤에 덧붙임", "group": "notify"}
   },
-  "changeLog": [{"version": "1.0.8", "date": "2026-09-28", "title": "추이 차트 문구", "summary": "DF-130 chart.summary에 {period}·{status} 추가와 끊김 수 '곳'(AC-DF-130.10), chart.empty·chart.measuredAt 추가, counts.trainer 567"},
+  "changeLog": [{"version": "1.0.9", "date": "2026-09-28", "title": "입력 화면 연결 문구", "summary": "DF-110·113·127·130 동의 제출·등록 취소 확인(tr14.consent.requiredRefusalConfirm·tr14.consent.savedLocally), TR-11 입력·저장 오류·미니 추이·기록 조회 12키, tr02.search.noResult 추가, counts.shared 95·counts.trainer 580. 기존 키 변경 없음"},
+    {"version": "1.0.8", "date": "2026-09-28", "title": "추이 차트 문구", "summary": "DF-130 chart.summary에 {period}·{status} 추가와 끊김 수 '곳'(AC-DF-130.10), chart.empty·chart.measuredAt 추가, counts.trainer 567"},
     {"version": "1.0.7", "date": "2026-09-28", "title": "TR-11 검증 문구", "summary": "DF-127 BodyCompositionValidator 오류 문구 tr11.deviceModel.required·tr11.deviceModel.tooLong·tr11.measuredAt.future·tr11.number.invalid 추가, counts.trainer 565. 기존 키 변경 없음"},
     {"version": "1.0.6", "date": "2026-09-28", "title": "말투 통일", "summary": "tr14.register.under14Blocked 두 번째 문장을 해요체로 맞춤(아이폰 화면 점검). 키 추가·삭제 없음"},{"version": "1.0.5", "date": "2026-09-28", "title": "트레이너 카탈로그 대조", "summary": "DF-013 common.loading, DF-203 tr07.station.*·clothing.*, #174 app.title·app.config.missing·login.error.invalidCredentials·login.error.network와 v1.0.2 표에만 있던 라벨 5키 추가. 기존 키 변경 없음"},
     {"version": "1.0.1", "date": "2026-09-24", "title": "교차 정합성 조정", "summary": "P1a §5.3 '덱 추가 요청' 표의 트레이너 P1a 키 32개 추가(CF-20, sync.reason.consentRejected·sync.reason.fileTooLarge 포함), counts.trainer 537로 갱신. 기존 키 변경 없음"}

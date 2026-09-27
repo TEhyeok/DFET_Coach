@@ -19,6 +19,28 @@ public final class MemberListViewModel {
   }
 
   public private(set) var state: State = .loading
+  public var searchText = ""
+
+  /// Filtering is presentation-only: the shell can still find a selected member in the full loaded state.
+  public var visibleMembers: [Member] {
+    guard case let .loaded(members) = state else { return [] }
+    return Self.filter(members, query: searchText)
+  }
+
+  public var hasSearch: Bool { !Self.searchKey(searchText).isEmpty }
+
+  /// AC-DF-113.5: display-name substring search, ignoring case and whitespace. No server query or subscription reset.
+  public static func filter(_ members: [Member], query: String) -> [Member] {
+    let query = searchKey(query)
+    guard !query.isEmpty else { return members }
+    return members.filter { searchKey($0.displayName).contains(query) }
+  }
+
+  private static func searchKey(_ value: String) -> String {
+    value.precomposedStringWithCanonicalMapping
+      .filter { !$0.isWhitespace }
+      .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "ko_KR"))
+  }
 
   private let directory: any MemberDirectory
   @ObservationIgnored private var task: Task<Void, Never>?

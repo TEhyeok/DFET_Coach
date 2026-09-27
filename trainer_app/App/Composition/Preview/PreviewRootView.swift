@@ -2,6 +2,7 @@
 import FeatureAuth
 import SwiftUI
 import UIKit
+import TrainerDomain
 
 /// DEBUG-only root for `--preview-*` launches: synthetic data, no Firebase.
 struct PreviewRootView: View {
@@ -18,6 +19,7 @@ struct PreviewRootView: View {
   @State private var registrar = PreviewPendingMemberRegistrar()
   /// TR-15's Outbox view (DF-018), in memory.
   @State private var queue: PreviewSyncQueue
+  @State private var workflow = PreviewWorkflowService()
 
   init(preview: PreviewEnvironment) {
     self.preview = preview
@@ -52,9 +54,11 @@ struct PreviewRootView: View {
     return RootSplitView(
       flags: preview.flagsProvider.current,
       services: ShellServices(
-        memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        registrar: registrar, syncQueue: queue, signOut: signOut,
-        accountName: "SYN-TRAINER"))
+        memberDirectory: preview.scenario == .workflow ? workflow as any MemberDirectory
+          : PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
+        registrar: preview.scenario == .workflow ? workflow as any PendingMemberRegistrar : registrar,
+        syncQueue: queue, signOut: signOut,
+        accountName: "SYN-TRAINER", consent: workflow, measurements: workflow))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)

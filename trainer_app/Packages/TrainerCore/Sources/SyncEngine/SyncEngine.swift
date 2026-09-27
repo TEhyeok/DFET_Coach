@@ -14,9 +14,11 @@ public enum SyncEngineModule {
 /// - One call at a time per member; at most two members at once (ASM-04-18).
 /// - Inside an entity, items run in `sequence` order; a failed item holds back only the rest of its own entity, whose
 ///   `syncState` then reads `syncFailed` (a failure never hides another record behind "기기에 저장됨").
-/// - Member gates by stage: every item after ⓪ waits for the member's pending-member create; every item after ① waits
-///   until the member's latest consent capture is acked. When that capture fails, the member's records become
-///   `blocked(awaitingConsent)` and make no remote call (AC-DF-015.2); a new capture or a retry releases them.
+/// - Member gates by stage: every item after ⓪ waits for the member's pending-member create. Records (after ①) are
+///   stored as `blocked(awaitingConsent)` while the member's latest consent capture is not acked, pending or failed,
+///   and make no remote call (AC-DF-015.2, V1-05 §12.3); they return to `queued` when it is acked.
+/// - Consent captures of a member run in `sequence` order. A new capture supersedes the member's older unsent ones
+///   (`superseded`, terminal), so an older grant never reaches the server after a newer capture or a withdrawal.
 ///
 /// Failures
 /// - Rule rejections and bad requests fail at once (AC-DF-015.3). Transient errors, unverified uploads and writes that
@@ -31,7 +33,8 @@ public enum SyncEngineModule {
 ///   `OutboxStore` in order. So an actor re-entry never sees a half-applied change.
 /// - `start()` puts items left `inFlight` by a killed process back in the queue; `RemoteWriter.createIfAbsent` then
 ///   avoids a second create (AC-DF-015.5). If loading fails, nothing is sent until a later `start()` loads.
-/// - Local items are never deleted here: a failed item keeps its payload (NFR-06).
+/// - The engine never deletes a local item (a failed item keeps its payload, NFR-06). Rows that LocalStore retention
+///   deletes (AS-32) leave through `discard(ids:)` or are dropped when `start()` re-reads the store.
 ///
 /// Wiring (DF-104): the app calls `start()` on launch and foreground, `networkDidChange(isReachable:)` from its
 /// network monitor, `protectedDataDidBecomeAvailable()` on unlock, and `retry(_:)`/`retryAll()` from the UI.
@@ -124,11 +127,24 @@ public actor SyncEngine {
       logger.error("sync not started: outbox load failed")
       return
     }
+    await reconcileWithStore()
     running = true
+    unlockEpoch += 1  // foreground means unlocked: a lock reply from before this must not pause again
     pausedForLock = false
     pausedForStorage = false
     pump()
     await flush()
+  }
+
+  /// Rows deleted outside the engine (LocalStore retention, AS-32): forget them without sending or saving them.
+  public func discard(ids: [UUID]) {
+    for id in ids {
+      items[id] = nil
+      dirty.remove(id)
+    }
+    for member in Set(items.values.map(\.memberKey)) { refreshConsentGate(for: member) }
+    publishChanges()
+    signalIdleIfNeeded()
   }
 
   /// Stops starting new calls. A call already in flight finishes and its result is recorded.
@@ -162,10 +178,9 @@ public actor SyncEngine {
       items[item.id] = item
       markDirty(item.id)
       if item.stage == .consent {
-        unblockMember(item.memberKey)  // a new capture: records wait for it instead of the failed one
-      } else if item.stage > .consent, latestConsentFailed(for: item.memberKey) {
-        items[item.id]?.state = .blocked(.awaitingConsent)
+        supersedeOlderConsents(than: item)
       }
+      refreshConsentGate(for: item.memberKey)
     }
     publishChanges()
     await flush()
@@ -300,9 +315,25 @@ public actor SyncEngine {
       }
       items[item.id] = item
     }
+    // A kill during a flush can leave gate states half written: derive them again from the consent items.
+    for member in Set(items.values.map(\.memberKey)) { refreshConsentGate(for: member) }
     loaded = true
     publishChanges()
     return true
+  }
+
+  /// Drops in-memory rows the store no longer has (retention ran while the app was away). Rows that are unsaved or in
+  /// flight are kept.
+  private func reconcileWithStore() async {
+    let stored: [OutboxItem]
+    do {
+      stored = try await store.loadAll()
+    } catch {
+      return
+    }
+    let present = Set(stored.map(\.id))
+    let gone = items.values.filter { !present.contains($0.id) && !dirty.contains($0.id) && $0.state != .inFlight }
+    if !gone.isEmpty { discard(ids: gone.map(\.id)) }
   }
 
   private func markDirty(_ id: UUID) {
@@ -394,6 +425,8 @@ public actor SyncEngine {
     if item.stage > .consent, let consent = latestConsent(for: item.memberKey), consent.state != .acked {
       return false
     }
+    // Consent captures need no extra rule here: a new capture supersedes the member's older unsent ones, and a
+    // member makes one call at a time, so an in-flight older capture finishes before the newer one starts.
     return true
   }
 
@@ -451,6 +484,17 @@ public actor SyncEngine {
     markDirty(id)
     publishChanges()
     await flush()  // record inFlight before the call, so a restart re-checks it (AC-DF-015.5)
+    guard canSend, !dirty.contains(id), items[id]?.state == .inFlight else {
+      // The inFlight state could not be saved (or the item left): do not call without a record of it.
+      if var reverted = items[id], reverted.state == .inFlight {
+        reverted.state = .queued
+        reverted.attempts -= 1
+        items[id] = reverted
+        markDirty(id)
+        publishChanges()
+      }
+      return
+    }
 
     let epoch = unlockEpoch
     let result: Result<OutboxAck, Error>
@@ -470,10 +514,13 @@ public actor SyncEngine {
       items[id] = current
     case let .failure(error):
       apply(error, to: &current, unlockEpochAtStart: epoch)
-      items[id] = current
-      if current.state == .failed, current.stage == .consent, isLatestConsent(current) {
-        blockMember(current.memberKey)
+      if current.stage == .consent, !isLatestConsent(current), current.state != .acked {
+        current.state = .superseded  // a newer capture arrived while this one was out
       }
+      items[id] = current
+    }
+    if current.stage <= .consent {
+      refreshConsentGate(for: current.memberKey)
     }
     markDirty(id)
     publishChanges()
@@ -498,11 +545,11 @@ public actor SyncEngine {
       return .upload(receipt)
     case let (.callConsent, .callable(name)):
       // recordConsent's idempotency key is the capture ID (V1-06 §6.2.5); requestId equals it for consent items.
-      let payload = Self.adding("clientCaptureId", item.requestId, to: item.payload)
+      let payload = try Self.adding("clientCaptureId", item.requestId, to: item.payload)
       let _: CallableAck = try await callable.call(name, payload)
       return .call
     case let (.callFunction, .callable(name)):
-      let payload = Self.adding("requestId", item.requestId, to: item.payload)
+      let payload = try Self.adding("requestId", item.requestId, to: item.payload)
       let _: CallableAck = try await callable.call(name, payload)
       return .call
     case (.deleteDocument, _), (.deleteBinary, _):
@@ -518,9 +565,14 @@ public actor SyncEngine {
     return .write(ack)
   }
 
-  private static func adding(_ key: String, _ id: UUID, to payload: JSONValue?) -> JSONValue {
+  /// Adds the idempotency key to a callable payload, which must be an object (or absent).
+  private static func adding(_ key: String, _ id: UUID, to payload: JSONValue?) throws -> JSONValue {
     var fields: [String: JSONValue] = [:]
-    if case let .object(existing)? = payload { fields = existing }
+    switch payload {
+    case nil: break
+    case let .object(existing)?: fields = existing
+    default: throw LocalFailure.malformedItem
+    }
     if fields[key] == nil { fields[key] = .string(id.uuidString.lowercased()) }
     return .object(fields)
   }
@@ -567,9 +619,10 @@ public actor SyncEngine {
 
   // MARK: - Consent gate and retries (all synchronous)
 
+  /// The member's newest consent capture that still counts (superseded ones never do).
   private func latestConsent(for member: MemberKey) -> OutboxItem? {
     items.values
-      .filter { $0.memberKey == member && $0.stage == .consent }
+      .filter { $0.memberKey == member && $0.stage == .consent && $0.state != .superseded }
       .max { $0.sequence < $1.sequence }
   }
 
@@ -577,21 +630,28 @@ public actor SyncEngine {
     latestConsent(for: item.memberKey)?.id == item.id
   }
 
-  private func latestConsentFailed(for member: MemberKey) -> Bool {
-    latestConsent(for: member)?.state == .failed
-  }
-
-  /// The latest consent capture failed: the member's waiting records make no remote call (AC-DF-015.2).
-  private func blockMember(_ member: MemberKey) {
-    for (id, item) in items where item.memberKey == member && item.stage > .consent && item.state == .queued {
-      items[id]?.state = .blocked(.awaitingConsent)
-      markDirty(id)
+  /// V1-05 §12.3: while the member's latest capture is not acked, its records are stored `blocked(awaitingConsent)`
+  /// (LocalStore retention deletes exactly those rows with an expired capture, AS-32); otherwise `queued`.
+  private func refreshConsentGate(for member: MemberKey) {
+    let waiting = latestConsent(for: member).map { $0.state != .acked } ?? false
+    for (id, item) in items where item.memberKey == member && item.stage > .consent {
+      if waiting, item.state == .queued {
+        items[id]?.state = .blocked(.awaitingConsent)
+        markDirty(id)
+      } else if !waiting, item.state == .blocked(.awaitingConsent) {
+        items[id]?.state = .queued
+        markDirty(id)
+      }
     }
   }
 
-  private func unblockMember(_ member: MemberKey) {
-    for (id, item) in items where item.memberKey == member && item.state == .blocked(.awaitingConsent) {
-      items[id]?.state = .queued
+  /// A new capture replaces the member's older ones that have not been sent (in-flight ones finish first and are
+  /// superseded if they fail).
+  private func supersedeOlderConsents(than capture: OutboxItem) {
+    for (id, item) in items where item.memberKey == capture.memberKey && item.stage == .consent
+      && item.sequence < capture.sequence
+      && (item.state == .queued || item.state == .failed || item.state == .blocked(.awaitingConsent)) {
+      items[id]?.state = .superseded
       markDirty(id)
     }
   }
@@ -609,9 +669,7 @@ public actor SyncEngine {
     item.lastErrorCode = nil
     items[id] = item
     markDirty(id)
-    if item.stage == .consent, isLatestConsent(item) {
-      unblockMember(item.memberKey)
-    }
+    refreshConsentGate(for: item.memberKey)
     return true
   }
 
@@ -633,6 +691,10 @@ public actor SyncEngine {
       if ownStage > .memberKey {
         upstreamFailed = items.values.contains { $0.memberKey == member && $0.stage == .memberKey && $0.state == .failed }
       }
+      let dependencies = Set(entityItems.flatMap(\.dependsOn))
+      if dependencies.contains(where: { items[$0]?.state == .failed }) {
+        upstreamFailed = true  // waiting forever on a failed item of another record must not read "기기에 저장됨"
+      }
     }
     return SyncStateCalculator.state(
       consentConfirmed: consentConfirmed, upstreamFailed: upstreamFailed,
@@ -640,7 +702,7 @@ public actor SyncEngine {
   }
 
   private func computePendingCount() -> Int {
-    items.values.filter { $0.state != .acked }.count
+    items.values.filter { $0.state != .acked && $0.state != .superseded }.count
   }
 
   private func publishChanges() {

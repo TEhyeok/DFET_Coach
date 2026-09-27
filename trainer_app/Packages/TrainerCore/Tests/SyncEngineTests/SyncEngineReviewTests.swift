@@ -26,7 +26,7 @@ final class SyncEngineReviewTests: XCTestCase {
     XCTAssertTrue(retryApplied)
     await store.releaseSaves()
     await retry.value
-    await engine.waitUntilIdle()
+    await idle(engine)
 
     for step in steps {
       let item = await engine.item(step.id)
@@ -46,7 +46,7 @@ final class SyncEngineReviewTests: XCTestCase {
       OutboxFixtures.create(member: "m1", note: "nB", sequence: 2),
     ])
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
 
     let stateA = await firstValue(of: await engine.syncState(for: .soap(noteId: "nA")))
     let stateB = await firstValue(of: await engine.syncState(for: .soap(noteId: "nB")))
@@ -61,7 +61,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let steps = OutboxFixtures.soapSteps(member: "m1", note: "n1")
     await engine.enqueue(contentsOf: steps)
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     let blocked = await engine.item(steps[1].id)
     XCTAssertEqual(blocked?.state, .blocked(.awaitingConsent))
 
@@ -70,7 +70,7 @@ final class SyncEngineReviewTests: XCTestCase {
       kind: .callConsent, target: .callable(name: "recordConsent-m1-retake"), payload: .object([:]),
       createdAt: OutboxFixtures.createdAt)
     await engine.enqueue(retake)
-    await engine.waitUntilIdle()
+    await idle(engine)
 
     XCTAssertEqual(remote.calls.map(\.target), [
       "recordConsent-m1", "recordConsent-m1-retake", "soap_notes/n1", "soapInk/n1/1.drawing", "soap_notes/n1",
@@ -90,7 +90,7 @@ final class SyncEngineReviewTests: XCTestCase {
       kind: .callConsent, target: consent.target, payload: consent.payload, createdAt: consent.createdAt)
     await engine.enqueue(contentsOf: [record, consent])
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.map(\.kind), ["call", "create"])
   }
 
@@ -105,7 +105,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let soap = await firstValue(of: await engine.syncState(for: .soap(noteId: "n1")))
     XCTAssertEqual(soap, .awaitingConsent)
     remote.release("recordConsent-m1")
-    await engine.waitUntilIdle()
+    await idle(engine)
   }
 
   func testASyncedRecordStaysSyncedWhenANewCaptureStarts() async {
@@ -113,7 +113,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let engine = makeTestEngine(remote: remote)
     await engine.enqueue(contentsOf: OutboxFixtures.soapSteps(member: "m1", note: "n1"))
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     remote.hold("recordConsent-m1-new")
     await engine.enqueue(OutboxItem(
       memberKey: .uid("m1"), entityRef: .consent(captureId: "cap-new"), sequence: 20, stage: .consent,
@@ -122,7 +122,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let soap = await firstValue(of: await engine.syncState(for: .soap(noteId: "n1")))
     XCTAssertEqual(soap, .synced)
     remote.release("recordConsent-m1-new")
-    await engine.waitUntilIdle()
+    await idle(engine)
   }
 
   // MARK: pauses and loading (M4, M5, m7)
@@ -139,7 +139,7 @@ final class SyncEngineReviewTests: XCTestCase {
     XCTAssertTrue(waiting)
     await engine.protectedDataDidBecomeAvailable()  // unlock is processed before the late reply
     remote.release("soap_notes/n1")
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 2)
     let done = await engine.item(item.id)
     XCTAssertEqual(done?.state, .acked)
@@ -152,11 +152,11 @@ final class SyncEngineReviewTests: XCTestCase {
     let engine = makeTestEngine(store: store, remote: remote)
     await engine.start()  // load fails (device locked)
     await engine.enqueue(OutboxFixtures.create(member: "m1", note: "new", sequence: 2))
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 0, "not started while the Outbox could not be loaded")
 
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.map(\.target), ["soap_notes/old", "soap_notes/new"])
   }
 
@@ -168,12 +168,12 @@ final class SyncEngineReviewTests: XCTestCase {
     await store.setFailSaves(true)
     let item = OutboxFixtures.create(member: "m1", note: "n1")
     await engine.enqueue(item)
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 0, "nothing is sent while its state cannot be saved")
 
     await store.setFailSaves(false)
     await engine.protectedDataDidBecomeAvailable()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 1)
     let saved = await store.item(item.id)
     XCTAssertEqual(saved?.state, .acked)
@@ -187,11 +187,11 @@ final class SyncEngineReviewTests: XCTestCase {
     let item = OutboxFixtures.create(member: "m1", note: "n1")
     await engine.enqueue(item)
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     var changed = item
     changed.payload = .object(["status": .string("changed")])
     await engine.enqueue(changed)
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 1)
     let kept = await engine.item(item.id)
     XCTAssertEqual(kept?.payload, item.payload)
@@ -205,7 +205,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let steps = OutboxFixtures.soapSteps(member: "m1", note: "n1")
     await engine.enqueue(contentsOf: steps)
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     let create = await engine.item(steps[1].id)
     XCTAssertEqual(create?.state, .queued)
     XCTAssertEqual(create?.lastErrorCode, "write-uncommitted")
@@ -223,16 +223,16 @@ final class SyncEngineReviewTests: XCTestCase {
       OutboxFixtures.create(member: "m2", note: "flaky"),
     ])
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 2)
 
     await engine.retryExhausted()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls(to: "soap_notes/flaky").count, 2)
     XCTAssertEqual(remote.calls(to: "soap_notes/denied").count, 1, "a rule rejection waits for the trainer")
 
     await engine.retryAll()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls(to: "soap_notes/denied").count, 2, "the trainer's retry resends it")
   }
 
@@ -242,10 +242,10 @@ final class SyncEngineReviewTests: XCTestCase {
     await engine.start()
     await engine.networkDidChange(isReachable: false)
     await engine.enqueue(OutboxFixtures.create(member: "m1", note: "n1"))
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 0)
     await engine.networkDidChange(isReachable: true)
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 1)
   }
 
@@ -270,7 +270,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let third = await eventually { remote.calls.filter { $0.kind == "call" }.count == 3 }
     XCTAssertTrue(third, "the third member starts when a slot frees")
     for member in ["m1", "m2", "m3"] { remote.release("recordConsent-\(member)") }
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.maxConcurrent, 2)
   }
 
@@ -281,7 +281,7 @@ final class SyncEngineReviewTests: XCTestCase {
     remote.fail("soap_notes/n1", with: [.unavailable])
     await engine.enqueue(OutboxFixtures.create(member: "m1", note: "n1"))
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.count, 1)
     clock.advance(by: 2)
     let resent = await eventually { remote.calls.count == 2 }
@@ -294,7 +294,7 @@ final class SyncEngineReviewTests: XCTestCase {
     remote.fail("soap_notes/n1", with: [.permissionDenied])
     await engine.enqueue(OutboxFixtures.create(member: "m1", note: "n1"))
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     let count = await firstValue(of: await engine.pendingCount())
     XCTAssertEqual(count, 1)
   }
@@ -304,7 +304,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let engine = makeTestEngine(remote: remote)
     await engine.start()
     await engine.enqueue(contentsOf: OutboxFixtures.soapSteps(member: "m1", note: "n1").reversed())
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(remote.calls.map(\.kind), ["call", "create", "upload", "update", "update"])
   }
 
@@ -314,7 +314,7 @@ final class SyncEngineReviewTests: XCTestCase {
     let steps = OutboxFixtures.soapSteps(member: "m1", note: "n1")
     await engine.enqueue(contentsOf: steps)
     await engine.start()
-    await engine.waitUntilIdle()
+    await idle(engine)
     XCTAssertEqual(
       remote.payloads(to: "recordConsent-m1").first,
       .object(["clientCaptureId": .string(steps[0].requestId.uuidString.lowercased())]))

@@ -38,8 +38,10 @@ public enum SyncEngineModule {
 /// - The engine never deletes a local item (a failed item keeps its payload, NFR-06). Rows that LocalStore retention
 ///   deletes (AS-32) leave through `discard(ids:)` or are dropped when `start()` re-reads the store.
 ///
-/// Wiring (DF-104): the app calls `start()` on launch and foreground, `networkDidChange(isReachable:)` from its
-/// network monitor, `protectedDataDidBecomeAvailable()` on unlock, and `retry(_:)`/`retryAll()` from the UI.
+/// Wiring (DF-104): the app calls `start()` on launch and foreground, then `retryExhausted()` on foreground and on a
+/// one-minute tick while in the foreground; `networkDidChange(isReachable:)` from its network monitor (which also
+/// resends exhausted items); `protectedDataDidBecomeAvailable()` on unlock; `retry(_:)`/`retryAll()` from the UI;
+/// and `discard(ids:)` after LocalStore retention deletes rows.
 public actor SyncEngine {
   public static let maxParallelMembers = 2
 
@@ -674,15 +676,17 @@ public actor SyncEngine {
     }
   }
 
-  /// Once a newer capture is acked, older captures the server rejected for good can never be sent in order again:
-  /// they become `superseded` so no retry resends them after the newer one (V1-05 §12.3).
+  /// Once a newer capture is acked, older captures that are still unsent (rejected for good, or a rejection the trainer
+  /// retried while the newer one was out) can never be sent in order again: they become `superseded` so nothing
+  /// resends them after the newer one (V1-05 §12.3). A member makes one call at a time, so a capture retried while a
+  /// newer one is in flight is still queued when that one is acked, and is superseded right there.
   private func supersedeRejectedConsents(for member: MemberKey) {
     guard let newestAcked = items.values
       .filter({ $0.memberKey == member && $0.stage == .consent && $0.state == .acked })
       .map(\.sequence).max()
     else { return }
     for (id, item) in items where item.memberKey == member && item.stage == .consent
-      && item.sequence < newestAcked && item.state == .failed {
+      && item.sequence < newestAcked && (item.state == .failed || item.state == .queued) {
       items[id]?.state = .superseded
       markDirty(id)
     }

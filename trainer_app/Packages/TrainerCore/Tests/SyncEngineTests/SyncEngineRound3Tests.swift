@@ -95,6 +95,52 @@ final class SyncEngineRound3Tests: XCTestCase {
     XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2", "c1", "c2"])
   }
 
+  /// Review round 4 (m1): retrying a rejected capture while a newer one is in flight does not send it after the newer
+  /// one; it is superseded when the newer one is acked.
+  func testARetriedRejectionWaitsBehindANewerCaptureInFlight() async {
+    let remote = FakeRemote()
+    let engine = makeTestEngine(remote: remote)
+    remote.fail("c1", with: [.permissionDenied])
+    let c1 = capture("c1", sequence: 1)
+    await engine.enqueue(c1)
+    await engine.start()
+    await idle(engine)
+    remote.hold("c2")
+    await engine.enqueue(capture("c2", sequence: 2))
+    let waiting = await eventually { remote.isWaiting(on: "c2") }
+    XCTAssertTrue(waiting)
+    await engine.retry(c1.id)  // the trainer taps retry on the old rejection
+    remote.release("c2")
+    await idle(engine)
+    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2"])
+    let old = await engine.item(c1.id)
+    XCTAssertEqual(old?.state, .superseded)
+    await engine.retry(c1.id)
+    await idle(engine)
+    XCTAssertEqual(remote.calls.count, 2, "a superseded capture is never resent")
+  }
+
+  /// m4: a record put back to queued because its inFlight state could not be saved is stored blocked again while the
+  /// member's latest capture is pending.
+  func testARevertedRecordIsGatedAgainWhileANewerCaptureIsPending() async {
+    let remote = FakeRemote()
+    let store = ControllableStore()
+    let engine = makeTestEngine(store: store, remote: remote)
+    let record = OutboxFixtures.create(member: "m1", note: "n1", sequence: 1)
+    await engine.enqueue(record)
+    await store.failSaves { $0.id == record.id && $0.state == .inFlight }
+    remote.hold("c-late")
+    await engine.start()
+    await engine.enqueue(capture("c-late", sequence: 2))  // arrives while the record's save fails
+    await idle(engine)
+    let reverted = await engine.item(record.id)
+    XCTAssertEqual(reverted?.state, .blocked(.awaitingConsent))
+    remote.release("c-late")
+    await store.failSaves(where: nil)
+    await engine.protectedDataDidBecomeAvailable()
+    await idle(engine)
+  }
+
   /// R5: retention deletes a row while the engine's save of it is running; the save must not bring it back, and the
   /// call it was about to make does not happen.
   func testAnUpdateInProgressDoesNotResurrectADeletedRow() async {

@@ -12,6 +12,10 @@ public enum ConfirmBlocker: Equatable, Hashable, Sendable {
   case sidesSwapped(MetricCode)
   /// V-POS-07: a landmark code that does not belong to the view.
   case landmarkNotInView(LandmarkCode)
+  /// V-POS-01: a stored coordinate outside 0...1; the metrics cannot be computed either.
+  case coordinateOutOfRange(LandmarkCode)
+  /// V-POS-02: the view's image has no size.
+  case zeroImageSize
 }
 
 public struct Confirmability: Equatable, Sendable {
@@ -69,7 +73,8 @@ public enum PostureConfirmation {
       missing: missing, blockingLandmarks: blocking, blockingReasons: reasons)
   }
 
-  /// V-POS-03, 04, 05 and 07 for one view. They block confirmation but never block the preview computation.
+  /// V-POS-01 to 05 and 07 for one view. V-POS-04 and 05 never block the preview computation; 01 to 03 also make
+  /// `computeMetrics` throw, so a draft that cannot be computed can never be confirmed.
   public static func geometryBlockers(_ input: PostureViewInput, options: MetricOptions = MetricOptions())
     -> [ConfirmBlocker]
   {
@@ -78,7 +83,13 @@ public enum PostureConfirmation {
     for landmark in input.landmarks where !allowed.contains(landmark.code) {
       reasons.append(.landmarkNotInView(landmark.code))
     }
-    guard input.imageSize.width > 0, input.imageSize.height > 0 else { return reasons }
+    for landmark in input.landmarks where (try? PostureViewInput.validate(landmark)) == nil {
+      reasons.append(.coordinateOutOfRange(landmark.code))
+    }
+    guard input.imageSize.width > 0, input.imageSize.height > 0 else { return reasons + [.zeroImageSize] }
+    guard !reasons.contains(where: { if case .coordinateOutOfRange = $0 { return true } else { return false } }) else {
+      return reasons
+    }
     switch input.view {
     case .sagittalLeft, .sagittalRight:
       let tragus = LandmarkRequirements.tragus(for: input.view)

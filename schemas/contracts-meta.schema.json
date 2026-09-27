@@ -583,9 +583,9 @@
             "properties": {
               "metricCode": { "type": "string" },
               "value": { "type": "number" },
-              "unit": { "type": "string" },
-              "side": { "type": "string" },
-              "sourceGrade": { "type": "string" }
+              "unit": { "const": "deg" },
+              "side": { "enum": ["none", "left", "right"] },
+              "sourceGrade": { "enum": ["photoManual", "photoAuto"] }
             }
           }
         },
@@ -597,9 +597,14 @@
             "required": ["reason"],
             "additionalProperties": false,
             "properties": {
-              "reason": { "enum": ["viewsIncomplete", "degenerateGeometry", "pairTooClose", "sidesSwapped", "landmarkNotInView"] },
-              "metricCode": { "type": "string" }
-            }
+              "reason": { "enum": ["viewsIncomplete", "degenerateGeometry", "pairTooClose", "sidesSwapped", "landmarkNotInView", "coordinateOutOfRange", "zeroImageSize"] },
+              "metricCode": { "type": "string" },
+              "landmarkCode": { "type": "string" }
+            },
+            "allOf": [
+              { "if": { "properties": { "reason": { "enum": ["degenerateGeometry", "pairTooClose", "sidesSwapped"] } } }, "then": { "required": ["metricCode"] } },
+              { "if": { "properties": { "reason": { "enum": ["landmarkNotInView", "coordinateOutOfRange"] } } }, "then": { "required": ["landmarkCode"] } }
+            ]
           }
         },
         "expectedError": {
@@ -608,8 +613,13 @@
           "additionalProperties": false,
           "properties": {
             "error": { "enum": ["coordinateOutOfRange", "zeroImageSize", "degenerateGeometry"] },
-            "metricCode": { "type": "string" }
-          }
+            "metricCode": { "type": "string" },
+            "landmarkCode": { "type": "string" }
+          },
+          "allOf": [
+            { "if": { "properties": { "error": { "const": "degenerateGeometry" } } }, "then": { "required": ["metricCode"] } },
+            { "if": { "properties": { "error": { "const": "coordinateOutOfRange" } } }, "then": { "required": ["landmarkCode"] } }
+          ]
         },
         "rounding": {
           "type": "array",
@@ -663,7 +673,7 @@
       "type": "object",
       "required": ["width", "height"],
       "additionalProperties": false,
-      "properties": { "width": { "type": "number", "exclusiveMinimum": 0 }, "height": { "type": "number", "exclusiveMinimum": 0 } }
+      "properties": { "width": { "type": "number", "minimum": 0 }, "height": { "type": "number", "minimum": 0 } }
     },
     "postureLandmark": {
       "description": "Stored landmark shape (PRD §9.2): normalized 0..1 coordinates, origin auto|manual, confirmed.",

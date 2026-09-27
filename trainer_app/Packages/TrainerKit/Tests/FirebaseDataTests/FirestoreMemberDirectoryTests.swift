@@ -64,6 +64,22 @@ final class FirestoreMemberDirectoryTests: XCTestCase {
     XCTAssertEqual(result.emissions.count, 0)
   }
 
+  /// P6: after the server said there is no document, going offline raises a cached "no document": the empty list
+  /// stands instead of failing after `serverWait`.
+  func testGoingOfflineAfterTheServerSaidNoDocumentKeepsTheEmptyList() async {
+    let gateway = FakeMemberGateway(snapshots: [
+      MemberIdsSnapshot(ids: [], exists: false, isFromCache: false),
+      MemberIdsSnapshot(ids: [], exists: false, isFromCache: true),
+    ], keepListenerOpen: true)
+    let directory = FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway, serverWait: .milliseconds(100))
+    let collecting = Task { await collect(directory) }
+    try? await Task.sleep(nanoseconds: 500_000_000)  // both snapshots sent, and well past serverWait
+    gateway.finishSnapshots()
+    let result = await collecting.value
+    XCTAssertNil(result.error)
+    XCTAssertEqual(result.emissions, [[]])
+  }
+
   func testOfflineWithoutACachedAssignmentFailsInsteadOfShowingEmpty() async {
     let gateway = FakeMemberGateway(snapshots: [MemberIdsSnapshot(ids: [], exists: false, isFromCache: true)])
     let result = await collect(FirestoreMemberDirectory(trainerUid: "synthTrainerA", gateway: gateway))

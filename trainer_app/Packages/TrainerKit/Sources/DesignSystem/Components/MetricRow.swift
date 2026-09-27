@@ -110,10 +110,15 @@ public struct MetricRow: View {
   /// `PostureMath.Rounding.roundHalfAway`, repeated here because V1-04 §7.1 gives DesignSystem no PostureMath
   /// dependency), and U+2212 for negatives so VoiceOver reads '마이너스' (V1-12 §2.6).
   public static func valueText(_ metric: MetricRowModel) -> String {
-    let decimals = MetricCatalog.entry(for: metric.code).decimals
+    valueText(metric.value, code: metric.code)
+  }
+
+  /// `valueText` for a bare value of `code` (`SeriesTrendChart` uses it for the minimum, maximum and axis values).
+  public static func valueText(_ value: Double, code: MetricCode) -> String {
+    let decimals = MetricCatalog.entry(for: code).decimals
     let factor = pow(10.0, Double(decimals))
-    let magnitude = (abs(metric.value) * factor).rounded(.toNearestOrAwayFromZero) / factor
-    let rounded = magnitude == 0 ? 0 : (metric.value < 0 ? -magnitude : magnitude)
+    let magnitude = (abs(value) * factor).rounded(.toNearestOrAwayFromZero) / factor
+    let rounded = magnitude == 0 ? 0 : (value < 0 ? -magnitude : magnitude)
     let text = String(format: "%.\(decimals)f", locale: Locale(identifier: "en_US_POSIX"), abs(rounded))
     return rounded < 0 ? "\u{2212}" + text : text
   }

@@ -36,8 +36,27 @@ struct DesignSystemGallery: View {
         EmptyState(systemImage: "tray", titleKey: "tr02.empty", actionKey: "tr02.addPending", action: {})
           .frame(height: 220)
       }
+      Section {
+        // DF-130, last so the DF-016 checks above stay on the first screen: two segments (device SYN-DEVICE-A twice,
+        // then SYN-DEVICE-B) with the device-change break and '산정 준비 중'.
+        SeriesTrendChart(model: deviceChangeTrend, timeZone: seoul)
+        ChangeBadge(state: .indeterminate(.deviceChanged))
+      }
     }
     .accessibilityIdentifier("preview.designSystem")
+  }
+
+  /// Synthetic weights on 1, 2 and 10 January 2026 (irregular spacing on a date axis).
+  private var deviceChangeTrend: SeriesChartModel {
+    func point(_ day: Int, _ value: Double) -> ChartPoint {
+      ChartPoint(measuredAt: Date(timeIntervalSince1970: 1_767_225_600 + Double(day - 1) * 86_400), value: value,
+                 sourceGrade: .device)
+    }
+    return SeriesChartModel(metricCode: .weightKg, deviceModel: "SYN-DEVICE-B", segments: [
+      ChartSegment(id: "weightKg#0", points: [point(1, 72.4), point(2, 71.9)]),
+      ChartSegment(id: "weightKg#1", breakBefore: .deviceChanged(from: "SYN-DEVICE-A", to: "SYN-DEVICE-B"),
+                   points: [point(10, 70.2)]),
+    ])
   }
 }
 #endif

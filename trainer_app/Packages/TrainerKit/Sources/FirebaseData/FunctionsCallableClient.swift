@@ -36,9 +36,15 @@ public final class FunctionsCallableClient: CallableClient, Sendable {
     case let .string(s): return s
     case let .array(items): return try items.map(plain)
     case let .object(fields): return try fields.mapValues(plain)
-    case let .timestamp(date): return ISO8601DateFormatter().string(from: date)
+    case let .timestamp(date): return isoMilliseconds(date)  // V1-06 §3: `2026-11-02T01:23:45.000Z`
     case .serverTimestamp: throw RemoteError.invalidArgument
     case let .bytes(data): return data.base64EncodedString()
     }
+  }
+
+  static func isoMilliseconds(_ date: Date) -> String {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter.string(from: date)
   }
 }

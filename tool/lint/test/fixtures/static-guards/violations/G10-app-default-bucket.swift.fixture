@@ -1,0 +1,4 @@
+import FirebaseCore
+import FirebaseStorage
+
+let storage = Storage.storage(app: FirebaseApp.app()!)

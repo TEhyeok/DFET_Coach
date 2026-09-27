@@ -18,8 +18,8 @@
 #   G6 isShared true         isSharedWithMember[^A-Za-z]*true in trainer_app/                                    AC-DF-011.2
 #   G7 tapback               tapback.co in trainer_app/                                                          AC-DF-011.2
 #   G8 print                 print( / debugPrint( in Sources/FirebaseData and Sources/SyncEngine                 AC-DF-011.3
-#   G10 default bucket       `Storage.storage()` without a URL in trainer_app/ outside StorageFactory.swift and
-#                            FirebaseBootstrap.swift (the Seoul bucket is chosen in one place, DEC-19)          AC-DF-104.9
+#   G10 default bucket       `Storage.storage(...)` without `url:` (also `Storage.storage(app:)`) in trainer_app/
+#                            outside StorageFactory.swift (the Seoul bucket is chosen in one place, DEC-19)      AC-DF-104.9
 #   G9 raw record collection 'soap_notes' 'postureAssessments' 'bodyCompositionRecords'
 #                            'circumferenceMeasurements' 'bodyScans' as a string or path segment in lib/         AC-DF-011.4
 #   W1 workflow secrets      tool/lint/check-workflow-secrets.sh on .github/workflows/trainer-app.yml: the Firebase
@@ -82,7 +82,7 @@ guard_name() {
     G7) echo "tapback.co avatar" ;;
     G8) echo "print in FirebaseData/SyncEngine" ;;
     G9) echo "member app raw record collection" ;;
-    G10) echo "Storage.storage() without the Seoul bucket" ;;
+    G10) echo "Storage.storage(...) without the Seoul bucket url" ;;
   esac
 }
 
@@ -148,7 +148,7 @@ scan G8 "$SWIFT" '' '(^|[^A-Za-z0-9_])(print|debugPrint)[[:space:]]*\(' '' "$TK/
 # G9 (AC-DF-011.4, AC-VIZ-06.1)
 scan G9 '' '' "['\"/](soap_notes|postureAssessments|bodyCompositionRecords|circumferenceMeasurements|bodyScans)['\"/]" '' lib
 # G10 (AC-DF-104.9, DEC-19). Every trainer-app Storage access goes through StorageFactory.make(emulator:).
-scan G10 "$SWIFT" '(^|/)(StorageFactory|FirebaseBootstrap)\.swift$' 'Storage\.storage\([[:space:]]*\)' '' trainer_app
+scan G10 "$SWIFT" '(^|/)StorageFactory\.swift$' 'Storage\.storage\(' 'Storage\.storage\([^)]*url:' trainer_app
 
 # W1 (AC-DF-034.3, NFR-02). Not baselinable: any finding fails.
 workflow_fail=0

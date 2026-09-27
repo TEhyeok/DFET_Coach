@@ -144,7 +144,9 @@ final class FakeAuthService: AuthService, @unchecked Sendable {
 
   init(result: Result<TrainerSession, AuthError>) {
     self.result = result
-    (stream, continuation) = AsyncStream.makeStream(of: TrainerSession?.self)
+    let pair = AsyncStream.makeStream(of: TrainerSession?.self)
+    stream = pair.stream
+    continuation = pair.continuation
   }
 
   func emit(_ session: TrainerSession?) {

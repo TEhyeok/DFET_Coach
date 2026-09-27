@@ -33,18 +33,17 @@ final class SyncEngineTests: XCTestCase {
     ])
   }
 
-  func testOtherMembersAreNotBlockedAndAtMostTwoRunAtOnce_TC_DF015_01() async {
+  func testOtherMembersAreNotBlocked_TC_DF015_01() async {
     let remote = FakeRemote()
     let engine = makeEngine(remote: remote)
     remote.hold("recordConsent-m2")
     for member in ["m1", "m2", "m3"] {
-      for item in OutboxFixtures.soapSteps(member: member, note: "n-\(member)") {
-        await engine.enqueue(item)
-      }
+      await engine.enqueue(contentsOf: OutboxFixtures.soapSteps(member: member, note: "n-\(member)"))
     }
     await engine.start()
 
-    // m2 is stuck on its consent call; m1 and then m3 still finish.
+    // m2 is stuck on its consent call; m1 and then m3 still finish. The two-member cap has its own test
+    // (SyncEngineReviewTests.testAtMostTwoMembersRunAndTheThirdStartsWhenOneFinishes).
     let othersDone = await eventually { remote.calls(to: "soap_notes/n-m1").count == 3 && remote.calls(to: "soap_notes/n-m3").count == 3 }
     XCTAssertTrue(othersDone, "m1 and m3 must not wait for m2")
     XCTAssertEqual(remote.calls(to: "soap_notes/n-m2").count, 0)
@@ -53,7 +52,6 @@ final class SyncEngineTests: XCTestCase {
     remote.release("recordConsent-m2")
     await engine.waitUntilIdle()
     XCTAssertEqual(remote.calls(to: "soap_notes/n-m2").count, 3)
-    XCTAssertLessThanOrEqual(remote.maxConcurrent, SyncEngine.maxParallelMembers)
     for member in ["m1", "m2", "m3"] {
       let order = remote.calls.filter { $0.target.contains(member) }.map(\.kind)
       XCTAssertEqual(order, ["call", "create", "upload", "update", "update"], member)

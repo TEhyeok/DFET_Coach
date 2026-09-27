@@ -13,47 +13,42 @@ final class SyncEngineRound2Tests: XCTestCase {
                createdAt: OutboxFixtures.createdAt)
   }
 
-  // MARK: N4 consent order
+  // MARK: N4 / R2 consent order: every capture is sent, in order
 
-  func testANewCaptureSupersedesAnOlderOneWaitingForRetry() async {
+  func testAnOlderCaptureWaitingForRetryStillGoesBeforeTheRetake() async {
     let clock = TestClock()
     let remote = FakeRemote()
     let engine = makeTestEngine(remote: remote, clock: clock)
     remote.fail("c1", with: [.unavailable])
-    let c1 = capture("c1", sequence: 1)
-    await engine.enqueue(c1)
+    await engine.enqueue(capture("c1", sequence: 1))
     await engine.start()
     await idle(engine)
-
     await engine.enqueue(capture("c2", sequence: 2))  // the retake arrives during c1's backoff
     await idle(engine)
+    XCTAssertEqual(remote.calls.map(\.target), ["c1"], "c2 waits for c1")
     clock.advance(by: 60)
     await idle(engine)
-    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2"], "the older grant is never sent after the retake")
-    let old = await engine.item(c1.id)
-    XCTAssertEqual(old?.state, .superseded)
+    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c1", "c2"])
   }
 
-  func testACaptureInFlightWhenANewerOneArrivesIsSupersededIfItFails() async {
+  /// R2: captures are per-type changes. A grant followed by a withdrawal of one type must both reach the server, in
+  /// that order, before the member's records go.
+  func testAGrantAndALaterWithdrawalAreBothSentInOrder() async {
     let remote = FakeRemote()
     let engine = makeTestEngine(remote: remote)
-    remote.fail("c1", with: [.unavailable])
-    remote.hold("c1")
-    let c1 = capture("c1", sequence: 1)
-    await engine.enqueue(c1)
+    await engine.networkDidChange(isReachable: false)
+    await engine.enqueue(contentsOf: [
+      capture("recordConsent-grant", sequence: 1),
+      OutboxFixtures.create(member: "m1", note: "n1", sequence: 2),
+      capture("recordConsent-withdraw-imaging", sequence: 3),
+    ])
     await engine.start()
-    let waiting = await eventually { remote.isWaiting(on: "c1") }
-    XCTAssertTrue(waiting)
-    await engine.enqueue(capture("c2", sequence: 2))
-    XCTAssertEqual(remote.calls.map(\.target), ["c1"], "one call per member at a time")
-    remote.release("c1")
+    await engine.networkDidChange(isReachable: true)
     await idle(engine)
-    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2"])
-    let old = await engine.item(c1.id)
-    XCTAssertEqual(old?.state, .superseded)
+    XCTAssertEqual(remote.calls.map(\.target), ["recordConsent-grant", "recordConsent-withdraw-imaging", "soap_notes/n1"])
   }
 
-  func testRetriesNeverResendASupersededCapture() async {
+  func testExhaustedCapturesAreResentOldestFirst() async {
     let remote = FakeRemote()
     let onceOnly = RetryPolicy(maxAttempts: 1, maxDelay: 900, jitterFraction: 0.2)
     let engine = makeTestEngine(remote: remote, policy: onceOnly)
@@ -63,13 +58,32 @@ final class SyncEngineRound2Tests: XCTestCase {
     await idle(engine)
     await engine.enqueue(capture("c2", sequence: 2))
     await idle(engine)
-    await engine.retryExhausted()
-    await engine.retryAll()
+    XCTAssertEqual(remote.calls.map(\.target), ["c1"], "an exhausted older capture still holds the retake")
     await engine.networkDidChange(isReachable: true)
     await idle(engine)
-    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2"])
+    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c1", "c2"])
+  }
+
+  func testARejectedCaptureIsSupersededOnceANewerOneIsAcked() async {
+    let remote = FakeRemote()
+    let engine = makeTestEngine(remote: remote)
+    remote.fail("c1", with: [.permissionDenied])
+    let c1 = capture("c1", sequence: 1)
+    await engine.enqueue(c1)
+    await engine.start()
+    await idle(engine)
+    await engine.enqueue(capture("c2", sequence: 2))  // "다시 받기" after the rejection
+    await idle(engine)
+    let old = await engine.item(c1.id)
+    XCTAssertEqual(old?.state, .superseded)
+    await engine.retryAll()
+    await engine.retryExhausted()
+    await idle(engine)
+    XCTAssertEqual(remote.calls.map(\.target), ["c1", "c2"], "never resent after the newer capture")
     let pending = await firstValue(of: await engine.pendingCount())
-    XCTAssertEqual(pending, 0, "a superseded capture is not pending")
+    XCTAssertEqual(pending, 0)
+    let state = await firstValue(of: await engine.syncState(for: .consent(captureId: "c1")))
+    XCTAssertEqual(state, .syncFailed, "a replaced capture does not read 기기에 저장됨")
   }
 
   func testAFailedCaptureThatIsNotTheLatestDoesNotBlockRecords() async {

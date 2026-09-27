@@ -30,7 +30,11 @@ public enum SyncStateCalculator {
   /// V1-04 §11 lists `failed` before `blocked`; here a missing consent wins (AC-DF-015.2, .6), and "offline" is not an
   /// input: an item waiting for the network after an attempt reads `syncing` (V1-04 v1.0.3).
   public static func state(consentConfirmed: Bool, upstreamFailed: Bool = false, items allItems: [Item]) -> SyncState {
-    // A superseded capture is neither pending nor synced; it simply no longer counts.
+    // A superseded capture was rejected and replaced by a newer one: it never reached the server. It reads
+    // `syncFailed` on its own and does not count next to other items.
+    if !allItems.isEmpty, allItems.allSatisfy({ $0.state == .superseded }) {
+      return .syncFailed
+    }
     let items = allItems.filter { $0.state != .superseded }
     if upstreamFailed {
       return .syncFailed

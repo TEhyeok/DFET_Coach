@@ -20,6 +20,8 @@ enum RemoteErrorMapper {
       return .unavailable
     case NSCocoaErrorDomain where ns.code == NSFileReadNoPermissionError:
       return .protectedDataUnavailable  // NSFileProtectionComplete while locked (ASM-P0-29)
+    case NSCocoaErrorDomain where ns.code == NSFileReadNoSuchFileError || ns.code == NSFileNoSuchFileError:
+      return .notFound  // the local file to upload is gone; retrying cannot bring it back
     default:
       return .unknown("\(ns.domain):\(ns.code)")
     }
@@ -43,7 +45,8 @@ enum RemoteErrorMapper {
     case .unauthorized?, .unauthenticated?: return .permissionDenied
     case .objectNotFound?, .bucketNotFound?, .projectNotFound?: return .notFound
     case .retryLimitExceeded?: return .unavailable
-    case .downloadSizeExceeded?: return .invalidArgument
+    case .downloadSizeExceeded?, .invalidArgument?, .pathError?, .bucketMismatch?: return .invalidArgument
+    case .quotaExceeded?: return .unavailable
     default: return .unknown("storage:\(raw)")
     }
   }

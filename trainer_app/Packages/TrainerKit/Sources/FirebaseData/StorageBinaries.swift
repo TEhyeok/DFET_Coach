@@ -16,9 +16,16 @@ protocol StorageFileAccess: Sendable {
 
 /// Upload integrity (AC-DF-104.4, ASM-P1a-07): the server's size and MD5 must equal the local file's.
 enum UploadIntegrity {
+  /// Base64 of the raw MD5 digest, as Storage reports `md5Hash`. Read in 1 MiB chunks so large scans (P2) are
+  /// never held in memory whole.
   static func md5Base64(of url: URL) throws -> String {
-    let data = try Data(contentsOf: url)
-    return Data(Insecure.MD5.hash(data: data)).base64EncodedString()
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    var md5 = Insecure.MD5()
+    while let chunk = try handle.read(upToCount: 1 << 20), !chunk.isEmpty {
+      md5.update(data: chunk)
+    }
+    return Data(md5.finalize()).base64EncodedString()
   }
 
   static func verified(localSize: Int64, localMD5: String, remoteSize: Int64, remoteMD5: String?) -> Bool {
@@ -42,7 +49,7 @@ public final class StorageBinaryUploader: BinaryUploader, Sendable {
 
   public func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
     do {
-      let size = try Int64(FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? NSNumber ?? 0)
+      let size = (try FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? NSNumber)?.int64Value ?? 0
       let md5 = try UploadIntegrity.md5Base64(of: localURL)
       let stored = try await access.put(
         localURL: localURL, path: path, contentType: contentType, customMetadata: ["sha256": sha256])
@@ -67,7 +74,8 @@ public final class StorageBinaryUploader: BinaryUploader, Sendable {
 }
 
 /// Firebase Storage implementation of `BinaryDownloader` (DF-104). The downloaded file gets the LocalStore file
-/// rules: complete protection and no backup (DF-014 `LocalBinaryStore`).
+/// rules: complete protection and no backup (DF-014 `LocalBinaryStore`). It is written into a staging directory
+/// created with complete protection, so it never exists under a weaker class, and then moved into place.
 public final class StorageBinaryDownloader: BinaryDownloader, Sendable {
   private let access: any StorageFileAccess
 
@@ -80,17 +88,36 @@ public final class StorageBinaryDownloader: BinaryDownloader, Sendable {
   }
 
   public func download(path: String, to localURL: URL) async throws -> URL {
+    let files = FileManager.default
+    let staging = localURL.deletingLastPathComponent()
+      .appendingPathComponent(".download-\(UUID().uuidString)", isDirectory: true)
+    defer { try? files.removeItem(at: staging) }
     do {
-      try await access.write(path: path, to: localURL)
-      try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: localURL.path)
-      var url = localURL
-      var values = URLResourceValues()
-      values.isExcludedFromBackup = true
-      try url.setResourceValues(values)
+      try files.createDirectory(
+        at: staging, withIntermediateDirectories: true, attributes: [.protectionKey: FileProtectionType.complete])
+      let staged = staging.appendingPathComponent(localURL.lastPathComponent)
+      try await access.write(path: path, to: staged)
+      try Self.protect(staged)
+      if files.fileExists(atPath: localURL.path) {
+        _ = try files.replaceItemAt(localURL, withItemAt: staged, options: .usingNewMetadataOnly)
+      } else {
+        try files.moveItem(at: staged, to: localURL)
+      }
+      try Self.protect(localURL)  // a replaced item may keep the old item's metadata
       return localURL
     } catch {
       throw RemoteErrorMapper.map(error)
     }
+  }
+}
+
+extension StorageBinaryDownloader {
+  static func protect(_ url: URL) throws {
+    try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+    var values = URLResourceValues()
+    values.isExcludedFromBackup = true
+    var url = url
+    try url.setResourceValues(values)
   }
 }
 

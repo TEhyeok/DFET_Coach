@@ -163,21 +163,22 @@ final class SyncEngineRound3Tests: XCTestCase {
   }
 }
 
-/// DF-104: the delete kinds reach the remote (document delete, and a stored binary's delete).
+/// DF-104: the delete kinds reach the remote in enqueue order. A draft's files go first: the Storage rules allow a
+/// delete only while the parent document is still a draft, so deleting the document first would strand them (DF-123).
 final class SyncEngineDeleteTests: XCTestCase {
-  func testDeleteKindsAreSent() async {
+  func testDeleteKindsAreSentBinaryFirst() async {
     let remote = FakeRemote()
     remote.seedDocument("soap_notes/n1")
     let engine = makeTestEngine(remote: remote)
     await engine.enqueue(contentsOf: [
-      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 1, stage: .document,
-                 kind: .deleteDocument, target: .document(path: "soap_notes/n1"), createdAt: OutboxFixtures.createdAt),
-      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 2, stage: .upload,
+      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 1, stage: .upload,
                  kind: .deleteBinary, target: .storage(path: "soapInk/n1/1.drawing"), createdAt: OutboxFixtures.createdAt),
+      OutboxItem(memberKey: .uid("m1"), entityRef: .soap(noteId: "n1"), sequence: 2, stage: .document,
+                 kind: .deleteDocument, target: .document(path: "soap_notes/n1"), createdAt: OutboxFixtures.createdAt),
     ])
     await engine.start()
     await idle(engine)
-    XCTAssertEqual(remote.calls.map(\.kind), ["delete", "deleteBinary"])
+    XCTAssertEqual(remote.calls.map(\.kind), ["deleteBinary", "delete"])
     XCTAssertFalse(remote.hasDocument("soap_notes/n1"))
   }
 }

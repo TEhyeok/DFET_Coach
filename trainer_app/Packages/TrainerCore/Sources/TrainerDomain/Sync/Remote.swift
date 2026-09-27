@@ -29,12 +29,13 @@ public struct UploadReceipt: Equatable, Sendable {
 }
 
 public protocol RemoteWriter: Sendable {
-  /// Creates the document. If a server read shows it already exists (an earlier attempt committed before the app
-  /// lost the reply), succeeds without writing again (AC-DF-015.5, NFR-04).
+  /// Creates the document. If it already exists because an earlier attempt committed before the app lost the reply,
+  /// succeeds without writing again (AC-DF-015.5, NFR-04). `serverCommitted: false` means "not known yet, retry".
   func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck
   /// Updates only the given fields (`updateData`; never a full `set` or `merge`, V1-04 §10.2 rule 1).
   func update(path: String, fields: JSONValue) async throws -> WriteAck
-  /// Deletes the document; a missing document is a success (DF-104, P1a drafts).
+  /// Deletes the document; a missing document is a success (DF-104, P1a drafts). Enqueue a draft's `deleteBinary`
+  /// items before its `deleteDocument`: the Storage rules allow deleting a file only while its parent is a draft.
   func delete(path: String) async throws -> WriteAck
 }
 

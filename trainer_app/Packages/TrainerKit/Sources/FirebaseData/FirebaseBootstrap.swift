@@ -3,7 +3,6 @@ import FirebaseAuth
 import FirebaseCore
 import FirebaseFirestore
 import FirebaseFunctions
-import FirebaseStorage
 import Foundation
 
 /// Which Firebase backend the app talks to. The App target decides this in
@@ -66,9 +65,8 @@ public enum FirebaseBootstrap {
     if case let .emulator(host) = environment {
       emulatorHost = host
       Auth.auth().useEmulator(withHost: host, port: EmulatorPort.auth)
-      Storage.storage().useEmulator(withHost: host, port: EmulatorPort.storage)  // the emulator uses the default bucket
+      StorageFactory.useEmulator(host: host, port: EmulatorPort.storage)
       Functions.functions(region: functionsRegion).useEmulator(withHost: host, port: EmulatorPort.functions)
-      StorageFactory.useEmulator = true
     }
     // Settings first, then the first use of Firestore (AC-DF-104.1).
     Firestore.firestore().settings = FirestoreConfigurator.settings(emulatorHost: emulatorHost)

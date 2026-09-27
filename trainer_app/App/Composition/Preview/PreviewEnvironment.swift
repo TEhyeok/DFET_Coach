@@ -12,14 +12,15 @@ enum PreviewScenario: String, CaseIterable {
   case members
   case membersEmpty = "members-empty"
   case membersError = "members-error"
-  /// Like `members`, but the list arrives after 8 s so the loading skeleton can be checked (AC-DF-013.5). The delay
-  /// outlasts XCUITest's launch and idle waits.
+  /// Like `members`, but the list waits until the test taps `preview.releaseMembers`, so the loading skeleton can be
+  /// checked however slow the launch is (AC-DF-013.5).
   case membersSlow = "members-slow"
 }
 
 /// Scripted result of the DEBUG preview member directory.
 enum PreviewMemberScript: Equatable {
-  case members([Member], delaySeconds: Double = 0)
+  /// `waitsForRelease`: held until `PreviewMemberGate.release()` (`--preview-members-slow`).
+  case members([Member], waitsForRelease: Bool = false)
   case failure(MemberDirectoryError)
 }
 
@@ -84,7 +85,7 @@ struct PreviewEnvironment {
     switch scenario {
     case .members, .membersSlow:
       return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") },
-                      delaySeconds: scenario == .membersSlow ? 8 : 0)
+                      waitsForRelease: scenario == .membersSlow)
     case .membersEmpty, .empty, .login, .unitTestHost:
       return .members([])
     case .membersError:

@@ -47,9 +47,11 @@ final class MemberListUITests: XCTestCase {
   @MainActor
   func testSkeletonWhileLoading() throws {
     let app = launch(["--preview-members-slow"])
-    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 10))
     XCTAssertFalse(element("tr02.empty", in: app).exists)
-    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 15))
+    XCTAssertFalse(element("tr02.row.0", in: app).exists)
+    element("preview.releaseMembers", in: app).tap()
+    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 10))
     XCTAssertFalse(element("tr02.loading", in: app).exists)
   }
 
@@ -61,11 +63,12 @@ final class MemberListUITests: XCTestCase {
     let toggle = element("preview.toggleWidth", in: app)
     XCTAssertTrue(toggle.waitForExistence(timeout: 10))
     element("nav.members", in: app).tap()
-    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 10))
     toggle.tap()  // wide
-    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 5))
+    XCTAssertTrue(element("tr02.loading", in: app).waitForExistence(timeout: 10))
     toggle.tap()  // narrow again
-    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 20), "the list was lost on resize")
+    element("preview.releaseMembers", in: app).tap()
+    XCTAssertTrue(element("tr02.row.0", in: app).waitForExistence(timeout: 10), "the list was lost on resize")
   }
 
   private func launch(_ arguments: [String]) -> XCUIApplication {

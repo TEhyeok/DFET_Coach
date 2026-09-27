@@ -12,6 +12,8 @@ struct PreviewRootView: View {
   @State private var isNarrow = true
   /// `--preview-login` only. Kept in state so the gate keeps one session source across view updates.
   @State private var auth = PreviewAuthService()
+  /// `--preview-members-slow` only: holds the member list until `preview.releaseMembers`.
+  @State private var memberGate = PreviewMemberGate()
 
   var body: some View {
     Group {
@@ -33,12 +35,22 @@ struct PreviewRootView: View {
   /// like a real window resize, and `RootSplitView` keeps its state.
   private var shell: some View {
     let narrowWidth = isNarrow ? preview.simulatedWidth : nil
-    return RootSplitView(flags: preview.flagsProvider.current, memberDirectory: PreviewMemberDirectory(script: preview.memberScript))
+    return RootSplitView(
+      flags: preview.flagsProvider.current,
+      memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(Color(uiColor: .systemGray5).ignoresSafeArea())
+      .overlay(alignment: .bottomLeading) {
+        if preview.scenario == .membersSlow {
+          Button { memberGate.release() } label: { Text(verbatim: "Release members") }  // DEBUG tool, not copy
+            .buttonStyle(.borderedProminent)
+            .padding(24)
+            .accessibilityIdentifier("preview.releaseMembers")
+        }
+      }
       .overlay(alignment: .bottomTrailing) {
         if preview.isResizable, preview.simulatedWidth != nil {
           Button { isNarrow.toggle() } label: { Text(verbatim: isNarrow ? "Wide" : "Narrow") }  // DEBUG tool, not copy

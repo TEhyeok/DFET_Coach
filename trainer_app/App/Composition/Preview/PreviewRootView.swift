@@ -33,7 +33,7 @@ struct PreviewRootView: View {
   /// like a real window resize, and `RootSplitView` keeps its state.
   private var shell: some View {
     let narrowWidth = isNarrow ? preview.simulatedWidth : nil
-    return RootSplitView(flags: preview.flagsProvider.current, members: preview.members)
+    return RootSplitView(flags: preview.flagsProvider.current, memberDirectory: PreviewMemberDirectory(script: preview.memberScript))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.
       .environment(\.horizontalSizeClass, narrowWidth == nil ? windowSizeClass : .compact)
       .frame(width: narrowWidth)

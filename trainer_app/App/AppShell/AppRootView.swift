@@ -7,6 +7,8 @@ struct AppRootView: View {
   let environment: AppEnvironment
   /// Used only for `.live`. The app passes FirebaseData's implementation (`AppBootstrap.liveAuthService()`).
   let liveAuth: any AuthService
+  /// Used only for `.live`: the signed-in trainer's member directory (`AppBootstrap.liveMemberDirectory`).
+  let liveMembers: (_ trainerUid: String) -> any MemberDirectory
 
   var body: some View {
     switch environment {
@@ -14,8 +16,9 @@ struct AppRootView: View {
       ConfigurationMissingView()
     case .live:
       // Trainer-claim login in front of the shell; claim loss returns here (DF-012).
-      AuthGate(auth: liveAuth) { _ in
-        RootSplitView(flags: environment.flags, members: environment.members)
+      AuthGate(auth: liveAuth) { session in
+        RootSplitView(flags: environment.flags, memberDirectory: liveMembers(session.uid))
+          .id(session.uid)  // a different trainer gets a fresh shell and subscription
       }
     #if DEBUG
     case let .preview(preview):

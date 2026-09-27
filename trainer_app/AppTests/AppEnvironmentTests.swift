@@ -72,15 +72,17 @@ final class AppEnvironmentTests: XCTestCase {
   }
 
   func testPreviewMembersScenariosKeepErrorsDistinctFromEmpty() {
-    func members(_ argument: String) -> MemberListState {
-      AppEnvironment.resolve(arguments: [argument], isDebug: true,
-                             bootstrap: AppBootstrap(plistPresent: false) { _ in }).members
+    func script(_ argument: String) -> PreviewMemberScript? {
+      guard case let .preview(preview) = AppEnvironment.resolve(
+        arguments: [argument], isDebug: true, bootstrap: AppBootstrap(plistPresent: false) { _ in }) else { return nil }
+      return preview.memberScript
     }
-    XCTAssertEqual(members("--preview-members-empty"), .empty)
-    XCTAssertEqual(members("--preview-members-error"), .failed)
-    guard case let .loaded(rows) = members("--preview-members") else { return XCTFail("expected rows") }
+    XCTAssertEqual(script("--preview-members-empty"), .members([]))
+    XCTAssertEqual(script("--preview-members-error"), .failure(.permissionDenied))
+    guard case let .members(rows)? = script("--preview-members") else { return XCTFail("expected rows") }
     XCTAssertEqual(rows.map(\.id), ["syn-0001", "syn-0002", "syn-0003"])
   }
+
 
   func testPreviewWidthAndLandscapeModifiers() {
     let preview = PreviewEnvironment(arguments: ["--preview-empty", "--preview-width=375", "--preview-landscape"])
@@ -103,12 +105,6 @@ final class AppEnvironmentTests: XCTestCase {
     XCTAssertEqual(valid.unknownArguments, [])
     XCTAssertTrue(valid.isResizable)
     XCTAssertEqual(valid.scenario, .members)
-  }
-
-  func testLiveMembersAreNotConnectedBeforeDF013() {
-    let environment = AppEnvironment.resolve(arguments: [], isDebug: false,
-                                             bootstrap: AppBootstrap(plistPresent: true) { _ in })
-    XCTAssertEqual(environment.members, .notConnected)
   }
 
   private static func kind(of environment: AppEnvironment) -> Kind {

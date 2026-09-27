@@ -16,21 +16,6 @@ struct AppBootstrap {
   var configureLive: (LiveBackend) -> Void
 }
 
-/// Member list as the shell sees it until DF-013 provides `MemberDirectory`. Load errors stay errors, never an
-/// empty list (V1-07 §3.5).
-enum MemberListState: Equatable {
-  /// No member source is connected yet (live builds before DF-013).
-  case notConnected
-  case loaded([ShellMember])
-  case empty
-  case failed
-}
-
-struct ShellMember: Equatable, Hashable, Identifiable {
-  let id: String
-  let displayName: String
-}
-
 /// Dependencies of a live (production or emulator) process: FirebaseData implementations.
 struct LiveEnvironment {
   let backend: LiveBackend
@@ -55,16 +40,6 @@ enum AppEnvironment {
     case let .preview(preview): return preview.flagsProvider.current
     #endif
     case .misconfigured: return .allOff
-    }
-  }
-
-  var members: MemberListState {
-    switch self {
-    case .live: return .notConnected
-    #if DEBUG
-    case let .preview(preview): return preview.members
-    #endif
-    case .misconfigured: return .notConnected
     }
   }
 

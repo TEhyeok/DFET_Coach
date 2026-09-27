@@ -169,6 +169,18 @@
         }
       }
     },
+    "common.retry" : {
+      "comment" : "V1-12 · §8.4 · §9.6",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        }
+      }
+    },
     "nav.members" : {
       "comment" : "DF-017 · §8.1 · sidebar TR-02",
       "extractionState" : "manual",
@@ -213,6 +225,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아직 담당 회원이 없어요"
+          }
+        }
+      }
+    },
+    "tr02.title" : {
+      "comment" : "V1-12 · DF-013 · TR-02 title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회원"
           }
         }
       }

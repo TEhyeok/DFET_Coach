@@ -21,4 +21,9 @@ extension AppBootstrap {
   static func liveAuthService() -> any AuthService {
     FirebaseAuthService()
   }
+
+  /// FirebaseData's `MemberDirectory` for the signed-in trainer (DF-013).
+  static func liveMemberDirectory(trainerUid: String) -> any MemberDirectory {
+    FirestoreMemberDirectory(trainerUid: trainerUid)
+  }
 }

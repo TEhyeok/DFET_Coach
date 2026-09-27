@@ -1,3 +1,4 @@
+import FeatureMembers
 import SwiftUI
 import TrainerDomain
 
@@ -10,7 +11,6 @@ import TrainerDomain
 /// `ShellNavigation`, so the user stays on the same TR screen.
 struct RootSplitView: View {
   let flags: FeatureFlags
-  let members: MemberListState
 
   @Environment(\.horizontalSizeClass) private var sizeClass
   /// Regular layout state. While compact, `stackPath` is the live state and this is rebuilt when widening.
@@ -19,11 +19,13 @@ struct RootSplitView: View {
   @State private var stackPath: [TrainerRoute] = []
   @State private var columnVisibility: NavigationSplitViewVisibility = .all
   @State private var comingSoonEntry: EntryPoint?
+  /// TR-02 (DF-013). Kept in state so the subscription survives layout changes.
+  @State private var memberList: MemberListViewModel
 
-  init(flags: FeatureFlags, members: MemberListState) {
+  init(flags: FeatureFlags, memberDirectory: any MemberDirectory) {
     self.flags = flags
-    self.members = members
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
+    _memberList = State(initialValue: MemberListViewModel(directory: memberDirectory))
   }
 
   private var isCompact: Bool { sizeClass == .compact }
@@ -131,7 +133,7 @@ struct RootSplitView: View {
     }
   }
 
-  /// Content column. TR-01 and TR-15 arrive with DF-125 and DF-018; TR-02 with DF-013.
+  /// Content column. TR-01 and TR-15 arrive with DF-125 and DF-018.
   @ViewBuilder
   private func content(for route: TrainerRoute) -> some View {
     switch route {
@@ -140,37 +142,32 @@ struct RootSplitView: View {
     case .settings:
       ComingSoonView().container("tr15.root")
     case .members, .memberDetail:
-      memberList.container("tr02.root")
-    }
-  }
-
-  @ViewBuilder
-  private var memberList: some View {
-    switch members {
-    case .notConnected:
-      ComingSoonView()
-    case let .loaded(rows):
-      if isCompact {
-        List(rows) { memberRow($0) }  // links push onto the stack path
-      } else {
-        List(rows, selection: $navigation.detail) { memberRow($0) }  // links select the detail column
+      // SwiftUI folds single-child wrappers onto the List's collection view, where the outermost identifier wins.
+      // The hidden spacer makes this a real container, so `tr02.root` and FeatureMembers' `tr02.list` both exist.
+      VStack(spacing: 0) {
+        Color.clear.frame(height: 0).accessibilityHidden(true)
+        memberListView
       }
-    case .empty:
-      Text(String(localized: "tr02.empty"))
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    case .failed:
-      Text(String(localized: "common.loadFailed"))
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .container("tr02.root")
     }
   }
 
-  private func memberRow(_ member: ShellMember) -> some View {
-    NavigationLink(value: TrainerRoute.memberDetail(uid: member.id)) {
-      Text(verbatim: member.displayName)
+  /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack.
+  private var memberListView: some View {
+    MemberListView(model: memberList, selectedID: selectedMemberID) { member in
+      let route = TrainerRoute.memberDetail(uid: member.id)
+      if isCompact {
+        stackPath.append(route)
+      } else {
+        navigation.detail = route
+      }
     }
-    .accessibilityIdentifier("tr02.row.\(member.id)")
+    .navigationTitle(String(localized: "tr02.title"))
+  }
+
+  private var selectedMemberID: String? {
+    if case let .memberDetail(uid) = navigation.detail { return uid }
+    return nil
   }
 
   private func memberDetail(uid: String) -> some View {

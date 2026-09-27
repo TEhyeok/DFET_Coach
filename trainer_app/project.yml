@@ -44,6 +44,8 @@ targets:
       - package: TrainerKit
         product: FeatureAuth
       - package: TrainerKit
+        product: FeatureMembers
+      - package: TrainerKit
         product: FeatureSettings
     postBuildScripts:
       - name: Copy Firebase config if present

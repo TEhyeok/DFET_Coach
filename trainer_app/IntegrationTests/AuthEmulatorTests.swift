@@ -13,25 +13,13 @@ import XCTest
 /// CI automation is DF-107. Each test creates its own `@example.invalid` account through the emulator REST API, so the
 /// DF-042 seed is not needed and seeded accounts are never changed.
 final class AuthEmulatorTests: XCTestCase {
-  /// The hosted app starts in `--preview-unit-test-host` mode and never configures Firebase; this does, once.
-  private static let configureEmulator: Void = {
-    AppBootstrap.firebase(bundle: .main).configureLive(.emulator(host: "127.0.0.1"))
-  }()
-
   private var configured = false
   private var service: (any AuthService)!
 
   override func setUpWithError() throws {
-    guard ProcessInfo.processInfo.environment["DFET_AUTH_EMULATOR"] == "1" else {
-      throw XCTSkip("set DFET_AUTH_EMULATOR=1 and start the Auth emulator (demo-dfet) to run")
-    }
-    Self.configureEmulator
+    try IntegrationEmulator.require("DFET_AUTH_EMULATOR")
+    try IntegrationEmulator.configure()
     configured = true
-    // Never run against anything but the emulator project.
-    guard Auth.auth().app?.options.projectID == "demo-dfet" else {
-      XCTFail("Firebase is not the demo-dfet emulator app")
-      throw XCTSkip("refusing to run outside the emulator")
-    }
     try? Auth.auth().signOut()
     service = AppBootstrap.liveAuthService()
   }
@@ -130,45 +118,5 @@ private final class SessionRecorder: @unchecked Sendable {
     }
     XCTFail("stream never reached the expected state: \(lock.withLock { _values.map { $0?.uid ?? "nil" } })",
             file: file, line: line)
-  }
-}
-
-/// Auth emulator REST calls (`Bearer owner` is the emulator's admin credential; it has no meaning in production).
-private enum EmulatorAccounts {
-  struct Account {
-    let uid: String
-    let email: String
-    let password: String
-  }
-
-  /// Auth emulator port 19099 and project `demo-dfet` (FirebaseBootstrap.EmulatorPort.auth, firebase.json).
-  private static let base = "http://127.0.0.1:19099/identitytoolkit.googleapis.com/v1/projects/demo-dfet"
-
-  static func create(claims: [String: Any]) async throws -> Account {
-    let email = "df012-\(UUID().uuidString.lowercased())@example.invalid"
-    let password = "emulator-only-password"
-    let created = try await post("accounts", ["email": email, "password": password])
-    let uid = try XCTUnwrap(created["localId"] as? String)
-    try await setClaims(claims, uid: uid)
-    return Account(uid: uid, email: email, password: password)
-  }
-
-  static func setClaims(_ claims: [String: Any], uid: String) async throws {
-    let json = String(decoding: try JSONSerialization.data(withJSONObject: claims), as: UTF8.self)
-    _ = try await post("accounts:update", ["localId": uid, "customAttributes": json])
-  }
-
-  private static func post(_ path: String, _ body: [String: Any]) async throws -> [String: Any] {
-    var request = URLRequest(url: try XCTUnwrap(URL(string: "\(base)/\(path)")))
-    request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("Bearer owner", forHTTPHeaderField: "Authorization")
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
-    let (data, response) = try await URLSession.shared.data(for: request)
-    let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-    guard status == 200 else {
-      throw NSError(domain: "AuthEmulator", code: status, userInfo: [NSLocalizedDescriptionKey: "\(path) → \(status)"])
-    }
-    return (try JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
   }
 }

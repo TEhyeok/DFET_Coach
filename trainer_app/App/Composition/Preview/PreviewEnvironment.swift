@@ -14,6 +14,12 @@ enum PreviewScenario: String, CaseIterable {
   case membersError = "members-error"
 }
 
+/// Scripted result of the DEBUG preview member directory.
+enum PreviewMemberScript: Equatable {
+  case members([Member])
+  case failure(MemberDirectoryError)
+}
+
 /// DEBUG-only in-memory environment (V1-04 §7.1 rule 5: `Preview*` lives only in `Composition/Preview/`).
 /// Synthetic data only: member IDs and names are `SYN-*` placeholders.
 struct PreviewEnvironment {
@@ -70,14 +76,15 @@ struct PreviewEnvironment {
 
   var isSignedIn: Bool { scenario != .login }
 
-  var members: MemberListState {
+  /// What the preview `MemberDirectory` returns (DF-013). An error stays an error, never an empty list.
+  var memberScript: PreviewMemberScript {
     switch scenario {
     case .members:
-      return .loaded((1...3).map { ShellMember(id: "syn-000\($0)", displayName: "SYN-000\($0)") })
+      return .members((1...3).map { Member(id: "syn-000\($0)", displayName: "SYN-000\($0)", trainerId: "syn-trainer") })
     case .membersEmpty, .empty, .login, .unitTestHost:
-      return .empty
+      return .members([])
     case .membersError:
-      return .failed
+      return .failure(.permissionDenied)
     }
   }
 }

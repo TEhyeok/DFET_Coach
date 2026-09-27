@@ -79,7 +79,7 @@ final class AppShellUITests: XCTestCase {
     attachScreenshot(app, name: "AC-DF-017.4 1/3 Split View simulation (375pt)")
 
     element("nav.members", in: app).tap()
-    let row = element("tr02.row.syn-0001", in: app)
+    let row = element("tr02.row.0", in: app)
     XCTAssertTrue(row.waitForExistence(timeout: 10))
     XCTAssertLessThanOrEqual(row.frame.maxX, windowMinX + 375.5)
     row.tap()
@@ -138,7 +138,7 @@ final class AppShellUITests: XCTestCase {
   }
 
   private func openFirstMember(in app: XCUIApplication) {
-    let row = element("tr02.row.syn-0001", in: app)
+    let row = element("tr02.row.0", in: app)
     XCTAssertTrue(row.waitForExistence(timeout: 10))
     row.tap()
     XCTAssertTrue(element("tr03.root", in: app).waitForExistence(timeout: 10))

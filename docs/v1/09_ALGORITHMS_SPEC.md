@@ -1940,7 +1940,7 @@ countBand(n):  0 → "0",  1…3 → "1to3",  4…6 → "4to6",  7…9 → "7to9
 | C-09-04 | 기술 스파인 `ResultPackageV1`은 `sections[].confirmed` 하나와 최상위 `referenceTapeCm?`만 있다. PRD F-LIDAR-01.4는 `landmarkConfirmed`, `contourConfirmed`, `captureMode`, 기기, 프로토콜을 요구한다 | [§14.1](#141-패키지-형식제안) 확장 DTO | DF-300·DF-301에서 스키마 확정 |
 | C-09-05 | PRD §7.5 '기본은 같은 시리즈의 기준선(isBaseline)'인데 신체조성·줄자에는 `isBaseline`이 없다 | 직전 active 기록(ASM-09-18, V1-06과 같음) | PRD §7.5 문구 보완 제안 |
 | C-09-06 | DF-201 `PostureMathError`에 `degenerateGeometry`가 없고 `Confirmability`에 기하 차단 사유가 없다 | [§5.9](#59-참조-구현swift-posturemath)에서 추가 | DF-201 구현 때 타입 확장 |
-| C-09-07 | §5.8 V-POS-03은 '해당 지표 미계산'인데 §5.9 참조 구현은 정면 쌍 하나가 `|Δx| < 1px`이면 뷰 전체 계산을 오류로 끝낸다 | 참조 구현을 따른다(DF-201): 정면 뷰 계산이 `degenerateGeometry(metric)`로 끝나고, `Confirmability`도 같은 사유로 차단한다. 트레이너는 점을 옮겨 다시 계산한다 | 미리보기에서 다른 정면 지표를 보여야 하면 해당 지표만 빼도록 바꾸고 PM-24를 고친다 |
+| C-09-14 | §5.8 V-POS-03은 '해당 지표 미계산'인데 §5.9 참조 구현은 정면 쌍 하나가 `|Δx| < 1px`이면 뷰 전체 계산을 오류로 끝낸다 | 참조 구현을 따른다(DF-201): 정면 뷰 계산이 `degenerateGeometry(metric)`로 끝나고, `Confirmability`도 같은 사유로 차단한다. 트레이너는 점을 옮겨 다시 계산한다 | 미리보기에서 다른 정면 지표를 보여야 하면 해당 지표만 빼도록 바꾸고 PM-24를 고친다 |
 | C-09-07 | `contracts/posture-protocol.v1.json`(ASM-P1b-05), `contracts/vectors/series-break.v1.json`(ASM-P1b-19), `contracts/vectors/level-gate.v1.json`(ASM-09-03), `contracts/fixtures/prohibited-terms/`, `contracts/fixtures/body/*-input.v1.json`이 기술 스파인 repoLayout의 contracts 목록에 없다 | 이 문서가 경로를 정했다 | V1-04 저장소 배치 갱신 |
 | C-09-08 | F-ASM-01.1 '측면 방향이 다르면 conditionMismatch'가 정면 지표에도 적용되는지 PRD가 정하지 않았다 | 정면 지표는 `view=front`(ASM-09-12) | 소유자 확인 |
 | C-09-09 | DF-033 예시(P0 백로그)의 `elapsed_band` enum `lt5s, 5to10s, 10to30s, gt30s`가 P1a ASM-P1a-11과 다르다 | ASM-P1a-11 채택(ASM-09-31) | DF-033 구현 때 이 절 값을 쓴다(카드에 'V1-09가 정본'이라고 명시돼 있음) |
@@ -1959,4 +1959,4 @@ countBand(n):  0 → "0",  1…3 → "1to3",  4…6 → "4to6",  7…9 → "7to9
 | v1.0(릴리스 편집) | 2026-09-24 | PostureMath 경로를 `Packages/TrainerCore`로 고침(V1-04 §6.2) | — | 없음 |
 | v1.0(정합 패스 2) | 2026-09-24 | family 5개·파생 비교 가족, 조건 키 `nrsScale`, ASM-09-01·C-09-02 해소(R5) | — | 없음 |
 | v1.0.1 | 2026-09-24 | 교차 정합성 조정: 카탈로그·vocab 정본을 V1-05 §13으로 고정(ASM-09-36), ASM-09-01·C-09-02 해소 표기, §8.1 `nrsScale` 대응 추가 | — | 없음 |
-| v1.0.2 | 2026-09-28 | §5.10 벡터 PM-21~PM-24(V-POS-01·02·03, 수동 필수 auto 확정)와 벡터 형식 설명 추가, 계산을 거부하는 입력은 확정도 차단함을 명시, C-09-07(정면 쌍 퇴화 시 뷰 전체 오류) 기록 | DF-201 | 없음 |
+| v1.0.2 | 2026-09-28 | §5.10 벡터 PM-21~PM-24(V-POS-01·02·03, 수동 필수 auto 확정)와 벡터 형식 설명 추가, 계산을 거부하는 입력은 확정도 차단함을 명시, C-09-14(정면 쌍 퇴화 시 뷰 전체 오류) 기록 | DF-201 | 없음 |

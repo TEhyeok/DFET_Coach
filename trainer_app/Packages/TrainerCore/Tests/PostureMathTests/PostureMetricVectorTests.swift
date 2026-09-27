@@ -115,9 +115,9 @@ final class PostureMetricVectorTests: XCTestCase {
           XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(input, options: vector.metricOptions), vector.id) { error in
             XCTAssertEqual(error as? PostureMathError, expected, vector.id)
           }
-          // The same input can never be confirmed.
+          // The same input can never be confirmed, for the same reason.
           let blockers = PostureConfirmation.geometryBlockers(input, options: vector.metricOptions)
-          XCTAssertFalse(blockers.isEmpty, "\(vector.id): an input that cannot be computed must block confirmation")
+          XCTAssertTrue(blockers.contains(ConfirmBlocker.from(expected)), "\(vector.id): \(blockers)")
           continue
         }
         let results = try PostureMetricCalculator.computeMetrics(input, options: vector.metricOptions)
@@ -128,12 +128,16 @@ final class PostureMetricVectorTests: XCTestCase {
             XCTAssertTrue(blockers.contains { $0.vectorReason == reason.reason && $0.vectorMetric == reason.metricCode },
                           "\(vector.id): \(reason.reason) not in \(blockers)")
           }
-          // With a valid other view, the blocker alone keeps the assessment from being confirmed.
+          // Through confirmability too: the reason is reported and blocks confirmation.
           let other = PostureViewInput(
             view: input.view == .front ? .sagittalLeft : .front, imageSize: input.imageSize, imageRotationDeg: 0,
             landmarks: [])
-          XCTAssertFalse(PostureConfirmation.confirmability(views: [input, other], options: vector.metricOptions).canConfirm,
-                         vector.id)
+          let result = PostureConfirmation.confirmability(views: [input, other], options: vector.metricOptions)
+          for reason in reasons {
+            XCTAssertTrue(result.blockingReasons.contains { $0.vectorReason == reason.reason && $0.vectorMetric == reason.metricCode },
+                          "\(vector.id): \(result.blockingReasons)")
+          }
+          XCTAssertFalse(result.canConfirm, vector.id)
         }
       }
     }

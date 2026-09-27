@@ -41,6 +41,18 @@ final class GeometryTests: XCTestCase {
     }
   }
 
+  func testANonFiniteRotationIsRefusedAndBlocksConfirmation() {
+    let landmarks = [
+      LandmarkValue(code: .c7, point: NormalizedPoint(x: 0.5, y: 0.5), origin: .manual, confirmed: true),
+      LandmarkValue(code: .tragusLeft, point: NormalizedPoint(x: 0.55, y: 0.45), origin: .manual, confirmed: true),
+    ]
+    XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(view: .sagittalLeft, imageSize: size, imageRotationDeg: .nan, landmarks: landmarks)) {
+      XCTAssertEqual($0 as? PostureMathError, .invalidRotation)
+    }
+    let input = PostureViewInput(view: .sagittalLeft, imageSize: size, imageRotationDeg: .infinity, landmarks: landmarks)
+    XCTAssertTrue(PostureConfirmation.geometryBlockers(input).contains(.invalidRotation))
+  }
+
   func testAFrontPairUnderOnePixelApartIsDegenerate() {
     let ears = [
       LandmarkValue(code: .earLeft, point: NormalizedPoint(x: 1000.4 / 2000, y: 0.35), origin: .manual, confirmed: true),

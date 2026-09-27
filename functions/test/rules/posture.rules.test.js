@@ -71,8 +71,8 @@ describe('MVP posture document shape (DEC-22, DF-203 MVP slice)', () => {
     const payload = h.postureDoc({memberUid: ALL});
     // 모양 자체를 확인한다: 생성기가 바뀌어 MVP 모양이 아니게 되면 이 사례가 의미를 잃는다.
     const {captureConditions: c, views, landmarkEngine, stationProfileId} = payload;
-    if (stationProfileId !== 'default-v1' || c.barefoot || c.markersPlaced || c.verbalConsentCheck
-      || 'levelDeg' in c || 'pitchDeg' in c || views.some((v) => v.imageRotationDeg !== 0)
+    if (stationProfileId !== 'default-v1' || c.barefoot !== false || c.markersPlaced !== false || c.verbalConsentCheck !== false
+      || 'levelDeg' in c || 'pitchDeg' in c || views.length !== 2 || views.some((v) => v.imageRotationDeg !== 0)
       || landmarkEngine.name !== 'appleVision2D' || landmarkEngine.version !== 'iOS17.4-r1') {
       throw new Error('postureDoc() is no longer the MVP shape');
     }

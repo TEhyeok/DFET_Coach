@@ -6,7 +6,13 @@ const {doc, serverTimestamp, setDoc, updateDoc} = require('firebase/firestore');
 const h = require('./_harness');
 
 const {trainerA, pendA} = h.IDS;
-const Y = new Date().getUTCFullYear();
+// request.time.year()와 같은 UTC 연도. 실행 중 1월 1일 00:00 UTC를 넘으면 새 연도로 한 번 더 확인한다.
+const utcYear = () => new Date().getUTCFullYear();
+async function atStableYear(check) {
+  const year = utcYear();
+  await check(year);
+  if (utcYear() !== year) await check(utcYear());
+}
 let env;
 let seq = 0;
 
@@ -101,13 +107,17 @@ describe('pendingMembers birthYear (R-31, AC-DF-035.3)', () => {
   });
 
   test('R-31 birthYear = Y-13 is denied', async () => {
-    await assertFails(createPending({birthYear: Y - 13}));
+    await atStableYear(async (Y) => {
+      await assertFails(createPending({birthYear: Y - 13}));
+    });
   });
 
   test('R-31 TC-DF035-97 birthYear Y-14 is allowed, Y-13 and 1899 are denied', async () => {
-    await assertSucceeds(createPending({birthYear: Y - 14}));
-    await assertFails(createPending({birthYear: Y - 13}));
-    await assertFails(createPending({birthYear: 1899}));
+    await atStableYear(async (Y) => {
+      await assertSucceeds(createPending({birthYear: Y - 14}));
+      await assertFails(createPending({birthYear: Y - 13}));
+      await assertFails(createPending({birthYear: 1899}));
+    });
   });
 
   test('R-31 control: birthYear 1900 is allowed', async () => {

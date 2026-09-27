@@ -28,7 +28,7 @@ final class LoginUITests: XCTestCase {
     assertError(app, "이메일 또는 비밀번호가 맞지 않아요.")
 
     signIn(app, email: "offline@example.invalid", password: "anything")
-    assertError(app, "서버에 연결할 수 없어요. 잠시 뒤 다시 시도해 주세요.")
+    assertError(app, "네트워크에 연결할 수 없어요. 연결을 확인하고 다시 시도해 주세요.")
 
     signIn(app, email: "trainer@example.invalid", password: "preview-only-password")
     XCTAssertTrue(app.otherElements["app.root"].waitForExistence(timeout: 10))

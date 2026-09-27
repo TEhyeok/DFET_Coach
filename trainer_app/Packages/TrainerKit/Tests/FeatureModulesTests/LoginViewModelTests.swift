@@ -48,7 +48,7 @@ final class LoginViewModelTests: XCTestCase {
     model.email = "a@example.invalid"
     model.password = "pw"
     await model.submit()
-    XCTAssertEqual(model.errorKey, "common.unavailable")
+    XCTAssertEqual(model.errorKey, "login.error.network")
 
     auth.result = .failure(.unknown(code: 17999))
     await model.submit()

@@ -17,7 +17,7 @@ assembly, flag-gated entry points); screens arrive with later stories.
 | `Packages/TrainerKit` | iOS-only: LocalStore, FirebaseData, PostureVision, DesignSystem, 11 Feature* targets | Firebase SDK is declared here and linked **only** by `FirebaseData` |
 | `AppTests/` | Host-less unit tests for pure App code (`LaunchConfiguration`, `AppEnvironment`, `FlagGate`, `TrainerRoute`, `LayoutMode`, `ShellNavigation`) | Sources listed one by one in `project.yml` |
 | `UITests/` | XCUITest (`--preview-*` launches) | |
-| `IntegrationTests/` | Emulator integration tests (DF-107) | Placeholder only; CI skips it |
+| `IntegrationTests/` | Auth, member, remote-write, consent and measurement emulator tests | Run the scripts below; the general unit job skips emulator tests |
 | `scripts/ci_pick_ipad.sh` | Prints one available iPad simulator UDID (creates one if none exists) | |
 
 `TrainerContracts/Generated/` is owned by DF-004 (contracts generator); do not edit it by hand.
@@ -88,6 +88,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-empty` | Shell with every flag off and no members |
 | `--preview-login` | Signed-out state: login placeholder (`login.root`) until DF-012 |
 | `--preview-members` | Three synthetic members (`SYN-0001`..`SYN-0003`) |
+| `--preview-workflow --preview-flags=bodyComposition` | Interactive synthetic registration → consent → body composition entry and history; in-memory only, cleared on relaunch |
 | `--preview-members-empty` | Member list query succeeded with 0 rows (`tr02.empty`) |
 | `--preview-members-error` | Member list failed (`common.loadFailed` + `common.retry`), never shown as empty |
 | `--preview-members-slow` | Member list stays loading (`tr02.loading`) until the DEBUG button `preview.releaseMembers` is tapped |
@@ -97,6 +98,36 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-flags=<k1,k2>` | Local flag override for client entry points only (ADR-010 §3-6); unknown keys are ignored |
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |
 | `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06) |
+
+## Registration, consent and measurements
+
+TR-14 registers a pending member, then presents the three published core consent cards with no preselection.
+Refusing required consent cancels that pending registration. The DEC-22 MVP records grants for pending members;
+signatures, withdrawals and signed-up-member consent capture remain deferred.
+
+`LocalWorkflowService` saves each capture or measurement atomically with its Outbox item before returning.
+The engine sends member creation, consent, measurement and the optional pending-member height update in that
+order. Local consent allows values-only drafts while awaiting server confirmation. Height entry appears after
+health-data consent is confirmed. The save badge follows the engine's actual state, and server acknowledgements
+are required before it says synced. Recent device names are kept per trainer in SwiftData schema 1.2; the migration
+also makes the deferred consent signature optional while preserving existing signature IDs.
+
+The `bodyComposition` flag controls the TR-03 measurement entry and history. A DEBUG demo can use the preview
+arguments above; the server rule independently requires the flag for a real write.
+
+For the real Apple client → emulator workflow, with Node 22, Java 21, Firebase CLI and installed Functions dependencies:
+
+```bash
+bash trainer_app/scripts/test_workflow_emulator.sh
+```
+
+The script creates an isolated Functions source directory from explicit source paths, uses only synthetic values
+and project `demo-dfet`, and never copies local Firebase configuration or environment files. It runs the consent,
+body composition and registration cancellation integration tests. `test_auth_emulator.sh` runs the broader auth
+and remote-writer suite separately.
+For concurrent development, use a dedicated simulator with `XCODEBUILD_DESTINATION='id=<UDID>'` and set
+`DFET_EMULATOR_PORT_OFFSET=1000` to move every emulator port together. DEBUG test clients use the same offset;
+Release ignores it. The script refuses occupied ports without stopping another run.
 
 ## GoogleService-Info.plist rules (ADR-019, DF-034)
 
@@ -136,4 +167,3 @@ Without the secret (forks, agents, before DF-903) the job still passes: every bu
 (XcodeGen skeleton, App Check setup, `--preview-*` arguments) and is deleted at the end of P1a (DF-142).
 Differences: iOS 17.0 instead of 16.0, iPad only instead of `"1,2"`, no widget extension or App Group,
 Firebase isolated in `FirebaseData`.
-

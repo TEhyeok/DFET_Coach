@@ -14,9 +14,10 @@ import TrainerDomain
 public actor LocalOutboxStore: OutboxStore, ModelActor {
   public nonisolated let modelContainer: ModelContainer
   public nonisolated let modelExecutor: any ModelExecutor
-  private let trainerUid: String
+  let trainerUid: String
   private let binaries: LocalBinaryStore?
   /// The last sequence handed out per member key, so two callers never get the same one (V1-05 §12.2).
+  var changeContinuations: [UUID: AsyncStream<Void>.Continuation] = [:]
   private var reservedSequences: [String: Int64] = [:]
   private static let logger = Logger(subsystem: "kr.co.dfet.trainer", category: "outbox")
 
@@ -84,7 +85,7 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
   }
 
   /// Inserts the row, or rewrites it when the id is already there (a retried insert after a save that committed).
-  private func put(_ item: TrainerDomain.OutboxItem) throws {
+  func put(_ item: TrainerDomain.OutboxItem) throws {
     if let existing = try row(item.id) {
       apply(item, to: existing)
       return
@@ -99,6 +100,7 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
 
   private func apply(_ item: TrainerDomain.OutboxItem, to row: OutboxItem) {
     OutboxRowMapping.apply(item, to: row)
+    updateWorkflowDraft(for: item)
     if row.binaryId == nil, let binary = item.binary {
       row.binaryId = try? binaryId(for: binary)  // the LocalBinary row was saved after the item
     }
@@ -108,9 +110,10 @@ public actor LocalOutboxStore: OutboxStore, ModelActor {
     }
   }
 
-  private func saveOrRollback() throws {
+  func saveOrRollback() throws {
     do {
       try modelContext.save()
+      changeContinuations.values.forEach { $0.yield(()) }
     } catch {
       modelContext.rollback()
       throw error

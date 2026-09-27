@@ -1,4 +1,5 @@
 import FeatureConsent
+import FeatureBodyComposition
 import FeatureMembers
 import FeatureSettings
 import SwiftUI
@@ -36,10 +37,15 @@ struct RootSplitView: View {
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
+  private let consent: (any ConsentService)?
+  private let measurements: (any MeasurementStore)?
+  @State private var selectedKey: MemberKey?
 
   init(flags: FeatureFlags, services: ShellServices) {
     baseFlags = flags
     registrar = services.registrar
+    consent = services.consent
+    measurements = services.measurements
     _settings = State(initialValue: SettingsViewModel(
       queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
       version: Self.appVersion))
@@ -80,23 +86,23 @@ struct RootSplitView: View {
       case .registration:
         PendingMemberRegistrationView(
           model: PendingMemberRegistrationModel(registrar: registrar),
-          onRegistered: { member in sheet = .consent(member: member) },
+          onRegistered: { member in selectedKey = member; sheet = .consent(member: member) },
           onCancel: { sheet = nil })
       case let .consent(member):
-        NavigationStack {
-          ComingSoonView()
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button(String(localized: "common.close")) { sheet = nil }
-                  .accessibilityIdentifier("common.close")
-              }
-            }
+        if let consent {
+          ConsentFlowView(model: ConsentFlowModel(member: member, service: consent), onComplete: {
+            sheet = nil
+            openMember(member)
+          }, onCancel: { sheet = nil })
+          .accessibilityValue(member.id)
+        } else {
+          Text("common.devDefect").padding()
         }
-        .interactiveDismissDisabled()  // V1-07 §3.2: `.consent` is `sheet(.large, interactiveDismissDisabled)`
-        // The member key is a random pending ID, not personal data; UI tests read it (AC-DF-108.4).
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("tr14.consent.root")
-        .accessibilityValue(member.id)
+      case let .bodyComposition(member):
+        if let consent, let measurements {
+          BodyCompositionEntryView(member: member, measurements: measurements, consentSource: consent,
+            onClose: { sheet = nil }, onRequestConsent: { sheet = .consent(member: member) })
+        } else { Text("common.devDefect").padding() }
       }
     }
     .accessibilityElement(children: .contain)
@@ -205,7 +211,8 @@ struct RootSplitView: View {
 
   /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack.
   private var memberListView: some View {
-    MemberListView(model: memberList, selectedID: selectedMemberID) { member in
+    MemberListView(model: memberList, selectedID: selectedMemberID, consentSource: consent) { member in
+      selectedKey = member.key
       let route = TrainerRoute.memberDetail(uid: member.id)
       if isCompact {
         stackPath.append(route)
@@ -231,36 +238,24 @@ struct RootSplitView: View {
   }
 
   private func memberDetail(uid: String) -> some View {
-    MemberDetailShell(entries: FlagGate.visibleEntries(on: .memberDetail, flags: flags)) { entry in
-      if entry.destination == .comingSoon {
-        comingSoonEntry = entry
-      }
-    }
+    let member: Member? = {
+      if case let .loaded(members) = memberList.state { return members.first { $0.id == uid } }
+      return nil
+    }()
+    let key = member?.key ?? selectedKey.flatMap { $0.id == uid ? $0 : nil } ?? .uid(uid)
+    return WorkflowMemberDetail(member: key, name: member?.displayName ?? "", flags: flags,
+      consent: consent, measurements: measurements,
+      openConsent: { sheet = .consent(member: key) },
+      openMeasurement: { sheet = .bodyComposition(member: key) },
+      openOther: { comingSoonEntry = $0 })
     .container("tr03.root")
   }
-}
 
-/// TR-03 placeholder: only the flag-gated action row. The screen itself arrives in P1a.
-private struct MemberDetailShell: View {
-  let entries: [EntryPoint]
-  let open: (EntryPoint) -> Void
-  @Environment(\.layoutMode) private var layoutMode
-
-  var body: some View {
-    let layout = layoutMode == .regular
-      ? AnyLayout(HStackLayout(spacing: 12))
-      : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
-    ScrollView {
-      layout {
-        ForEach(entries) { entry in
-          Button(String(localized: String.LocalizationValue(entry.titleKey))) { open(entry) }
-            .buttonStyle(.bordered)
-            .accessibilityIdentifier(entry.accessibilityID)
-        }
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(24)
-    }
+  private func openMember(_ member: MemberKey) {
+    selectedKey = member
+    let route = TrainerRoute.memberDetail(uid: member.id)
+    if isCompact { stackPath = [.members, route] }
+    else { navigation.select(.members); navigation.detail = route }
   }
 }
 

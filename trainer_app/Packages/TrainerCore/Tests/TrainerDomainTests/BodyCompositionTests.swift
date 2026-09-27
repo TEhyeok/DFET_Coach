@@ -79,6 +79,18 @@ final class BodyCompositionTests: XCTestCase {
 
   // MARK: BMI (TC-127-06)
 
+  /// Valid input bounds can round BMI to zero; omit derived rather than create a server-rejected record.
+  func testRoundedZeroBMIIsOmittedFromPayload_TC_127_06() throws {
+    let result = BodyCompositionValidator.validate(draft([.weightKg: "0.1"], height: "250"), now: now)
+    XCTAssertTrue(result.canSave)
+    XCTAssertNil(result.bmi)
+    let entry = try XCTUnwrap(result.entry)
+    XCTAssertNil(entry.derived)
+    let payload = BodyCompositionPayload.fields(entry, member: .pending("SYNTHpending00000001"), trainerUid: "synthTrainerA")
+    XCTAssertNil(payload.objectValue?["derived"])
+    XCTAssertEqual(entry.values[.weightKg], 0.1, "the entered measurement remains intact")
+  }
+
   func testBMI() {
     let cases: [(Double?, Double?, Double?, UInt)] = [
       (62.4, 165.0, 22.9, #line),  // 22.920… (V1-09 BC-09)

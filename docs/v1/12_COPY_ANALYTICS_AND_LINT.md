@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-12 |
-| 버전 | v1.0.10 |
+| 버전 | v1.0.11 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -46,7 +46,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|
 | [data/forbidden_terms.json](data/forbidden_terms.json) | V1-12-D1 | 부록 C 규칙 세트, 정규화, 인과 패턴, 약어, 식별자 규칙, 경로 매핑, 예외 목록, 테스트 벡터 25개 | 같은 구조로 `contracts/prohibited-terms.v1.json`에 복사한다. `testVectors`는 `contracts/vectors/prohibited-terms.v1.json`으로 분리한다 | DF-010 |
 | [data/analytics_events.json](data/analytics_events.json) | V1-12-D2 | 이벤트 16종, 속성 스키마, 구간 정의, 금지 속성, SDK 설정 | `contracts/analytics-events.v1.json`에 복사한다(`events`, `bands`, `forbiddenPropertyKeys`, `forbiddenKeyPatterns`). 설명 필드(`desc`, `trigger`)는 그대로 둔다 | DF-033 |
-| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 851개(트레이너 567, 공유 93, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
+| [data/copy_ko.json](data/copy_ko.json) | V1-12-D3 | 문구 키 866개(트레이너 580, 공유 95, 회원 104, 관리자 57, 동의 초안 26, 알림 3, 스토어 1) | 코드로 복사하지 않는다. 각 플랫폼 카탈로그(§4.4)로 **옮겨 적는다**. 이 파일은 docs에 남는 문구 정본이며 copy-lint가 대상별 규칙으로 검사한다 | DF-017(트레이너 카탈로그 생성), 각 화면 스토리 |
 
 - **ASM-12-01** docs/v1/data의 JSON 두 개(D1, D2)는 설계 시드다. DF-010·DF-033 병합 뒤에는 `contracts/*.json`이 코드 정본이 된다. 이후 변경은 contracts를 고치고, 같은 PR에서 이 문서의 해당 표와 data 파일을 함께 고친다. 둘이 다르면 contracts가 이긴다. D3(copy_ko.json)는 계속 문구 정본이다.
 - 세 파일은 이 저장소 초안을 만든 생성기에서 함께 만들어졌고, 생성 시점에 **덱 전체 789개 문자열이 D1 규칙으로 위반 0건**, **D1 테스트 벡터 25개가 모두 기대값과 일치**함을 확인했다. DF-010의 Node 구현도 같은 결과를 내야 한다(TC-12-LN-01).
@@ -804,6 +804,7 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 |---|---|---|---|---|---|
 | `tr02.title` | 회원 | trainer | P0 | TR-02 |  |
 | `tr02.search` | 회원 검색 | trainer | P1a | TR-02 |  |
+| `tr02.search.noResult` | 검색 결과가 없어요 | trainer | P1a | AC-DF-113.5 |  |
 | `tr02.empty` | 아직 담당 회원이 없어요 | trainer | P0 | §8.4 |  |
 | `tr02.addPending` | 대기 회원 추가 | trainer | P1a | F-LINK-01 | TR-14로 이동 |
 | `tr02.badge.pending` | 대기 | trainer | P1a | F-LINK-01 |  |
@@ -819,6 +820,8 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr03.header.trainer` | 담당 | trainer | P1a | TR-03 |  |
 | `tr03.header.consent` | 동의 상태 | trainer | P1a | TR-03 |  |
 | `tr03.startSession` | 세션 시작 | trainer | P1a | §6.4.1 |  |
+| `tr03.measureMenu` | 측정 입력 | trainer | P1a | TR-03 | DF-127 입력·진입점 |
+| `tr03.measureMenu.bodyComposition` | 신체조성 | trainer | P1a | TR-03, TR-11 | DF-127 입력·진입점 |
 | `tr03.empty` | 아직 기록이 없어요 | trainer | P1a | §8.4 |  |
 | `tr03.filter.soap` | SOAP | trainer | P1a | F-VIZ-05.2 |  |
 | `tr03.filter.posture` | 체형평가 | trainer | P1b | F-VIZ-05.2 |  |
@@ -1065,6 +1068,20 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | 키 | 문구(ko) | 대상 | 단계 | 근거 | 메모 |
 |---|---|---|---|---|---|
 | `tr11.title` | 신체조성 입력 | trainer | P1a | TR-11 |  |
+| `tr11.values` | 측정값 | trainer | P1a | F-BC-01.1 |  |
+| `tr11.deviceModel.recent` | 최근 기기 선택 | trainer | P1a | F-BC-01.2 |  |
+| `tr11.fasting.more` | 공복 여부 추가 선택 | trainer | P1a | F-BC-01.2 |  |
+| `tr11.openConsent` | 동의 확인하기 | trainer | P1a | AC-PRIV-01.1 |  |
+| `tr11.saving` | 기기에 저장하는 중 | trainer | P1a | NFR-06 |  |
+| `tr11.saveFailed` | 기기에 저장하지 못했어요. 다시 시도해 주세요. | trainer | P1a | NFR-06 |  |
+| `tr11.newEntry` | 새 측정 입력 | trainer | P1a | TR-11 |  |
+| `tr11.trend.metric` | 추이 항목 | trainer | P1a | AC-DF-130.11 |  |
+| `tr11.trend.title` | 최근 12개월 추이 | trainer | P1a | AC-DF-130.11 |  |
+| `tr11.recentRecords` | 측정 기록 | trainer | P1a | TR-11 |  |
+| `tr11.records.empty` | 아직 측정 기록이 없어요 | trainer | P1a | TR-11 |  |
+| `tr11.records.loadFailed` | 측정 기록을 불러오지 못했어요. 다시 시도해 주세요. | trainer | P1a | F-VIZ-05.6 |  |
+| `tr11.more` | 추가 항목 | trainer | P1a | F-BC-01.1 | DF-127 입력·진입점 |
+| `tr11.deviceChanged` | 기기가 바뀌어 이전 기록과 비교할 수 없습니다 | trainer | P1a | F-BC-03.4 | 기기 변경 안내 |
 | `tr11.consentNeeded` | 건강정보 동의 필요 | trainer | P1a | AC-PRIV-01.1 | 저장 버튼 비활성 |
 | `tr11.deviceModel` | 기기 모델 | trainer | P1a | F-BC-01.2 |  |
 | `tr11.deviceModel.required` | 기기 모델을 골라 주세요 | trainer | P1a | F-BC-01.2, AC-BC-01.1 | 저장 버튼 비활성(DF-127) |
@@ -1158,6 +1175,8 @@ PRD와 이 문서가 어긋나면 PRD가 우선한다. 이 문서의 다른 개�
 | `tr14.consent.documentMissing` | 게시된 동의 문서가 없어 진행할 수 없어요. 관리자에게 문의하세요. | trainer | P1a | F-PRIV-01.2 |  |
 | `tr14.consent.revised` | 개정된 동의 문서가 있어요. 회원에게 다시 확인받아 주세요. | trainer | P1a | F-PRIV-01.3 |  |
 | `tr14.consent.requiredRefusedPending` | 필수 동의를 받지 않아 회원 등록을 취소했어요 | trainer | P1a | F-LINK-01.5 |  |
+| `tr14.consent.requiredRefusalConfirm` | 서비스 이용에 동의하지 않고 회원 등록을 취소할까요? | shared | P1a | F-LINK-01.5 |  |
+| `tr14.consent.savedLocally` | 선택한 내용을 기기에 보관했어요. 동의 확인 상태는 위에 표시돼요. | shared | P1a | F-PRIV-03.7 |  |
 | `tr14.consent.offlineCaptured` | 오프라인이라 동의를 이 기기에 보관했어요. 연결되면 가장 먼저 보내요. | trainer | P1a | F-PRIV-03.7 |  |
 | `tr14.withdraw.title` | 동의 철회 | shared | P1a | F-PRIV-03.3 |  |
 | `tr14.withdraw.submit` | 철회 기록하기 | shared | P1a | F-PRIV-03.3 |  |
@@ -2228,3 +2247,4 @@ P3 진입 전(DF-921) 소유자가 스토어 설명, 스크린샷, 웹, IR·영�
 | v1.0.8 | 2026-09-28 | 린트 보강(교차 리뷰): 금지어 린트가 덱을 `docs/**` 예외로 읽고 항목별 `audience` 세트로 검사(§7.7, §7.9 `copy-lint`, TC-12-LN-07 `copy-deck.test.mjs`를 `docs-and-backlog`에서 옮김). §4.3 같은 자리표시자 반복 금지, §4.7 5항에 반복 자리표시자와 '앱 소스 리터럴의 덱 키가 카탈로그에 없음' 차단 추가. ASM-12-19 static-guards G11 구현 | — | 없음 |
 | v1.0.9 | 2026-09-28 | DF-127: TR-11 검증 오류 문구 `tr11.deviceModel.required`·`tr11.deviceModel.tooLong`·`tr11.measuredAt.future`·`tr11.number.invalid` 추가(덱 v1.0.7), §1.2 덱 키 수 갱신 | DF-127 | 없음 |
 | v1.0.10 | 2026-09-28 | DF-130: `chart.summary`에 기간 `{period}`와 변화 상태 `{status}`를 더하고 끊김 수에 '곳'을 붙임(AC-DF-130.10, V1-07 TR-10 접근성 문장), `chart.empty`·`chart.measuredAt` 추가, P1a §5.3에서 온 `chart.*` 4키의 §4.9 행 추가(`catalog-deck.baseline`에서 삭제), 덱 v1.0.8, §1.2 덱 키 수 갱신 | DF-130 | 없음 |
+| v1.0.11 | 2026-09-28 | DF-110·113·127·130 입력 화면 연결: 동의 제출·등록 취소 확인, 신체조성 입력·저장 오류·미니 추이·기록 조회, 검색 결과 없음 문구 15키 추가(덱 v1.0.9). 기존 진입점·추가 항목·기기 변경 키 4개의 §4.9 행 추가, 카탈로그 생성, §1.2 덱 키 수 갱신 | DF-110·113·127·130 | 없음 |

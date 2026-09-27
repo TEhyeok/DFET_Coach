@@ -1,6 +1,7 @@
 import FeatureAuth
 import FirebaseData
 import Foundation
+import LocalStore
 import TrainerDomain
 
 extension AppBootstrap {
@@ -45,8 +46,14 @@ extension AppBootstrap {
         callable: FunctionsCallableClient(), currentUid: { FirebaseAuthService.currentUid() },
         sessions: { liveAuthService().sessionStream() }, refreshSession: { await FirebaseAuthService.refreshToken() })
     }
+    let reader = FirestoreConsentService()
+    let workflow = runtime.map {
+      LocalWorkflowService(outbox: $0.outbox, engine: $0.engine, documents: reader, states: reader,
+        measurements: FirestoreMeasurementRecordsSource(trainerUid: trainerUid),
+        assigned: liveMemberDirectory(trainerUid: trainerUid), pending: FirestorePendingMemberDirectory(trainerUid: trainerUid))
+    }
     return ShellServices(
-      memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
+      memberDirectory: workflow ?? liveMemberDirectory(trainerUid: trainerUid),
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
       syncQueue: runtime?.engine ?? SessionRuntime.UnavailableSyncQueue(),
       signOut: LiveSessionSignOut(
@@ -59,6 +66,6 @@ extension AppBootstrap {
           }
         },
         teardownRemote: { try await FirestoreSessionTeardown.run() }),
-      accountName: session.displayName)
+      accountName: session.displayName, consent: workflow, measurements: workflow)
   }
 }

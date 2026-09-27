@@ -14,8 +14,6 @@ tr02.import.skip
 tr02.import.title
 tr02.import.unreadable
 tr02.menu.addToday
-tr03.measureMenu
-tr03.measureMenu.bodyComposition
 tr03.measureMenu.circumference
 tr03.migrated
 tr04.quickNote.counter
@@ -25,7 +23,5 @@ tr05.addendum.text
 tr05.continueFromPrevious.none
 tr05.legacy.show
 tr11.correct.confirm
-tr11.deviceChanged
 tr11.deviceModel.add
-tr11.more
 tr11.reportPhoto.add

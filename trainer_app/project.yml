@@ -48,6 +48,8 @@ targets:
       - package: TrainerKit
         product: FeatureConsent
       - package: TrainerKit
+        product: FeatureBodyComposition
+      - package: TrainerKit
         product: LocalStore
       - package: TrainerCore
         product: SyncEngine

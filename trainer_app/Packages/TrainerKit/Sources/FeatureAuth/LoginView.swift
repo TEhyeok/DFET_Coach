@@ -89,8 +89,9 @@ public struct AuthGate<Content: View>: View {
   /// `content` also gets the gate, so a logout the trainer asks for goes through `AuthGateModel.signOut` and never
   /// shows the claim-revoked notice (DF-018).
   public init(auth: any AuthService, @ViewBuilder content: @escaping (TrainerSession, AuthGateModel) -> Content) {
-    _gate = State(initialValue: AuthGateModel(auth: auth))
-    _login = State(initialValue: LoginViewModel(auth: auth))
+    let gate = AuthGateModel(auth: auth)
+    _gate = State(initialValue: gate)
+    _login = State(initialValue: LoginViewModel(gate: gate))
     self.content = content
   }
 

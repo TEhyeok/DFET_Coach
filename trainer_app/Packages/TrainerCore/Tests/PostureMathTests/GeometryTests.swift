@@ -1,4 +1,4 @@
-import PostureMath
+@testable import PostureMath
 import TrainerContracts
 import XCTest
 
@@ -61,6 +61,47 @@ final class GeometryTests: XCTestCase {
     XCTAssertThrowsError(try PostureMetricCalculator.computeMetrics(view: .front, imageSize: size, imageRotationDeg: 0, landmarks: ears)) {
       XCTAssertEqual($0 as? PostureMathError, .degenerateGeometry(.headTiltFrontal))
     }
+  }
+
+  /// V1-09 §5.6, §5.8: a gap of exactly one pixel (one 1-pixel move, AC-DF-208.4) is 1 px, although 0.5005 × 2000
+  /// makes it 0.9999999999998863. The level rule, V-POS-03 and confirmation share the boundary.
+  func testExactlyOnePixelIsNotUnderOnePixel() throws {
+    func shoulders(leftY: Double) -> [LandmarkValue] {
+      [LandmarkValue(code: .acromionLeft, point: NormalizedPoint(x: 0.6, y: leftY), origin: .manual, confirmed: true),
+       LandmarkValue(code: .acromionRight, point: NormalizedPoint(x: 0.4, y: 0.5), origin: .manual, confirmed: true)]
+    }
+    let tilted = try PostureMetricCalculator.computeMetrics(
+      view: .front, imageSize: size, imageRotationDeg: 0, landmarks: shoulders(leftY: 0.5005))
+    XCTAssertEqual(tilted, [PostureMetricResult(metricCode: .shoulderTiltAngle, value: 0.1, side: .right, sourceGrade: .photoManual)])
+    let level = try PostureMetricCalculator.computeMetrics(
+      view: .front, imageSize: size, imageRotationDeg: 0, landmarks: shoulders(leftY: 1000.9 / 2000))
+    XCTAssertEqual(level.first?.value, 0.0, "0.9 px is still level")
+    XCTAssertEqual(level.first?.side, Side.none)
+
+    // A front pair exactly 1 px apart has an angle; only V-POS-04 blocks it.
+    let ears = PostureViewInput(view: .front, imageSize: size, imageRotationDeg: 0, landmarks: [
+      LandmarkValue(code: .earLeft, point: NormalizedPoint(x: 0.5005, y: 0.35), origin: .manual, confirmed: true),
+      LandmarkValue(code: .earRight, point: NormalizedPoint(x: 0.5, y: 0.35), origin: .manual, confirmed: true),
+    ])
+    XCTAssertEqual(try PostureMetricCalculator.computeMetrics(ears).first?.metricCode, .headTiltFrontal)
+    XCTAssertEqual(PostureConfirmation.geometryBlockers(ears), [.pairTooClose(.headTiltFrontal)])
+
+    // A tragus exactly 1 px above C7 is 90.0°, not degenerate.
+    let sagittal = PostureViewInput(view: .sagittalLeft, imageSize: size, imageRotationDeg: 0, landmarks: [
+      LandmarkValue(code: .c7, point: NormalizedPoint(x: 0.5, y: 0.5005), origin: .manual, confirmed: true),
+      LandmarkValue(code: .tragusLeft, point: NormalizedPoint(x: 0.5, y: 0.5), origin: .manual, confirmed: true),
+    ])
+    XCTAssertEqual(try PostureMetricCalculator.computeMetrics(sagittal).first?.value, 90.0)
+    XCTAssertEqual(PostureConfirmation.geometryBlockers(sagittal), [])
+  }
+
+  func testOnePixelBoundaryToleratesOnlyConversionError() {
+    XCTAssertFalse(PixelGeometry.isUnderOnePixel(1))
+    XCTAssertFalse(PixelGeometry.isUnderOnePixel(-0.9999999999998863))
+    XCTAssertFalse(PixelGeometry.isUnderOnePixel(1 - PixelGeometry.onePixelTolerance))
+    XCTAssertTrue(PixelGeometry.isUnderOnePixel(1 - 2 * PixelGeometry.onePixelTolerance))
+    XCTAssertTrue(PixelGeometry.isUnderOnePixel(-0.9999))
+    XCTAssertTrue(PixelGeometry.isUnderOnePixel(0))
   }
 
   func test_AC_ASM_02_5_recomputeIsDeterministic() throws {

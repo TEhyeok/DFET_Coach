@@ -118,6 +118,39 @@ final class LoginViewModelTests: XCTestCase {
     XCTAssertEqual(gate.state, .signedOut(lock: .claimRevoked))
   }
 
+  /// The token listener publishes the session of a sign-in whose claim check then fails and signs out: that `nil`
+  /// ends the failed attempt, not a revoked claim, whether it arrives before or after the error. A later `nil` of a
+  /// session from a successful sign-in is still a lock.
+  func testFailedSignInAfterItsSessionWasPublishedIsNotALock() async {
+    let session = self.session
+    for nilBeforeTheError in [true, false] {
+      let auth = FakeAuthService(result: .failure(.unknown(code: 17999)))
+      let gate = AuthGateModel(auth: auth)
+      let model = LoginViewModel(gate: gate)
+      gate.apply(nil)
+      auth.onSignIn = { @Sendable in
+        await MainActor.run {
+          gate.apply(session)  // the listener is faster than the forced refresh
+          if nilBeforeTheError { gate.apply(nil) }
+        }
+      }
+      model.email = "trainer@example.invalid"
+      model.password = "pw"
+      await model.submit()
+      if !nilBeforeTheError { gate.apply(nil) }
+      XCTAssertEqual(gate.state, .signedOut(lock: nil), "nil before the error: \(nilBeforeTheError)")
+      XCTAssertEqual(model.errorKey, "common.internal")
+      XCTAssertEqual(auth.signInEmails, ["trainer@example.invalid"])
+
+      auth.result = .success(session)
+      auth.onSignIn = { @Sendable in await MainActor.run { gate.apply(session) } }
+      await model.submit()
+      XCTAssertEqual(gate.state, .signedIn(session))
+      gate.apply(nil)
+      XCTAssertEqual(gate.state, .signedOut(lock: .claimRevoked))
+    }
+  }
+
   func testFirstNilIsPlainSignedOut() {
     let gate = AuthGateModel(auth: FakeAuthService(result: .success(session)))
     gate.apply(nil)

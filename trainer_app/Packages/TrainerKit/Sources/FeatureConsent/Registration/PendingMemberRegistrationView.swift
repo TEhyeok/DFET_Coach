@@ -88,33 +88,46 @@ public struct PendingMemberRegistrationView: View {
 }
 
 /// Female / male / unspecified, nothing chosen at first (AC-DF-108.1). A checkmark marks the choice, not colour alone.
-private struct SexChoice: View {
+struct SexChoice: View {
   @Binding var selection: Sex?
+  /// The app's catalog; tests pass the catalog file, because a package test bundle has none.
+  var localize: (String) -> String = { String(localized: String.LocalizationValue($0), bundle: .main) }
 
   /// The key is built as a `String` first: an interpolated literal passed to `LocalizationValue` would become the
   /// format key `tr14.register.sex.%@` (SE-0213) and show the raw key.
-  static func label(_ sex: Sex) -> String {
-    let key = "tr14.register.sex." + sex.rawValue
-    return String(localized: String.LocalizationValue(key), bundle: .main)
+  static func label(_ sex: Sex, localize: (String) -> String) -> String {
+    localize("tr14.register.sex." + sex.rawValue)
   }
 
   var body: some View {
     ViewThatFits(in: .horizontal) {
-      HStack(spacing: 8) { options }
-      VStack(alignment: .leading, spacing: 8) { options }
+      sideBySide
+      stacked
     }
   }
 
-  private var options: some View {
+  /// One line per label, so at iPhone width the row no longer fits and the options stack (ViewThatFits) instead of
+  /// breaking '여성' into '여/성'.
+  var sideBySide: some View {
+    HStack(spacing: 8) { options(singleLine: true) }
+  }
+
+  /// Labels may wrap here, so a large accessibility text size in a 1/3 Split View window still fits the row
+  /// (V1-07 §3.3).
+  var stacked: some View {
+    VStack(alignment: .leading, spacing: 8) { options(singleLine: false) }
+  }
+
+  private func options(singleLine: Bool) -> some View {
     ForEach(Sex.allCases, id: \.self) { sex in
       let selected = selection == sex
       Button {
         selection = sex
       } label: {
         Label {
-          // One line each: at iPhone width the row then no longer fits and the options stack (ViewThatFits),
-          // instead of breaking '여성' into '여/성'.
-          Text(Self.label(sex)).lineLimit(1).fixedSize()
+          Text(Self.label(sex, localize: localize))
+            .lineLimit(singleLine ? 1 : nil)
+            .fixedSize(horizontal: singleLine, vertical: true)
         } icon: {
           Image(systemName: selected ? "checkmark.circle.fill" : "circle")
         }

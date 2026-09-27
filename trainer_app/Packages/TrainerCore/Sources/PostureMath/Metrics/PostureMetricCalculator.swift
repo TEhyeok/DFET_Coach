@@ -163,7 +163,7 @@ public enum PostureMetricCalculator {
       guard let t = try input.corrected(tragus), let c = try input.corrected(.c7) else { return [] }
       let vx = t.x - c.x
       let vy = t.y - c.y
-      guard (vx * vx + vy * vy).squareRoot() >= 1 else {
+      guard !PixelGeometry.isUnderOnePixel((vx * vx + vy * vy).squareRoot()) else {
         throw PostureMathError.degenerateGeometry(.craniovertebralAngle)
       }
       let degrees = atan2(-vy, abs(vx)) * 180 / .pi
@@ -189,9 +189,9 @@ public enum PostureMetricCalculator {
     guard let l = try input.corrected(left), let r = try input.corrected(right) else { return [] }
     let dx = l.x - r.x
     let dy = l.y - r.y
-    guard abs(dx) >= 1 else { throw PostureMathError.degenerateGeometry(metric) }
+    guard !PixelGeometry.isUnderOnePixel(dx) else { throw PostureMathError.degenerateGeometry(metric) }
     let grade = input.grade([left, right])
-    if abs(dy) < 1 {  // under 1 px: level (F-ASM-03.4)
+    if PixelGeometry.isUnderOnePixel(dy) {  // under 1 px: level (F-ASM-03.4)
       return [PostureMetricResult(metricCode: metric, value: 0, side: .none, sourceGrade: grade)]
     }
     let value = Rounding.roundTenth(atan(abs(dy) / abs(dx)) * 180 / .pi)

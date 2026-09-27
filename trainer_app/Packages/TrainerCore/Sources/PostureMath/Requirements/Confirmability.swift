@@ -99,14 +99,16 @@ public enum PostureConfirmation {
       if let t = try? input.corrected(tragus), let c = try? input.corrected(.c7) {
         let vx = t.x - c.x
         let vy = t.y - c.y
-        if (vx * vx + vy * vy).squareRoot() < 1 { reasons.append(.degenerateGeometry(.craniovertebralAngle)) }
+        if PixelGeometry.isUnderOnePixel((vx * vx + vy * vy).squareRoot()) {
+          reasons.append(.degenerateGeometry(.craniovertebralAngle))
+        }
       }
     case .front:
       for metric in LandmarkRequirements.metrics(on: .front, options: options) {
         let codes = LandmarkRequirements.required(metric)
         guard let l = try? input.corrected(codes[0]), let r = try? input.corrected(codes[1]) else { continue }
         let dx = l.x - r.x
-        if abs(dx) < 1 {
+        if PixelGeometry.isUnderOnePixel(dx) {
           reasons.append(.degenerateGeometry(metric))
         } else if abs(dx) < 0.02 * input.imageSize.width {
           reasons.append(.pairTooClose(metric))

@@ -91,7 +91,7 @@ final class PostureMetricVectorTests: XCTestCase {
     let file = try PostureVectorFile.load()
     XCTAssertEqual(file.contract, "posture-metric-vectors")
     XCTAssertEqual(file.rounding, "halfAwayFromZero")
-    XCTAssertEqual(file.cases.map(\.id), (1...24).map { String(format: "PM-%02d", $0) })
+    XCTAssertEqual(file.cases.map(\.id), (1...25).map { String(format: "PM-%02d", $0) })
     for vector in file.cases {
       switch vector.kind {
       case "rounding":

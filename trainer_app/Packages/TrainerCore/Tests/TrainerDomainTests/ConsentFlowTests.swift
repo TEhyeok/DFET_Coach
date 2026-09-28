@@ -92,6 +92,33 @@ final class ConsentFlowTests: XCTestCase {
     XCTAssertFalse(ConsentFlowRules.requiredRefused([:]))
   }
 
+  /// Review (re-entry after a partial consent): types the member already holds, confirmed or waiting for the server,
+  /// are not asked again. The MVP cannot record a refusal of one (withdrawal is DF-112), so an answer for it is
+  /// ignored and only the other cards are recorded; a missing or rejected type is asked.
+  func testHeldTypesAreNotAskedAgain() {
+    let partial = EffectiveConsent(required: .awaitingConsent, healthData: .granted, bodyImaging: .missing)
+    XCTAssertEqual(ConsentFlowRules.heldTypes(in: partial), [.required, .healthData])
+    XCTAssertEqual(ConsentFlowRules.heldTypes(in: .none), [])
+    XCTAssertEqual(ConsentFlowRules.heldTypes(
+      in: EffectiveConsent(required: .granted, healthData: .rejected, bodyImaging: .awaitingConsent)),
+      [.required, .bodyImaging], "a capture the server refused is asked again")
+
+    let held = ConsentFlowRules.heldTypes(in: partial)
+    XCTAssertNil(ConsentFlowRules.selections(choices: [.healthData: .refuse], documents: coreDocuments, held: held),
+                 "③ unanswered")
+    XCTAssertEqual(
+      ConsentFlowRules.selections(choices: [.required: .refuse, .healthData: .refuse, .bodyImaging: .grant],
+                                  documents: coreDocuments, held: held),
+      [ConsentSelection(consentType: .bodyImaging, action: .grant, documentVersion: "bodyImaging--1.0")],
+      "a refusal of a held type cannot take its grant back, and a held ① is not refused")
+    XCTAssertEqual(
+      ConsentFlowRules.selections(choices: [.bodyImaging: .refuse], documents: coreDocuments, held: held), [],
+      "every asked card refused: nothing to record")
+    XCTAssertEqual(
+      ConsentFlowRules.selections(choices: [:], documents: coreDocuments, held: [.required, .healthData, .bodyImaging]),
+      [])
+  }
+
   func testAGrantWithoutAPublishedVersionRecordsNothing() {
     var documents = coreDocuments
     documents[.bodyImaging] = nil

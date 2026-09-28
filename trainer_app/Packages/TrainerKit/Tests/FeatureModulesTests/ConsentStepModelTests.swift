@@ -35,11 +35,17 @@ final class ConsentStepModelTests: XCTestCase {
     }
   }
 
+  /// Starts every observation with `current`, the member's effective consent (nothing held by default).
   private final class Consent: EffectiveConsentSource, @unchecked Sendable {
     private let lock = NSLock()
+    private let current: EffectiveConsent
     private var continuation: AsyncStream<EffectiveConsent>.Continuation?
+    init(_ current: EffectiveConsent = .none) { self.current = current }
     func observe(member: MemberKey) -> AsyncStream<EffectiveConsent> {
-      AsyncStream { continuation in lock.withLock { self.continuation = continuation } }
+      AsyncStream { continuation in
+        continuation.yield(current)
+        lock.withLock { self.continuation = continuation }
+      }
     }
     func send(_ value: EffectiveConsent) { lock.withLock { continuation }?.yield(value) }
     var hasObserver: Bool { lock.withLock { continuation != nil } }
@@ -167,6 +173,50 @@ final class ConsentStepModelTests: XCTestCase {
     XCTAssertEqual(model.phase, .choosing)
     XCTAssertEqual(model.choices, [.required: .refuse])
     XCTAssertTrue(model.canCancelRegistration)
+  }
+
+  /// Review (re-entry after a partial consent): ①② granted and ③ refused leave the member '동의 필요', and the step
+  /// opens again. ①② are shown as held, not asked: a refusal of ② cannot be given (the MVP records grants only, so it
+  /// would leave the grant), and only ③ is recorded. Held ① also means no `consent.requiredFirst` and no '등록 취소'.
+  func testReEnteringAfterAPartialConsentAsksOnlyTheTypesNotHeld() async {
+    let recorder = Recorder()
+    let partial = EffectiveConsent(required: .awaitingConsent, healthData: .awaitingConsent, bodyImaging: .missing)
+    let model = model(recorder: recorder, consent: Consent(partial), canceller: RecordingCanceller())
+    await model.load()
+    XCTAssertEqual(model.phase, .choosing)
+    XCTAssertEqual(model.existing, partial)
+    XCTAssertEqual(model.held, [.required, .healthData])
+    XCTAssertFalse(model.canSubmit, "③ unanswered")
+
+    model.choose(.refuse, for: .required)
+    model.choose(.refuse, for: .healthData)
+    XCTAssertEqual(model.choices, [:], "a held card takes no answer")
+    XCTAssertFalse(model.requiredRefused)
+    XCTAssertFalse(model.canCancelRegistration)
+    model.choose(.grant, for: .bodyImaging)
+    XCTAssertTrue(model.canSubmit)
+    await model.submit()
+    XCTAssertEqual(model.phase, .saved)
+    XCTAssertEqual(recorder.calls.count, 1)
+    XCTAssertEqual(recorder.calls.first?.selections, [
+      ConsentSelection(consentType: .bodyImaging, action: .grant, documentVersion: "bodyImaging--1.0"),
+    ])
+  }
+
+  /// Confirmed by the server counts as held too; a capture the server refused is asked again. Refusing every asked card
+  /// records nothing and still ends the step.
+  func testRefusingEveryAskedCardRecordsNothing() async {
+    let recorder = Recorder()
+    let consent = Consent(EffectiveConsent(required: .granted, healthData: .rejected, bodyImaging: .missing))
+    let model = model(recorder: recorder, consent: consent)
+    await model.load()
+    XCTAssertEqual(model.held, [.required])
+    model.choose(.refuse, for: .healthData)
+    model.choose(.refuse, for: .bodyImaging)
+    XCTAssertTrue(model.canSubmit)
+    await model.submit()
+    XCTAssertEqual(model.phase, .saved)
+    XCTAssertTrue(recorder.calls.isEmpty, "a refusal leaves no record (F-PRIV-01.1)")
   }
 
   func testAFailedSaveKeepsTheAnswers() async {

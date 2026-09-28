@@ -188,6 +188,66 @@ final class ConsentStepUITests: XCTestCase {
     XCTAssertFalse(element("tr03.takeConsent", in: app).exists, "waiting for the server: no second capture")
   }
 
+  /// Review (re-entry after a partial consent): ①② granted and ③ refused leave the member '동의 필요'. Taking consent
+  /// again shows ①② as held, without answers ('동의 확인 대기' while the server has not confirmed, '동의함' after), so ②
+  /// cannot be refused and silently stay granted; only ③ is asked.
+  @MainActor
+  func testTakingConsentAgainAsksOnlyTheTypesNotHeld() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-members", "--preview-consent-confirm"]
+    app.launch()
+    register(in: app)
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    app.buttons["tr14.consent.grant.required"].firstMatch.tap()
+    app.buttons["tr14.consent.grant.healthData"].firstMatch.tap()
+    app.buttons["tr14.consent.refuse.bodyImaging"].firstMatch.tap()
+    app.buttons["tr14.consent.submit"].firstMatch.tap()
+    XCTAssertTrue(waitForLabel(element("tr14.consent.result", in: app), "동의 필요"))
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(element("tr14.consent.root", in: app).waitForNonExistence(timeout: 10))
+
+    // Waiting for the server: ①② read '동의 확인 대기' and have no answers.
+    let row = listRow(named: "SYN Member B", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 필요"), row.label)
+    row.tap()
+    let take = element("tr03.takeConsent", in: app)
+    XCTAssertTrue(take.waitForExistence(timeout: 10))
+    take.tap()
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    for (type, name) in zip(types.prefix(2), typeNames) {
+      let state = element("consent.state.awaiting.\(type)", in: app)
+      XCTAssertTrue(state.waitForExistence(timeout: 10), type)
+      XCTAssertEqual(state.label, "\(name) 동의 확인 대기")
+      XCTAssertFalse(app.buttons["tr14.consent.grant.\(type)"].exists, type)
+      XCTAssertFalse(app.buttons["tr14.consent.refuse.\(type)"].exists, type)
+    }
+    XCTAssertTrue(app.buttons["tr14.consent.refuse.bodyImaging"].exists)
+    XCTAssertFalse(app.buttons["tr14.consent.submit"].firstMatch.isEnabled, "③ unanswered")
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(element("tr14.consent.root", in: app).waitForNonExistence(timeout: 10))
+
+    // Confirmed by the server: ①② read '동의함'; granting ③ records it alone.
+    element("preview.confirmConsent", in: app).tap()
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 필요"), row.label)
+    XCTAssertTrue(take.waitForExistence(timeout: 10))
+    take.tap()
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    for (type, name) in zip(types.prefix(2), typeNames) {
+      let state = element("consent.state.granted.\(type)", in: app)
+      XCTAssertTrue(state.waitForExistence(timeout: 10), type)
+      XCTAssertEqual(state.label, "\(name) 동의함")
+      XCTAssertFalse(app.buttons["tr14.consent.refuse.\(type)"].exists, type)
+    }
+    let submit = app.buttons["tr14.consent.submit"].firstMatch
+    app.buttons["tr14.consent.grant.bodyImaging"].firstMatch.tap()
+    XCTAssertTrue(submit.isEnabled)
+    submit.tap()
+    XCTAssertTrue(waitForLabel(element("tr14.consent.result", in: app), "동의 확인 대기"))
+    app.buttons["common.close"].firstMatch.tap()
+    element("preview.confirmConsent", in: app).tap()
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 ①②③"), row.label)
+  }
+
   // MARK: Helpers
 
   private func waitForLabel(_ element: XCUIElement, _ label: String, timeout: TimeInterval = 10) -> Bool {

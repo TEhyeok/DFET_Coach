@@ -71,15 +71,26 @@ public enum ConsentFlowRules {
     choices[.required] == .refuse
   }
 
+  /// Core types the member already holds in its effective consent (DF-111): confirmed by the server, or granted in a
+  /// capture still waiting for it. The step shows them and does not ask them again (V1-07 TR-14 mode B: only the
+  /// cards still needed): the MVP records grants only (withdrawal is DF-112), so a refusal would leave the grant.
+  public static func heldTypes(in consent: EffectiveConsent) -> Set<ConsentType> {
+    Set(coreTypes.filter { consent[$0] == .granted || consent[$0] == .awaitingConsent })
+  }
+
   /// What to record: one `grant` per granted card, in card order. A refusal of a type never granted is not recorded
-  /// (F-PRIV-01.1: refused items leave no record). nil while a core card is unanswered, when ① is refused, or when a
-  /// granted type has no published version.
+  /// (F-PRIV-01.1: refused items leave no record). `held` types are not asked, so an answer for one is ignored. nil
+  /// while an asked card is unanswered, when ① is asked and refused, or when a granted type has no published version;
+  /// empty when every asked card was refused.
   public static func selections(
-    choices: [ConsentType: ConsentChoice], documents: [ConsentType: ConsentDocumentVersion]
+    choices: [ConsentType: ConsentChoice], documents: [ConsentType: ConsentDocumentVersion],
+    held: Set<ConsentType> = []
   ) -> [ConsentSelection]? {
-    guard coreTypes.allSatisfy({ choices[$0] != nil }), !requiredRefused(choices) else { return nil }
+    let asked = coreTypes.filter { !held.contains($0) }
+    let answers = choices.filter { asked.contains($0.key) }
+    guard asked.allSatisfy({ answers[$0] != nil }), !requiredRefused(answers) else { return nil }
     var selections: [ConsentSelection] = []
-    for type in coreTypes where choices[type] == .grant {
+    for type in asked where answers[type] == .grant {
       guard let document = documents[type] else { return nil }
       selections.append(ConsentSelection(consentType: type, action: .grant, documentVersion: document.id))
     }

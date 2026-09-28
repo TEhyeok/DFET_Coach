@@ -265,6 +265,18 @@
         }
       }
     },
+    "consent.state.granted" : {
+      "comment" : "V1-12 · F-PRIV-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의함"
+          }
+        }
+      }
+    },
     "consent.type.bodyImaging" : {
       "comment" : "V1-12 · F-PRIV-01",
       "extractionState" : "manual",

@@ -4,9 +4,10 @@ import TrainerContracts
 import TrainerDomain
 
 /// TR-14 consent step state (DF-110 MVP): one card per ①②③ with '동의' / '동의하지 않음' and no default, then one
-/// local save of the capture (the Outbox sends `recordConsent`), then the member's effective consent as a chip. No
-/// signature, no ④⑤, no analytics in the MVP. A pending member who refuses ① can have the registration cancelled
-/// here instead (AC-DF-110.5): nothing is recorded and `pendingMembers/{id}` becomes `cancelled` through the Outbox.
+/// local save of the capture (the Outbox sends `recordConsent`), then the member's effective consent as a chip. A type
+/// the member already holds (granted, or waiting for the server) is shown and not asked again. No signature, no ④⑤,
+/// no analytics in the MVP. A pending member who refuses ① can have the registration cancelled here instead
+/// (AC-DF-110.5): nothing is recorded and `pendingMembers/{id}` becomes `cancelled` through the Outbox.
 @MainActor
 @Observable
 public final class ConsentStepModel {
@@ -18,7 +19,7 @@ public final class ConsentStepModel {
     case documentMissing
     case choosing
     case saving
-    /// The capture is on the device and queued.
+    /// The capture is on the device and queued, or every asked card was refused and there was nothing to record.
     case saved
     /// ① was refused and the pending member's registration is cancelled (AC-DF-110.5): nothing was recorded.
     case registrationCancelled
@@ -28,6 +29,8 @@ public final class ConsentStepModel {
   public private(set) var phase: Phase = .loading
   /// The newest published version of each core type.
   public private(set) var documents: [ConsentType: ConsentDocumentVersion] = [:]
+  /// The member's effective consent (DF-111) when the cards were loaded; `held` comes from it.
+  public private(set) var existing: EffectiveConsent = .none
   /// No answer is preselected (AC-DF-110.2).
   public private(set) var choices: [ConsentType: ConsentChoice] = [:]
   /// The capture could not be saved on the device (the answers stay).
@@ -55,11 +58,15 @@ public final class ConsentStepModel {
   /// The cards, in order.
   public var types: [ConsentType] { ConsentFlowRules.coreTypes }
 
+  /// Cards the member already holds (`ConsentFlowRules.heldTypes`): shown with their state, never asked again. A
+  /// refusal of one could not be recorded in the MVP (withdrawal is DF-112) and would leave the grant in place.
+  public var held: Set<ConsentType> { ConsentFlowRules.heldTypes(in: existing) }
+
   /// ① refused: the step cannot record anything (`consent.requiredFirst`).
   public var requiredRefused: Bool { ConsentFlowRules.requiredRefused(choices) }
 
   public var canSubmit: Bool {
-    phase == .choosing && ConsentFlowRules.selections(choices: choices, documents: documents) != nil
+    phase == .choosing && ConsentFlowRules.selections(choices: choices, documents: documents, held: held) != nil
   }
 
   /// AC-DF-110.5: ① refused for a pending member offers '등록 취소'. A uid member's refusal only closes the step.
@@ -73,26 +80,35 @@ public final class ConsentStepModel {
     do {
       let latest = ConsentFlowRules.latestPublished(try await catalog.publishedDocuments())
       documents = latest
-      phase = ConsentFlowRules.missingCoreTypes(in: latest).isEmpty ? .choosing : .documentMissing
+      guard ConsentFlowRules.missingCoreTypes(in: latest).isEmpty else {
+        phase = .documentMissing
+        return
+      }
+      // Which cards are asked depends on what the member already holds, so the cards wait for it.
+      var values = consent.observe(member: member).makeAsyncIterator()
+      guard let current = await values.next() else { return }  // the step went away first
+      existing = current
+      phase = .choosing
     } catch {
       phase = .loadFailed(onlineRequired: (error as? RemoteError) == .unavailable)
     }
   }
 
   public func choose(_ choice: ConsentChoice, for type: ConsentType) {
-    guard phase == .choosing, types.contains(type) else { return }
+    guard phase == .choosing, types.contains(type), !held.contains(type) else { return }
     choices[type] = choice
   }
 
   /// Saves the capture once; the step then only shows the result.
   public func submit() async {
-    guard canSubmit, let selections = ConsentFlowRules.selections(choices: choices, documents: documents) else {
-      return
-    }
+    guard canSubmit,
+      let selections = ConsentFlowRules.selections(choices: choices, documents: documents, held: held)
+    else { return }
     phase = .saving
     saveFailed = false
     do {
-      _ = try await recorder.capture(member: member, selections: selections)
+      // Every asked card refused: nothing to record (F-PRIV-01.1), and the step still ends.
+      if !selections.isEmpty { _ = try await recorder.capture(member: member, selections: selections) }
       phase = .saved
     } catch {
       saveFailed = true

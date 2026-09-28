@@ -4,10 +4,12 @@ import TrainerContracts
 import TrainerDomain
 
 /// TR-14 동의 받기 (DF-110 MVP, F-PRIV-01.1): the member answers ①②③ one by one on the trainer's iPad. No answer is
-/// preselected and there is no 'agree to all' (AC-DF-110.2). A refusal leaves no record; ① refused records nothing and,
-/// for a pending member, offers '등록 취소' (`tr02.menu.cancelPending`, confirmed with `tr02.cancelPending.confirm`,
-/// then `tr14.consent.requiredRefusedPending`, AC-DF-110.5). Copy is the V1-12 deck's (`tr14.consent.*`,
-/// `consent.type.*`); the MVP shows no legal document text (G-04).
+/// preselected and there is no 'agree to all' (AC-DF-110.2). A type the member already holds shows its state
+/// (`consent.state.granted` / `consent.state.awaiting`) instead of the answers (V1-07 TR-14 mode B: only the cards
+/// still needed). A refusal leaves no record; ① refused records nothing and, for a pending member, offers '등록 취소'
+/// (`tr02.menu.cancelPending`, confirmed with `tr02.cancelPending.confirm`, then `tr14.consent.requiredRefusedPending`,
+/// AC-DF-110.5). Copy is the V1-12 deck's (`tr14.consent.*`, `consent.type.*`); the MVP shows no legal document text
+/// (G-04).
 public struct ConsentStepView: View {
   @State private var model: ConsentStepModel
   @State private var confirmingCancel = false
@@ -98,6 +100,7 @@ public struct ConsentStepView: View {
       ForEach(model.types, id: \.self) { type in
         Section {
           ConsentCard(type: type, version: model.documents[type]?.version, choice: model.choices[type],
+                      held: model.held.contains(type) ? model.existing[type] : nil,
                       localize: localize) { choice in model.choose(choice, for: type) }
           if type == .required, model.requiredRefused {
             // Right under ①, where the answer was given: nothing can be recorded without it (V1-06 V8).
@@ -161,11 +164,14 @@ public struct ConsentStepView: View {
 }
 
 /// One consent type: its name, the published version, and the two answers (checkmark marks the choice, not colour
-/// alone). Each button's VoiceOver label carries the type name (AC-DF-110.9).
+/// alone). Each button's VoiceOver label carries the type name (AC-DF-110.9). A type the member already holds shows
+/// only its state: the published version may not be the one it was granted with.
 private struct ConsentCard: View {
   let type: ConsentType
   let version: String?
   let choice: ConsentChoice?
+  /// `.granted` or `.awaitingConsent` for a held type; nil when the type is asked.
+  let held: EffectiveConsentValue?
   let localize: Localizer
   let choose: (ConsentChoice) -> Void
 
@@ -180,14 +186,28 @@ private struct ConsentCard: View {
       Text(typeName)
         .font(.title3.weight(.semibold))
         .accessibilityAddTraits(.isHeader)
-      if let version {
-        Text(localize.format("tr14.consent.version", version))
-          .font(.footnote)
-          .foregroundStyle(TrainerColor.neutral600)
-      }
-      ViewThatFits(in: .horizontal) {
-        HStack(spacing: TrainerSpacing.s) { buttons }
-        VStack(alignment: .leading, spacing: TrainerSpacing.s) { buttons }
+      if let held {
+        let key = held == .granted ? "consent.state.granted" : "consent.state.awaiting"
+        Label {
+          Text(localize(key))
+        } icon: {
+          Image(systemName: held == .granted ? "checkmark.circle" : "hourglass")
+        }
+        .font(.title3)
+        .foregroundStyle(TrainerColor.neutral700)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(typeName + " " + localize(key)))
+        .accessibilityIdentifier(key + "." + type.rawValue)
+      } else {
+        if let version {
+          Text(localize.format("tr14.consent.version", version))
+            .font(.footnote)
+            .foregroundStyle(TrainerColor.neutral600)
+        }
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: TrainerSpacing.s) { buttons }
+          VStack(alignment: .leading, spacing: TrainerSpacing.s) { buttons }
+        }
       }
     }
     .padding(.vertical, TrainerSpacing.xs)

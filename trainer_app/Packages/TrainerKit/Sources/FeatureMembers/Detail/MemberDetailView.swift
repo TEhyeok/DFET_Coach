@@ -8,7 +8,8 @@ import TrainerDomain
 ///
 /// A pending member whose chip reads '동의 필요' gets '동의 받기' (`tr14.consent.title`), which calls `onTakeConsent`
 /// (TR-14's consent step again): the way back for a member whose step was closed, or whose ① was refused, before any
-/// consent was recorded. VoiceOver reads the header as one sentence, as the TR-02 row.
+/// consent was recorded, and for one who refused ② or ③ (the step asks only the types not held yet). VoiceOver reads
+/// the header as one sentence, as the TR-02 row.
 public struct MemberDetailView<Actions: View>: View {
   private let entry: MemberListEntry
   private let chip: ConsentChipState?

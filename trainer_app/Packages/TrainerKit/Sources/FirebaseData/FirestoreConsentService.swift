@@ -96,7 +96,11 @@ private struct LiveConsentReadAccess: ConsentReadAccess {
         guard let snapshot else { return }
         continuation.yield(snapshot.exists ? JSONValueFirestoreMapper.json(snapshot.data()) : nil)
       }
-      let token = FirestoreListenerRegistry.shared.add(registration)
+      // Logout removing the listener ends the stream as a failed read, so `observeState` drops the last grant
+      // (yields nil) instead of keeping it or waiting forever (DF-018).
+      let token = FirestoreListenerRegistry.shared.add(registration) {
+        continuation.finish(throwing: RemoteError.unavailable)
+      }
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }

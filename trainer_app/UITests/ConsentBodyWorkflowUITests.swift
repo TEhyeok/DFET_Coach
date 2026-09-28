@@ -69,7 +69,10 @@ final class ConsentBodyWorkflowUITests: XCTestCase {
     let saved = element("sync.badge.localSaved", in: app)
     reveal(saved, scrolling: "tr11.root", in: app)
     XCTAssertFalse(save.isEnabled, "A saved entry cannot be submitted twice")
-    XCTAssertTrue(element("tr11.newEntry", in: app).exists)
+    // The Form materializes only visible rows: the badge can sit at the bottom edge with the row below it unloaded.
+    let newEntry = element("tr11.newEntry", in: app)
+    reveal(newEntry, scrolling: "tr11.root", in: app)
+    XCTAssertTrue(newEntry.exists)
     XCTAssertFalse(element("tr11.saveFailed", in: app).exists)
     attachScreenshot(app, name: "Body composition locally saved")
     element("tr11.close", in: app).tap()

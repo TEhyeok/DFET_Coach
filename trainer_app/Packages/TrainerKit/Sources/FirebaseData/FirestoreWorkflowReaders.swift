@@ -18,7 +18,10 @@ public struct FirestorePendingMemberDirectory: MemberDirectory {
                    trainerId: trainerUid, isPending: true)
           })
         }
-      let token = FirestoreListenerRegistry.shared.add(registration)
+      // Logout removing the listener ends the list with `.unavailable`, so TR-02 offers '다시 시도' (DF-018).
+      let token = FirestoreListenerRegistry.shared.add(registration) {
+        continuation.finish(throwing: MemberDirectoryError.unavailable)
+      }
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }
@@ -43,7 +46,11 @@ public struct FirestoreMeasurementRecordsSource: MeasurementRecordsSource {
             BodyCompositionRecord(id: $0.documentID, document: JSONValueFirestoreMapper.json($0.data()))
           })
         }
-      let token = FirestoreListenerRegistry.shared.add(registration)
+      // Logout removing the listener ends the records with `.unavailable` (the error this listener maps to), so
+      // TR-03/TR-11 show `tr11.records.loadFailed` with '다시 시도' instead of waiting forever (DF-018).
+      let token = FirestoreListenerRegistry.shared.add(registration) {
+        continuation.finish(throwing: MemberDirectoryError.unavailable)
+      }
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
     }
   }

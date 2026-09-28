@@ -16,15 +16,15 @@ final class FirestoreConsentServiceTests: XCTestCase {
     ]))
   }
 
-  private func values(_ stream: AsyncStream<ConsentState?>) async -> [ConsentState?] {
-    var values: [ConsentState?] = []
+  private func values(_ stream: AsyncStream<ConsentStateReading>) async -> [ConsentStateReading] {
+    var values: [ConsentStateReading] = []
     for await value in stream { values.append(value) }
     return values
   }
 
   // MARK: memberConsentStates
 
-  func testTheListenerMapsTheDocumentAndNoDocumentIsNil() async {
+  func testTheListenerMapsTheDocumentAndNoDocumentIsAbsent() async {
     let state: JSONValue = .object([
       "required": .object(["granted": .bool(true), "documentVersion": .string("required--1.0")]),
       "healthData": .object(["granted": .bool(true), "documentVersion": .string("healthData--1.0")]),
@@ -33,19 +33,24 @@ final class FirestoreConsentServiceTests: XCTestCase {
     let gateway = FakeConsentGateway(states: [nil, state])
     let service = FirestoreConsentService(gateway: gateway)
     let emitted = await values(service.observe(member: .pending("SYNTHpending00000001")))
-    XCTAssertEqual(emitted, [nil, ConsentState(document: state)])
+    XCTAssertEqual(emitted, [.absent, .present(ConsentState(document: state))])
     XCTAssertEqual(gateway.observedDocumentIDs, ["SYNTHpending00000001"], "memberConsentStates/{pendingMemberId}")
-    XCTAssertEqual(emitted.last??.isGranted(.healthData), true)
-    XCTAssertEqual(emitted.last??.isGranted(.bodyImaging), false)
+    XCTAssertEqual(emitted.last?.state?.isGranted(.healthData), true)
+    XCTAssertEqual(emitted.last?.state?.isGranted(.bodyImaging), false)
   }
 
-  /// A listener the rules refuse (a pending member not on the server yet) reads as no consent and ends; the resolver
-  /// subscribes again after the next local capture change.
-  func testAFailedListenerYieldsNoStateAndEnds() async {
-    let gateway = FakeConsentGateway(states: [], failure: NSError(domain: "FIRFirestoreErrorDomain", code: 7))
-    let emitted = await values(FirestoreConsentService(gateway: gateway).observe(member: .uid("synthMember0001")))
-    XCTAssertEqual(emitted, [nil])
-    XCTAssertEqual(gateway.observedDocumentIDs, ["synthMember0001"])
+  /// Review (P1a DF-110, V1-06 §8.10): a listener the rules refuse (a pending member whose create has not reached the
+  /// server yet) or a transient error is `unavailable`, never "no document", and ends; the resolver subscribes again.
+  func testAFailedListenerIsUnavailableNotAbsentAndEnds() async {
+    for code in [7, 14] {  // permission-denied, unavailable
+      let gateway = FakeConsentGateway(states: [], failure: NSError(domain: "FIRFirestoreErrorDomain", code: code))
+      let emitted = await values(FirestoreConsentService(gateway: gateway).observe(member: .uid("synthMember0001")))
+      XCTAssertEqual(emitted, [.unavailable], "\(code)")
+      XCTAssertEqual(gateway.observedDocumentIDs, ["synthMember0001"])
+    }
+    let answered = FakeConsentGateway(states: [nil], failure: NSError(domain: "FIRFirestoreErrorDomain", code: 14))
+    let emitted = await values(FirestoreConsentService(gateway: answered).observe(member: .uid("synthMember0001")))
+    XCTAssertEqual(emitted, [.absent, .unavailable])
   }
 
   // MARK: consentDocumentVersions

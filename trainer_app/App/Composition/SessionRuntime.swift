@@ -81,6 +81,8 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
+  /// '등록 취소' (AC-DF-113.6, AC-DF-110.5): the registrar's cancel update, through the same Outbox.
+  let canceller: any PendingMemberCanceller
   /// TR-14 consent captures: saved with their `recordConsent` Outbox item (DF-110).
   let consentRecorder: any ConsentCaptureRecorder
   /// The partition's consent captures, for `EffectiveConsentResolver` (DF-111).
@@ -114,7 +116,10 @@ final class SessionRuntime {
     let engine = SyncEngine(store: outbox, writer: bound, uploader: bound, callable: bound)
     self.engine = engine
     sessions = remote.sessions
-    registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
+    let pendingMembers = LocalPendingMemberRegistrar(
+      outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
+    registrar = pendingMembers
+    canceller = pendingMembers
     consentRecorder = LocalConsentRecorder(outbox: outbox, enqueue: { await engine.enqueue($0) })
     consentCaptures = LocalConsentCaptureStore(container: container, trainerUid: trainerUid)
     localPendingMembers = LocalPendingMembers(container: container, trainerUid: trainerUid)
@@ -216,9 +221,14 @@ final class SessionRuntime {
     tick = nil
   }
 
-  /// A registrar for a trainer whose LocalStore could not be opened: every save fails and says so on screen.
-  struct UnavailableRegistrar: PendingMemberRegistrar {
+  /// A registrar for a trainer whose LocalStore could not be opened: every save (a cancel too) fails and says so on
+  /// screen.
+  struct UnavailableRegistrar: PendingMemberRegistrar, PendingMemberCanceller {
     func register(_ draft: PendingMemberDraft) async throws -> String {
+      throw LocalStoreUnavailable()
+    }
+
+    func cancel(pendingMemberId: String) async throws {
       throw LocalStoreUnavailable()
     }
   }
@@ -241,8 +251,8 @@ final class SessionRuntime {
 
   /// TR-02's device-only pending members when the LocalStore could not be opened: none (nothing could be saved).
   struct NoLocalPendingMembers: LocalPendingMemberSource {
-    func observeLocalPendingMembers() -> AsyncStream<[PendingMember]> {
-      AsyncStream { $0.yield([]) }
+    func observeLocalPendingMembers() -> AsyncStream<DevicePendingMembers> {
+      AsyncStream { $0.yield(DevicePendingMembers()) }
     }
   }
 

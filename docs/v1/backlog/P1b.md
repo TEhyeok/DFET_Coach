@@ -168,7 +168,7 @@ DF-004 ─▶ DF-220, DF-221          DF-130,117 ─▶ DF-219     DF-137,216 �
 | 사진 표시·다운로드(TR-08~TR-10, TR-03 썸네일) | 서버 확인된 ③ | 읽기 규칙은 동의를 보지 않는다 → 클라이언트 게이트(G-P1b-3) |
 | O 자동 불러오기(TR-05) | `soapV2` 플래그. 원 기록 종류별 플래그는 후보 노출에만 적용 | soap update 규칙 |
 
-- 동의 상태는 `ConsentService.observeState(member:)`(P1a DF-109·DF-110) 하나로 읽는다. 로컬 캡처만 있고 서버 확인 전이면 '동의 확인 대기'로 막는다(F-PRIV-03.7).
+- 동의 상태는 SyncEngine `EffectiveConsentResolver`의 `EffectiveConsent`(P1a DF-111: `canCapturePosture`, `canAttachPhoto`) 하나로 읽는다. `observeState`(V1-06 §8.10)는 서버 상태만 주고 로컬 캡처를 겹치지 않는다. 로컬 캡처만 있고 서버 확인 전이면 '동의 확인 대기'로 막는다(F-PRIV-03.7).
 - 플래그가 false면 TR-07 진입점, TR-10 진입점, TR-09 '새 버전'·'재검사' 버튼이 없다(AC-IA-02). 이미 저장된 기록의 열람(TR-09 읽기, TR-03 타임라인)은 유지한다(AS-18, ASM-P1b-26).
 
 ### 4.4 저장 상태와 오프라인

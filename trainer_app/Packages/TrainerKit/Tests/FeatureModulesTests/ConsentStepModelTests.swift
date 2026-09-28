@@ -4,7 +4,8 @@ import TrainerDomain
 import XCTest
 @testable import FeatureConsent
 
-/// DF-110 MVP: the TR-14 consent step model (AC-DF-110.2, AC-DF-110.3 and the result chip). Synthetic data only.
+/// DF-110 MVP: the TR-14 consent step model (AC-DF-110.2, AC-DF-110.3, AC-DF-110.5 and the result chip). Synthetic
+/// data only.
 @MainActor
 final class ConsentStepModelTests: XCTestCase {
   private let member = MemberKey.pending("SynthPending00000001")
@@ -45,8 +46,8 @@ final class ConsentStepModelTests: XCTestCase {
   }
 
   private func model(_ catalog: Catalog = .versions(), recorder: Recorder = Recorder(),
-                     consent: Consent = Consent()) -> ConsentStepModel {
-    ConsentStepModel(member: member, documents: catalog, recorder: recorder, consent: consent)
+                     consent: Consent = Consent(), canceller: RecordingCanceller? = nil) -> ConsentStepModel {
+    ConsentStepModel(member: member, documents: catalog, recorder: recorder, consent: consent, canceller: canceller)
   }
 
   /// AC-DF-110.2: no answer is preselected and nothing can be submitted before ①②③ are all answered.
@@ -122,6 +123,50 @@ final class ConsentStepModelTests: XCTestCase {
     model.choose(.grant, for: .required)
     XCTAssertFalse(model.requiredRefused)
     XCTAssertTrue(model.canSubmit)
+  }
+
+  /// AC-DF-110.5 (review): a pending member who refused ① can have the registration cancelled from the step, once;
+  /// nothing is recorded. Only ① refused offers it, and never for a uid member or without a canceller.
+  func test_AC_DF_110_5_requiredRefusedCancelsThePendingRegistration() async {
+    let recorder = Recorder()
+    let canceller = RecordingCanceller()
+    let model = model(recorder: recorder, canceller: canceller)
+    await model.load()
+    XCTAssertFalse(model.canCancelRegistration, "nothing refused yet")
+    model.choose(.grant, for: .required)
+    model.choose(.refuse, for: .healthData)
+    XCTAssertFalse(model.canCancelRegistration, "only a refused ① cancels")
+    model.choose(.refuse, for: .required)
+    XCTAssertTrue(model.canCancelRegistration)
+
+    await model.cancelRegistration()
+    XCTAssertEqual(model.phase, .registrationCancelled)
+    XCTAssertEqual(canceller.cancelled, ["SynthPending00000001"])
+    XCTAssertTrue(recorder.calls.isEmpty, "no consent record")
+    XCTAssertFalse(model.canCancelRegistration)
+    await model.cancelRegistration()
+    XCTAssertEqual(canceller.cancelled.count, 1)
+
+    let uid = ConsentStepModel(member: .uid("synthMember0001"), documents: Catalog.versions(), recorder: Recorder(),
+                               consent: Consent(), canceller: RecordingCanceller())
+    await uid.load()
+    uid.choose(.refuse, for: .required)
+    XCTAssertFalse(uid.canCancelRegistration, "a uid member's refusal only closes the step")
+    let withoutCanceller = self.model()
+    await withoutCanceller.load()
+    withoutCanceller.choose(.refuse, for: .required)
+    XCTAssertFalse(withoutCanceller.canCancelRegistration)
+  }
+
+  func testACancelThatCannotBeSavedKeepsTheAnswers() async {
+    let model = model(canceller: RecordingCanceller(fails: true))
+    await model.load()
+    model.choose(.refuse, for: .required)
+    await model.cancelRegistration()
+    XCTAssertTrue(model.saveFailed)
+    XCTAssertEqual(model.phase, .choosing)
+    XCTAssertEqual(model.choices, [.required: .refuse])
+    XCTAssertTrue(model.canCancelRegistration)
   }
 
   func testAFailedSaveKeepsTheAnswers() async {

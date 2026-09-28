@@ -38,8 +38,26 @@ public struct ConsentState: Equatable, Sendable {
   public func isGranted(_ type: ConsentType) -> Bool { entries[type]?.granted == true }
 }
 
-/// Server consent state per member, as a stream (DF-111 MVP). DF-110's `FirestoreConsentService.observeState`
-/// implements it with a `memberConsentStates/{memberKey}` listener; nil means no document.
+/// One reading of `memberConsentStates/{memberKey}` (DF-111). A listener that failed is not a missing document.
+public enum ConsentStateReading: Equatable, Sendable {
+  /// No document: nothing is granted (the rules' `hasConsent` reads it the same way).
+  case absent
+  case present(ConsentState)
+  /// The listener could not read the document: refused (a pending member whose `pendingMembers` create has not reached
+  /// the server yet, so the read rule cannot prove ownership) or a transient error. It says nothing about the consent.
+  case unavailable
+
+  /// The server state this reading shows; nil when there is none (`absent`) or it is unknown (`unavailable`).
+  public var state: ConsentState? {
+    if case let .present(state) = self { return state }
+    return nil
+  }
+}
+
+/// Server consent state per member, as a stream (DF-111 MVP). DF-110's `FirestoreConsentService` implements it with a
+/// `memberConsentStates/{memberKey}` listener: `.absent` or `.present` for every snapshot, and `.unavailable` followed
+/// by the end of the stream when the listener fails. Server-derived only (V1-06 §8.10): local captures are overlaid by
+/// the SyncEngine's `EffectiveConsentResolver`, never here.
 public protocol ConsentStateSource: Sendable {
-  func observe(member: MemberKey) -> AsyncStream<ConsentState?>
+  func observe(member: MemberKey) -> AsyncStream<ConsentStateReading>
 }

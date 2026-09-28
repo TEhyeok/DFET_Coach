@@ -864,6 +864,9 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 앱 요청과 서버 검증을 V1-06 하나로 맞췄다. 앱의 `RecordConsentRequest.payload`(DF-110 `ConsentFlowTests`)와 서버 `validateRequest`(`validateRequest.test.js`)가 둘 다 V1-06 §6.2.1 요청 스키마와 §3.12 정의를 스펙 본문에서 읽어 대조한다. 서버 테스트 2건을 더했다: 받는 키 집합·선택 키·`documentVersion` 패턴이 스펙과 같다, 앱이 만드는 모양(키 5개, 소문자 UUID `clientCaptureId`, 20자 대기 회원 ID, `<type>--test-1`, `capturedAt` ISO 8601 밀리초 `Z`)이 검증과 MVP 게이트를 그대로 통과한다. 이를 위해 `validateRequest.js`가 `TOP_LEVEL_KEYS`·`SELECTION_KEYS`·`DOCUMENT_VERSION_ID`를 export한다(동작 변경 없음).
   - 편차 정리: 위 `documentVersion` 편차는 스펙 쪽을 고쳤다. V1-06 §3.12에 `ConsentDocumentVersionId`(`^(?!\.{1,2}$)[A-Za-z0-9_.-]{1,128}$`, V1-05 §4.13 ID)를 더하고 §6.2.1 `documentVersion`이 이것을 쓴다(V1-06 변경 이력). `DocId`로는 V1-05의 `healthData--1.0`을 받을 수 없어 스펙 안에서 모순이었다. 서버 구현은 그대로다.
   - 종단 확인: `trainer_app/scripts/test_auth_emulator.sh`가 Auth·Firestore에 더해 Functions 에뮬레이터를 띄우고, 게시 스크립트를 `--apply --project demo-dfet`로 에뮬레이터에 먼저 실행한 뒤 앱 통합 테스트를 돌린다. `IntegrationTests/ConsentFlowEmulatorTests`가 앱 → Outbox `callConsent` → 실제 `recordConsent` → `consentRecords`·`memberConsentStates`를 확인한다(아래 DF-111). 게시 스크립트의 `--apply` 쓰기 경로가 에뮬레이터에서 실제로 돈 것은 이것이 처음이다(테스트 문서 3개 생성, 앱이 published로 읽음).
+- 리뷰 반영(통합 브랜치 리뷰):
+  - 멱등 재생 순서: 트랜잭션이 `pendingMembers/{p}`를 먼저 읽어 V11(없음)·V2(`member.pendingNotOwned`)·V11(`status != 'pending'`)을 확인한 뒤에만 `clientCaptureId`를 조회하고 재생한다(인증 `requireTrainer`와 요청 검증은 그 전). 전에는 재생이 권한 확인보다 앞서, 소유를 잃었거나 취소된 대기 회원의 캡처 키를 다시 보내면 현재 `state`를 돌려받았다. 재생은 계속 `recordedBy == 호출자`를 비교한다(다른 호출자는 `idempotency.keyReused`). V1-06 §6.2.4 1단계·3.2, §6.2.5, TC-06-RC-17과 같다. 카드의 처리 순서 목록(주체 확인 → 문서 확인 → 멱등)과 달리 V5는 재생 뒤에 본다(재생은 문서를 다시 검사하지 않는다).
+  - 테스트: e2e `a replay runs only after auth, permission and existence`(응답 유실 재시도 = 재생, 다른 트레이너 = `member.pendingNotOwned`, 클레임 없음 = `auth.notTrainer`, 소유가 바뀐 뒤 새 소유자 = `idempotency.keyReused`·옛 소유자 = `member.pendingNotOwned`, 취소 뒤 = `member.notFound`, 레코드 수 불변). TC-06-RC-06의 '다른 트레이너' 기대값은 `member.pendingNotOwned`로 바꿨다.
 
 ---
 
@@ -960,6 +963,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 미리보기: `PreviewConsentStore`가 시나리오의 서버 상태·캡처(`PreviewConsentScript`)로 시작하고 상태 변화를 흘린다. 새 수식어 `--preview-consent-confirm`의 DEBUG 버튼 `preview.confirmConsent`가 서버 몫(대기 캡처 확인 + 그 grant를 상태로)을 한다. UI 테스트 `ConsentStepUITests.testTheRowChipAwaitsTheServerThenShowsTheCoreConsents`: 등록 → ①②③ 동의 → 결과 칩 '동의 확인 대기' → TR-02 행 '동의 확인 대기' → 확인 → '동의 ①②③' → 행을 누르면 TR-03 `pending:<id>`.
   - 요청 형식은 V1-06 그대로다(DF-109 통합 기록: 스펙의 `ConsentDocumentVersionId`로 충돌을 풀었고, 앱 테스트가 보내는 `documentVersion`을 그 패턴으로 확인한다).
   - 종단: `ConsentFlowEmulatorTests`가 온라인 경로(TR-14 등록기 → 캡처 → Outbox → `recordConsent` → 상태)를 Functions 에뮬레이터에서 확인한다.
+- 리뷰 반영(통합 브랜치 리뷰):
+  - AC-DF-110.5를 만들었다(위 편차 해소): 대기 회원이 ①에 '동의하지 않음'을 고르면 `consent.requiredFirst` 아래 '등록 취소'(`tr02.menu.cancelPending`)가 나오고, `tr02.cancelPending.confirm` 확인 뒤 `PendingMemberCanceller`가 `pendingMembers/{id}`를 `status: 'cancelled'`로 바꾸는 Outbox update(stage 0, `updatedAt`은 서버 시각, `cancelledAt`은 쓰지 않음)를 저장하고 `tr14.consent.requiredRefusedPending`을 보인다. 동의 레코드는 없다. 가입 회원은 대상이 아니다(동의 단계만 닫힘).
+  - 닫기·① 거부 뒤 막다른 길 해소: '동의 필요'인 대기 회원은 TR-02 행 메뉴와 TR-03의 '동의 받기'(`tr14.consent.title`)로 같은 동의 단계(`ShellSheet.consent`)를 다시 연다. 서버가 거부한 캡처 뒤의 새 캡처는 엔진이 막지 않으므로 MVP의 '다시 받기'도 이것이다.
+  - 문구: `tr02.menu.cancelPending`, `tr02.cancelPending.confirm`, `tr14.consent.requiredRefusedPending`을 카탈로그에 옮겼다(덱 변경 없음).
+  - 테스트: `ConsentStepModelTests`(① 거부 → 취소 1회, 레코드 없음, 가입 회원·취소기 없음이면 없음, 저장 실패는 답 유지), UI `ConsentStepUITests.test_AC_DF_110_5_refusingRequiredCancelsTheRegistration`·`testAStepClosedBeforeAnsweringCanBeTakenAgainFromTR03`, LocalStore(취소 항목 모양, 오프라인 등록·캡처·취소 뒤 전송 순서 create → 취소 → 캡처 호출), 규칙 `pending_members.rules.test.js`(소유자 취소 허용, 다른 트레이너·`cancelledAt`·클라이언트 `updatedAt`·재취소·되돌리기 거부, 취소 뒤 동의 상태 읽기 거부), 에뮬레이터 `PendingMemberEmulatorTests.testACancelledRegistrationIsCancelledOnTheServer_AC_DF_113_6`.
 
 ---
 
@@ -1046,6 +1054,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 한 곳 읽기(AC-DF-111.7): `ShellServices`의 `consentStatus`와 자리 표시 `UnresolvedConsentSource`를 지우고 `effectiveConsent` 하나만 둔다. 라이브는 `EffectiveConsentResolver(server: FirestoreConsentService, captures: LocalConsentCaptureStore)`이고 TR-02 칩(DF-113)과 TR-14 결과 칩(DF-110)이 같은 인스턴스를 읽는다. 미리보기도 같은 resolver에 `PreviewConsentStore`를 서버·캡처 공급원으로 준다(DF-113의 대본 `PreviewConsentSource`는 지웠다).
   - AC-DF-111.6(로컬 캡처만 있으면 TR-02 칩 '동의 확인 대기'): 위 DF-110 UI 테스트와 아래 에뮬레이터 테스트가 확인한다. `--preview-members-pending`의 '동의 확인 대기' 행도 이제 대기 캡처를 resolver가 계산한 값이다.
   - 에뮬레이터 종단 `IntegrationTests/ConsentFlowEmulatorTests`(Auth·Firestore·Functions, `demo-dfet`): 합성 트레이너 로그인 → TR-14 등록기로 대기 회원 → 캡처 전 유효 동의 '동의 필요' → `ConsentFlowRules.selections`로 ①②③ 캡처(Outbox `callConsent`, 등록 create에 `dependsOn`) → SyncEngine이 create 뒤 `recordConsent`를 보냄 → 칩 순서가 정확히 '동의 필요' → '동의 확인 대기' → '동의 ①②③'이고 `coreGranted` → 서버 `memberConsentStates/{id}`에 ①②③ `granted`(보낸 버전, `healthData` 포함) → 그 `recordId`의 `consentRecords`가 `clientCaptureId` = 캡처 ID, `channel='trainerDeviceInPerson'`, `recordedBy` = 트레이너, `signaturePath`·`subjectUid` null → 서버 대기 회원 목록 스트림에 그 회원 → Outbox 대기 0·실패 0 → 로그아웃. `test_auth_emulator.sh`의 `-only-testing`에 넣었고 Functions 에뮬레이터 플래그 `DFET_FUNCTIONS_EMULATOR`가 없으면 건너뛴다(스크립트는 건너뛰면 실패).
+- 리뷰 반영(통합 브랜치 리뷰):
+  - 일시 오류는 거부가 아니다: 캡처 값(`ConsentCapture`)에 항목의 `lastErrorCode`를 싣고, resolver는 `failed`라도 코드가 `SyncEngine.transientErrorCodes`(엔진의 `holdsLaterCaptures`·`retryExhausted()`가 쓰는 그 집합: `unavailable`, `deadline-exceeded`, `unknown`, `upload-unverified`, `write-uncommitted`)면 `pending`으로 읽는다. Functions 장애로 재시도가 바닥난 캡처가 '동의 필요'·저장 차단과 '동의 확인 대기' 사이를 오가지 않는다. LocalStore의 캡처 상태 반영(V1-05: failed → `failed`)은 그대로다.
+  - 서버 상태의 '문서 없음'과 '읽지 못함'을 나눴다: `ConsentStateSource.observe(member:) -> AsyncStream<ConsentStateReading>`(`.absent`·`.present(ConsentState)`·`.unavailable` 뒤 종료). `FirestoreConsentService`는 리스너 실패(⓪ create가 서버에 닿기 전 대기 회원의 권한 거부, 일시 오류)를 `nil`이 아니라 `.unavailable`로 낸다. resolver는 `.unavailable`이면 마지막 읽은 값을 유지하고, 한 번도 읽지 못했으면 아무것도 허용하지 않되 확인된 캡처는 계속 '동의 확인 대기'로 둔다. 다시 구독은 로컬 캡처가 바뀔 때와 `retryDelay`(1 s부터 두 배, 최대 60 s) 뒤: ⓪ ack 뒤나 장애가 끝난 뒤 캡처 변화 없이도 상태를 읽는다(위 '서버 스트림이 끝나면 다음 로컬 캡처 변화 때 다시 구독' 기록을 이것으로 바꾼다).
+  - V1-06 §8.10 `observeState`는 서버 파생 상태만 준다고 고쳤고(로컬 합성은 resolver 한 곳), P1b의 같은 문장도 `EffectiveConsent`를 읽도록 맞췄다.
+  - 테스트: `EffectiveConsentResolverTests`(일시 오류 코드 → 대기·로컬 저장, 영구 코드 → 거부, 거부된 리스너 → 알 수 없음·재시도 후 granted, 답한 뒤 실패 → 마지막 값 유지), LocalStore `testATransientFailureIsFailedWithItsCodeAndStillReadsAsAwaiting`, FirebaseData `testAFailedListenerIsUnavailableNotAbsentAndEnds`, 에뮬레이터 `ConsentStateEmulatorTests`(거부된 리스너는 `.unavailable`).
 
 ---
 
@@ -1197,6 +1210,11 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 미리보기 `--preview-members-pending`: 칩이 대본 `EffectiveConsent`가 아니라 합성 서버 상태(가입 1·대기 2: ①②③)와 캡처(대기 1: 확인 대기, 대기 3: 서버 거부)를 실제 resolver로 계산한 값이다. 화면은 같다(`MemberListUITests` 그대로 통과). `AppEnvironmentTests`가 행 순서대로 5개 칩을 resolver로 확인한다.
   - 대기 행 → TR-03: 위 DF-110 UI 테스트가 등록 직후 동의까지 받은 대기 회원 행에서 TR-03(`pending:<id>`)을 연다.
   - 에뮬레이터: `ConsentFlowEmulatorTests`가 등록한 대기 회원이 `observePendingMembers()`(서버 목록)에 나오는 것을 확인한다.
+- 리뷰 반영(통합 브랜치 리뷰):
+  - AC-DF-113.6: 대기 회원 행의 메뉴(길게 누르기·보조 클릭)에 '등록 취소'(`tr02.menu.cancelPending`, 확인 `tr02.cancelPending.confirm`)와, 칩이 '동의 필요'일 때 '동의 받기'(TR-14 동의 단계). 가입 회원 행에는 메뉴가 없다. 취소는 `PendingMemberCanceller`(`TrainerDomain`, LocalStore `LocalPendingMemberRegistrar`가 구현, 카드의 `MemberDirectory.cancelPendingMember` 자리)로 Outbox update(`status: 'cancelled'`만, 서버 시각 `updatedAt`)를 저장하고, 행은 곧바로 사라진다. `LocalPendingMemberSource`는 `DevicePendingMembers`(기기 등록 + ack 전 취소 ID)를 내고 `MemberList.merge(assigned:pending:cancelled:)`가 서버 목록에서도 그 회원을 뺀다. 열려 있던 TR-03도 닫힌다. 규칙은 이미 소유자의 pending → cancelled를 허용한다(규칙 테스트 추가).
+  - AC-DF-113.8 TR-03 셸: `FeatureMembers/Detail/MemberDetailView.swift`(`/// TR-03`) — 헤더(표시명, '대기' 배지, 같은 `ConsentChip`, VoiceOver 한 문장 `tr03.header`), 대기 회원이 '동의 필요'면 '동의 받기'(`tr03.takeConsent`), 셸의 플래그 진입 행(DF-017 `tr03.entry.*`, `soapV2`면 '세션 시작' → `common.comingSoon`), 본문 `common.comingSoon`. 카드의 `onStartSession` 클로저는 DF-116이 붙인다.
+  - 행 칩 줄바꿈: `ConsentChip`을 `Label` 대신 아이콘·글자 스택으로 바꾸고, 행의 한 줄 배치에서 이름·칩을 `fixedSize`로 두어 전체가 제 너비로 들어갈 때만 한 줄이다. 아니면 칩이 이름 아래로 간다. 가로 콘텐츠 열(약 288pt)과 375pt에서 '동의 확인 대기'·'SYN-P001'이 음절마다 줄바뀌던 문제다.
+  - 테스트: `MemberListTests`(취소 숨김), `MemberListViewModelTests`(취소 → 행 제거·기기 취소 반영·가입 회원 제외, 저장 실패), `LocalPendingMembersTests`(취소는 ack까지 숨김), `ConsentChipTests`(한 줄 이상적 크기), UI `MemberListUITests`(`testNamesAndChipsStayOnOneLineInNarrowRows`: 두 폭에서 칩 글자 높이 < 배지 1.5줄·이름 < 2줄, 수정 전 코드로는 실패함; 행 메뉴 취소; 행 메뉴 동의 단계; TR-03 셸), 에뮬레이터 취소 종단.
 
 ---
 

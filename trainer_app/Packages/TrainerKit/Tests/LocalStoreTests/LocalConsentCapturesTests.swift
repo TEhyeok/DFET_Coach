@@ -158,6 +158,33 @@ final class LocalConsentCapturesTests: XCTestCase {
     states.cancel()
   }
 
+  /// AC-DF-110.5 / AC-DF-113.6 offline: register, capture, then cancel; back online the member's create goes first,
+  /// then its cancel (stage 0 holds the capture), and only then the capture's call (which the server then refuses: the
+  /// member is no longer pending).
+  func testACancelGoesOutBeforeTheMembersUnsentCapture() async throws {
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
+    let remote = OrderedRemote()
+    let engine = SyncEngine(store: outbox, writer: remote, uploader: remote, callable: remote)
+    await engine.networkDidChange(isReachable: false)
+    await engine.start()
+    let registrar = LocalPendingMemberRegistrar(
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { await engine.enqueue($0) },
+      now: { Synthetic.now }, makeID: { [pendingID] in pendingID })
+    _ = try await registrar.register(draft)
+    let recorder = LocalConsentRecorder(outbox: outbox, enqueue: { await engine.enqueue($0) },
+                                        now: { Synthetic.now }, makeID: { [captureUUID] in captureUUID })
+    _ = try await recorder.capture(member: .pending(pendingID), selections: grants)
+    try await registrar.cancel(pendingMemberId: pendingID)
+
+    await engine.networkDidChange(isReachable: true)
+    let sent = await eventually { remote.log.count == 3 }
+    XCTAssertTrue(sent)
+    XCTAssertEqual(remote.log, ["create pendingMembers/\(pendingID)", "update pendingMembers/\(pendingID)",
+                                "call recordConsent"])
+    await engine.stop()
+  }
+
   /// A rejected capture (a retired document version: `failed-precondition`) is failed with the item's code, and the
   /// effective consent reads it as rejected ('동의 필요' in the MVP chip).
   func testARejectedCaptureIsFailedAndReadsAsRejected() async throws {
@@ -182,6 +209,38 @@ final class LocalConsentCapturesTests: XCTestCase {
     XCTAssertNil(row.serverConfirmedAt)
     await engine.stop()
     values.cancel()
+  }
+
+  /// Review: a capture whose `recordConsent` ran out of attempts on a transient error (`unavailable`: a Functions
+  /// outage) is failed on the device, as V1-05 mirrors it, but carries the code, so the effective consent keeps it
+  /// '동의 확인 대기' with a local save allowed, not '동의 필요': the engine sends it again (`retryExhausted()`).
+  func testATransientFailureIsFailedWithItsCodeAndStillReadsAsAwaiting() async throws {
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
+    let remote = OrderedRemote(callError: .unavailable)
+    let engine = SyncEngine(store: outbox, writer: remote, uploader: remote, callable: remote,
+                            policy: RetryPolicy(maxAttempts: 1, maxDelay: 0, jitterFraction: 0))
+    await engine.start()
+    let recorder = LocalConsentRecorder(outbox: outbox, enqueue: { await engine.enqueue($0) })
+    let captures = LocalConsentCaptureStore(container: container, trainerUid: Synthetic.trainerA)
+    let resolver = EffectiveConsentResolver(server: NoServerState(), captures: captures)
+    let values = StateLog(resolver.observe(member: Synthetic.memberA))
+    let log = StateLog(captures.observeCaptures(member: Synthetic.memberA))
+    _ = try await recorder.capture(member: Synthetic.memberA, selections: grants)
+
+    let failed = await eventually { log.last?.first?.state == .failed }
+    XCTAssertTrue(failed)
+    XCTAssertEqual(log.last?.first?.lastErrorCode, "unavailable")
+    let row = try XCTUnwrap(ModelContext(container).fetchOwned(LocalConsentCapture.self, by: Synthetic.trainerA).first)
+    XCTAssertEqual(row.captureState, "failed")
+    XCTAssertEqual(row.lastErrorCode, "unavailable")
+    let awaiting = await eventually { values.last?.chipState == .awaiting }
+    XCTAssertTrue(awaiting)
+    XCTAssertFalse(values.all.contains { $0.healthData == .rejected }, "never '동의 필요' on an outage")
+    XCTAssertEqual(values.last?.healthRecordSave, .localOnly)
+    await engine.stop()
+    values.cancel()
+    log.cancel()
   }
 
   /// Captures of another member or another trainer are not observed.
@@ -220,7 +279,7 @@ private func eventually(timeout: TimeInterval = 5, _ condition: () -> Bool) asyn
 }
 
 private struct NoServerState: ConsentStateSource {
-  func observe(member: MemberKey) -> AsyncStream<ConsentState?> { AsyncStream { $0.yield(nil) } }
+  func observe(member: MemberKey) -> AsyncStream<ConsentStateReading> { AsyncStream { $0.yield(.absent) } }
 }
 
 /// Collects a stream's values in the background.

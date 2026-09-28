@@ -61,7 +61,8 @@ struct PreviewRootView: View {
       flags: preview.flagsProvider.current,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
-        localPendingMembers: registrar, registrar: registrar, consentDocuments: consent, consentRecorder: consent,
+        localPendingMembers: registrar, registrar: registrar, canceller: registrar, consentDocuments: consent,
+        consentRecorder: consent,
         effectiveConsent: effectiveConsent, syncQueue: queue, signOut: signOut,
         accountName: "SYN-TRAINER"))
       // 1/3 Split View simulation (AC-DF-017.4): a narrow, compact-size-class window on the leading edge.

@@ -12,6 +12,10 @@ import TrainerDomain
 /// Every listed member has its own consent subscription (AC-DF-113.2): the chip reads `EffectiveConsent.chipState`
 /// only, never `memberConsentStates` (AC-DF-111.7). A member that leaves the list loses its subscription and chip.
 ///
+/// '등록 취소' (AC-DF-113.6) saves the cancel on the device through `PendingMemberCanceller`; the member leaves the list
+/// at once and stays out (the device's unsent cancels, `DevicePendingMembers.cancelled`) until the server's list no
+/// longer has it.
+///
 /// One subscription at a time: every `start()` gets a generation, and a value or completion from an older generation is
 /// ignored, so a cancelled run can never overwrite state or drop the current task handles. The subscriptions live as
 /// long as the model (the shell keeps one for the session); screens only call `start()`.
@@ -30,6 +34,8 @@ public final class MemberListViewModel {
   public var query = ""
   /// The consent chip of each listed member, from its latest `EffectiveConsent`. Absent until the first value.
   public private(set) var chips: [MemberKey: ConsentChipState] = [:]
+  /// The last '등록 취소' could not be saved on the device (the member stays listed).
+  public private(set) var cancelFailed = false
 
   /// The loaded list filtered by `query`; empty in every other state.
   public var visibleEntries: [MemberListEntry] {
@@ -40,20 +46,55 @@ public final class MemberListViewModel {
   private let directory: any MemberDirectory
   private let localPending: any LocalPendingMemberSource
   private let consent: any EffectiveConsentSource
+  private let canceller: (any PendingMemberCanceller)?
   @ObservationIgnored private var tasks: [Task<Void, Never>] = []
   @ObservationIgnored private var generation = 0
   /// The latest value of each stream in the current generation; nil until the stream's first value.
   @ObservationIgnored private var assigned: [Member]?
   @ObservationIgnored private var serverPending: [PendingMember]?
-  @ObservationIgnored private var devicePending: [PendingMember] = []
+  @ObservationIgnored private var devicePending = DevicePendingMembers()
+  /// Cancelled from this model, so the row leaves before the device source reports the saved cancel.
+  @ObservationIgnored private var cancelledHere: Set<String> = []
   @ObservationIgnored private var consentTasks: [MemberKey: Task<Void, Never>] = [:]
 
+  /// `canceller` nil: no '등록 취소'.
   public init(
-    directory: any MemberDirectory, localPending: any LocalPendingMemberSource, consent: any EffectiveConsentSource
+    directory: any MemberDirectory, localPending: any LocalPendingMemberSource, consent: any EffectiveConsentSource,
+    canceller: (any PendingMemberCanceller)? = nil
   ) {
     self.directory = directory
     self.localPending = localPending
     self.consent = consent
+    self.canceller = canceller
+  }
+
+  /// Whether a pending row offers '등록 취소' (AC-DF-113.6). Assigned rows never do.
+  public var canCancelPending: Bool { canceller != nil }
+
+  /// The listed entry of `key`, whatever the search; nil while the list is not loaded or once the member left it.
+  public func entry(for key: MemberKey) -> MemberListEntry? {
+    guard case let .loaded(entries) = state else { return nil }
+    return entries.first { $0.key == key }
+  }
+
+  /// AC-DF-113.6 '등록 취소', after the trainer confirmed: the cancel is saved on the device and queued in the Outbox
+  /// (`pendingMembers/{id}` → `status: 'cancelled'`), and the member leaves the list now. An assigned member is never
+  /// cancelled here.
+  public func cancelPending(_ key: MemberKey) async {
+    guard case let .pending(id) = key, let canceller else { return }
+    cancelFailed = false
+    do {
+      try await canceller.cancel(pendingMemberId: id)
+    } catch {
+      cancelFailed = true
+      return
+    }
+    cancelledHere.insert(id)
+    publish()
+  }
+
+  public func dismissCancelFailure() {
+    cancelFailed = false
   }
 
   deinit {
@@ -69,7 +110,7 @@ public final class MemberListViewModel {
     if case .failed = state { state = .loading }
     assigned = nil
     serverPending = nil
-    devicePending = []
+    devicePending = DevicePendingMembers()
     let assignedStream = directory.observeAssignedMembers()
     let pendingStream = directory.observePendingMembers()
     let deviceStream = localPending.observeLocalPendingMembers()
@@ -125,7 +166,9 @@ public final class MemberListViewModel {
   /// Shows the joined list once both server lists have answered.
   private func publish() {
     guard let assigned, let serverPending else { return }
-    let entries = MemberList.merge(assigned: assigned, pending: serverPending + devicePending)
+    let entries = MemberList.merge(
+      assigned: assigned, pending: serverPending + devicePending.registered,
+      cancelled: devicePending.cancelled.union(cancelledHere))
     state = entries.isEmpty ? .empty : .loaded(entries)
     followConsent(of: entries.map(\.key))
   }

@@ -29,16 +29,16 @@ public struct ConsentChip: View {
 
   public var body: some View {
     let text = localize(Self.labelKey(state))
-    let chip = Label {
-      Text(text)
-    } icon: {
+    // Icon and text in a stack: its ideal size is one line of the whole text, which TR-02's row measures.
+    let chip = HStack(spacing: TrainerSpacing.xs) {
       Image(systemName: Self.symbol(state))
         .accessibilityHidden(true)  // the text says it all
+      Text(text)
+        .fixedSize(horizontal: false, vertical: true)
     }
     .font(style == .row ? .caption.weight(.medium) : .headline)
     .foregroundStyle(Self.tint(state))
     .lineLimit(nil)
-    .fixedSize(horizontal: false, vertical: true)
     .padding(.horizontal, style == .row ? TrainerSpacing.s : TrainerSpacing.m)
     .padding(.vertical, style == .row ? TrainerSpacing.xxs : TrainerSpacing.s)
     .background(TrainerColor.neutral100, in: RoundedRectangle(cornerRadius: TrainerSpacing.cornerRadius))

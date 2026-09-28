@@ -53,6 +53,7 @@ extension AppBootstrap {
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),
       localPendingMembers: runtime?.localPendingMembers ?? SessionRuntime.NoLocalPendingMembers(),
       registrar: runtime?.registrar ?? SessionRuntime.UnavailableRegistrar(),
+      canceller: runtime?.canceller ?? SessionRuntime.UnavailableRegistrar(),
       consentDocuments: consent,
       consentRecorder: runtime?.consentRecorder ?? SessionRuntime.UnavailableConsentRecorder(),
       effectiveConsent: EffectiveConsentResolver(

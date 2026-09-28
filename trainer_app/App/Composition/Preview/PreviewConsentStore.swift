@@ -16,7 +16,8 @@ final class PreviewConsentStore: ConsentDocumentCatalog, ConsentCaptureRecorder,
   private var captures: [MemberKey: [ConsentCapture]]
   private var captureObservers: [UUID: (member: MemberKey, continuation: AsyncStream<[ConsentCapture]>.Continuation)] =
     [:]
-  private var stateObservers: [UUID: (member: MemberKey, continuation: AsyncStream<ConsentState?>.Continuation)] = [:]
+  private var stateObservers: [UUID: (member: MemberKey, continuation: AsyncStream<ConsentStateReading>.Continuation)] =
+    [:]
   private static let publishedAt = Date(timeIntervalSince1970: 1_780_000_000)
 
   init(script: PreviewConsentScript = PreviewConsentScript()) {
@@ -55,12 +56,12 @@ final class PreviewConsentStore: ConsentDocumentCatalog, ConsentCaptureRecorder,
   }
 
   /// The scenario's `memberConsentStates` document of the member, then every change `confirmPendingCaptures()` makes.
-  func observe(member: MemberKey) -> AsyncStream<ConsentState?> {
+  func observe(member: MemberKey) -> AsyncStream<ConsentStateReading> {
     AsyncStream { continuation in
       let id = UUID()
       lock.withLock {
         stateObservers[id] = (member, continuation)
-        continuation.yield(states[member])
+        continuation.yield(reading(of: member))
       }
       continuation.onTermination = { [weak self] _ in
         self?.lock.withLock { _ = self?.stateObservers.removeValue(forKey: id) }
@@ -86,10 +87,15 @@ final class PreviewConsentStore: ConsentDocumentCatalog, ConsentCaptureRecorder,
                                 capturedAt: capture.capturedAt, state: .confirmed, confirmedAt: now)
         }
         states[member] = ConsentState(entries: entries)
-        stateObservers.values.filter { $0.member == member }.forEach { $0.continuation.yield(states[member]) }
+        stateObservers.values.filter { $0.member == member }.forEach { $0.continuation.yield(reading(of: member)) }
         publishCaptures(of: member)
       }
     }
+  }
+
+  /// Called under the lock.
+  private func reading(of member: MemberKey) -> ConsentStateReading {
+    states[member].map { .present($0) } ?? .absent
   }
 
   /// Called under the lock, so observers see the lists in order.

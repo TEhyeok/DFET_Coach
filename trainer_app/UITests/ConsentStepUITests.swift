@@ -127,6 +127,67 @@ final class ConsentStepUITests: XCTestCase {
     XCTAssertEqual(detail.value as? String, "pending:SynPending0000000001")
   }
 
+  /// AC-DF-110.5 (review): ① refused for a new pending member offers '등록 취소'; after the confirmation the step shows
+  /// `tr14.consent.requiredRefusedPending`, nothing is recorded and TR-02 no longer lists the member.
+  @MainActor
+  func test_AC_DF_110_5_refusingRequiredCancelsTheRegistration() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-members"]
+    app.launch()
+    register(in: app)
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    XCTAssertFalse(element("tr14.consent.cancelRegistration", in: app).exists)
+    app.buttons["tr14.consent.refuse.required"].firstMatch.tap()
+    let cancel = app.buttons["tr14.consent.cancelRegistration"].firstMatch
+    XCTAssertTrue(cancel.waitForExistence(timeout: 5))
+    XCTAssertEqual(cancel.label, "등록 취소")
+    cancel.tap()
+    let alert = app.alerts.firstMatch
+    XCTAssertTrue(alert.waitForExistence(timeout: 5))
+    XCTAssertTrue(alert.staticTexts["대기 회원 등록을 취소할까요? 연결된 기록은 5영업일 안에 파기돼요."].exists)
+    alert.buttons["등록 취소"].firstMatch.tap()
+
+    let done = element("tr14.consent.requiredRefusedPending", in: app)
+    XCTAssertTrue(done.waitForExistence(timeout: 10))
+    XCTAssertEqual(done.label, "필수 동의를 받지 않아 회원 등록을 취소했어요")
+    XCTAssertFalse(element("tr14.consent.result", in: app).exists, "no consent was recorded")
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(element("tr14.consent.root", in: app).waitForNonExistence(timeout: 10))
+    XCTAssertTrue(element("tr02.row.2", in: app).waitForExistence(timeout: 10))
+    XCTAssertFalse(listRow(named: "SYN Member B", in: app).exists, "the cancelled member is not listed")
+  }
+
+  /// Review: a step closed before anything was answered is not a dead end. The member stays '동의 필요' in TR-02, and
+  /// TR-03's '동의 받기' opens the consent step for it again.
+  @MainActor
+  func testAStepClosedBeforeAnsweringCanBeTakenAgainFromTR03() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--preview-members"]
+    app.launch()
+    register(in: app)
+    XCTAssertTrue(element("tr14.consent.handToMember", in: app).waitForExistence(timeout: 10))
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(element("tr14.consent.root", in: app).waitForNonExistence(timeout: 10))
+
+    let row = listRow(named: "SYN Member B", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 필요"), row.label)
+    row.tap()
+    let take = element("tr03.takeConsent", in: app)
+    XCTAssertTrue(take.waitForExistence(timeout: 10))
+    take.tap()
+    let root = element("tr14.consent.root", in: app)
+    XCTAssertTrue(root.waitForExistence(timeout: 10))
+    XCTAssertEqual(root.value as? String, "SynPending0000000001")
+    for type in types {
+      app.buttons["tr14.consent.grant.\(type)"].firstMatch.tap()
+    }
+    app.buttons["tr14.consent.submit"].firstMatch.tap()
+    XCTAssertTrue(waitForLabel(element("tr14.consent.result", in: app), "동의 확인 대기"))
+    app.buttons["common.close"].firstMatch.tap()
+    XCTAssertTrue(waitForLabel(row, "SYN Member B, 대기, 동의 확인 대기"), row.label)
+    XCTAssertFalse(element("tr03.takeConsent", in: app).exists, "waiting for the server: no second capture")
+  }
+
   // MARK: Helpers
 
   private func waitForLabel(_ element: XCUIElement, _ label: String, timeout: TimeInterval = 10) -> Bool {

@@ -96,7 +96,7 @@ public actor LocalConsentCaptureStore: ConsentCaptureSource {
           captureId: row.captureId, member: member, selections: Self.selections(row.selectionsJSON),
           capturedAt: row.capturedAt,
           state: LocalConsentCaptureState(rawValue: row.captureState).map(ConsentCaptureState.init) ?? .failed,
-          confirmedAt: row.serverConfirmedAt)
+          confirmedAt: row.serverConfirmedAt, lastErrorCode: row.lastErrorCode)
       }
     } catch {
       Self.logger.error("consent captures unreadable")

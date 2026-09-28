@@ -58,6 +58,8 @@ final class AppShellUITests: XCTestCase {
     XCTAssertTrue(start.waitForExistence(timeout: 10))
     XCTAssertFalse(element("tr03.entry.lidar", in: app).exists)
     start.tap()
+    // The sheet, not TR-03's own `common.comingSoon` body (AC-DF-113.8).
+    XCTAssertTrue(element("common.close", in: app).waitForExistence(timeout: 10))
     XCTAssertTrue(element("common.comingSoon", in: app).waitForExistence(timeout: 10))
     attachScreenshot(app, name: "AC-DF-017.5 coming soon")
     element("common.close", in: app).tap()

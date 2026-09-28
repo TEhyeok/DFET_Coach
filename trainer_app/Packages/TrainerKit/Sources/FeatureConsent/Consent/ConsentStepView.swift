@@ -4,10 +4,13 @@ import TrainerContracts
 import TrainerDomain
 
 /// TR-14 동의 받기 (DF-110 MVP, F-PRIV-01.1): the member answers ①②③ one by one on the trainer's iPad. No answer is
-/// preselected and there is no 'agree to all' (AC-DF-110.2). A refusal leaves no record; ① refused records nothing.
-/// Copy is the V1-12 deck's (`tr14.consent.*`, `consent.type.*`); the MVP shows no legal document text (G-04).
+/// preselected and there is no 'agree to all' (AC-DF-110.2). A refusal leaves no record; ① refused records nothing and,
+/// for a pending member, offers '등록 취소' (`tr02.menu.cancelPending`, confirmed with `tr02.cancelPending.confirm`,
+/// then `tr14.consent.requiredRefusedPending`, AC-DF-110.5). Copy is the V1-12 deck's (`tr14.consent.*`,
+/// `consent.type.*`); the MVP shows no legal document text (G-04).
 public struct ConsentStepView: View {
   @State private var model: ConsentStepModel
+  @State private var confirmingCancel = false
   private let onClose: () -> Void
   private let localize = Localizer.main
 
@@ -31,6 +34,17 @@ public struct ConsentStepView: View {
     }
     // V1-07 §3.2: `.consent` is `sheet(.large, interactiveDismissDisabled)`.
     .interactiveDismissDisabled()
+    .alert(Text("tr02.menu.cancelPending", bundle: .main), isPresented: $confirmingCancel) {
+      Button(role: .destructive) {
+        Task { await model.cancelRegistration() }
+      } label: {
+        Text("tr02.menu.cancelPending", bundle: .main)
+      }
+      .accessibilityIdentifier("tr14.consent.cancelRegistration.confirm")
+      Button(role: .cancel) {} label: { Text("common.cancel", bundle: .main) }
+    } message: {
+      Text("tr02.cancelPending.confirm", bundle: .main)
+    }
     .task { await model.load() }
     .task { await model.watchConsent() }
     .accessibilityElement(children: .contain)
@@ -64,6 +78,13 @@ public struct ConsentStepView: View {
       cards
     case .saved:
       result
+    case .registrationCancelled:
+      Text("tr14.consent.requiredRefusedPending", bundle: .main)
+        .font(.title3)
+        .multilineTextAlignment(.center)
+        .padding(TrainerSpacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("tr14.consent.requiredRefusedPending")
     }
   }
 
@@ -83,6 +104,14 @@ public struct ConsentStepView: View {
             Text("consent.requiredFirst", bundle: .main)
               .foregroundStyle(TrainerColor.danger)
               .accessibilityIdentifier("consent.requiredFirst")
+            if model.canCancelRegistration {
+              // AC-DF-110.5: a pending member without ① cannot stay registered; the trainer confirms first.
+              Button(role: .destructive) { confirmingCancel = true } label: {
+                Text("tr02.menu.cancelPending", bundle: .main)
+                  .frame(minHeight: TrainerSpacing.minTapTarget)
+              }
+              .accessibilityIdentifier("tr14.consent.cancelRegistration")
+            }
           }
         }
       }

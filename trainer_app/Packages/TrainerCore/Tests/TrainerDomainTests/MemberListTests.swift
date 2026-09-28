@@ -35,6 +35,16 @@ final class MemberListTests: XCTestCase {
     XCTAssertEqual(entries.map(\.key), [.pending("a"), .pending("b")])
   }
 
+  /// AC-DF-113.6: a member cancelled on this device leaves the list at once, from the server's list and from the
+  /// device's registrations alike, before the cancel is sent. Assigned members are never hidden by it.
+  func test_AC_DF_113_6_aCancelledPendingMemberIsNotListed() {
+    let registeredHere = PendingMember(id: "SynPendingList000004", displayName: "라회원")
+    let entries = MemberList.merge(
+      assigned: [assignedA, Member(id: pendingC.id, displayName: "마회원", trainerId: "t")],
+      pending: [pendingC, registeredHere], cancelled: [pendingC.id, registeredHere.id])
+    XCTAssertEqual(entries.map(\.key), [.uid("u1"), .uid(pendingC.id)])
+  }
+
   func testNothingToMergeIsEmpty() {
     XCTAssertEqual(MemberList.merge(assigned: [], pending: []), [])
   }

@@ -19,9 +19,9 @@ final class MemberListViewModelTests: XCTestCase {
 
   private func makeModel(
     _ directory: ControlledDirectory, device: ControlledLocalPending = ControlledLocalPending(),
-    consent: ControlledConsent = ControlledConsent()
+    consent: ControlledConsent = ControlledConsent(), canceller: RecordingCanceller? = nil
   ) -> MemberListViewModel {
-    MemberListViewModel(directory: directory, localPending: device, consent: consent)
+    MemberListViewModel(directory: directory, localPending: device, consent: consent, canceller: canceller)
   }
 
   func testLoadedMembersAreSortedByName() async {
@@ -263,6 +263,56 @@ final class MemberListViewModelTests: XCTestCase {
     XCTAssertEqual(model.visibleEntries.count, 3)
   }
 
+  // MARK: AC-DF-113.6 cancel
+
+  /// '등록 취소' saves the cancel through the canceller and the member leaves the list at once; the device's unsent
+  /// cancels keep it out (from the server's list too); an assigned member is never cancelled.
+  func test_AC_DF_113_6_aCancelledPendingMemberLeavesTheList() async {
+    let directory = ControlledDirectory()
+    let device = ControlledLocalPending()
+    let canceller = RecordingCanceller()
+    let model = makeModel(directory, device: device, canceller: canceller)
+    XCTAssertTrue(model.canCancelPending)
+    model.start()
+    directory.emit([a])
+    directory.emitPending([p])
+    device.emit([local])
+    await waitFor { model.state == .loaded([self.entry(self.a), self.entry(self.p), self.entry(self.local)]) }
+    XCTAssertEqual(model.entry(for: .pending(p.id)), entry(p))
+
+    await model.cancelPending(.pending(p.id))
+    XCTAssertEqual(canceller.cancelled, [p.id])
+    XCTAssertEqual(model.state, .loaded([entry(a), entry(local)]))
+    XCTAssertNil(model.entry(for: .pending(p.id)))
+    XCTAssertFalse(model.cancelFailed)
+
+    device.emit([local], cancelled: [local.id])  // a cancel saved elsewhere (TR-14's refused ①)
+    await waitFor { model.state == .loaded([self.entry(self.a)]) }
+    directory.emitPending([p])  // the server has not seen the cancel yet
+    try? await Task.sleep(nanoseconds: 50_000_000)
+    XCTAssertEqual(model.state, .loaded([entry(a)]))
+
+    await model.cancelPending(.uid(a.id))
+    XCTAssertEqual(canceller.cancelled, [p.id], "assigned members are not cancelled here")
+  }
+
+  /// A cancel that could not be saved on the device keeps the member and says so.
+  func testACancelThatCannotBeSavedKeepsTheMember() async {
+    let directory = ControlledDirectory()
+    let canceller = RecordingCanceller(fails: true)
+    let model = makeModel(directory, canceller: canceller)
+    model.start()
+    directory.emit([])
+    directory.emitPending([p])
+    await waitFor { model.state == .loaded([self.entry(self.p)]) }
+    await model.cancelPending(.pending(p.id))
+    XCTAssertTrue(model.cancelFailed)
+    XCTAssertEqual(model.state, .loaded([entry(p)]))
+    model.dismissCancelFailure()
+    XCTAssertFalse(model.cancelFailed)
+    XCTAssertFalse(makeModel(ControlledDirectory()).canCancelPending, "no canceller, no '등록 취소'")
+  }
+
   private func waitFor(_ condition: @escaping @MainActor () -> Bool, file: StaticString = #filePath, line: UInt = #line) async {
     for _ in 0..<200 where !condition() {
       try? await Task.sleep(nanoseconds: 25_000_000)
@@ -322,19 +372,19 @@ final class ControlledDirectory: MemberDirectory, @unchecked Sendable {
   func failPending(_ error: MemberDirectoryError) { pending.fail(error) }
 }
 
-/// Device-only pending members the test drives (the newest subscription).
+/// Device-only pending members and cancels the test drives (the newest subscription).
 final class ControlledLocalPending: LocalPendingMemberSource, @unchecked Sendable {
   private let lock = NSLock()
-  private var continuation: AsyncStream<[PendingMember]>.Continuation?
+  private var continuation: AsyncStream<DevicePendingMembers>.Continuation?
 
-  func observeLocalPendingMembers() -> AsyncStream<[PendingMember]> {
+  func observeLocalPendingMembers() -> AsyncStream<DevicePendingMembers> {
     AsyncStream { continuation in lock.withLock { self.continuation = continuation } }
   }
 
   var subscribed: Bool { lock.withLock { continuation != nil } }
 
-  func emit(_ members: [PendingMember]) {
-    lock.withLock { continuation }?.yield(members)
+  func emit(_ members: [PendingMember], cancelled: Set<String> = []) {
+    lock.withLock { continuation }?.yield(DevicePendingMembers(registered: members, cancelled: cancelled))
   }
 
   func finish() {
@@ -366,5 +416,23 @@ final class ControlledConsent: EffectiveConsentSource, @unchecked Sendable {
 
   func emit(_ value: EffectiveConsent, for member: MemberKey) {
     lock.withLock { continuations[member] }?.yield(value)
+  }
+}
+
+/// A `PendingMemberCanceller` that records the cancelled IDs, or fails like a store that cannot be written.
+final class RecordingCanceller: PendingMemberCanceller, @unchecked Sendable {
+  private let lock = NSLock()
+  private let fails: Bool
+  private var _cancelled: [String] = []
+
+  init(fails: Bool = false) {
+    self.fails = fails
+  }
+
+  var cancelled: [String] { lock.withLock { _cancelled } }
+
+  func cancel(pendingMemberId: String) async throws {
+    if fails { throw CocoaError(.fileWriteUnknown) }
+    lock.withLock { _cancelled.append(pendingMemberId) }
   }
 }

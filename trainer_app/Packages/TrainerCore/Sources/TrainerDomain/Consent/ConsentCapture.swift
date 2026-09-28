@@ -21,7 +21,8 @@ public enum ConsentCaptureState: String, CaseIterable, Sendable {
   case pending
   /// `recordConsent` succeeded.
   case confirmed
-  /// `recordConsent` failed and waits for the trainer (or was superseded by a newer capture).
+  /// `recordConsent` failed and waits for the trainer (or was superseded by a newer capture). With a transient
+  /// `lastErrorCode` the SyncEngine still sends it again on its own (`SyncEngine.transientErrorCodes`).
   case failed
 }
 
@@ -36,10 +37,13 @@ public struct ConsentCapture: Equatable, Sendable {
   public let state: ConsentCaptureState
   /// When this device learned that `recordConsent` succeeded (device clock); nil until then.
   public let confirmedAt: Date?
+  /// The error code of the `callConsent` item's last failed attempt (V1-05 §12.2 `lastErrorCode`); nil when none. A
+  /// `failed` capture whose code is transient is sent again by the SyncEngine, so it is not a refusal.
+  public let lastErrorCode: String?
 
   public init(
     captureId: String, member: MemberKey, selections: [ConsentSelection], capturedAt: Date,
-    state: ConsentCaptureState, confirmedAt: Date? = nil
+    state: ConsentCaptureState, confirmedAt: Date? = nil, lastErrorCode: String? = nil
   ) {
     self.captureId = captureId
     self.member = member
@@ -47,6 +51,7 @@ public struct ConsentCapture: Equatable, Sendable {
     self.capturedAt = capturedAt
     self.state = state
     self.confirmedAt = confirmedAt
+    self.lastErrorCode = lastErrorCode
   }
 }
 

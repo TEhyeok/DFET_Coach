@@ -36,6 +36,7 @@ struct RootSplitView: View {
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
+  private let canceller: any PendingMemberCanceller
   private let consentDocuments: any ConsentDocumentCatalog
   private let consentRecorder: any ConsentCaptureRecorder
   private let effectiveConsent: any EffectiveConsentSource
@@ -43,6 +44,7 @@ struct RootSplitView: View {
   init(flags: FeatureFlags, services: ShellServices) {
     baseFlags = flags
     registrar = services.registrar
+    canceller = services.canceller
     consentDocuments = services.consentDocuments
     consentRecorder = services.consentRecorder
     effectiveConsent = services.effectiveConsent
@@ -52,7 +54,7 @@ struct RootSplitView: View {
     _navigation = State(initialValue: ShellNavigation(selection: TrainerRoute.initial(flags: flags)))
     _memberList = State(initialValue: MemberListViewModel(
       directory: services.memberDirectory, localPending: services.localPendingMembers,
-      consent: services.effectiveConsent))
+      consent: services.effectiveConsent, canceller: services.canceller))
   }
 
   private var isCompact: Bool { sizeClass == .compact }
@@ -72,6 +74,7 @@ struct RootSplitView: View {
         navigation = navigation.restoring(stackPath: stackPath)
       }
     }
+    .onChange(of: memberList.state) { _, _ in closeDetailOfRemovedMember() }
     .sheet(item: $comingSoonEntry) { _ in
       NavigationStack {
         ComingSoonView()
@@ -92,9 +95,10 @@ struct RootSplitView: View {
           onCancel: { sheet = nil })
       case let .consent(member):
         // TR-14 consent step (DF-110). Not swipe-dismissable (V1-07 §3.2); `tr14.consent.root` carries the member ID.
+        // A refused ① can cancel the pending member here (AC-DF-110.5).
         ConsentStepView(
           model: ConsentStepModel(member: member, documents: consentDocuments, recorder: consentRecorder,
-                                  consent: effectiveConsent),
+                                  consent: effectiveConsent, canceller: canceller),
           onClose: { sheet = nil })
       }
     }
@@ -203,7 +207,7 @@ struct RootSplitView: View {
   }
 
   /// TR-02. Regular width selects the detail column; compact width pushes TR-03 onto the stack. A pending member's
-  /// row opens TR-03 with its `MemberKey.pending` (DF-113).
+  /// row opens TR-03 with its `MemberKey.pending` (DF-113); its menu reopens TR-14's consent step or cancels it.
   private var memberListView: some View {
     MemberListView(
       model: memberList, selectedKey: selectedMember,
@@ -215,7 +219,8 @@ struct RootSplitView: View {
           navigation.detail = route
         }
       },
-      onAddPending: { sheet = .registration })
+      onAddPending: { sheet = .registration },
+      onTakeConsent: { member in sheet = .consent(member: member) })
     .navigationTitle(String(localized: "tr02.title"))
     .toolbar {
       // TR-14 entry (DF-108); the empty state offers the same action (DF-113).
@@ -233,15 +238,41 @@ struct RootSplitView: View {
     return nil
   }
 
+  /// TR-03 shell (DF-113 AC-DF-113.8): the member's name, '대기' badge and chip as TR-02 shows them, '동의 받기' for a
+  /// pending member that needs consent, the flag-gated entries, `common.comingSoon`.
   private func memberDetail(_ member: MemberKey) -> some View {
-    MemberDetailShell(entries: FlagGate.visibleEntries(on: .memberDetail, flags: flags)) { entry in
-      if entry.destination == .comingSoon {
-        comingSoonEntry = entry
+    Group {
+      if let entry = memberList.entry(for: member) {
+        MemberDetailView(entry: entry, chip: memberList.chips[member],
+                         onTakeConsent: { sheet = .consent(member: member) }) {
+          MemberDetailEntries(entries: FlagGate.visibleEntries(on: .memberDetail, flags: flags)) { entry in
+            if entry.destination == .comingSoon {
+              comingSoonEntry = entry
+            }
+          }
+        }
+      } else {
+        Color.clear
       }
     }
     .container("tr03.root")
     // Which member is open, for UI tests: the kind and the random key, never a name.
     .accessibilityValue(Self.accessibilityValue(member))
+  }
+
+  /// A member that left TR-02 (cancelled, AC-DF-113.6) leaves TR-03 too. Only a settled list decides: a loading or
+  /// failed list keeps the screen.
+  private func closeDetailOfRemovedMember() {
+    switch memberList.state {
+    case .loaded, .empty: break
+    case .loading, .failed: return
+    }
+    func removed(_ route: TrainerRoute) -> Bool {
+      guard case let .memberDetail(member) = route else { return false }
+      return memberList.entry(for: member) == nil
+    }
+    if let detail = navigation.detail, removed(detail) { navigation.detail = nil }
+    stackPath.removeAll(where: removed)
   }
 
   static func accessibilityValue(_ member: MemberKey) -> String {
@@ -252,8 +283,8 @@ struct RootSplitView: View {
   }
 }
 
-/// TR-03 placeholder: only the flag-gated action row. The screen itself arrives in P1a.
-private struct MemberDetailShell: View {
+/// TR-03's flag-gated action row (DF-017): only the entries whose flag is on, inside FeatureMembers' TR-03 shell.
+private struct MemberDetailEntries: View {
   let entries: [EntryPoint]
   let open: (EntryPoint) -> Void
   @Environment(\.layoutMode) private var layoutMode
@@ -262,16 +293,12 @@ private struct MemberDetailShell: View {
     let layout = layoutMode == .regular
       ? AnyLayout(HStackLayout(spacing: 12))
       : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
-    ScrollView {
-      layout {
-        ForEach(entries) { entry in
-          Button(String(localized: String.LocalizationValue(entry.titleKey))) { open(entry) }
-            .buttonStyle(.bordered)
-            .accessibilityIdentifier(entry.accessibilityID)
-        }
+    layout {
+      ForEach(entries) { entry in
+        Button(String(localized: String.LocalizationValue(entry.titleKey))) { open(entry) }
+          .buttonStyle(.bordered)
+          .accessibilityIdentifier(entry.accessibilityID)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(24)
     }
   }
 }

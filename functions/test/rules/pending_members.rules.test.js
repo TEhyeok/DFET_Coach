@@ -1,8 +1,9 @@
 // DF-035 대기 회원 규칙: R-18, R-19, R-30, R-31과 AC-DF-035.3 birthYear 경계(TC-DF035-97). V1-05 §7.4.
+// DF-113 AC-DF-113.6·DF-110 AC-DF-110.5: 트레이너 앱의 등록 취소(Outbox update `status: 'cancelled'` + 서버 시각 `updatedAt`).
 // request.time.year()는 UTC 기준이라 기대 연도도 UTC로 계산한다(ASM-P0-26). 모든 식별자와 값은 합성이다.
 const {after, before, beforeEach, describe, test} = require('node:test');
 const {assertFails, assertSucceeds} = require('@firebase/rules-unit-testing');
-const {doc, serverTimestamp, setDoc, updateDoc} = require('firebase/firestore');
+const {doc, getDoc, serverTimestamp, setDoc, updateDoc} = require('firebase/firestore');
 const h = require('./_harness');
 
 const {trainerA, pendA} = h.IDS;
@@ -126,5 +127,49 @@ describe('pendingMembers birthYear (R-31, AC-DF-035.3)', () => {
 
   test('R-31 control: birthYear 1900 is allowed', async () => {
     await assertSucceeds(createPending({birthYear: 1900}));
+  });
+});
+
+// 트레이너 앱이 보내는 모양 그대로: Outbox 페이로드 {status: 'cancelled'}에 FirestoreRemoteWriter.update가 서버 시각
+// updatedAt을 더한다. cancelledAt은 서버 필드라 앱이 쓰지 않는다(V1-05 §4.3).
+function cancelAs(uid = trainerA, extra = {}) {
+  return updateDoc(doc(h.trainerDb(env, uid), `pendingMembers/${pendA}`), {
+    status: 'cancelled', updatedAt: serverTimestamp(), ...extra,
+  });
+}
+
+describe('pendingMembers cancel from the trainer app (AC-DF-113.6, AC-DF-110.5, F-LINK-01.5)', () => {
+  test('the creator cancels a pending member with the Outbox payload', async () => {
+    await seedPending({consent: null});
+    await assertSucceeds(cancelAs());
+  });
+
+  test('another trainer cannot cancel it', async () => {
+    await seedPending({consent: null});
+    await h.seed(env, h.seedTrainer(h.IDS.trainerB, []));
+    await assertFails(cancelAs(h.IDS.trainerB));
+  });
+
+  test('a client cancelledAt (server field) or a client updatedAt is denied', async () => {
+    await seedPending({consent: null});
+    await assertFails(cancelAs(trainerA, {cancelledAt: serverTimestamp()}));
+    await assertFails(updateDoc(doc(h.trainerDb(env), `pendingMembers/${pendA}`), {
+      status: 'cancelled', updatedAt: h.hoursAgo(1),
+    }));
+  });
+
+  test('a cancelled member cannot be cancelled again or brought back; its consent state is no longer readable', async () => {
+    await seedPending({status: 'cancelled', consent: {required: true, healthData: true}});
+    await assertFails(cancelAs());
+    await assertFails(updateDoc(doc(h.trainerDb(env), `pendingMembers/${pendA}`), {
+      status: 'pending', updatedAt: serverTimestamp(),
+    }));
+    // isPendingOwner needs status 'pending': the TR-02 chip listener of a cancelled member is refused.
+    await assertFails(getDoc(doc(h.trainerDb(env), `memberConsentStates/${pendA}`)));
+  });
+
+  test('control: the creator reads the consent state while the member is pending', async () => {
+    await seedPending({consent: {required: true, healthData: true}});
+    await assertSucceeds(getDoc(doc(h.trainerDb(env), `memberConsentStates/${pendA}`)));
   });
 });

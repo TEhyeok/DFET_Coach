@@ -8,6 +8,8 @@ struct ShellServices {
   let localPendingMembers: any LocalPendingMemberSource
   /// TR-14 registration (DF-108).
   let registrar: any PendingMemberRegistrar
+  /// '등록 취소' of a pending member: TR-02's row menu (AC-DF-113.6) and a refused ① in TR-14 (AC-DF-110.5).
+  let canceller: any PendingMemberCanceller
   /// TR-14 consent step (DF-110): the published consent document versions.
   let consentDocuments: any ConsentDocumentCatalog
   /// TR-14 consent step (DF-110): saves an in-person capture and queues its `recordConsent` call.
@@ -27,7 +29,8 @@ struct ShellServices {
 enum ShellSheet: Identifiable, Equatable {
   /// TR-14 registration (DF-108).
   case registration
-  /// The consent step of a just-registered member (AC-DF-108.4, DF-110).
+  /// The consent step of a just-registered member (AC-DF-108.4, DF-110), or of a pending member reopened from its
+  /// TR-02 row menu or TR-03 '동의 받기' while its chip reads '동의 필요'.
   case consent(member: MemberKey)
 
   var id: String {

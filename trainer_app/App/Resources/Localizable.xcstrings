@@ -1069,6 +1069,18 @@
         }
       }
     },
+    "tr02.cancelPending.confirm" : {
+      "comment" : "V1-12 · F-LINK-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대기 회원 등록을 취소할까요? 연결된 기록은 5영업일 안에 파기돼요."
+          }
+        }
+      }
+    },
     "tr02.consent.needed" : {
       "comment" : "V1-12 · TR-02",
       "extractionState" : "manual",
@@ -1101,6 +1113,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아직 담당 회원이 없어요"
+          }
+        }
+      }
+    },
+    "tr02.menu.cancelPending" : {
+      "comment" : "V1-12 · F-LINK-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "등록 취소"
           }
         }
       }
@@ -1293,6 +1317,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "동의하지 않음"
+          }
+        }
+      }
+    },
+    "tr14.consent.requiredRefusedPending" : {
+      "comment" : "V1-12 · F-LINK-01.5",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필수 동의를 받지 않아 회원 등록을 취소했어요"
           }
         }
       }

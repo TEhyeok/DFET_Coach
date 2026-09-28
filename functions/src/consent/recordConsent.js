@@ -5,12 +5,14 @@
 // the memberApp channel, ④⑤, withdraw, signature PNG, audit entries and post-commit processing come later
 // (validateRequest.assertMvpScope rejects them with failed-precondition 'consent.unsupportedInMvp').
 //
-// One transaction, all reads before writes (V1-06 §3.8):
-//   1. consentRecords where clientCaptureId == X. Found: same caller, member key, channel and selections ->
-//      replay the stored result ({replayed: true}, no writes); anything else -> already-exists 'idempotency.keyReused'.
-//   2. pendingMembers/{p}, memberConsentStates/{p}, consentDocumentVersions/{v} for each selection.
-//   3. Checks: V11/V2 (member.notFound, member.pendingNotOwned), V5 (consent.documentNotPublished),
-//      V8 (consent.requiredFirst).
+// Auth and the request come first (requireTrainer, validateRequest, the MVP gate), then one transaction, all reads
+// before writes (V1-06 §3.8, §6.2.4 order: permission and existence before the idempotency check):
+//   1. pendingMembers/{p}. Checks: V11 (exists), V2 (member.pendingNotOwned), V11 (status 'pending'). A replay runs
+//      only after these, so a caller who lost the member (or the trainer claim) never gets its current state back.
+//   2. consentRecords where clientCaptureId == X. Found: same caller (recordedBy), member key, channel and selections
+//      -> replay the stored result ({replayed: true}, no writes); anything else -> already-exists 'idempotency.keyReused'.
+//   3. memberConsentStates/{p}, consentDocumentVersions/{v} for each selection. Checks: V5
+//      (consent.documentNotPublished), V8 (consent.requiredFirst).
 //   4. Writes: one consentRecords document per selection (auto ID, recordedAt = one server Timestamp for the call),
 //      then memberConsentStates/{p} merged with derive(prev, newRecords).
 // recordIds and the state keys follow the consent type order (required, healthData, bodyImaging, sharing,
@@ -65,6 +67,13 @@ async function recordConsentCore({db, now, auth, data}) {
   const documentRefs = selections.map((s) => db.collection('consentDocumentVersions').doc(s.documentVersion));
 
   return db.runTransaction(async (tx) => {
+    const pendingSnap = await tx.get(pendingRef);
+    if (!pendingSnap.exists) fail('not-found', 'member.notFound', {fields: [memberField]});                // V11
+    if (pendingSnap.get('trainerId') !== uid) {
+      fail('permission-denied', 'member.pendingNotOwned', {fields: [memberField]});                       // V2
+    }
+    if (pendingSnap.get('status') !== 'pending') fail('not-found', 'member.notFound', {fields: [memberField]});
+
     const previous = await tx.get(records.where('clientCaptureId', '==', request.clientCaptureId));
     if (!previous.empty) {
       const stored = previous.docs.map((snap) => ({recordId: snap.id, ...snap.data()})).sort(byConsentType);
@@ -80,13 +89,7 @@ async function recordConsentCore({db, now, auth, data}) {
       });
     }
 
-    const [pendingSnap, stateSnap, ...documentSnaps] = await tx.getAll(pendingRef, stateRef, ...documentRefs);
-    if (!pendingSnap.exists) fail('not-found', 'member.notFound', {fields: [memberField]});                // V11
-    if (pendingSnap.get('trainerId') !== uid) {
-      fail('permission-denied', 'member.pendingNotOwned', {fields: [memberField]});                       // V2
-    }
-    if (pendingSnap.get('status') !== 'pending') fail('not-found', 'member.notFound', {fields: [memberField]});
-
+    const [stateSnap, ...documentSnaps] = await tx.getAll(stateRef, ...documentRefs);
     documentSnaps.forEach((snap, i) => {                                                                   // V5
       const selection = selections[i];
       if (!snap.exists || snap.get('status') !== 'published' || snap.get('consentType') !== selection.consentType) {

@@ -49,6 +49,32 @@ final class LocalPendingMemberRegistrarTests: XCTestCase {
     XCTAssertEqual(fields["trainerId"], .string(Synthetic.trainerA))
   }
 
+  /// AC-DF-113.6 / AC-DF-110.5: a cancel is saved on the device and queued as a stage 0 update of the same
+  /// `pendingMembers/{id}` with `status: 'cancelled'` only (the writer adds server-time `updatedAt`), after the create.
+  @MainActor
+  func test_AC_DF_113_6_cancelQueuesAStageZeroStatusUpdateAfterTheCreate() async throws {
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
+    let recorder = Recorder()
+    let registrar = LocalPendingMemberRegistrar(
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { recorder.add($0) },
+      now: { Synthetic.now }, makeID: { [fixedID] in fixedID })
+    _ = try await registrar.register(draft)
+    try await registrar.cancel(pendingMemberId: fixedID)
+
+    XCTAssertEqual(recorder.items.count, 2)
+    let (create, cancel) = (recorder.items[0], recorder.items[1])
+    XCTAssertEqual(cancel.memberKey, .pending(fixedID))
+    XCTAssertEqual(cancel.stage, .memberKey)
+    XCTAssertEqual(cancel.kind, .updateDocument)
+    XCTAssertEqual(cancel.entityRef, create.entityRef, "same entity: sent after the create")
+    XCTAssertGreaterThan(cancel.sequence, create.sequence)
+    XCTAssertEqual(cancel.target, .document(path: "pendingMembers/\(fixedID)"))
+    XCTAssertEqual(cancel.payload, .object(["status": .string("cancelled")]))
+    let stored = try await outbox.loadAll()
+    XCTAssertEqual(stored.map(\.id), [create.id, cancel.id], "saved before the engine is told")
+  }
+
   @MainActor
   func testAnInvalidDraftSavesNothing() async throws {
     let container = try LocalStoreContainer.make(inMemory: true)

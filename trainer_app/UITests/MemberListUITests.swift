@@ -1,8 +1,9 @@
 import XCTest
 
 /// TC-DF013-04 (AC-DF-013.2, AC-DF-013.5): the empty and failed member lists are different views, and a failure is
-/// never shown as an empty list. DF-113 (TC-113-01..04): pending rows, consent chips, search and TR-03 with the member's
-/// key. `--preview-members*` launches use synthetic data and no Firebase.
+/// never shown as an empty list. DF-113 (TC-113-01..05, 07): pending rows, consent chips on one line, search, the
+/// pending row menu (cancel, consent step again) and the TR-03 shell. `--preview-members*` launches use synthetic data
+/// and no Firebase.
 final class MemberListUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false
@@ -128,6 +129,121 @@ final class MemberListUITests: XCTestCase {
     XCTAssertTrue(waitForValue(element("tr03.root", in: app), "uid:syn-0001"))
   }
 
+  /// Review: short names and the consent chips never wrap syllable by syllable. At the landscape content column
+  /// (~288pt) and at a 375pt window every name and chip text is one line: the chip goes under the name when the row
+  /// cannot hold both at full width.
+  @MainActor
+  func testNamesAndChipsStayOnOneLineInNarrowRows() throws {
+    for arguments in [["--preview-members-pending"], ["--preview-members-pending", "--preview-width=375"]] {
+      let app = launch(arguments)
+      if arguments.count > 1 { element("nav.members", in: app).tap() }
+      XCTAssertTrue(waitForLabel(element("tr02.row.4", in: app), "SYN-P003, 대기, 동의 필요"), "\(arguments)")
+      let badge = app.staticTexts.matching(NSPredicate(format: "label == '대기'")).firstMatch
+      let line = badge.frame.height  // one caption line
+      XCTAssertGreaterThan(line, 0)
+      for chip in ["동의 ①②③", "동의 필요", "동의 확인 대기"] {
+        let texts = app.staticTexts.matching(NSPredicate(format: "label == %@", chip)).allElementsBoundByIndex
+        XCTAssertFalse(texts.isEmpty, chip)
+        for text in texts {
+          XCTAssertLessThan(text.frame.height, line * 1.5, "\(arguments) '\(chip)' wraps: \(text.frame)")
+          XCTAssertGreaterThan(text.frame.width, text.frame.height, "\(arguments) '\(chip)' is stacked")
+        }
+      }
+      for name in ["SYN-0001", "SYN-0002", "SYN-P001", "SYN-P002", "SYN-P003"] {
+        let text = app.staticTexts[name].firstMatch
+        XCTAssertTrue(text.exists, name)
+        XCTAssertLessThan(text.frame.height, line * 2, "\(arguments) '\(name)' wraps: \(text.frame)")
+      }
+      attachScreenshot(app, name: "TR-02 rows \(arguments.joined(separator: " "))")
+      app.terminate()
+    }
+  }
+
+  /// AC-DF-113.6: a pending row's menu cancels the registration after the trainer confirms
+  /// (`tr02.cancelPending.confirm`); the row leaves the list. An assigned row has no such menu.
+  @MainActor
+  func test_AC_DF_113_6_thePendingRowMenuCancelsTheRegistration() throws {
+    let app = launch(["--preview-members-pending"])
+    let row = element("tr02.row.4", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN-P003, 대기, 동의 필요"))
+    row.press(forDuration: 1.2)
+    let cancel = app.buttons["등록 취소"].firstMatch
+    XCTAssertTrue(cancel.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["동의 받기"].exists, "'동의 필요' offers the consent step again")
+    cancel.tap()
+    let alert = app.alerts.firstMatch
+    XCTAssertTrue(alert.waitForExistence(timeout: 5))
+    XCTAssertTrue(alert.staticTexts["대기 회원 등록을 취소할까요? 연결된 기록은 5영업일 안에 파기돼요."].exists)
+    alert.buttons["등록 취소"].firstMatch.tap()
+    XCTAssertTrue(element("tr02.row.4", in: app).waitForNonExistence(timeout: 10))
+    XCTAssertFalse(listRow(named: "SYN-P003", in: app).exists)
+    XCTAssertEqual(element("tr02.row.3", in: app).label, "SYN-P002, 대기, 동의 ①②③")
+
+    // An awaiting pending row offers only the cancel; an assigned row has no menu at all.
+    element("tr02.row.2", in: app).press(forDuration: 1.2)
+    XCTAssertTrue(app.buttons["등록 취소"].firstMatch.waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["동의 받기"].exists)
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.95)).tap()  // dismiss the menu
+    XCTAssertTrue(app.buttons["등록 취소"].firstMatch.waitForNonExistence(timeout: 5))
+    element("tr02.row.0", in: app).press(forDuration: 1.2)
+    XCTAssertFalse(app.buttons["등록 취소"].firstMatch.waitForExistence(timeout: 2))
+  }
+
+  /// Review (AC-DF-110.5 gap): a pending member without consent gets the TR-14 consent step again from its row menu;
+  /// a new capture of ①②③ turns its chip '동의 확인 대기'.
+  @MainActor
+  func testThePendingRowMenuReopensTheConsentStep() throws {
+    let app = launch(["--preview-members-pending"])
+    let row = element("tr02.row.4", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN-P003, 대기, 동의 필요"))
+    row.press(forDuration: 1.2)
+    let take = app.buttons["동의 받기"].firstMatch
+    XCTAssertTrue(take.waitForExistence(timeout: 5))
+    take.tap()
+    let step = element("tr14.consent.root", in: app)
+    XCTAssertTrue(step.waitForExistence(timeout: 10))
+    XCTAssertEqual(step.value as? String, "SynPendingList000003")
+    for type in ["required", "healthData", "bodyImaging"] {
+      app.buttons["tr14.consent.grant.\(type)"].firstMatch.tap()
+    }
+    app.buttons["tr14.consent.submit"].firstMatch.tap()
+    XCTAssertTrue(waitForLabel(element("tr14.consent.result", in: app), "동의 확인 대기"))
+    element("common.close", in: app).tap()
+    XCTAssertTrue(waitForLabel(listRow(named: "SYN-P003", in: app), "SYN-P003, 대기, 동의 확인 대기"))
+  }
+
+  /// AC-DF-113.8: a row opens the TR-03 shell with the member's name, '대기' badge and chip, `common.comingSoon`, and,
+  /// for a pending member that needs consent, '동의 받기' into TR-14's consent step.
+  @MainActor
+  func test_AC_DF_113_8_aRowOpensTheTR03Shell() throws {
+    let app = launch(["--preview-members-pending"])
+    let row = element("tr02.row.4", in: app)
+    XCTAssertTrue(waitForLabel(row, "SYN-P003, 대기, 동의 필요"))
+    row.tap()
+    let detail = element("tr03.root", in: app)
+    XCTAssertTrue(waitForValue(detail, "pending:SynPendingList000003"))
+    XCTAssertTrue(waitForLabel(detail.descendants(matching: .any)["tr03.header"].firstMatch, "SYN-P003, 대기, 동의 필요"))
+    XCTAssertTrue(detail.descendants(matching: .any)["common.comingSoon"].firstMatch.exists)
+    attachScreenshot(app, name: "AC-DF-113.8 TR-03 pending")
+
+    element("tr02.row.2", in: app).tap()  // awaiting: no '동의 받기'
+    XCTAssertTrue(waitForValue(element("tr03.root", in: app), "pending:SynPendingList000001"))
+    XCTAssertTrue(waitForLabel(element("tr03.header", in: app), "SYN-P001, 대기, 동의 확인 대기"))
+    XCTAssertFalse(element("tr03.takeConsent", in: app).exists)
+    element("tr02.row.0", in: app).tap()  // assigned: no badge
+    XCTAssertTrue(waitForLabel(element("tr03.header", in: app), "SYN-0001, 동의 ①②③"))
+    XCTAssertFalse(element("tr03.takeConsent", in: app).exists)
+
+    element("tr02.row.4", in: app).tap()
+    let take = element("tr03.takeConsent", in: app)
+    XCTAssertTrue(take.waitForExistence(timeout: 10))
+    XCTAssertEqual(take.label, "동의 받기")
+    take.tap()
+    let step = element("tr14.consent.root", in: app)
+    XCTAssertTrue(step.waitForExistence(timeout: 10))
+    XCTAssertEqual(step.value as? String, "SynPendingList000003")
+  }
+
   /// A member registered from the empty state is listed at once, before the server has it (the preview registrar
   /// never sends): the '대기' badge and '동의 필요' until consent is recorded.
   @MainActor
@@ -158,6 +274,19 @@ final class MemberListUITests: XCTestCase {
     let predicate = NSPredicate(format: "label == %@", label)
     return XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: element)], timeout: timeout)
       == .completed
+  }
+
+  /// The TR-02 row whose spoken label starts with `name` (rows are identified by position, `tr02.row.<n>`).
+  private func listRow(named name: String, in app: XCUIApplication) -> XCUIElement {
+    app.descendants(matching: .any).matching(
+      NSPredicate(format: "identifier BEGINSWITH 'tr02.row.' AND label BEGINSWITH %@", name + ",")).firstMatch
+  }
+
+  private func attachScreenshot(_ app: XCUIApplication, name: String) {
+    let attachment = XCTAttachment(screenshot: app.screenshot())
+    attachment.name = name
+    attachment.lifetime = .keepAlways
+    add(attachment)
   }
 
   private func waitForValue(_ element: XCUIElement, _ value: String, timeout: TimeInterval = 10) -> Bool {

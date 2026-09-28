@@ -112,8 +112,10 @@ public actor SyncEngine {
     }
   }
 
-  /// Error codes that `retryExhausted()` may resend: transient failures only.
-  private static let transientCodes: Set<String> = [
+  /// Error codes of transient failures, the only ones `retryExhausted()` resends. A consent capture that failed with
+  /// one still holds the member's later captures and is sent again, so `EffectiveConsentResolver` reads it as waiting
+  /// for the server, not as refused.
+  public static let transientErrorCodes: Set<String> = [
     RemoteError.unavailable.code, RemoteError.deadlineExceeded.code, RemoteError.unknown("").code,
     LocalFailure.uploadUnverified.code, LocalFailure.writeUncommitted.code,
   ]
@@ -230,7 +232,7 @@ public actor SyncEngine {
   /// rejection stays failed until the trainer retries it (AC-DF-015.3).
   public func retryExhausted() async {
     _ = await ensureLoaded()
-    for id in failedIds(where: { Self.transientCodes.contains($0.lastErrorCode ?? "") }) {
+    for id in failedIds(where: { Self.transientErrorCodes.contains($0.lastErrorCode ?? "") }) {
       _ = resetFailed(id)
     }
     publishChanges()
@@ -709,7 +711,7 @@ public actor SyncEngine {
   private func holdsLaterCaptures(_ capture: OutboxItem) -> Bool {
     switch capture.state {
     case .queued, .inFlight, .blocked: return true
-    case .failed: return Self.transientCodes.contains(capture.lastErrorCode ?? "")
+    case .failed: return Self.transientErrorCodes.contains(capture.lastErrorCode ?? "")
     case .acked, .superseded: return false
     }
   }

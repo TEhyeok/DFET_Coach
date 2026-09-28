@@ -90,6 +90,10 @@ public enum PendingMemberPayload {
     "\(collection)/\(id)"
   }
 
+  /// The cancel update (F-LINK-01.5, AC-DF-113.6, V1-05 §4.3): `status` only. The writer adds `updatedAt` as server
+  /// time; `cancelledAt` is a server field, so the app never writes it.
+  public static let cancelFields: JSONValue = .object(["status": .string("cancelled")])
+
   /// nil when the draft has a problem.
   public static func fields(_ draft: PendingMemberDraft, trainerUid: String, now: Date) -> JSONValue? {
     guard draft.problems(now: now).isEmpty, let sex = draft.sex, let birthYear = draft.birthYear else { return nil }
@@ -115,4 +119,13 @@ public protocol PendingMemberRegistrar: Sendable {
 
 public enum PendingMemberRegistrationError: Error, Equatable, Sendable {
   case invalidDraft
+}
+
+/// Cancels a pending member's registration (F-LINK-01.5): TR-02's row menu '등록 취소' (AC-DF-113.6) and a refused ①
+/// in TR-14 (AC-DF-110.5). The cancel is saved on the device at once, offline too, and TR-02 no longer lists the
+/// member; `pendingMembers/{id}` becomes `status: 'cancelled'` through the Outbox (stage 0, after the member's create
+/// and before anything else of that member that is still unsent).
+public protocol PendingMemberCanceller: Sendable {
+  /// Throws the local store's error when the cancel could not be saved on the device.
+  func cancel(pendingMemberId: String) async throws
 }

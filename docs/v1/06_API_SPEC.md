@@ -299,7 +299,7 @@ callable 코드와 HTTP 상태, 재시도 가능 여부
 | 종류 | 멱등 키 | 방식 |
 |---|---|---|
 | 클라이언트가 문서를 만드는 callable | 요청의 `requestId`(UUID v4, 클라이언트 생성) | **결정적 문서 ID**로 `create()`한다. 이미 있으면 내용(회원 키·유형)을 비교해 같으면 기존 결과를 `replayed:true`로 돌려주고, 다르면 `already-exists / idempotency.keyReused` |
-| `recordConsent`(문서 여러 개를 자동 ID로 만듦) | 요청의 `clientCaptureId`(= 트레이너 앱 `LocalConsentCapture.captureId`) | 레코드는 자동 ID로 만들고 각 레코드에 `clientCaptureId`를 저장한다. 트랜잭션 안에서 `consentRecords where clientCaptureId == X limit 1`을 조회해 있으면 비교 후 `replayed:true` 또는 `idempotency.keyReused`([§6.2.5](#625-멱등성), V1-05 §4.11·ASM-05-12) |
+| `recordConsent`(문서 여러 개를 자동 ID로 만듦) | 요청의 `clientCaptureId`(= 트레이너 앱 `LocalConsentCapture.captureId`) | 레코드는 자동 ID로 만들고 각 레코드에 `clientCaptureId`를 저장한다. 권한·존재 확인(V2·V4·V11)을 통과한 뒤 트랜잭션 안에서 `consentRecords where clientCaptureId == X limit 1`을 조회해 있으면 비교(`recordedBy` 포함) 후 `replayed:true` 또는 `idempotency.keyReused`([§6.2.5](#625-멱등성), V1-05 §4.11·ASM-05-12) |
 | 상태 전환 callable(`revokeMemberSummary` 등) | 대상 문서 ID | 이미 목표 상태면 `replayed:true` |
 | 읽기·URL 발급 | 없음 | 부수효과가 감사 로그뿐 |
 | 트리거 | 이벤트 재전달을 전제 | 결과가 입력 상태로만 정해지게(결정적) 짜고, 감사 로그는 결정적 ID(`<action>_<targetId>`)로 `create()`한다 |
@@ -742,12 +742,12 @@ function resolveAccessKey(collection, record, ctx) {
 
 #### 6.2.4 처리 절차
 
-1. **멱등 사전 확인(트랜잭션 밖).** `consentRecords where clientCaptureId == X limit 1`이 있으면 업로드 없이 [§6.2.5](#625-멱등성)로 간다(재시도 때 서명 파일이 새로 생기지 않게).
+1. **권한 확인 뒤 멱등 사전 확인(트랜잭션 밖).** 먼저 인증(`signedIn`)과 요청 검증, 채널별 권한·존재(V2·V4·V11: 트레이너 클레임, `isAssignedTrainer` 또는 `pendingMembers/{p}`의 `trainerId == auth.uid`·`status == 'pending'`, `users/{uid}`)를 확인한다. 통과한 뒤에만 `consentRecords where clientCaptureId == X limit 1`을 보고, 있으면 업로드 없이 [§6.2.5](#625-멱등성)로 간다(재시도 때 서명 파일이 새로 생기지 않게). 권한·존재 확인이 실패하면 저장된 결과가 있어도 그 오류로 끝난다. 권한을 잃은 호출자(담당 해제, 트레이너 클레임 제거, 대기 회원 취소)는 같은 키를 다시 보내도 현재 `state`를 받지 못한다.
 2. **레코드 ID 선발급과 서명 업로드(트랜잭션 전).** selection 수만큼 `db.collection('consentRecords').doc().id`로 자동 ID를 미리 만든다. 서명이 있으면 `consentSignatures/{첫 recordId}.png`에 `contentType: image/png`로 저장한다(V1-05 §4.11·ASM-05-13, ADR-007, ADR-011). 같은 캡처의 레코드는 모두 이 경로를 `signaturePath`로 가리킨다.
 3. **트랜잭션**(읽기 먼저)
    1. 읽기: 멱등 재확인용 `consentRecords where clientCaptureId == X limit 1`(트랜잭션 안 쿼리. 동시 호출 경합은 Firestore 직렬화로 한쪽만 커밋된다), `trainers/{auth.uid}` 또는 `pendingMembers/{p}`, `users/{uid}`, `memberConsentStates/{memberKey}`, `consentDocumentVersions/{documentVersion}`(최대 5).
-   2. 결과가 있으면 → 트랜잭션을 쓰기 없이 끝내고, 2단계에서 올린 서명 파일을 지운 뒤 멱등 처리([§6.2.5](#625-멱등성))로 간다.
-   3. V2·V5~V9·V11 검증.
+   2. V2·V4·V11 검증(트랜잭션 안에서 읽은 문서로 다시). 통과한 뒤 결과가 있으면 → 트랜잭션을 쓰기 없이 끝내고, 2단계에서 올린 서명 파일을 지운 뒤 멱등 처리([§6.2.5](#625-멱등성))로 간다.
+   3. V5~V9 검증.
    4. 쓰기: selection마다 선발급한 ID로 `consentRecords/{recordId}`를 create한다.
 
       ```json
@@ -788,7 +788,8 @@ function resolveAccessKey(collection, record, ctx) {
 #### 6.2.5 멱등성
 
 - 멱등 키: `clientCaptureId`(V1-05 §4.11 필드, ASM-05-12). 레코드 ID는 자동 ID이고, 서명 경로는 `consentSignatures/{첫 recordId}.png` 하나를 같은 캡처의 레코드가 공유한다(V1-05 ASM-05-13, DF-109 ASM-P1a-03·04). 이 결정의 정본은 V1-05이며 이 문서는 따른다.
-- 같은 `clientCaptureId`의 레코드가 있으면 그 캡처의 레코드 전체(`where clientCaptureId == X`)를 읽어 `memberKey`, `channel`, selections 집합을 요청과 비교한다. 같으면 현재 `state`와 **저장된** `recordIds`·`signaturePath`를 `replayed: true`로 돌려준다(두 응답의 `recordIds`가 같다, AC-DF-109.6). 다르면 `already-exists / idempotency.keyReused`.
+- 이 비교에는 인증과 채널별 권한·존재 확인(V2·V4·V11, [§6.2.4](#624-처리-절차) 1단계·3.2)을 통과한 호출만 온다. 권한이 없으면 그 오류(`auth.notTrainer`, `member.notAssigned`, `member.pendingNotOwned`, `member.notFound`)이고 `state`는 돌려주지 않는다.
+- 같은 `clientCaptureId`의 레코드가 있으면 그 캡처의 레코드 전체(`where clientCaptureId == X`)를 읽어 `memberKey`, `channel`, selections 집합과 `recordedBy == auth.uid`(캡처를 기록한 호출자)를 요청과 비교한다. 같으면 현재 `state`와 **저장된** `recordIds`·`signaturePath`를 `replayed: true`로 돌려준다(두 응답의 `recordIds`가 같다, AC-DF-109.6). 다르면 `already-exists / idempotency.keyReused`(다른 호출자가 남의 캡처 결과를 키로 읽지 못한다).
 - 트레이너 앱은 오프라인 캡처 때 `LocalConsentCapture.captureId`를 만들어 재시도 내내 `clientCaptureId`로 보낸다(F-PRIV-03.7). 회원 앱은 호출마다 UUID v4를 만들고 같은 호출의 재시도에 재사용한다.
 - `consentRecords.clientCaptureId` 단일 필드 조회는 자동 단일 필드 인덱스로 충분하다(복합 인덱스 추가 없음).
 
@@ -833,6 +834,7 @@ function resolveAccessKey(collection, record, ctx) {
 | TC-06-RC-14 | 클라이언트 SDK로 `consentRecords` 직접 create | 규칙 거부 | AC-PRIV-02.1, R-20 |
 | TC-06-RC-15 | 감사 레코드 검사 | `metadata` 키가 화이트리스트뿐, 수치·이름 없음 | §9.7 |
 | TC-06-RC-16 | 회원 앱 재확인(`reconfirmOf`) | 새 레코드 `reconfirmedAt` 있음, 원 레코드 불변, 감사 `reconfirm:true` | F-PRIV-03.8 |
+| TC-06-RC-17 | 같은 `clientCaptureId` 재전송: 응답을 잃은 같은 호출자(권한 유지) / 권한을 잃은 뒤(트레이너 클레임 제거, 비담당·비소유, 대기 회원 취소) / 기록자가 아닌 새 담당 | 첫째 `replayed: true`·같은 `recordIds`, 둘째 permission-denied 또는 not-found이고 `state` 없음, 셋째 already-exists / `idempotency.keyReused`. 레코드 수 불변 | §6.2.4 1단계·3.2, §6.2.5 |
 
 ---
 
@@ -2199,7 +2201,11 @@ public struct ConsentSelection: Codable, Equatable, Sendable { public let consen
 public protocol ConsentService: AnyObject {
   /// consentDocumentVersions where status == 'published'. 오프라인이면 마지막 캐시(버전 ID 포함)
   func publishedDocuments() async throws -> [ConsentDocumentVersion]
-  /// memberConsentStates/{memberKey} 리스너. 로컬 미확인 캡처가 있으면 그 상태를 겹쳐 awaitingConsent 표시
+  /// memberConsentStates/{memberKey} 리스너. 서버 파생 상태만 준다(문서 없음 = 모든 유형 미동의). 로컬 캡처는 겹치지 않는다:
+  /// 미확인·거부 캡처를 겹쳐 awaitingConsent·rejected로 읽는 곳은 SyncEngine EffectiveConsentResolver 하나이고, 화면 가드는
+  /// 그 EffectiveConsent만 읽는다(DF-111, AC-DF-111.7). 리스너 실패(권한 거부: 예 ⓪ create가 서버에 닿기 전의 대기 회원,
+  /// 일시 오류)는 '문서 없음'과 섞지 않는다. P1a MVP 구현은 ConsentStateSource.observe(member:) ->
+  /// AsyncStream<ConsentStateReading>(.absent / .present(ConsentState) / .unavailable 뒤 종료)이다
   func observeState(member: MemberKey) -> AsyncThrowingStream<ConsentState, Error>
   /// 로컬 캡처를 저장하고 Outbox 첫 항목(.consent)으로 넣는다. LocalConsentCapture.captureId(= clientCaptureId)는 여기서 한 번 생성(§6.2.5)
   @MainActor func captureInPerson(member: MemberKey, selections: [ConsentSelection], signaturePNG: Data,
@@ -2656,3 +2662,4 @@ Q-DEV-01·02는 다른 문서(ADR-015, AS-DEV-08)에서 이미 쓴다.
 | v1.0.1 | 2026-09-24 | CJH(AI 에이전트) | 교차 정합성 조정: R2·R5·R7·R10 결정 반영(ASM-06-32~34), §7.8 추가 |
 | v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109 MVP 구현) | §6.2.6에 MVP 전용 `consent.unsupportedInMvp` 추가. 구현 편차는 [DF-109 구현 기록](backlog/P1a.md#df-109-recordconsent와-memberconsentstates-파생서명-저장을-구현한다) |
 | v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109~DF-113 MVP 통합) | §3.12에 `ConsentDocumentVersionId`를 더하고 §6.2.1 `documentVersion`이 그것을 쓰게 함: `DocId`에는 '.'이 없어 V1-05 §4.13 ID(`healthData--1.0`)와 모순이었다(DF-110이 보고한 충돌, 서버 `validateRequest`·앱 요청 대조 테스트가 이 정의를 읽는다) |
+| v1.0.1 | 2026-09-28 | CJH(AI 에이전트, DF-109~DF-113 MVP 통합 리뷰) | §6.2.4·§6.2.5: 멱등 재응답은 인증·채널별 권한·존재 확인(V2·V4·V11) 뒤에만 하고 `recordedBy == auth.uid`도 비교한다(권한을 잃은 호출자가 재전송으로 현재 상태를 받던 순서를 고침, TC-06-RC-17). §8.10: `observeState`는 서버 파생 상태만 주고 로컬 캡처 합성은 `EffectiveConsentResolver` 한 곳, 리스너 실패는 '문서 없음'과 구분 |

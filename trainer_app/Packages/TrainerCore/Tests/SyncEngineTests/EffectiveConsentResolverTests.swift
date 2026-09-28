@@ -19,12 +19,12 @@ final class EffectiveConsentResolverTests: XCTestCase {
 
   private func capture(
     _ types: [ConsentType], _ state: ConsentCaptureState, action: ConsentAction = .grant, at offset: TimeInterval = 0,
-    confirmedAt: Date? = nil, id: String = UUID().uuidString.lowercased()
+    confirmedAt: Date? = nil, id: String = UUID().uuidString.lowercased(), errorCode: String? = nil
   ) -> ConsentCapture {
     ConsentCapture(
       captureId: id, member: member,
       selections: types.map { ConsentSelection(consentType: $0, action: action, documentVersion: "\($0.rawValue)--1.0") },
-      capturedAt: t0.addingTimeInterval(offset), state: state, confirmedAt: confirmedAt)
+      capturedAt: t0.addingTimeInterval(offset), state: state, confirmedAt: confirmedAt, lastErrorCode: errorCode)
   }
 
   // MARK: TC-111-06
@@ -56,6 +56,32 @@ final class EffectiveConsentResolverTests: XCTestCase {
         }
       }
     }
+  }
+
+  /// Review: a capture that ran out of attempts on a transient error (a Functions outage, timeouts) is sent again by
+  /// the engine (`retryExhausted()`, `holdsLaterCaptures`), so it still waits: '동의 확인 대기' and a local save, not a
+  /// refusal. Only a code the engine never resends on its own is `rejected`.
+  func testATransientFailureStillWaitsAndOnlyARefusalIsRejected() {
+    let core = ConsentFlowRules.coreTypes
+    for code in ["unavailable", "deadline-exceeded", "unknown"] {
+      XCTAssertTrue(SyncEngine.transientErrorCodes.contains(code), code)
+      let resolved = EffectiveConsentResolver.resolve(
+        server: nil, captures: [capture(core, .failed, errorCode: code)], serverObservedAt: t0)
+      XCTAssertEqual(resolved, EffectiveConsent(required: .awaitingConsent, healthData: .awaitingConsent,
+                                                bodyImaging: .awaitingConsent), code)
+      XCTAssertEqual(resolved.chipState, .awaiting, code)
+      XCTAssertEqual(resolved.healthRecordSave, .localOnly, code)
+    }
+    for code in ["failed-precondition", "permission-denied", "not-found", "invalid-argument", "local-unreadable", nil] {
+      let resolved = EffectiveConsentResolver.resolve(
+        server: nil, captures: [capture(core, .failed, errorCode: code)], serverObservedAt: t0)
+      XCTAssertEqual(resolved.healthData, .rejected, code ?? "nil")
+      XCTAssertEqual(resolved.chipState, .needed, code ?? "nil")
+      XCTAssertEqual(resolved.healthRecordSave, .blocked, code ?? "nil")
+    }
+    let granted = EffectiveConsentResolver.resolve(
+      server: server(core), captures: [capture(core, .failed, errorCode: "unavailable")], serverObservedAt: t0)
+    XCTAssertTrue(granted.coreGranted, "the server still decides once it granted")
   }
 
   /// No document at all reads like a document with nothing granted (the rules' `hasConsent`).
@@ -139,7 +165,7 @@ final class EffectiveConsentResolverTests: XCTestCase {
     try? await Task.sleep(nanoseconds: 50_000_000)
     XCTAssertEqual(values.all, [], "the server has not answered yet")
 
-    states.send(nil)
+    states.send(.absent)
     let first = await eventually { values.all.count == 1 }
     XCTAssertTrue(first)
     XCTAssertEqual(values.all.last, EffectiveConsent.none)
@@ -150,7 +176,7 @@ final class EffectiveConsentResolverTests: XCTestCase {
 
     captures.send([capture([.required, .healthData, .bodyImaging], .pending)])  // resolves the same: not repeated
     clock.now = t0.addingTimeInterval(5)
-    states.send(server([.required, .healthData, .bodyImaging]))
+    states.send(.present(server([.required, .healthData, .bodyImaging])))
     let granted = await eventually { values.all.last?.chipState == .coreGranted }
     XCTAssertTrue(granted)
     XCTAssertEqual(values.all.map(\.chipState), [.needed, .awaiting, .coreGranted])
@@ -163,7 +189,8 @@ final class EffectiveConsentResolverTests: XCTestCase {
     let states = FakeStates()
     let captures = FakeCaptures()
     let clock = MutableClock(t0)
-    let resolver = EffectiveConsentResolver(server: states, captures: captures, now: { clock.now })
+    let resolver = EffectiveConsentResolver(server: states, captures: captures, now: { clock.now },
+                                            retryDelay: { _ in 3600 })
     let values = Collector(resolver.observe(member: member))
     let id = "3f2b8c1e-5d7a-4b1e-9a51-0c8e2d7f1a90"
 
@@ -180,25 +207,74 @@ final class EffectiveConsentResolverTests: XCTestCase {
     XCTAssertEqual(values.all.last?.chipState, .awaiting, "confirmed, but the server has not answered since")
 
     clock.now = t0.addingTimeInterval(11)
-    states.send(server([.required, .healthData, .bodyImaging]))
+    states.send(.present(server([.required, .healthData, .bodyImaging])))
     let granted = await eventually { values.all.last?.chipState == .coreGranted }
     XCTAssertTrue(granted)
+    values.cancel()
+  }
+
+  /// Review (V1-06 §8.10, P1a DF-110): a listener refused before the member's `pendingMembers` create reached the
+  /// server is `unavailable`, not "no document". Nothing counts as granted, but a capture the device already knows is
+  /// confirmed still waits instead of reading '동의 필요', and the server is read again after the retry delay, without
+  /// any capture change: once the create is acked the state arrives.
+  func testARefusedListenerIsUnknownAndIsSubscribedAgainAfterTheRetryDelay() async {
+    let states = FakeStates()
+    let captures = FakeCaptures()
+    let clock = MutableClock(t0)
+    let resolver = EffectiveConsentResolver(server: states, captures: captures, now: { clock.now },
+                                            retryDelay: { _ in 0.05 })
+    let values = Collector(resolver.observe(member: member))
+    let core = ConsentFlowRules.coreTypes
+
+    captures.send([capture(core, .confirmed, confirmedAt: t0.addingTimeInterval(-60))])
+    states.fail()
+    let awaiting = await eventually { values.all.last?.chipState == .awaiting }
+    XCTAssertTrue(awaiting, "a confirmed capture is not '동의 필요' while the server is unknown")
+    XCTAssertFalse(values.all.contains { $0.chipState == .needed })
+    XCTAssertEqual(values.all.last?.canAttachPhoto, false)
+
+    states.fail()  // the retry is refused too: it keeps retrying
+    let retried = await eventually { states.subscriptions >= 3 }
+    XCTAssertTrue(retried)
+    states.send(.present(server(core)))
+    let granted = await eventually { values.all.last?.chipState == .coreGranted }
+    XCTAssertTrue(granted)
+    values.cancel()
+  }
+
+  /// A listener that fails after it answered keeps its last reading (it is not "no document") and is read again.
+  func testAListenerThatFailsAfterAnsweringKeepsItsLastReading() async {
+    let states = FakeStates()
+    let captures = FakeCaptures()
+    let resolver = EffectiveConsentResolver(server: states, captures: captures, now: { Date() },
+                                            retryDelay: { _ in 0.05 })
+    let values = Collector(resolver.observe(member: member))
+    captures.send([])
+    states.send(.present(server(ConsentFlowRules.coreTypes)))
+    let granted = await eventually { values.all.last?.coreGranted == true }
+    XCTAssertTrue(granted)
+
+    states.fail()
+    let resubscribed = await eventually { states.subscriptions == 2 }
+    XCTAssertTrue(resubscribed)
+    XCTAssertEqual(values.all.map(\.chipState), [.coreGranted], "never '동의 필요' on a listener failure")
     values.cancel()
   }
 }
 
 // MARK: - Fakes
 
-/// A `ConsentStateSource` driven by the test. Each `observe` is a new subscription; `fail()` ends the current one.
+/// A `ConsentStateSource` driven by the test. Each `observe` is a new subscription; `fail()` ends the current one with
+/// `.unavailable`, as a failed Firestore listener does.
 private final class FakeStates: ConsentStateSource, @unchecked Sendable {
   private let lock = NSLock()
-  private var continuation: AsyncStream<ConsentState?>.Continuation?
-  private var buffered: [ConsentState?] = []
+  private var continuation: AsyncStream<ConsentStateReading>.Continuation?
+  private var buffered: [ConsentStateReading] = []
   private var failBuffered = false
   private var _subscriptions = 0
   var subscriptions: Int { lock.withLock { _subscriptions } }
 
-  func observe(member: MemberKey) -> AsyncStream<ConsentState?> {
+  func observe(member: MemberKey) -> AsyncStream<ConsentStateReading> {
     AsyncStream { continuation in
       lock.withLock {
         _subscriptions += 1
@@ -206,6 +282,7 @@ private final class FakeStates: ConsentStateSource, @unchecked Sendable {
         buffered = []
         if failBuffered {
           failBuffered = false
+          continuation.yield(.unavailable)
           continuation.finish()
         } else {
           self.continuation = continuation
@@ -214,9 +291,9 @@ private final class FakeStates: ConsentStateSource, @unchecked Sendable {
     }
   }
 
-  func send(_ state: ConsentState?) {
+  func send(_ reading: ConsentStateReading) {
     lock.withLock {
-      if let continuation { continuation.yield(state) } else { buffered.append(state) }
+      if let continuation { continuation.yield(reading) } else { buffered.append(reading) }
     }
   }
 
@@ -224,6 +301,7 @@ private final class FakeStates: ConsentStateSource, @unchecked Sendable {
   func fail() {
     lock.withLock {
       if let continuation {
+        continuation.yield(.unavailable)
         continuation.finish()
         self.continuation = nil
       } else {

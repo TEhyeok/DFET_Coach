@@ -18,24 +18,25 @@ struct MemberRow: View {
         .frame(width: avatarSize, height: avatarSize)
         .background(Circle().fill(Color.secondary))
         .accessibilityHidden(true)
-      // Wide rows keep name, badge and chip on one line; narrow ones (1/3 Split View, large text) wrap instead of
-      // truncating the name.
+      // Wide rows keep name, badge and chip on one line, only when all of it fits at its full width (nothing in that
+      // line may be squeezed, or a short name or the chip breaks one syllable per line). Otherwise the chip goes under
+      // the name; very narrow rows (large text) wrap instead of truncating.
       ViewThatFits(in: .horizontal) {
         HStack(spacing: TrainerSpacing.s) {
-          name
-          badge
+          name.fixedSize()
+          PendingBadge(isPending: entry.isPending)
           Spacer(minLength: TrainerSpacing.s)
-          consentChip
+          consentChip.fixedSize()
         }
         VStack(alignment: .leading, spacing: TrainerSpacing.xs) {
           HStack(spacing: TrainerSpacing.s) {
             name
-            badge
+            PendingBadge(isPending: entry.isPending)
           }
           consentChip
         }
       }
-      Spacer(minLength: 0)
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
     .frame(minHeight: TrainerSpacing.minTapTarget)
     .contentShape(Rectangle())
@@ -48,21 +49,27 @@ struct MemberRow: View {
   }
 
   @ViewBuilder
-  private var badge: some View {
-    if entry.isPending {
+  private var consentChip: some View {
+    if let chip {
+      ConsentChip(state: chip)  // DesignSystem, shared with TR-14's result
+    }
+  }
+}
+
+/// The '대기' badge of a pending member (`tr02.badge.pending`, AC-DF-113.1), in TR-02 rows and the TR-03 header. Never
+/// wrapped: it is one short word.
+struct PendingBadge: View {
+  let isPending: Bool
+
+  var body: some View {
+    if isPending {
       Text("tr02.badge.pending")
         .font(.caption.weight(.semibold))
         .foregroundStyle(TrainerColor.neutral700)
         .padding(.horizontal, TrainerSpacing.s)
         .padding(.vertical, TrainerSpacing.xxs)
         .background(TrainerColor.neutral200, in: Capsule())
-    }
-  }
-
-  @ViewBuilder
-  private var consentChip: some View {
-    if let chip {
-      ConsentChip(state: chip)  // DesignSystem, shared with TR-14's result
+        .fixedSize()
     }
   }
 }

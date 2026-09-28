@@ -14,12 +14,26 @@ public struct PendingMember: Identifiable, Hashable, Sendable {
   }
 }
 
-/// Pending members registered on this device whose `pendingMembers/{id}` create the server has not acked yet (the
-/// DF-108 drafts, ASM-05-38). Offline the SyncEngine sends nothing, so without these a member registered on site would
-/// be missing from TR-02 until the device is back online (V1-07 §8: '대기 회원 표시(로컬)'). LocalStore implements it.
+/// What this device knows about its pending members before the server does (DF-113).
+public struct DevicePendingMembers: Equatable, Sendable {
+  /// Registered here; the server has not acked the `pendingMembers/{id}` create yet (the DF-108 drafts, ASM-05-38).
+  public var registered: [PendingMember]
+  /// Cancelled here (`PendingMemberCanceller`); the cancel has not been sent yet. TR-02 hides these, whichever list has
+  /// them.
+  public var cancelled: Set<String>
+
+  public init(registered: [PendingMember] = [], cancelled: Set<String> = []) {
+    self.registered = registered
+    self.cancelled = cancelled
+  }
+}
+
+/// This device's pending-member changes the server has not seen yet. Offline the SyncEngine sends nothing, so without
+/// these a member registered on site would be missing from TR-02 until the device is back online (V1-07 §8: '대기 회원
+/// 표시(로컬)'), and a cancelled one would still be listed. LocalStore implements it.
 public protocol LocalPendingMemberSource: Sendable {
-  /// The current list first, then the list after every change.
-  func observeLocalPendingMembers() -> AsyncStream<[PendingMember]>
+  /// The current value first, then the value after every change.
+  func observeLocalPendingMembers() -> AsyncStream<DevicePendingMembers>
 }
 
 /// One TR-02 row (DF-113): an assigned member (`.uid`) or a pending member (`.pending`).
@@ -49,10 +63,14 @@ public enum MemberList {
   /// Assigned and pending members in one list, in display-name order as the trainer reads it (Korean collation);
   /// equal names put assigned members first, then order by key. A pending member listed twice (the server's document
   /// and this device's unacked registration) appears once, with the first name seen: pass the server's list first.
-  public static func merge(assigned: [Member], pending: [PendingMember]) -> [MemberListEntry] {
+  /// A pending member in `cancelled` (cancelled on this device, not sent yet) is left out.
+  public static func merge(
+    assigned: [Member], pending: [PendingMember], cancelled: Set<String> = []
+  ) -> [MemberListEntry] {
     var seen: Set<MemberKey> = []
     let entries = assigned.map { MemberListEntry(key: .uid($0.id), displayName: $0.displayName) }
-      + pending.map { MemberListEntry(key: .pending($0.id), displayName: $0.displayName) }
+      + pending.filter { !cancelled.contains($0.id) }
+      .map { MemberListEntry(key: .pending($0.id), displayName: $0.displayName) }
     return entries.filter { seen.insert($0.key).inserted }.sorted(by: inNameOrder)
   }
 

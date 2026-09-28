@@ -33,16 +33,17 @@ final class ConsentStateEmulatorTests: XCTestCase {
   }
 
   /// The pending member's `memberConsentStates` listener is refused until `pendingMembers/{id}` is on the server
-  /// (the read rule proves ownership through it): no state, and the stream ends. Once the member is there and the
-  /// server has written the state, the effective consent reads ①②③ granted. Another trainer reads nothing.
+  /// (the read rule proves ownership through it): `unavailable`, not "no document", and the stream ends. Once the
+  /// member is there and the server has written the state, the effective consent reads ①②③ granted. Another trainer
+  /// reads nothing.
   @MainActor
   func testAPendingMembersStateIsReadOnlyByItsTrainerOnceTheMemberIsOnTheServer() async throws {
     let (services, _) = try await signedInServices()
     let server = try XCTUnwrap(services.consentDocuments as? ConsentStateSource)
 
     let early = try await Self.collect(server.observe(member: .pending(DocumentID.make())))
-    XCTAssertFalse(early.isEmpty)
-    XCTAssertTrue(early.allSatisfy { $0 == nil }, "refused listener: no consent, stream ended")
+    XCTAssertEqual(early.last, .unavailable, "refused listener: unavailable, stream ended")
+    XCTAssertTrue(early.allSatisfy { $0.state == nil }, "no consent read")
 
     let draft = PendingMemberDraft(displayName: "가상 대기 회원", sex: .male, birthYear: 1990, ageConfirmed14: true)
     let id = try await services.registrar.register(draft)
@@ -74,8 +75,8 @@ final class ConsentStateEmulatorTests: XCTestCase {
     let (other, _) = try await signedInServices()
     let otherServer = try XCTUnwrap(other.consentDocuments as? ConsentStateSource)
     let foreign = try await Self.collect(otherServer.observe(member: .pending(id)))
-    XCTAssertFalse(foreign.isEmpty)
-    XCTAssertTrue(foreign.allSatisfy { $0 == nil }, "another trainer cannot read the state")
+    XCTAssertEqual(foreign.last, .unavailable)
+    XCTAssertTrue(foreign.allSatisfy { $0.state == nil }, "another trainer cannot read the state")
   }
 
   /// `consentDocumentVersions where status == 'published'` is allowed for a trainer and returns published versions

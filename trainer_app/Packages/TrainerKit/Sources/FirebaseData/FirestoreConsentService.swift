@@ -23,10 +23,11 @@ protocol ConsentGateway: Sendable {
 /// the server only (R-20).
 ///
 /// - `observe(member:)` (`ConsentStateSource`) listens to `memberConsentStates/{memberKey}` (registered in
-///   `FirestoreListenerRegistry`, so logout removes it). A missing document is nil (no consent). When the listener
-///   fails, for example a pending member whose `pendingMembers` document is not on the server yet (the read rule
-///   cannot prove ownership), the stream yields nil and ends; `EffectiveConsentResolver` subscribes again after the
-///   member's next capture change.
+///   `FirestoreListenerRegistry`, so logout removes it): `.absent` for a missing document (no consent), `.present`
+///   otherwise. Server state only; local captures are overlaid by `EffectiveConsentResolver` (V1-06 §8.10). When the
+///   listener fails, for example a pending member whose `pendingMembers` document is not on the server yet (the read
+///   rule cannot prove ownership) or a transient error, the stream yields `.unavailable`, never "no document", and
+///   ends; the resolver subscribes again.
 /// - `publishedDocuments()` (`ConsentDocumentCatalog`) reads the published versions (V1-05 §4.13). A cache-only answer
 ///   that lacks one of ①②③ throws `RemoteError.unavailable` instead of claiming the document does not exist.
 public final class FirestoreConsentService: ConsentStateSource, ConsentDocumentCatalog, Sendable {
@@ -41,17 +42,17 @@ public final class FirestoreConsentService: ConsentStateSource, ConsentDocumentC
     self.gateway = gateway
   }
 
-  public func observe(member: MemberKey) -> AsyncStream<ConsentState?> {
+  public func observe(member: MemberKey) -> AsyncStream<ConsentStateReading> {
     let states = gateway.consentState(documentID: member.id)
     return AsyncStream { continuation in
       let task = Task {
         do {
           for try await document in states {
-            continuation.yield(document.map { ConsentState(document: $0) })
+            continuation.yield(document.map { .present(ConsentState(document: $0)) } ?? .absent)
           }
         } catch {
           Self.logger.notice("consent state listener ended: \(RemoteErrorMapper.map(error).code, privacy: .public)")
-          continuation.yield(nil)
+          continuation.yield(.unavailable)
         }
         continuation.finish()
       }

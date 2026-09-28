@@ -59,6 +59,16 @@ final class PendingMemberTests: XCTestCase {
     for forbidden in ["heightCm", "phone", "email", "address"] { XCTAssertNil(object[forbidden], forbidden) }
   }
 
+  /// AC-DF-113.6 / AC-DF-110.5: the cancel update is `status: 'cancelled'` only (the writer adds server-time
+  /// `updatedAt`; `cancelledAt` is the server's). The rules' pendingMembers update allows exactly these keys and value.
+  func testTheCancelUpdateIsTheStatusOnly() throws {
+    XCTAssertEqual(PendingMemberPayload.cancelFields, .object(["status": .string("cancelled")]))
+    var root = URL(fileURLWithPath: #filePath)
+    for _ in 0..<6 { root.deleteLastPathComponent() }
+    let rules = try String(contentsOf: root.appendingPathComponent("firestore.rules"), encoding: .utf8)
+    XCTAssertTrue(rules.contains("incoming().status in ['pending', 'cancelled']"))
+  }
+
   /// The payload keys are the rules' `pendingCreateKeys()` list (read from firestore.rules).
   func testDocumentKeysAreTheRulesCreateKeys() throws {
     var root = URL(fileURLWithPath: #filePath)

@@ -50,6 +50,43 @@ final class PendingMemberEmulatorTests: XCTestCase {
     XCTAssertEqual((stored["birthYear"] as? [String: Any])?["integerValue"] as? String, "1990")
   }
 
+  /// AC-DF-113.6 / AC-DF-110.5 against the rules: a registration cancelled on the device reaches the server after its
+  /// create as `status: 'cancelled'` (server-time `updatedAt`, no client `cancelledAt`), and TR-02's query no longer
+  /// lists it; the device stops hiding it once the cancel is acked.
+  @MainActor
+  func testACancelledRegistrationIsCancelledOnTheServer_AC_DF_113_6() async throws {
+    let trainer = try await EmulatorAccounts.create(claims: ["trainer": true])
+    try await EmulatorDocuments.put("trainers/\(trainer.uid)", [
+      "trainerId": trainer.uid, "memberIds": [String](), "approvalStatus": "approved",
+    ])
+    let session = try await AppBootstrap.liveAuthService().signIn(email: trainer.email, password: trainer.password)
+    let services = AppBootstrap.liveServices(session: session)
+    let draft = PendingMemberDraft(displayName: "가상 취소 회원", sex: .unspecified, birthYear: 1990, ageConfirmed14: true)
+    let id = try await services.registrar.register(draft)
+    try await services.canceller.cancel(pendingMemberId: id)
+
+    var stored: [String: Any]?
+    func status() -> String? { (stored?["status"] as? [String: Any])?["stringValue"] as? String }
+    for _ in 0..<150 where status() != "cancelled" {
+      stored = try await EmulatorDocuments.get("pendingMembers/\(id)")
+      if status() != "cancelled" { try await Task.sleep(nanoseconds: 100_000_000) }
+    }
+    XCTAssertEqual(status(), "cancelled", "the Outbox did not cancel pendingMembers/\(id)")
+    XCTAssertEqual(Set(stored?.keys.map { $0 } ?? []), PendingMemberPayload.documentKeys, "no cancelledAt")
+
+    let members = try await firstValue(of: AppBootstrap.liveMemberDirectory(trainerUid: trainer.uid).observePendingMembers())
+    XCTAssertEqual(members?.contains { $0.id == id }, false)
+    var device = DevicePendingMembers(cancelled: [id])
+    for _ in 0..<100 where !device.cancelled.isEmpty {
+      for await value in services.localPendingMembers.observeLocalPendingMembers() {
+        device = value
+        break
+      }
+      if !device.cancelled.isEmpty { try await Task.sleep(nanoseconds: 100_000_000) }
+    }
+    XCTAssertEqual(device, DevicePendingMembers(), "acked: the device neither lists nor hides the member")
+  }
+
   /// DF-113 (AC-DF-113.1, F-LINK-03.2) against the rules: TR-02's query lists this trainer's pending members only. A
   /// cancelled one and another trainer's pending member are not listed; the rules allow the query (R-05).
   func testTheListHasOnlyThisTrainersPendingMembers_DF_113() async throws {

@@ -210,15 +210,42 @@ describe('recordConsent core on the Firestore emulator', () => {
     assert.equal((await recordsOf(data.clientCaptureId)).length, 2);
   });
 
-  test('TC-06-RC-06 same clientCaptureId with other content or from another trainer -> already-exists idempotency.keyReused', async () => {
+  test('TC-06-RC-06 same clientCaptureId with other content -> already-exists idempotency.keyReused', async () => {
     const pendingId = await seedPending();
     const data = payload(pendingId, [selection('required'), selection('healthData')]);
     await call(data);
 
     await rejectsWith(call({...data, selections: [selection('required')]}),
       'already-exists', 'idempotency.keyReused', ['clientCaptureId']);
-    await rejectsWith(call(data, trainer(TRAINER_B)), 'already-exists', 'idempotency.keyReused', ['clientCaptureId']);
     assert.equal((await recordsOf(data.clientCaptureId)).length, 2);
+  });
+
+  test('V1-06 §6.2.4 a replay runs only after auth, permission and existence: a caller who lost them gets no state', async () => {
+    const pendingId = await seedPending();
+    const data = payload(pendingId, [selection('required'), selection('healthData')]);
+    const first = await call(data);
+    const memberField = ['memberKey.pendingMemberId'];
+
+    // The recorder retries after losing the reply and still owns the member: the stored result.
+    const again = await call(data);
+    assert.equal(again.replayed, true);
+    assert.deepEqual(again.recordIds, first.recordIds);
+
+    // Another trainer sending the same key is refused by the ownership check, not answered by the replay.
+    await rejectsWith(call(data, trainer(TRAINER_B)), 'permission-denied', 'member.pendingNotOwned', memberField);
+    // The recorder without the trainer claim any more.
+    await rejectsWith(call(data, {uid: TRAINER_A, token: {}}), 'permission-denied', 'auth.notTrainer');
+
+    // The member now belongs to B (server side; uid members change hands): B's replay of A's capture is not B's
+    // (recordedBy) -> keyReused, and A no longer owns the member -> pendingNotOwned.
+    await db.doc(`pendingMembers/${pendingId}`).update({trainerId: TRAINER_B});
+    await rejectsWith(call(data, trainer(TRAINER_B)), 'already-exists', 'idempotency.keyReused', ['clientCaptureId']);
+    await rejectsWith(call(data), 'permission-denied', 'member.pendingNotOwned', memberField);
+
+    // Back to A but cancelled (F-LINK-01.5): not found, no state.
+    await db.doc(`pendingMembers/${pendingId}`).update({trainerId: TRAINER_A, status: 'cancelled'});
+    await rejectsWith(call(data), 'not-found', 'member.notFound', memberField);
+    assert.equal((await recordsOf(data.clientCaptureId)).length, 2, 'no replay wrote anything');
   });
 
   test('auth: no auth -> unauthenticated auth.required; member token -> permission-denied auth.notTrainer', async () => {

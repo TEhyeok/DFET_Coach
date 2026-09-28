@@ -172,6 +172,29 @@ final class SessionResumeTests: XCTestCase {
     XCTAssertNil(weakEngine)
   }
 
+  /// GPT review: a request inside the minute is kept and runs when the minute is over; cancel() drops it.
+  func testARequestInsideTheIntervalRunsWhenItIsOver() async throws {
+    let refreshes = Counter()
+    let restarts = Counter()
+    let refresher = SessionRefresher(refresh: {
+      refreshes.increment()
+      return true
+    }, minimumInterval: 0.3)
+    refresher.onRefreshed { restarts.increment() }
+    refresher.unauthenticated()
+    for _ in 0..<100 where restarts.value == 0 { try await Task.sleep(nanoseconds: 10_000_000) }
+    refresher.unauthenticated()  // inside the interval: kept, not dropped
+    refresher.unauthenticated()  // still one kept request
+    XCTAssertEqual(refreshes.value, 1)
+    for _ in 0..<200 where refreshes.value < 2 { try await Task.sleep(nanoseconds: 10_000_000) }
+    XCTAssertEqual(refreshes.value, 2, "the kept request ran after the interval")
+
+    refresher.unauthenticated()  // inside the new interval: kept again
+    refresher.cancel()
+    try await Task.sleep(nanoseconds: 600_000_000)
+    XCTAssertEqual(refreshes.value, 2, "one request was kept each time, and cancel dropped the last one")
+  }
+
   func testTheRefresherCoalescesAndWaitsAMinute() async throws {
     let refreshes = Counter()
     let clock = Counter()  // seconds

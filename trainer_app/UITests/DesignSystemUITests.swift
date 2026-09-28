@@ -5,6 +5,7 @@ import XCTest
 final class DesignSystemUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false
+    XCUIDevice.shared.orientation = .portrait  // other UI test classes leave the device in landscape
   }
 
   @MainActor

@@ -378,7 +378,18 @@ service cloud.firestore {
         return d.content is string &&
           d.content.size() > 0 &&
           d.content.size() <= 2000 &&
-          d.get('imageUrls', []) is list;
+          validImageUrls(d.get('imageUrls', []));
+      }
+
+      // At most 10 image URLs, each a string: Post.fromFirestore reads them with List<String>.from, and one
+      // bad element fails the whole feed. Rules cannot loop, so every allowed index is checked.
+      function validImageUrls(l) {
+        return l is list && l.size() <= 10
+          && (l.size() < 1 || l[0] is string) && (l.size() < 2 || l[1] is string)
+          && (l.size() < 3 || l[2] is string) && (l.size() < 4 || l[3] is string)
+          && (l.size() < 5 || l[4] is string) && (l.size() < 6 || l[5] is string)
+          && (l.size() < 7 || l[6] is string) && (l.size() < 8 || l[7] is string)
+          && (l.size() < 9 || l[8] is string) && (l.size() < 10 || l[9] is string);
       }
 
       // Anyone authenticated can read posts

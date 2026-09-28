@@ -69,6 +69,7 @@
 		EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */; };
 		EF01E6D93377594EA6BBB3BE /* ShellServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7476E9DA66A858FA50319763 /* ShellServices.swift */; };
 		F024D4270749A21CE5E2B20C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E726F1893F83B5B473A6E62 /* Assets.xcassets */; };
+		F7F55C170E68905F0D401557 /* SessionResumeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF07E065E4801647DFA5027 /* SessionResumeTests.swift */; };
 		F959AD1FB0578C0CF0768C49 /* AppShellUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F50A2ACEDADA4F1FE4CF3A8 /* AppShellUITests.swift */; };
 		FE7656E073A513D4FFAF2D80 /* SyncEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 422ACBDDF549B4FBB975C8B5 /* SyncEngine */; };
 /* End PBXBuildFile section */
@@ -103,6 +104,7 @@
 		36A5FA9FD51FE87125AA7512 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3B73307BB63FE9243167AE8C /* LaunchSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchSmokeTests.swift; sourceTree = "<group>"; };
 		3D5217B45497FF777BEE4E6D /* ConfigurationMissingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMissingView.swift; sourceTree = "<group>"; };
+		3DF07E065E4801647DFA5027 /* SessionResumeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResumeTests.swift; sourceTree = "<group>"; };
 		42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberDirectoryEmulatorTests.swift; sourceTree = "<group>"; };
 		4BF50B891E1DC136E0185B31 /* LiveSessionSignOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveSessionSignOut.swift; sourceTree = "<group>"; };
 		50ECB81A5339CA06FC9F7F06 /* PreviewEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewEnvironment.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 				42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */,
 				89812E626D2A8F0D57DF4859 /* PendingMemberEmulatorTests.swift */,
 				8FA5A7BB6E81DFD2AF51F44B /* RemoteWriterEmulatorTests.swift */,
+				3DF07E065E4801647DFA5027 /* SessionResumeTests.swift */,
 				E7AACAE2720E36A6C2E03953 /* SessionSignOutEmulatorTests.swift */,
 				E61052476E45BECDE696AE9C /* SessionSignOutOrderTests.swift */,
 				6F250018DA32CC81685CF457 /* Support */,
@@ -537,6 +540,7 @@
 				73E67DF911CF2D2213939E78 /* MemberDirectoryEmulatorTests.swift in Sources */,
 				14591C2DE96B7F6D3F62EA1A /* PendingMemberEmulatorTests.swift in Sources */,
 				397F3BEDDCF10EF3D2A84E66 /* RemoteWriterEmulatorTests.swift in Sources */,
+				F7F55C170E68905F0D401557 /* SessionResumeTests.swift in Sources */,
 				DB21832BCFA9E4487F7586B8 /* SessionSignOutEmulatorTests.swift in Sources */,
 				0AEED1A01E1CC315C000E8AF /* SessionSignOutOrderTests.swift in Sources */,
 			);

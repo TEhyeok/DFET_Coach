@@ -176,6 +176,14 @@ describe('community integrity boundaries', () => {
     await assertFails(updateDoc(doc(owner, 'posts/post1'), {content: ''}));
     await assertFails(updateDoc(doc(owner, 'posts/post1'), {content: 'a'.repeat(2001)}));
     await assertFails(updateDoc(doc(owner, 'posts/post1'), {imageUrls: 5}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {imageUrls: [42]}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {imageUrls: ['https://example.invalid/1.jpg', null]}));
+    await assertFails(updateDoc(doc(owner, 'posts/post1'), {
+      imageUrls: Array.from({length: 11}, (_, i) => `https://example.invalid/${i}.jpg`),
+    }));
+    await assertSucceeds(updateDoc(doc(owner, 'posts/post1'), {
+      imageUrls: Array.from({length: 10}, (_, i) => `https://example.invalid/${i}.jpg`),
+    }));
     await assertSucceeds(updateDoc(doc(owner, 'posts/post1'), {
       content: 'a'.repeat(2000), imageUrls: ['https://example.invalid/1.jpg'],
     }));
@@ -191,6 +199,7 @@ describe('community integrity boundaries', () => {
     await assertFails(setDoc(doc(member, 'posts/post3'), {...post, authorName: {}}));
     await assertFails(setDoc(doc(member, 'posts/post3'), {...post, authorProfileImage: 7}));
     await assertFails(setDoc(doc(member, 'posts/post3'), {...post, imageUrls: 'x'}));
+    await assertFails(setDoc(doc(member, 'posts/post3'), {...post, imageUrls: [42]}));
     await assertFails(setDoc(doc(member, 'posts/post3'), {...post, content: {}}));
     await assertFails(setDoc(doc(member, 'posts/post3'), {...post, pinned: true}));
   });

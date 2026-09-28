@@ -43,7 +43,7 @@ extension AppBootstrap {
       SyncRemote(
         writer: liveRemoteWriter(trainerUid: trainerUid), uploader: StorageBinaryUploader(),
         callable: FunctionsCallableClient(), currentUid: { FirebaseAuthService.currentUid() },
-        sessions: { liveAuthService().sessionStream() })
+        sessions: { liveAuthService().sessionStream() }, refreshSession: { await FirebaseAuthService.refreshToken() })
     }
     return ShellServices(
       memberDirectory: liveMemberDirectory(trainerUid: trainerUid),

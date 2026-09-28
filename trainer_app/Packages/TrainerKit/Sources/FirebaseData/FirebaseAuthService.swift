@@ -104,6 +104,12 @@ public final class FirebaseAuthService: AuthService, Sendable {
   }
 
   /// The signed-in user's uid right now, whatever the claims (the SyncEngine's per-send session check).
+  /// Forces a new ID token for the signed-in user; the token listener publishes the session again. Failures are
+  /// ignored: the next foreground start or token change retries.
+  public static func refreshToken() async {
+    _ = try? await Auth.auth().currentUser?.getIDTokenResult(forcingRefresh: true)
+  }
+
   public static func currentUid() -> String? {
     Auth.auth().currentUser?.uid
   }

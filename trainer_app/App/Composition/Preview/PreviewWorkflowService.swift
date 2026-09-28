@@ -80,7 +80,7 @@ actor PreviewWorkflowService: ConsentService, MeasurementStore, MemberDirectory,
   nonisolated func observeBodyCompositionRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error> {
     AsyncThrowingStream { continuation in
       let task = Task {
-        for await _ in await changes() { continuation.yield(await records[member, default: []].filter { $0.measuredAt >= since }) }
+        for await _ in await changes() { continuation.yield(await visibleRecords(member, since: since)) }
         continuation.finish()
       }
       continuation.onTermination = { _ in task.cancel() }
@@ -91,12 +91,20 @@ actor PreviewWorkflowService: ConsentService, MeasurementStore, MemberDirectory,
     AsyncThrowingStream { continuation in
       let task = Task {
         for await _ in await changes() {
-          let values = await records[member, default: []].filter { $0.measuredAt >= since }
+          let values = await visibleRecords(member, since: since)
           continuation.yield(BodyCompositionSeries.points(from: values, metricCode: metricCode))
         }
         continuation.finish()
       }
       continuation.onTermination = { _ in task.cancel() }
+    }
+  }
+
+  /// The same consent ② gate as `LocalWorkflowService`: no record is shown while ② is missing or rejected.
+  private func visibleRecords(_ member: MemberKey, since: Date) -> [BodyCompositionRecord] {
+    switch consent[member]?.healthData {
+    case .granted?, .awaitingConsent?: return records[member, default: []].filter { $0.measuredAt >= since }
+    case .missing?, .rejected?, nil: return []
     }
   }
 

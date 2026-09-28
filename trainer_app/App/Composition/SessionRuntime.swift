@@ -16,9 +16,52 @@ struct SyncRemote {
   let currentUid: @Sendable () -> String?
   /// The auth session, current value first; the runtime sends only while it is this trainer's.
   let sessions: () -> AsyncStream<TrainerSession?>
-  /// Asks Firebase Auth for a fresh ID token after an `unauthenticated` reply. The token listener then publishes the
-  /// session again, and the runtime restarts sending (V1-06 §8.7).
-  var refreshSession: @Sendable () async -> Void = {}
+  /// Asks Firebase Auth for a fresh ID token after an `unauthenticated` reply; true when the same user still has the
+  /// trainer claim afterwards (V1-06 §8.7).
+  var refreshSession: @Sendable () async -> Bool = { false }
+}
+
+/// After an `unauthenticated` reply for the signed-in trainer: one token refresh at a time and at most one a minute, so a
+/// server that keeps refusing the token cannot drive a refresh-and-resend loop. A successful refresh restarts sending
+/// itself, because Firebase Auth publishes no new session when the refreshed token is unchanged.
+final class SessionRefresher: @unchecked Sendable {
+  static let minimumInterval: TimeInterval = 60
+
+  private let refresh: @Sendable () async -> Bool
+  private let now: @Sendable () -> Date
+  private let lock = NSLock()
+  private var inFlight = false
+  private var lastStarted: Date?
+  private var refreshed: (@Sendable () async -> Void)?
+
+  init(refresh: @escaping @Sendable () async -> Bool, now: @escaping @Sendable () -> Date = Date.init) {
+    self.refresh = refresh
+    self.now = now
+  }
+
+  /// What to run after a successful refresh (the runtime starts its engine).
+  func onRefreshed(_ action: @escaping @Sendable () async -> Void) {
+    lock.withLock { refreshed = action }
+  }
+
+  func unauthenticated() {
+    let start = lock.withLock { () -> Bool in
+      if inFlight { return false }
+      if let lastStarted, now().timeIntervalSince(lastStarted) < Self.minimumInterval { return false }
+      inFlight = true
+      lastStarted = now()
+      return true
+    }
+    guard start else { return }
+    Task {
+      let ok = await refresh()
+      let action = lock.withLock { () -> (@Sendable () async -> Void)? in
+        inFlight = false
+        return refreshed
+      }
+      if ok { await action?() }
+    }
+  }
 }
 
 /// Sends only while `trainerUid` is the signed-in user. Otherwise nothing is sent and `RemoteError.signedOut` makes the
@@ -27,6 +70,7 @@ struct SyncRemote {
 struct SessionBoundRemote: RemoteWriter, BinaryUploader, CallableClient {
   let trainerUid: String
   let remote: SyncRemote
+  var onUnauthenticated: @Sendable () -> Void = {}
 
   private func requireSession() throws {
     guard remote.currentUid() == trainerUid else { throw RemoteError.signedOut }
@@ -40,10 +84,7 @@ struct SessionBoundRemote: RemoteWriter, BinaryUploader, CallableClient {
       return try await call()
     } catch {
       if remote.currentUid() != trainerUid { throw RemoteError.signedOut }
-      if case RemoteError.unauthenticated = error {
-        let refresh = remote.refreshSession
-        Task { await refresh() }
-      }
+      if case RemoteError.unauthenticated = error { onUnauthenticated() }
       throw error
     }
   }
@@ -111,8 +152,10 @@ final class SessionRuntime {
     self.container = container
     self.location = location
     let outbox = LocalOutboxStore(container: container, trainerUid: trainerUid, binaries: LocalBinaryStore(location: location))
-    let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote)
+    let refresher = SessionRefresher(refresh: remote.refreshSession)
+    let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote, onUnauthenticated: refresher.unauthenticated)
     let engine = SyncEngine(store: outbox, writer: bound, uploader: bound, callable: bound)
+    refresher.onRefreshed { await engine.start() }
     self.engine = engine
     sessions = remote.sessions
     registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })

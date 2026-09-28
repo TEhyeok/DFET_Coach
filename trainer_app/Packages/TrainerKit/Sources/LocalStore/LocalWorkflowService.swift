@@ -126,28 +126,73 @@ public final class LocalWorkflowService: ConsentService, MeasurementStore, Membe
     }
   }
 
+  /// Health records are shown only while consent ② allows them (TR-03, TR-11): server and local records when the
+  /// server confirms ②, only this device's drafts while ② waits for the server, and nothing when ② is missing or was
+  /// rejected. Nothing is yielded before the first effective consent arrives.
   public func observeBodyCompositionRecords(member: MemberKey, since: Date)
     -> AsyncThrowingStream<[BodyCompositionRecord], Error> {
     AsyncThrowingStream { continuation in
       let task = Task {
         let (events, post) = AsyncStream<RecordsEvent>.makeStream()
-        let remote = Task {
-          do { for try await records in measurements.records(member: member, since: since) { post.yield(.server(records)) } }
-          catch { post.yield(.failed(error)) }
+        var remote: Task<Void, Never>?
+        // Each server listener has its own generation, so a snapshot or error a cancelled listener already posted
+        // cannot restore records after consent is withdrawn.
+        var generation = 0
+        func startRemote() {
+          generation += 1
+          let current = generation
+          remote = Task {
+            do {
+              for try await records in measurements.records(member: member, since: since) {
+                guard !Task.isCancelled else { return }
+                post.yield(.server(records, generation: current))
+              }
+            } catch {
+              // Ending a listener because consent was withdrawn is not a load failure.
+              guard !Task.isCancelled, !(error is CancellationError) else { return }
+              post.yield(.failed(error, generation: current))
+            }
+          }
         }
+        func stopRemote() {
+          remote?.cancel()
+          remote = nil
+          generation += 1
+        }
+        let consent = Task { for await value in self.observe(member: member) { post.yield(.consent(value)) } }
         let local = Task { for await _ in await outbox.changes() { post.yield(.local) } }
-        defer { remote.cancel(); local.cancel(); post.finish() }
+        defer { remote?.cancel(); consent.cancel(); local.cancel(); post.finish() }
+        var access: HealthRecordAccess?
         var server: [BodyCompositionRecord] = []
         do {
           for await event in events {
             switch event {
-            case let .server(records): server = records
-            case let .failed(error): throw error
+            case let .consent(value):
+              let next = HealthRecordAccess(value.healthData)
+              guard next != access else { continue }
+              access = next
+              if next == .all {
+                if remote == nil { startRemote() }
+              } else {
+                stopRemote()
+                server = []
+              }
+            case let .server(records, eventGeneration):
+              guard eventGeneration == generation, remote != nil else { continue }
+              server = records
+            case let .failed(error, eventGeneration):
+              guard eventGeneration == generation, remote != nil else { continue }
+              throw error
             case .local: break
+            }
+            guard let access else { continue }
+            if access == .hidden {
+              continuation.yield([])
+              continue
             }
             var byID = Dictionary(uniqueKeysWithValues: try await outbox.measurementRecords(member: member, since: since)
               .map { ($0.id, $0) })
-            server.forEach { byID[$0.id] = $0 }
+            if access == .all { server.forEach { byID[$0.id] = $0 } }
             continuation.yield(byID.values.sorted { ($0.measuredAt, $0.id) > ($1.measuredAt, $1.id) })
           }
           continuation.finish()
@@ -210,5 +255,25 @@ public final class LocalWorkflowService: ConsentService, MeasurementStore, Membe
 }
 
 private enum ConsentEvent: Sendable { case server(ConsentState?), serverEnded, local }
-private enum RecordsEvent: Sendable { case server([BodyCompositionRecord]), local, failed(Error) }
+private enum RecordsEvent: Sendable {
+  case consent(EffectiveConsent), server([BodyCompositionRecord], generation: Int), local, failed(Error, generation: Int)
+}
+
+/// Which body-composition records consent ② lets TR-03/TR-11 show.
+private enum HealthRecordAccess: Equatable {
+  /// ② confirmed by the server: server records and this device's drafts.
+  case all
+  /// ② only in an unconfirmed local capture: this device's drafts, no server listener.
+  case localOnly
+  /// ② missing or rejected: nothing, including drafts retained on the device.
+  case hidden
+
+  init(_ healthData: EffectiveConsentValue) {
+    switch healthData {
+    case .granted: self = .all
+    case .awaitingConsent: self = .localOnly
+    case .missing, .rejected: self = .hidden
+    }
+  }
+}
 private enum MembersEvent: Sendable { case assigned([Member]), pending([Member]), local, failed(Error) }

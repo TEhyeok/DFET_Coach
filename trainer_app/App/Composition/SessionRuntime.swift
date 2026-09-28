@@ -155,10 +155,18 @@ final class SessionRuntime {
     let refresher = SessionRefresher(refresh: remote.refreshSession)
     let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote, onUnauthenticated: refresher.unauthenticated)
     let engine = SyncEngine(store: outbox, writer: bound, uploader: bound, callable: bound)
-    refresher.onRefreshed { await engine.start() }
     self.engine = engine
     sessions = remote.sessions
     registrar = LocalPendingMemberRegistrar(outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) })
+    // Weak: the engine holds the remote, which holds the refresher; a strong runtime here would never be released.
+    refresher.onRefreshed { [weak self] in await self?.restartAfterRefresh() }
+  }
+
+  /// A token refresh after `unauthenticated` worked. Sending restarts only while this runtime still sends: a logout
+  /// that stopped it in the meantime wins.
+  private func restartAfterRefresh() async {
+    guard triggers != nil else { return }
+    await engine.start()
   }
 
   /// Created for a signed-in session, so sending starts now; then it follows the session.

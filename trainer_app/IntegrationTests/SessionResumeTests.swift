@@ -1,5 +1,6 @@
 import Foundation
 import LocalStore
+import SyncEngine
 import TrainerDomain
 import XCTest
 @testable import DFETTrainer
@@ -128,6 +129,47 @@ final class SessionResumeTests: XCTestCase {
     try await Task.sleep(nanoseconds: 1_500_000_000)
     XCTAssertEqual(refreshes.value, 1)
     XCTAssertLessThanOrEqual(remote.creates, 3, "no refresh-and-resend loop")
+  }
+
+  /// GPT final review: a refresh that succeeds after logout stopped the runtime must not start sending again.
+  func testARefreshThatSucceedsAfterLogoutStoppedTheRuntimeSendsNothing() async throws {
+    let remote = FlakyAuthRemote(failures: 1)
+    let gate = AsyncStream.makeStream(of: Void.self)
+    let refreshes = Counter()
+    let (sessions, continuation) = AsyncStream.makeStream(of: TrainerSession?.self)
+    continuation.yield(TrainerSession(uid: uid, displayName: "SYN-TRAINER"))
+    let runtime = try runtime(remote: remote, sessions: sessions) {
+      refreshes.increment()
+      for await _ in gate.stream { break }
+      return true
+    }
+    await runtime.engine.enqueue(item("SynNote0000000000012"))
+    for _ in 0..<300 where refreshes.value == 0 {
+      try await Task.sleep(nanoseconds: 10_000_000)
+    }
+    XCTAssertEqual(remote.creates, 1)
+
+    await runtime.stopSending(drainTimeout: .milliseconds(100))
+    gate.continuation.yield()  // the refresh succeeds only now
+    try await Task.sleep(nanoseconds: 500_000_000)
+    XCTAssertEqual(remote.creates, 1, "logout wins over a late refresh")
+  }
+
+  /// GPT final review: engine → remote → refresher → callback must not hold the runtime or the engine alive.
+  func testTheRuntimeAndItsEngineAreReleased() throws {
+    weak var weakRuntime: SessionRuntime?
+    weak var weakEngine: SyncEngine?
+    do {
+      let trainerUid = uid
+      let remote = FlakyAuthRemote()
+      let runtime = try SessionRuntime(trainerUid: trainerUid, remote: SyncRemote(
+        writer: remote, uploader: remote, callable: remote, currentUid: { trainerUid },
+        sessions: { AsyncStream { _ in } }, refreshSession: { true }))
+      weakRuntime = runtime
+      weakEngine = runtime.engine
+    }
+    XCTAssertNil(weakRuntime)
+    XCTAssertNil(weakEngine)
   }
 
   func testTheRefresherCoalescesAndWaitsAMinute() async throws {

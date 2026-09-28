@@ -8,8 +8,8 @@ import XCTest
 /// DF-127 TC-127-03 and TC-127-05 (AC-DF-127.2, .4) with the DF-130 read path, against the Auth and Firestore
 /// emulators and the repository rules: a TR-11 save goes through LocalStore + Outbox + SyncEngine + FirebaseData and the
 /// rules accept it; `measuredAt` yesterday stays yesterday with a server `createdAt`; the trend query reads it back;
-/// without consent ② the store refuses before anything is queued. Synthetic data only; every run uses its own trainer,
-/// member and LocalStore partition.
+/// without consent ② the store refuses before anything is queued; TR-11's latest-record read reaches before the trend
+/// window. Synthetic data only; every run uses its own trainer, member and LocalStore partition.
 final class BodyCompositionEmulatorTests: XCTestCase {
   private var configured = false
 
@@ -86,6 +86,30 @@ final class BodyCompositionEmulatorTests: XCTestCase {
       if !fromServer { try await Task.sleep(nanoseconds: 200_000_000) }
     }
     XCTAssertTrue(fromServer, "the record was not read back through the trend query")
+  }
+
+  /// DF-127 second review: TR-11's default device and height come from the member's latest active record at any date,
+  /// read through the rules with the trend's index shape (no `since`). Records 14 and 13 months ago, the later one
+  /// voided: the answer is the older, active one.
+  @MainActor
+  func testTheLatestActiveRecordIsReadFromBeforeTheTrendWindow() async throws {
+    let (services, member) = try await signedInTrainer(healthData: true)
+    let trainer = try XCTUnwrap(Auth.auth().currentUser?.uid)
+    func put(_ id: String, monthsAgo: Int, device: String, status: String) async throws {
+      let measuredAt = try XCTUnwrap(Calendar(identifier: .gregorian).date(byAdding: .month, value: -monthsAgo, to: Date()))
+      try await EmulatorDocuments.put("bodyCompositionRecords/\(id)", [
+        "trainerId": trainer, "memberUid": member, "enteredBy": trainer, "source": "manualEntry", "sourceGrade": "device",
+        "deviceModel": device, "measuredAt": measuredAt, "fasting": "yes", "timeOfDayBand": "morning",
+        "values": ["weightKg": 70.5], "status": status, "legalNature": "coachingRecord", "schemaVersion": 1,
+        "createdAt": measuredAt,
+      ])
+    }
+    let active = DocumentID.make()
+    try await put(active, monthsAgo: 14, device: "IT Old Device", status: "active")
+    try await put(DocumentID.make(), monthsAgo: 13, device: "IT Voided Device", status: "voided")
+    let latest = try await services.bodyComposition.store.latestActiveBodyComposition(member: .uid(member))
+    XCTAssertEqual(latest?.id, active)
+    XCTAssertEqual(latest?.deviceModel, "IT Old Device")
   }
 
   /// AC-DF-127.4: without ② the store refuses the save before anything reaches the Outbox or the server.

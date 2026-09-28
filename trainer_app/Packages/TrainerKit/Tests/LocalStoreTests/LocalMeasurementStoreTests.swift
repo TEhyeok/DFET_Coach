@@ -41,6 +41,10 @@ final class LocalMeasurementStoreTests: XCTestCase {
       }
     }
 
+    func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord? {
+      BodyCompositionSeries.latestActive(lock.withLock { records })
+    }
+
     func set(_ records: [BodyCompositionRecord]) {
       lock.withLock {
         self.records = records
@@ -247,6 +251,102 @@ final class LocalMeasurementStoreTests: XCTestCase {
     await engine.stop()
   }
 
+  /// DF-127 second review: the SyncEngine reports `synced` before it saves the ack, so the drafts read on that signal
+  /// may still have the item in flight. The draft must not outlive the send: when the server later removes the record
+  /// (consent withdrawal, DF-133), the list is empty, not the leftover draft.
+  @MainActor
+  func testASyncedDraftDoesNotComeBackWhenTheServerRemovesTheRecord() async throws {
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
+    let server = FakeServer()
+    let engine = StateFeed()
+    let store = LocalMeasurementStore(
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { _ in }, server: server,
+      consent: { _ in .init(required: .granted, healthData: .granted, bodyImaging: .granted) },
+      syncStates: { _ in engine.stream() }, now: { [measuredAt] in measuredAt.addingTimeInterval(60) },
+      makeID: { [fixedID] in fixedID })
+    let lists = ListRecorder(store.observeBodyCompositionRecords(member: member, since: since))
+    defer { lists.cancel() }
+    _ = try await store.saveBodyComposition(member: member, draft: draft())
+    let saved = await lists.latest { $0.map(\.id) == [fixedID] }
+    XCTAssertTrue(saved, "the draft is there at once")
+
+    // The engine sends it: the item is in flight, the server has the record, and `synced` comes before the ack is saved.
+    let stored = try await outbox.loadAll()
+    var item = try XCTUnwrap(stored.first)
+    item.state = .inFlight
+    try await outbox.update(item)
+    server.set([serverRecord(fixedID, "2026-09-21T08:30:00+09:00", weight: 62.4)])
+    engine.send(.synced)
+    let synced = await lists.latest { $0.map(\.id) == [fixedID] && ($0.first?.syncState ?? .synced) == .synced }
+    XCTAssertTrue(synced, "the record reads synced")
+
+    // Then the ack is saved, and later the server removes the record.
+    item.state = .acked
+    item.ack = .write(WriteAck(serverCommitted: true))
+    try await outbox.update(item)
+    server.set([])
+    let removed = await lists.latest { $0.isEmpty }
+    XCTAssertTrue(removed, "the synced draft came back: \(lists.last?.map(\.id) ?? [])")
+  }
+
+  /// A SyncEngine stand-in whose state the test sends; a new subscriber gets the current state first, as from the engine.
+  private final class StateFeed: @unchecked Sendable {
+    private let lock = NSLock()
+    private var state = SyncState.localSaved
+    private var continuations: [AsyncStream<SyncState>.Continuation] = []
+
+    func stream() -> AsyncStream<SyncState> {
+      AsyncStream { continuation in
+        lock.withLock {
+          continuations.append(continuation)
+          continuation.yield(state)
+        }
+      }
+    }
+
+    func send(_ state: SyncState) {
+      lock.withLock {
+        self.state = state
+        continuations.forEach { $0.yield(state) }
+      }
+    }
+  }
+
+  /// Keeps the newest list of a record stream; `latest(where:)` waits until it matches.
+  private final class ListRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _last: [BodyCompositionRecord]?
+    private var task: Task<Void, Never>?
+    var last: [BodyCompositionRecord]? { lock.withLock { _last } }
+
+    init(_ stream: AsyncThrowingStream<[BodyCompositionRecord], Error>) {
+      task = Task { [weak self] in
+        do {
+          for try await list in stream { self?.keep(list) }
+        } catch {}
+      }
+    }
+
+    private func keep(_ list: [BodyCompositionRecord]) {
+      lock.withLock { _last = list }
+    }
+
+    func cancel() {
+      task?.cancel()
+    }
+
+    /// Whether the newest list matches `accept` within `seconds`.
+    func latest(within seconds: Double = 10, where accept: ([BodyCompositionRecord]) -> Bool) async -> Bool {
+      let deadline = Date().addingTimeInterval(seconds)
+      while Date() < deadline {
+        if let last, accept(last) { return true }
+        try? await Task.sleep(nanoseconds: 10_000_000)
+      }
+      return last.map(accept) ?? false
+    }
+  }
+
   /// The first list `accept` takes, or nil after `seconds`.
   private func firstList(
     of stream: AsyncThrowingStream<[BodyCompositionRecord], Error>, seconds: Double = 10,
@@ -265,6 +365,24 @@ final class LocalMeasurementStoreTests: XCTestCase {
       group.cancelAll()
       return first
     }
+  }
+
+  /// DF-127 second review: TR-11's defaults read the member's latest active record at any date, before the 12-month
+  /// window too, skipping voided records; this device's unsynced draft counts when it is the latest.
+  @MainActor
+  func testTheLatestActiveRecordIsReadAtAnyDate() async throws {
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let server = FakeServer([
+      serverRecord("SynServer00000000001", "2025-01-10T08:30:00+09:00", weight: 66, device: "InBody 570"),
+      serverRecord("SynServer00000000002", "2025-02-10T08:30:00+09:00", weight: 99, status: .voided),
+    ])
+    let (store, _) = makeStore(container: container, server: server)
+    let old = try await store.latestActiveBodyComposition(member: member)
+    XCTAssertEqual(old?.id, "SynServer00000000001", "20 months ago, the voided one after it skipped")
+    _ = try await store.saveBodyComposition(member: member, draft: draft())
+    let saved = try await store.latestActiveBodyComposition(member: member)
+    XCTAssertEqual(saved?.id, fixedID)
+    XCTAssertEqual(saved?.deviceModel, "InBody 570")
   }
 
   /// AC-DF-130.11: the mini trend's points skip voided records; `observeSeries` is the points of the merged records.
@@ -290,6 +408,7 @@ final class LocalMeasurementStoreTests: XCTestCase {
       func observeRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error> {
         AsyncThrowingStream { $0.finish(throwing: Refused()) }
       }
+      func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord? { throw Refused() }
     }
     let outbox = LocalOutboxStore(container: try LocalStoreContainer.make(inMemory: true), trainerUid: Synthetic.trainerA,
                                   binaries: nil)

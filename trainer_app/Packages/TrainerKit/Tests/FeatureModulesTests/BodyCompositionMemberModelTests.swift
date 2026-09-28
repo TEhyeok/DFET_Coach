@@ -49,6 +49,10 @@ final class BodyCompositionMemberModelTests: XCTestCase {
       }
     }
 
+    func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? {
+      BodyCompositionSeries.latestActive(lock.withLock { records })
+    }
+
     func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error> {
       AsyncThrowingStream { $0.finish() }
     }
@@ -111,6 +115,27 @@ final class BodyCompositionMemberModelTests: XCTestCase {
     XCTAssertTrue(model.loadedRecords.contains { $0.id == id }, "the stored record replaces the saved entry")
     XCTAssertEqual(model.chartModel(.weightKg).points.map(\.value), [65], "the trend still starts 12 months ago")
     XCTAssertEqual(model.latestValues.map(\.record.id), ["SynBodyComp000000001"], "TR-03 keeps its 12-month window")
+  }
+
+  // MARK: - Second review: TR-11 defaults from a record before the trend window
+
+  /// The member was last measured 13 months ago: the 12-month read has nothing, but TR-11 still defaults to that
+  /// record's device and height (V1-09 §10.3, ASM-P1a-41), while TR-03 keeps its window.
+  func testTheDefaultsComeFromTheLatestRecordBeforeTheTrendWindow() async throws {
+    let old = Calendar(identifier: .gregorian).date(byAdding: .month, value: -13, to: now)!
+    let (model, _) = try await makeModel([
+      BodyCompositionRecord(
+        id: "SynBodyComp000000001", member: member, deviceModel: "InBody 570", measuredAt: old, fasting: .yes,
+        timeOfDayBand: .morning, source: "manualEntry", sourceGrade: .device, values: [.weightKg: 70],
+        derived: DerivedBMI(bmi: 24.2, heightCmUsed: 170, heightMeasuredAt: old), status: .active),
+    ])
+    XCTAssertFalse(model.hasActiveRecords, "nothing in the 12-month window")
+    XCTAssertNil(model.latest)
+    let form = model.makeEntryModel(localize: try AppCatalog.localizer())
+    await form.prepare()
+    XCTAssertEqual(form.draft.deviceModel, "InBody 570")
+    XCTAssertEqual(form.draft.heightCmInput, "170")
+    XCTAssertEqual(form.draft.heightMeasuredAt, old, "a carried-over height keeps its date")
   }
 
   // MARK: - Finding 4: a draft the server refused

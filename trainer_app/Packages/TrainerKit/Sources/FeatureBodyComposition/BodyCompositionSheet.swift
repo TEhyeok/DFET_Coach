@@ -4,32 +4,30 @@ import TrainerContracts
 import TrainerDomain
 
 /// The TR-11 sheet TR-03 opens from '측정 입력 > 신체조성' (AC-DF-127.11): the entry form, then, once saved, the record
-/// read-only with the mini trend that already has it (DF-130). A save in progress cannot be swiped away.
+/// read-only with the mini trend that already has it (DF-130). A save in progress cannot be swiped away. The form is
+/// the caller's (`BodyCompositionScreens.entry`), so what was typed does not depend on this view (NFR-12).
 public struct BodyCompositionSheet: View {
-  private let memberModel: BodyCompositionMemberModel
+  private let entry: BodyCompositionEntryModel
   private let localize: Localizer
   private let onClose: () -> Void
-  @State private var entry: BodyCompositionEntryModel
-  @State private var savedId: String?
 
-  public init(memberModel: BodyCompositionMemberModel, localize: Localizer = .main, onClose: @escaping () -> Void) {
-    self.memberModel = memberModel
+  public init(entry: BodyCompositionEntryModel, localize: Localizer = .main, onClose: @escaping () -> Void) {
+    self.entry = entry
     self.localize = localize
     self.onClose = onClose
-    _entry = State(initialValue: memberModel.makeEntryModel(localize: localize))
   }
 
   public var body: some View {
     NavigationStack {
-      if let savedId {
-        BodyCompositionRecordView(model: memberModel, recordId: savedId, localize: localize, onClose: onClose)
+      if let savedId = entry.savedRecordId {
+        BodyCompositionRecordView(model: entry.memberModel, recordId: savedId, localize: localize, onClose: onClose)
       } else {
-        BodyCompositionEntryView(model: entry, localize: localize, onCancel: onClose) { id in savedId = id }
+        BodyCompositionEntryView(model: entry, localize: localize, onCancel: onClose)
       }
     }
     .interactiveDismissDisabled(entry.isSaving)
     .pageSizedSheet()  // V1-07 §4.11: sheet(.large), room for the form and the trend
-    .onAppear { memberModel.start() }
+    .onAppear { entry.memberModel.start() }
   }
 }
 

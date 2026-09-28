@@ -17,11 +17,21 @@ final class BodyCompositionEntryModelTests: XCTestCase {
     private let records: [BodyCompositionRecord]
     private var _saved: [BodyCompositionDraft] = []
     private var _devices: [String]
+    /// Reads wait here until `releaseRecords()` (a slow server); nil answers at once.
+    private var held: [AsyncThrowingStream<[BodyCompositionRecord], Error>.Continuation]?
     var saved: [BodyCompositionDraft] { lock.withLock { _saved } }
 
-    init(records: [BodyCompositionRecord] = [], devices: [String] = []) {
+    init(records: [BodyCompositionRecord] = [], devices: [String] = [], holdsRecords: Bool = false) {
       self.records = records
       _devices = devices
+      held = holdsRecords ? [] : nil
+    }
+
+    func releaseRecords() {
+      lock.withLock {
+        held?.forEach { $0.yield(records) }
+        held = nil
+      }
     }
 
     func saveBodyComposition(member: MemberKey, draft: BodyCompositionDraft) async throws -> String {
@@ -32,8 +42,19 @@ final class BodyCompositionEntryModelTests: XCTestCase {
     func observeBodyCompositionRecords(member: MemberKey, since: Date)
       -> AsyncThrowingStream<[BodyCompositionRecord], Error>
     {
-      let records = records
-      return AsyncThrowingStream { $0.yield(records) }
+      AsyncThrowingStream { continuation in
+        lock.withLock {
+          if held != nil {
+            held?.append(continuation)
+          } else {
+            continuation.yield(records)
+          }
+        }
+      }
+    }
+
+    func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? {
+      BodyCompositionSeries.latestActive(records)
     }
 
     func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error> {
@@ -168,6 +189,53 @@ final class BodyCompositionEntryModelTests: XCTestCase {
     XCTAssertFalse(form.canSave, "a saved form cannot save the same record again")
   }
 
+  // MARK: - The flag turned off while TR-11 is open (V1-07 §3.6, ASM-07-06)
+
+  /// DF-127 second review: `bodyComposition` turned off while the form is open locks it. Saving is off, `save()` writes
+  /// nothing (it checks right before the write), and what was typed stays; turned on again, it saves.
+  func testTheFlagTurnedOffLocksTheFormAndKeepsTheDraft() async throws {
+    let (form, _, store) = try await makeForm()
+    form.draft = BodyCompositionDraft(values: [.weightKg: "62,4"], deviceModel: "InBody 970", measuredAt: now,
+                                      fasting: .yes)
+    XCTAssertTrue(form.canSave)
+    form.isFeatureOn = false
+    XCTAssertFalse(form.canSave)
+    let refused = await form.save()
+    XCTAssertNil(refused)
+    XCTAssertEqual(store.saved.count, 0, "nothing reaches the store, so nothing reaches the Outbox")
+    XCTAssertFalse(form.saveFailed)
+    XCTAssertEqual(form.draft.values[.weightKg], "62,4", "the draft stays")
+    form.isFeatureOn = true
+    let id = await form.save()
+    XCTAssertEqual(id, "SynRecord00000000001")
+  }
+
+  /// DF-127 second review (TR-11 lost on a size-class change): the shell's `BodyCompositionScreens` gives a rebuilt
+  /// TR-03 the same member model, holds the open form with what was typed, and passes the flag on to it.
+  func testTheShellKeepsTheMemberModelAndTheOpenForm() throws {
+    let store = FakeStore()
+    let screens = BodyCompositionScreens(
+      services: BodyCompositionServices(store: store, devices: store, consent: FixedConsent(value: Self.granted)),
+      localize: try AppCatalog.localizer())
+    let model = screens.memberModel(for: member)
+    XCTAssertTrue(screens.memberModel(for: member) === model, "a rebuilt TR-03 gets the same model")
+    screens.openEntry(for: member)
+    let form = try XCTUnwrap(screens.entry)
+    XCTAssertTrue(form.memberModel === model)
+    form.draft.values[.weightKg] = "62,4"
+    XCTAssertTrue(screens.memberModel(for: member) === model)
+    XCTAssertTrue(screens.entry === form, "the form outlives the views that show it")
+
+    screens.isFeatureOn = false
+    XCTAssertFalse(form.isFeatureOn, "the open form locks")
+    XCTAssertEqual(screens.entry?.draft.values[.weightKg], "62,4")
+    screens.isFeatureOn = true
+    XCTAssertTrue(form.isFeatureOn)
+    screens.closeEntry()
+    XCTAssertNil(screens.entry)
+    XCTAssertFalse(screens.memberModel(for: .uid("syn-0002")) === model, "another member, another model")
+  }
+
   // MARK: - AC-DF-127.5: BMI
 
   func testBMIIsDerivedOnlyWithATrainerHeight_AC_DF_127_5() async throws {
@@ -202,6 +270,36 @@ final class BodyCompositionEntryModelTests: XCTestCase {
     XCTAssertFalse(form.showsDeviceChanged)
     form.draft.deviceModel = "InBody 570"
     XCTAssertTrue(form.showsDeviceChanged, "another device than the latest active record (AC-DF-128.7)")
+  }
+
+  /// DF-127 second review: TR-11 opened before the member's records arrive (a slow server) does not settle on this
+  /// iPad's last device and no height. The defaults come from the records once they are there, and a device the
+  /// trainer chose meanwhile stays.
+  func testDefaultsWaitForTheMembersRecords() async throws {
+    let store = FakeStore(records: [record("SynBodyComp000000001", daysAgo: 10, device: "InBody 970", height: 170)],
+                          devices: ["Tanita MC-780", "InBody 570"], holdsRecords: true)
+    let services = BodyCompositionServices(store: store, devices: store, consent: FixedConsent(value: Self.granted))
+    let memberModel = BodyCompositionMemberModel(member: member, services: services, now: { [now] in now })
+    let form = memberModel.makeEntryModel(localize: try AppCatalog.localizer())
+    let preparing = Task { await form.prepare() }
+    for _ in 0..<200 where form.deviceModels.isEmpty {
+      try await Task.sleep(nanoseconds: 5_000_000)
+    }
+    XCTAssertEqual(form.deviceModels, ["Tanita MC-780", "InBody 570"], "the list is there to choose from at once")
+    XCTAssertEqual(memberModel.records, .loading)
+    XCTAssertNil(form.draft.deviceModel, "no default before the member's records are known")
+    XCTAssertNil(form.draft.heightCmInput)
+
+    store.releaseRecords()
+    await preparing.value
+    XCTAssertEqual(form.draft.deviceModel, "InBody 970", "the member's latest device, not this iPad's last one")
+    XCTAssertEqual(form.draft.heightCmInput, "170")
+
+    let second = memberModel.makeEntryModel(localize: try AppCatalog.localizer())
+    second.draft.deviceModel = "InBody 570"
+    await second.prepare()
+    XCTAssertEqual(second.draft.deviceModel, "InBody 570", "a device the trainer chose is kept")
+    XCTAssertEqual(second.draft.heightCmInput, "170")
   }
 
   func testWithoutRecordsTheMostRecentlyUsedDeviceIsTheDefault() async throws {

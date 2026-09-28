@@ -11,24 +11,32 @@ import TrainerDomain
 /// - The height row only with consent ②; BMI is derived from it or '미측정'.
 /// - Range errors under their field, cross-consistency warnings that still allow saving, and saving off (with the
 ///   reasons) until the meta, a value and consent ② are there.
+/// - With the `bodyComposition` flag turned off while it is open, the fields are locked under `flag.disabled`, and
+///   what was typed stays (V1-07 §3.6, ASM-07-06).
 public struct BodyCompositionEntryView: View {
   @Bindable private var model: BodyCompositionEntryModel
   private let localize: Localizer
   private let onCancel: () -> Void
-  private let onSaved: (String) -> Void
   @State private var addingDevice = false
   @State private var newDeviceName = ""
 
-  public init(model: BodyCompositionEntryModel, localize: Localizer = .main, onCancel: @escaping () -> Void,
-              onSaved: @escaping (String) -> Void) {
+  /// Once saved, `model.savedRecordId` is set and the sheet shows the record.
+  public init(model: BodyCompositionEntryModel, localize: Localizer = .main, onCancel: @escaping () -> Void) {
     self.model = model
     self.localize = localize
     self.onCancel = onCancel
-    self.onSaved = onSaved
   }
 
   public var body: some View {
     Form {
+      if !model.isFeatureOn {
+        Section {
+          Label { Text(localize("flag.disabled")) } icon: { Image(systemName: "nosign") }
+            .foregroundStyle(TrainerColor.danger)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("tr11.flagDisabled")
+        }
+      }
       if model.showsConsentNeeded {
         Section {
           Label { Text(localize(BodyCompositionCopy.consentNeeded)) } icon: { Image(systemName: "lock") }
@@ -42,9 +50,12 @@ public struct BodyCompositionEntryView: View {
             .accessibilityIdentifier("tr11.awaitingConsent")
         }
       }
-      metaSection
-      valuesSection
-      bmiSection
+      Group {
+        metaSection
+        valuesSection
+        bmiSection
+      }
+      .disabled(!model.isFeatureOn)
       if model.hasWarnings {
         Section {
           ForEach(model.warningMessages, id: \.self) { message in
@@ -86,7 +97,7 @@ public struct BodyCompositionEntryView: View {
       ToolbarItem(placement: .confirmationAction) {
         // With a cross-consistency warning the trainer confirms by saving anyway (F-BC-03.3).
         Button(localize(model.hasWarnings ? "tr11.saveAnyway" : "common.saveAction")) {
-          Task { if let id = await model.save() { onSaved(id) } }
+          Task { _ = await model.save() }
         }
         .disabled(!model.canSave)
         .accessibilityIdentifier("tr11.save")

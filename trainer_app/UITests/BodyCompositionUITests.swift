@@ -90,6 +90,35 @@ final class BodyCompositionUITests: XCTestCase {
     XCTAssertFalse(element("tr03.bodyComposition", in: app).exists)
   }
 
+  /// DF-127 second review (NFR-12, V1-07 §3.3): narrowing to a compact width while TR-11 is open (1/3 Split View,
+  /// Slide Over) and widening again keeps the sheet and what was typed. `preview.toggleWidth` is above the sheet.
+  @MainActor
+  func testAWidthChangeKeepsTR11AndWhatWasTyped() throws {
+    let app = launch(["--preview-members", "--preview-flags=bodyComposition", "--preview-width=375",
+                      "--preview-resizable"])
+    let toggle = element("preview.toggleWidth", in: app)
+    XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+    toggle.tap()  // wide: TR-03 in the detail column
+    openFirstMember(in: app)
+    XCTAssertTrue(element("tr03.measureMenu", in: app).waitForExistence(timeout: 10))
+    element("tr03.measureMenu", in: app).tap()
+    menuItem("tr03.entry.bodyComposition", label: "신체조성", in: app).tap()
+    XCTAssertTrue(element("tr11.root", in: app).waitForExistence(timeout: 10))
+    element("tr11.fasting.yes", in: app).tap()
+    let weight = element("tr11.value.weightKg", in: app)
+    weight.tap()
+    weight.typeText("62,4")
+
+    for width in ["narrow", "wide"] {
+      toggle.tap()
+      XCTAssertTrue(element("tr11.root", in: app).waitForExistence(timeout: 10), "TR-11 closed going \(width)")
+      XCTAssertEqual(element("tr11.value.weightKg", in: app).value as? String, "62,4", "the weight going \(width)")
+      XCTAssertTrue(element("tr11.fasting.yes", in: app).isSelected, "fasting going \(width)")
+      XCTAssertTrue(app.buttons["tr11.save"].firstMatch.isEnabled, width)
+      attachScreenshot(app, name: "TR-11 after going \(width)")
+    }
+  }
+
   // MARK: Helpers
 
   private func launch(_ arguments: [String]) -> XCUIApplication {

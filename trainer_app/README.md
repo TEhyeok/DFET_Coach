@@ -97,7 +97,7 @@ Every argument below is ignored in Release. Any `--preview-*` argument means pre
 | `--preview-landscape` | Requests landscape orientation (ported from `trainer_ios`) |
 | `--preview-flags=<k1,k2>` | Local flag override for client entry points only (ADR-010 §3-6); unknown keys are ignored |
 | `--preview-width=<pt>` | Renders the shell in a window of this width with a compact size class (1/3 Split View simulation, e.g. `375`) |
-| `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06) |
+| `--preview-resizable` | With `--preview-width=`: a `preview.toggleWidth` button switches between that width and the full window at runtime (size-class change test, TC-DF017-06). It is in a small window of its own at the top trailing corner, above sheets, so it also works while TR-11 is open |
 
 ## GoogleService-Info.plist rules (ADR-019, DF-034)
 

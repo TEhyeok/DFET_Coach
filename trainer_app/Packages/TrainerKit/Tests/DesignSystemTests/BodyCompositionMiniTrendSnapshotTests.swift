@@ -46,6 +46,10 @@ final class BodyCompositionMiniTrendSnapshotTests: XCTestCase {
       return AsyncThrowingStream { $0.yield(records) }
     }
 
+    func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? {
+      BodyCompositionSeries.latestActive(records)
+    }
+
     func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error> {
       AsyncThrowingStream { $0.finish() }
     }

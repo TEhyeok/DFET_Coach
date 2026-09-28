@@ -433,6 +433,18 @@
         }
       }
     },
+    "flag.disabled" : {
+      "comment" : "V1-12 · §6.0.2, §8.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금은 사용할 수 없는 기능이에요."
+          }
+        }
+      }
+    },
     "login.email" : {
       "comment" : "V1-12 · NFR-02",
       "extractionState" : "manual",

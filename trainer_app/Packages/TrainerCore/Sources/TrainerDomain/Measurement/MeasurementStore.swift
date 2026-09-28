@@ -26,6 +26,10 @@ public protocol MeasurementStore: Sendable {
   /// Voided records are included (TR-03 lists them); trends and defaults use `BodyCompositionSeries`, which skips them.
   func observeBodyCompositionRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error>
 
+  /// The member's latest active record at any date, local unsynced ones included, or nil when there is none: TR-11's
+  /// default device and height when the 12-month read has no active record (V1-09 §10.3, ASM-P1a-41). One answer.
+  func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord?
+
   /// One metric's trend points since `since` (the mini trend: 12 months, AC-DF-130.11), sorted by `measuredAt`.
   /// For body composition metrics this is `BodyCompositionSeries.points(from:metricCode:)` over
   /// `observeBodyCompositionRecords`. Charts pass the result to `SeriesChartInput.make`.

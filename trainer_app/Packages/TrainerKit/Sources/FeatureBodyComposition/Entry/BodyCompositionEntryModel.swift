@@ -21,8 +21,11 @@ public final class BodyCompositionEntryModel {
   public private(set) var saveFailed = false
   /// The saved record; the form then shows it read-only and cannot save again.
   public private(set) var savedRecordId: String?
+  /// Whether the `bodyComposition` flag is on; the shell sets it as the flag changes. Off locks the form with
+  /// `flag.disabled` and saving is off, while what was typed stays (V1-07 §3.6, ASM-07-06; DF-127 second review).
+  public var isFeatureOn = true
 
-  private let memberModel: BodyCompositionMemberModel
+  let memberModel: BodyCompositionMemberModel
   @ObservationIgnored private let now: () -> Date
   @ObservationIgnored private let localize: Localizer
   @ObservationIgnored private var prepared = false
@@ -38,12 +41,14 @@ public final class BodyCompositionEntryModel {
 
   // MARK: - Defaults
 
-  /// Loads the device list and fills the defaults the trainer has not set: the latest active record's device, else
-  /// the most recently used one, and that record's trainer-entered height with its date (ASM-P1a-41).
+  /// Loads the device list, then, once the member's latest active record is known (`latestForDefaults()`, at any date),
+  /// fills the defaults the trainer has not set meanwhile: that record's device, else the most recently used one, and
+  /// its trainer-entered height with its date (ASM-P1a-41).
   public func prepare() async {
     let names = (try? await memberModel.services.devices.recentDeviceModels()) ?? []
-    let latest = memberModel.latest
-    deviceModels = Self.merged(names, with: [draft.deviceModel, latest?.deviceModel])
+    deviceModels = Self.merged(names, with: [draft.deviceModel])
+    let latest = await memberModel.latestForDefaults()
+    deviceModels = Self.merged(deviceModels, with: [latest?.deviceModel])
     guard !prepared else { return }
     prepared = true
     if (draft.deviceModel ?? "").isEmpty {
@@ -94,9 +99,10 @@ public final class BodyCompositionEntryModel {
   /// nil until the member's consent is known.
   public var saveGate: HealthRecordSaveGate? { memberModel.consent?.healthRecordSave }
 
-  /// AC-DF-127.1, .4: every required meta, a value, no error, and consent ② (granted, or waiting for the server).
+  /// AC-DF-127.1, .4: every required meta, a value, no error, and consent ② (granted, or waiting for the server), with
+  /// the flag on. `save()` checks it once more right before the write (V1-07 §3.6).
   public var canSave: Bool {
-    guard let gate = saveGate, gate != .blocked else { return false }
+    guard isFeatureOn, let gate = saveGate, gate != .blocked else { return false }
     return validation.canSave && !isSaving && savedRecordId == nil
   }
 

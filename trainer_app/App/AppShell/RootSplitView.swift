@@ -11,7 +11,8 @@ import TrainerDomain
 ///
 /// State survives layout changes (NFR-12, V1-07 §3.3): rotation keeps the same view tree, and a size-class change
 /// (Split View, Slide Over or Stage Manager resize) converts `navigation` to `stackPath` and back through
-/// `ShellNavigation`, so the user stays on the same TR screen.
+/// `ShellNavigation`, so the user stays on the same TR screen. Screen state lives here, above the regular/compact
+/// switch, and so do the sheets: an open TR-11 keeps what was typed.
 ///
 /// The flags follow the provider while the shell is shown (live: `appConfig/features`), so an entry point appears or
 /// goes away without a relaunch.
@@ -42,15 +43,15 @@ struct RootSplitView: View {
   /// TR-15 (DF-018). Kept in state so the Outbox subscriptions survive layout changes.
   @State private var settings: SettingsViewModel
   private let registrar: any PendingMemberRegistrar
-  /// TR-03 body composition and TR-11 (DF-127, DF-130).
-  private let bodyComposition: BodyCompositionServices
+  /// TR-03 body composition and TR-11 (DF-127, DF-130): the member model and the open TR-11 form.
+  @State private var bodyComposition: BodyCompositionScreens
 
   init(flags provider: any FeatureFlagsProvider, services: ShellServices) {
     let flags = provider.current
     flagsProvider = provider
     _baseFlags = State(initialValue: flags)
     registrar = services.registrar
-    bodyComposition = services.bodyComposition
+    _bodyComposition = State(initialValue: BodyCompositionScreens(services: services.bodyComposition))
     _settings = State(initialValue: SettingsViewModel(
       queue: services.syncQueue, signOut: services.signOut, accountName: services.accountName,
       version: Self.appVersion))
@@ -109,6 +110,15 @@ struct RootSplitView: View {
         .accessibilityIdentifier("tr14.consent.root")
         .accessibilityValue(member.id)
       }
+    }
+    // TR-11 (DF-127): over TR-03, as a sheet of the shell, so it stays open through a size-class change.
+    .sheet(isPresented: bodyCompositionEntryShown) {
+      if let entry = bodyComposition.entry {
+        BodyCompositionSheet(entry: entry) { bodyComposition.closeEntry() }
+      }
+    }
+    .onChange(of: flags.bodyComposition, initial: true) { _, isOn in
+      bodyComposition.isFeatureOn = isOn  // an open TR-11 locks, its draft kept (V1-07 §3.6)
     }
     .task {
       for await flags in flagsProvider.updates() { baseFlags = flags }
@@ -245,38 +255,39 @@ struct RootSplitView: View {
   }
 
   private func memberDetail(uid: String) -> some View {
-    MemberDetailShell(member: .uid(uid), flags: flags, bodyComposition: bodyComposition) { entry in
-      if entry.destination == .comingSoon {
-        comingSoonEntry = entry
+    let member = MemberKey.uid(uid)
+    return MemberDetailShell(
+      flags: flags, bodyComposition: flags.bodyComposition ? bodyComposition.memberModel(for: member) : nil
+    ) { entry in
+      switch entry.destination {
+      case .comingSoon: comingSoonEntry = entry
+      case .bodyCompositionEntry: bodyComposition.openEntry(for: member)
+      case .route: break
       }
     }
-    .id(uid)  // another member gets a fresh body composition subscription
     .container("tr03.root")
+  }
+
+  private var bodyCompositionEntryShown: Binding<Bool> {
+    Binding(get: { bodyComposition.entry != nil }, set: { if !$0 { bodyComposition.closeEntry() } })
   }
 }
 
 /// TR-03 until DF-113/DF-114 build the screen: the flag-gated actions — the '측정 입력' menu (AC-DF-127.11) and the
 /// other entry points — and, with `bodyComposition`, the member's body composition (latest values, mini trend). TR-11
-/// opens as a sheet over it (V1-07 §3.2). The entries follow the flags as they change; the body composition model is
-/// made when the flag is first on and kept (an open TR-11 sheet is not torn down), its section shown only while on.
+/// opens as the shell's sheet over it (V1-07 §3.2). The entries and the section follow the flags as they change; the
+/// state is the shell's (`BodyCompositionScreens`), so a size-class change that rebuilds this view keeps it.
 private struct MemberDetailShell: View {
-  private let member: MemberKey
   private let flags: FeatureFlags
-  private let services: BodyCompositionServices
+  /// nil while `bodyComposition` is off: no section.
+  private let bodyComposition: BodyCompositionMemberModel?
   private let open: (EntryPoint) -> Void
-  /// nil until `bodyComposition` is on: no section, no subscription.
-  @State private var bodyComposition: BodyCompositionMemberModel?
-  @State private var showsBodyCompositionEntry = false
   @Environment(\.layoutMode) private var layoutMode
 
-  init(member: MemberKey, flags: FeatureFlags, bodyComposition services: BodyCompositionServices,
-       open: @escaping (EntryPoint) -> Void) {
-    self.member = member
+  init(flags: FeatureFlags, bodyComposition: BodyCompositionMemberModel?, open: @escaping (EntryPoint) -> Void) {
     self.flags = flags
-    self.services = services
+    self.bodyComposition = bodyComposition
     self.open = open
-    _bodyComposition = State(initialValue: flags.bodyComposition
-      ? BodyCompositionMemberModel(member: member, services: services) : nil)
   }
 
   private var entries: [EntryPoint] { FlagGate.visibleEntries(on: .memberDetail, flags: flags) }
@@ -293,27 +304,17 @@ private struct MemberDetailShell: View {
             measureMenu
           }
           ForEach(entries) { entry in
-            Button(Self.title(entry)) { select(entry) }
+            Button(Self.title(entry)) { open(entry) }
               .buttonStyle(.bordered)
               .accessibilityIdentifier(entry.accessibilityID)
           }
         }
-        if flags.bodyComposition, let bodyComposition {
+        if let bodyComposition {
           BodyCompositionSection(model: bodyComposition)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(24)
-    }
-    .onChange(of: flags.bodyComposition) { _, isOn in
-      if isOn, bodyComposition == nil {
-        bodyComposition = BodyCompositionMemberModel(member: member, services: services)
-      }
-    }
-    .sheet(isPresented: $showsBodyCompositionEntry) {
-      if let bodyComposition {
-        BodyCompositionSheet(memberModel: bodyComposition) { showsBodyCompositionEntry = false }
-      }
     }
   }
 
@@ -321,7 +322,7 @@ private struct MemberDetailShell: View {
   private var measureMenu: some View {
     Menu {
       ForEach(measureEntries) { entry in
-        Button(Self.title(entry)) { select(entry) }
+        Button(Self.title(entry)) { open(entry) }
           .accessibilityIdentifier(entry.accessibilityID)
       }
     } label: {
@@ -330,14 +331,6 @@ private struct MemberDetailShell: View {
     .menuStyle(.button)
     .buttonStyle(.bordered)
     .accessibilityIdentifier("tr03.measureMenu")
-  }
-
-  private func select(_ entry: EntryPoint) {
-    if entry.destination == .bodyCompositionEntry {
-      showsBodyCompositionEntry = true
-    } else {
-      open(entry)
-    }
   }
 
   /// The key is a `String` value, so `LocalizationValue` looks it up as it is (SE-0213).

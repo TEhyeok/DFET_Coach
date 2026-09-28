@@ -7,6 +7,10 @@ public protocol BodyCompositionRecordSource: Sendable {
   /// Records measured at or after `since`, voided ones included, now and after every change. Fails when the server
   /// refuses the read; an offline device answers from its cache.
   func observeRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error>
+
+  /// The member's latest active record at any date (newest first, voided ones skipped), or nil when there is none. One
+  /// answer; an offline device answers from its cache.
+  func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord?
 }
 
 /// The device models this iPad has entered body composition with (TR-11 device picker, ASM-P1a-14): a device-local

@@ -111,15 +111,58 @@ final class SeriesTrendChartTests: XCTestCase {
     let breaks = SeriesTrendChart.numberedBreaks(model)
     XCTAssertEqual(breaks.map(\.at), [day(28), day(31)], "numbered in date order, whatever the segment order")
     let period = day(1)...day(31)
-    XCTAssertEqual(SeriesTrendChart.markerRows(breaks, period: period), [0, 1], "3 days of 30 apart: two rows")
+    XCTAssertEqual(SeriesTrendChart.markers(breaks, period: period).map(\.row), [0, 1], "3 days of 30 apart: two rows")
     let far = [ChartBreakMark(at: day(5), reason: .protocolChanged), ChartBreakMark(at: day(28), reason: .protocolChanged)]
-    XCTAssertEqual(SeriesTrendChart.markerRows(far, period: period), [0, 0], "far apart: one row")
+    XCTAssertEqual(SeriesTrendChart.markers(far, period: period).map(\.row), [0, 0], "far apart: one row")
     let sameDay = [ChartBreakMark(at: day(9), reason: .protocolChanged),
                    ChartBreakMark(at: day(9), reason: .conditionMismatch(condition: "fasting"))]
-    XCTAssertEqual(SeriesTrendChart.markerRows(sameDay, period: day(9)...day(9)), [0, 1], "one day: one row each")
+    XCTAssertEqual(SeriesTrendChart.markers(sameDay, period: day(9)...day(9)).map(\.row), [0, 1], "one day: one row each")
     // A third break far from the second reuses the first row.
     let three = breaks + [ChartBreakMark(at: day(60), reason: .protocolChanged)]
-    XCTAssertEqual(SeriesTrendChart.markerRows(three, period: day(1)...day(60)), [0, 1, 0])
+    XCTAssertEqual(SeriesTrendChart.markers(three, period: day(1)...day(60)).map(\.row), [0, 1, 0])
+  }
+
+  /// DF-127 second review: one record 350 days ago, then one a day for the last 12 days with fasting '모름' (every one
+  /// a condition break). Twelve markers each in its own row took 264pt, more than the 220pt plot. The rows stop at
+  /// `maxMarkerRows`: the rest of the run shares the last row's marker ('3~12'), every break is numbered once, and the
+  /// room above the plot is at most three rows.
+  func testCrowdedBreaksShareOneMarkerPastTheLastRow() {
+    let crowded = (340...351).map { ChartBreakMark(at: day($0), reason: .conditionMismatch(condition: "fasting")) }
+    let markers = SeriesTrendChart.markers(crowded, period: day(1)...day(351))
+    XCTAssertEqual(markers, [
+      BreakMarkerSlot(breaks: 0...0, row: 0), BreakMarkerSlot(breaks: 1...1, row: 1),
+      BreakMarkerSlot(breaks: 2...11, row: 2),
+    ])
+    XCTAssertEqual(markers.flatMap { Array($0.breaks) }, Array(0..<12), "each break under one marker")
+    XCTAssertEqual(SeriesTrendChart.maxMarkerRows, 3)
+    XCTAssertEqual(SeriesTrendChart.markerAreaHeight(markers), 3 * SeriesTrendChart.markerRowHeight)
+    // A later break far from the run gets its own marker again.
+    let later = crowded + [ChartBreakMark(at: day(400), reason: .protocolChanged)]
+    XCTAssertEqual(SeriesTrendChart.markers(later, period: day(1)...day(400)).last, BreakMarkerSlot(breaks: 12...12, row: 0))
+  }
+
+  /// The marker rows come on top of the plot's own height instead of out of it: twelve breaks crowded into the last
+  /// twelve days (three rows) make the chart one marker row taller than twelve spread over the year (two rows), with the
+  /// same twelve reasons listed under the plot. Inside a fixed 220pt frame both were the same height.
+  func testMarkerRowsAddToThePlotsHeight() throws {
+    let localize = try AppCatalog.localizer()
+    func chart(breakDays: [Int]) -> SeriesChartModel {
+      var segments = [ChartSegment(id: "weightKg#0", points: [point(1, 72.4)])]
+      for (index, day) in breakDays.enumerated() {
+        segments.append(ChartSegment(id: "weightKg#\(index + 1)", breakBefore: .conditionMismatch(condition: "fasting"),
+                                     points: [point(day, 72 - Double(index) / 10)]))
+      }
+      return SeriesChartModel(metricCode: .weightKg, deviceModel: "SYN-A", segments: segments)
+    }
+    func height(_ model: SeriesChartModel) -> CGFloat {
+      UIHostingController(rootView: SeriesTrendChart(model: model, localize: localize, timeZone: seoul))
+        .sizeThatFits(in: CGSize(width: 600, height: 4_000)).height
+    }
+    let crowded = chart(breakDays: Array(340...351))
+    let spread = chart(breakDays: (1...12).map { 1 + 30 * $0 })
+    XCTAssertEqual(SeriesTrendChart.markers(SeriesTrendChart.numberedBreaks(spread), period: day(1)...day(361))
+      .map(\.row).max(), 1, "two rows")
+    XCTAssertEqual(height(crowded) - height(spread), SeriesTrendChart.markerRowHeight, accuracy: 0.5)
   }
 
   /// Review finding 6: text inside the fixed-height plot stops growing at xxLarge; the period and the reasons are under

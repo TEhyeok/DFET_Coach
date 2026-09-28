@@ -54,6 +54,7 @@ final class SessionSignOutOrderTests: XCTestCase {
     func observeRecords(member: MemberKey, since: Date) -> AsyncThrowingStream<[BodyCompositionRecord], Error> {
       AsyncThrowingStream { _ in }
     }
+    func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord? { nil }
     func observe(member: MemberKey) -> AsyncStream<ConsentState?> { AsyncStream { _ in } }
   }
 

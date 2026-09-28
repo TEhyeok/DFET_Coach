@@ -251,6 +251,10 @@ final class SessionRuntime {
       AsyncThrowingStream { $0.finish(throwing: LocalStoreUnavailable()) }
     }
 
+    func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? {
+      throw LocalStoreUnavailable()
+    }
+
     func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date) -> AsyncThrowingStream<[SeriesPoint], Error> {
       AsyncThrowingStream { $0.finish(throwing: LocalStoreUnavailable()) }
     }

@@ -2125,6 +2125,12 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
     - TR-03 요약: 체중만 있는 새 기록이 체지방률·골격근량 행을 가리지 않는다(`BodyCompositionSeries.latestActive(_:measuring:)`).
     - BMI: 반올림 뒤 카탈로그 `bmi` 범위(0 초과 200 이하) 밖이면 파생 없음(체중 0.1~0.31kg·키 250cm의 0.0이 규칙 `bmi > 0`에 거부되던 문제).
     - 테스트 파일: TrainerCoreTests(`BodyCompositionTests` BMI 하한, `BodyCompositionSourcesTests` 상태 병합·지표별 최신·저장 입력 기록, `FeatureFlagsTests`), LocalStoreTests `testDraftsCarryTheirSyncStateAndARefusedOneReadsFailed`(권한 거부 엔진 → `syncFailed`), FeatureModulesTests `BodyCompositionMemberModelTests`, UI `BodyCompositionUITests`(끊김 사유 행, 저장 뒤 '기기에 저장됨' 배지, TR-03 세 지표 행 유지).
+  - 리뷰 반영 2(각 항목에 회귀 테스트):
+    - 폭 변경 때 TR-11 유지(NFR-12, V1-07 §3.3): TR-03 신체조성의 회원 모델과 열린 TR-11 입력 모델을 `FeatureBodyComposition`의 `BodyCompositionScreens`에 두고, `RootSplitView`가 regular/compact 분기 위 `@State`로 갖는다. TR-11 시트도 분기 위 셸의 시트라 1/3 Split View로 좁혔다 되돌려도 시트와 입력이 남는다. 같은 회원이면 같은 회원 모델, 다른 회원이면 새 모델(새 구독)이라 `MemberDetailShell`의 `.id(uid)`는 뺐다. 저장 뒤 기록 보기로의 전환도 입력 모델의 `savedRecordId`로 한다. 미리보기 `preview.toggleWidth`는 시트가 열려 있어도 누를 수 있게 앱 창 위의 작은 별도 창(오른쪽 위, 키 창이 되지 않음)으로 옮겼다. 테스트: UI `testAWidthChangeKeepsTR11AndWhatWasTyped`(공복·체중 '62,4' 입력 → 좁게 → 넓게, 시트·값·선택·저장 가능 유지), FeatureModulesTests `testTheShellKeepsTheMemberModelAndTheOpenForm`.
+    - 열린 TR-11에서 플래그 꺼짐(V1-07 §3.6, ASM-07-06): 셸이 `bodyComposition` 변화를 입력 모델 `isFeatureOn`에 넘긴다. 꺼지면 입력 칸을 잠그고 덱 `flag.disabled`('지금은 사용할 수 없는 기능이에요.', ASM-12-09 두 앱 공통 문장. V1-07이 `common.flag.disabled`로 적은 자리)를 보이며 저장이 꺼지고, `save()`가 쓰기 직전에 한 번 더 확인한다. 입력한 draft는 그대로고 다시 켜지면 저장된다. 덱에 이미 있는 키라 `catalog-deck.mjs --add`로 카탈로그에만 옮겼다. 테스트: `testTheFlagTurnedOffLocksTheFormAndKeepsTheDraft`. 스냅샷·UI `tr11.flagOff`는 아직 없다(미리보기에 실행 중 플래그를 바꾸는 도구가 없음).
+    - ACK 저장 전 `synced` 경쟁: SyncEngine은 ACK를 저장하기 전에 `synced`를 알려, 그 신호로 읽은 draft가 아직 inFlight일 수 있다. 병합은 엔진이 `synced`라 한 draft를 저장소 상태와 상관없이 목록에서 빼고, 서버 응답마다 로컬 draft를 다시 읽는다. 서버가 뒤에 지운 기록(DF-133)이 남은 draft로 되살아나지 않는다. SyncEngine의 알림 순서는 바꾸지 않았다(ACK 저장을 기다리는 동안 다른 항목의 `publishChanges`가 같은 상태를 먼저 알릴 수 있어 순서만으로는 보장되지 않는다). 테스트: LocalStoreTests `testASyncedDraftDoesNotComeBackWhenTheServerRemovesTheRecord`(inFlight 상태로 `synced` → ACK 저장 → 서버 삭제 → 빈 목록).
+    - 기록 도착 전 기본값: `prepare()`가 회원의 첫 기록 응답을 기다린 뒤(`BodyCompositionMemberModel.latestForDefaults()`) 기본 기기·키를 채운다. 기기 목록은 먼저 보이고, 기다리는 동안 트레이너가 고른 기기나 입력한 키는 덮어쓰지 않는다. 읽기가 실패하면 이 iPad의 최근 기기다. 테스트: `testDefaultsWaitForTheMembersRecords`(응답을 붙잡아 두는 저장소).
+    - 12개월 밖 최신 기록: 기본값은 추이 쿼리와 따로 회원의 최신 active 기록을 날짜 제한 없이 읽는다(`MeasurementStore.latestActiveBodyComposition`, `BodyCompositionRecordSource.latestActiveRecord`). Firestore는 추이 쿼리에서 `since`만 뺀 `order by measuredAt desc`를 10건씩 읽어 첫 active를 쓴다(voided 건너뜀, 같은 기존 인덱스). 이 기기 미동기 draft도 함께 본다. 12개월 안에 active 기록이 있으면 더 읽지 않는다. 테스트: `testTheDefaultsComeFromTheLatestRecordBeforeTheTrendWindow`, `testTheLatestActiveRecordIsReadAtAnyDate`, 에뮬레이터 `BodyCompositionEmulatorTests.testTheLatestActiveRecordIsReadFromBeforeTheTrendWindow`(14개월 전 active, 13개월 전 voided → 14개월 전 기록, 통과).
 
 ---
 
@@ -2358,6 +2364,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
     - 점 탭 툴팁과 밴드(P3)는 없다.
     - DF-016 `DesignSystemUITests` 탭 대상 테스트는 가로 방향(앞 스위트가 남긴 방향)에서 차트가 붙어 길어진 갤러리(lazy List)를 스크롤한 뒤 맨 위 `sync.badge.reason`을 찾지 못해 실패했다. 스크롤 전에 확인하도록 고쳤다.
   - 리뷰 반영: 가까운 두 끊김의 사유가 겹쳐 읽을 수 없던 문제는 규칙 위에 번호 표식만 두고(가까우면 다른 줄, `markerRows`) 번호 붙은 사유와 날짜를 플롯 아래 글로 나열해 고쳤다(AC-DF-130.4). 큰 글자에서 x축 날짜가 겹치고 사유가 잘리던 문제는 플롯 안 글자를 `xxLarge`에서 멈추고 기간(첫·마지막 날짜)과 사유를 플롯 아래 크기 조절 글로 옮겨 고쳤다(AC-A11Y-02). 테스트: `SeriesTrendChartTests`(표식 줄 배치, 큰 글자에서 차트가 늘어남), 스냅샷 `closeBreaks`·`deviceChange-ax5` 추가(기준 이미지는 위와 같이 CI에서).
+  - 리뷰 반영 2: 끊김이 몰리면(350일 전 1건 + 최근 12일 매일 공복 '모름') 표식마다 한 줄씩 12줄(264pt)이 고정 높이 220pt를 다 써 플롯이 없어지던 문제를 고쳤다. 표식 줄은 최대 3줄(`maxMarkerRows`)이고, 세 줄이 다 차면 다음 끊김은 바로 앞 표식에 묶여 그 표식이 번호 범위('3~12', V1-12 §2.6 물결표)를 보인다. 표식 줄 높이는 플롯 220pt 위에 따로 더해 플롯이 줄지 않는다(`markers(_:period:)`와 `markerAreaHeight`가 `markerRows`를 대신함). 플롯 아래 사유 목록은 그대로 끊김마다 한 줄이다. 테스트: `SeriesTrendChartTests.testCrowdedBreaksShareOneMarkerPastTheLastRow`(표식 1, 2, 3~12), `testMarkerRowsAddToThePlotsHeight`(표식 3줄 차트와 2줄 차트의 높이 차가 한 줄), 스냅샷 `crowdedBreaks`(기준 이미지는 CI에서).
 
 ---
 

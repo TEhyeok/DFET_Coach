@@ -30,6 +30,8 @@ final class MeasurementStoreContractTests: XCTestCase {
       AsyncThrowingStream { $0.finish() }
     }
 
+    nonisolated func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? { nil }
+
     nonisolated func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date)
       -> AsyncThrowingStream<[SeriesPoint], Error>
     {

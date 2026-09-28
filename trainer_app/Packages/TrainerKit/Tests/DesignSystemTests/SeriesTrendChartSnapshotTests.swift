@@ -7,8 +7,9 @@ import XCTest
 /// TC-130-02, 03, 04, 05, 09 (DF-130): the refused mixed-source chart; irregular dates (1, 2 and 10 January) with a
 /// device change drawn as two unjoined segments, a dashed rule with its numbered marker and '기기 변경' under the plot,
 /// and '산정 준비 중' without a band, light, dark, at xxxLarge and at the largest accessibility size; two close device
-/// changes whose markers take two rows (DF-127 review findings 5, 6); left and right with a protocol break in greyscale
-/// (AC-A11Y-03); no points and one point.
+/// changes whose markers take two rows (DF-127 review findings 5, 6); twelve crowded breaks under three marker rows
+/// above a full-height plot (DF-127 second review); left and right with a protocol break in greyscale (AC-A11Y-03); no
+/// points and one point.
 ///
 /// References follow `SyncStateBadgeSnapshotTests`: recorded on the CI runtime only (locally they skip, on CI a
 /// missing reference is recorded and fails the run, and CI uploads it as the `snapshot-references` artifact).
@@ -89,6 +90,18 @@ final class SeriesTrendChartSnapshotTests: XCTestCase {
                    points: [point(31, 70.0, .device)]),
     ])
     try snapshot(weight, named: "closeBreaks", height: 500)
+  }
+
+  /// DF-127 second review: one record 350 days before twelve daily ones with fasting '모름', each a condition break.
+  /// The plot keeps its full height; the markers take three rows, the last one numbering the run ('3~12').
+  func testCrowdedBreaksKeepThePlot() throws {
+    var segments = [ChartSegment(id: "weightKg#0", points: [point(1, 72.4, .device)])]
+    for (index, day) in (340...351).enumerated() {
+      segments.append(ChartSegment(id: "weightKg#\(index + 1)", breakBefore: .conditionMismatch(condition: "fasting"),
+                                   points: [point(day, 71.8 - Double(index % 4) / 5, .device)]))
+    }
+    try snapshot(SeriesChartModel(metricCode: .weightKg, deviceModel: "SYN-A", segments: segments), named: "crowdedBreaks",
+                 height: 1_000)
   }
 
   func test_TC_130_09_leftAndRightInGreyscale() throws {

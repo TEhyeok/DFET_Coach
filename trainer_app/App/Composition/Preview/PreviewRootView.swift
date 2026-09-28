@@ -9,7 +9,8 @@ struct PreviewRootView: View {
   let preview: PreviewEnvironment
 
   @Environment(\.horizontalSizeClass) private var windowSizeClass
-  /// Whether the `--preview-width=` simulation is applied. Toggled by `preview.toggleWidth` (`--preview-resizable`).
+  /// Whether the `--preview-width=` simulation is applied. Toggled by `preview.toggleWidth` (`--preview-resizable`),
+  /// which is in a window of its own above the app's, so it works while a sheet such as TR-11 is open.
   @State private var isNarrow = true
   /// `--preview-login` only. Kept in state so the gate keeps one session source across view updates.
   @State private var auth = PreviewAuthService()
@@ -71,15 +72,93 @@ struct PreviewRootView: View {
             .accessibilityIdentifier("preview.releaseMembers")
         }
       }
-      .overlay(alignment: .bottomTrailing) {
+      .background {
         if preview.isResizable, preview.simulatedWidth != nil {
-          Button { isNarrow.toggle() } label: { Text(verbatim: isNarrow ? "Wide" : "Narrow") }  // DEBUG tool, not copy
-            .buttonStyle(.borderedProminent)
-            .padding(24)
-            .accessibilityIdentifier("preview.toggleWidth")
+          PreviewToolWindow(content: PreviewWidthToggle(isNarrow: isNarrow) { isNarrow.toggle() })
         }
       }
   }
+}
+
+/// The `--preview-resizable` button: switches between the simulated width and the full window.
+private struct PreviewWidthToggle: View {
+  let isNarrow: Bool
+  let toggle: () -> Void
+
+  var body: some View {
+    Button(action: toggle) { Text(verbatim: isNarrow ? "Wide" : "Narrow") }  // DEBUG tool, not copy
+      .buttonStyle(.borderedProminent)
+      .accessibilityIdentifier("preview.toggleWidth")
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+}
+
+/// A DEBUG tool in a small window of its own at the top trailing corner, above the app's window and every sheet in
+/// it, so a UI test can use it while a sheet is open (a Split View resize with TR-11 open, NFR-12). The window is only
+/// as large as the tool and never becomes key, so the rest of the screen and the keyboard focus stay the app's.
+private struct PreviewToolWindow: UIViewRepresentable {
+  let content: PreviewWidthToggle
+
+  func makeUIView(context: Context) -> Anchor {
+    let anchor = Anchor()
+    anchor.isUserInteractionEnabled = false
+    return anchor
+  }
+
+  func updateUIView(_ anchor: Anchor, context: Context) {
+    anchor.show(content)
+  }
+
+  /// Sits in the app's window, which gives it the scene and the corner to place the tool window in.
+  final class Anchor: UIView {
+    private static let size = CGSize(width: 120, height: 60)
+    private var tool: ToolWindow?
+    private var host: UIHostingController<PreviewWidthToggle>?
+
+    func show(_ content: PreviewWidthToggle) {
+      if let host {
+        host.rootView = content
+      } else {
+        let host = UIHostingController(rootView: content)
+        host.view.backgroundColor = .clear
+        self.host = host
+      }
+      attach()
+    }
+
+    override func didMoveToWindow() {
+      super.didMoveToWindow()
+      attach()
+    }
+
+    override func layoutSubviews() {
+      super.layoutSubviews()
+      place()
+    }
+
+    private func attach() {
+      guard tool == nil, let host, let scene = window?.windowScene else { return }
+      let tool = ToolWindow(windowScene: scene)
+      tool.windowLevel = .alert + 1
+      tool.backgroundColor = .clear
+      tool.rootViewController = host
+      tool.isHidden = false
+      self.tool = tool
+      place()
+    }
+
+    private func place() {
+      guard let tool, let window else { return }
+      let top = window.safeAreaInsets.top + 8
+      tool.frame = CGRect(x: window.bounds.maxX - Self.size.width - 16, y: top, width: Self.size.width,
+                          height: Self.size.height)
+    }
+  }
+}
+
+/// Never key: a tap on the tool leaves the keyboard focus where it was (a TR-11 field keeps its keyboard).
+private final class ToolWindow: UIWindow {
+  override var canBecomeKey: Bool { false }
 }
 
 /// `--preview-landscape` (ported from dfet:trainer_ios/DFETTrainer/App/DFETTrainerApp.swift:59-90).

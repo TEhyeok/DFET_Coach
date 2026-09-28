@@ -30,7 +30,9 @@ public final class BodyCompositionMemberModel {
   }
 
   public let member: MemberKey
-  public private(set) var records: RecordsState = .loading
+  public private(set) var records: RecordsState = .loading {
+    didSet { if records != .loading { answered() } }
+  }
   /// Records TR-11 saved through this model, as saved: `record(id:)` has them before any read does.
   private var savedRecords: [String: BodyCompositionRecord] = [:]
   /// nil until the first value arrives: the save gate treats it as not allowed yet.
@@ -47,6 +49,8 @@ public final class BodyCompositionMemberModel {
   @ObservationIgnored private var earliestSaved: Date?
   /// Where the current read starts: `since`, or `earliestSaved` when that is earlier.
   @ObservationIgnored private var readStart: Date?
+  /// `latestForDefaults()` calls waiting for the first records answer.
+  @ObservationIgnored private var answerWaiters: [CheckedContinuation<Void, Never>] = []
 
   public init(member: MemberKey, services: BodyCompositionServices, now: @escaping () -> Date = Date.init) {
     self.member = member
@@ -105,6 +109,12 @@ public final class BodyCompositionMemberModel {
     if failed { records = .failed }
   }
 
+  private func answered() {
+    let waiters = answerWaiters
+    answerWaiters = []
+    waiters.forEach { $0.resume() }
+  }
+
   /// A record TR-11 just saved (review finding 3). `record(id:)` has it at once, from the saved entry, until a read
   /// returns it. One measured before the trend window is not in the 12-month read, so the read reaches back to it: the
   /// record view then shows the stored record and its sync state, while the trend and TR-03 still start at `since`.
@@ -141,9 +151,24 @@ public final class BodyCompositionMemberModel {
     windowRecords.filter { $0.syncState != .syncFailed }
   }
 
-  /// The latest active record: the form's default device and height (V1-09 §10.3).
+  /// The latest active loaded record. TR-11's defaults come from `latestForDefaults()`, which also looks before the
+  /// trend window.
   public var latest: BodyCompositionRecord? {
     BodyCompositionSeries.latestActive(loadedRecords)
+  }
+
+  /// The member's latest active record at any date, for TR-11's default device and height (V1-09 §10.3, ASM-P1a-41).
+  /// It waits for the first records answer, so a form opened before the records arrive does not settle on this iPad's
+  /// last device and no height; when the 12-month window has no active record, it reads the latest one before it
+  /// (DF-127 second review). nil when the member has none, or when a read fails (the form then uses the iPad's list).
+  func latestForDefaults() async -> BodyCompositionRecord? {
+    start()
+    if records == .loading {
+      await withCheckedContinuation { answerWaiters.append($0) }
+    }
+    if let latest { return latest }
+    guard case .loaded = records else { return nil }
+    return try? await services.store.latestActiveBodyComposition(member: member)
   }
 
   /// Whether the trend window has an active record: TR-03 shows the section, else '아직 기록이 없어요'.

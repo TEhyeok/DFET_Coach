@@ -88,6 +88,13 @@ public final class LocalMeasurementStore: MeasurementStore, DeviceModelCatalog {
     }
   }
 
+  /// The server's latest active record and this device's unsynced drafts, whichever was measured last.
+  public func latestActiveBodyComposition(member: MemberKey) async throws -> BodyCompositionRecord? {
+    let drafts = try await outbox.unsyncedBodyCompositionRecords(member: member)
+    let stored = try await server?.latestActiveRecord(member: member)
+    return BodyCompositionSeries.latestActive(drafts + [stored].compactMap { $0 })
+  }
+
   public func observeSeries(member: MemberKey, metricCode: MetricCode, since: Date)
     -> AsyncThrowingStream<[SeriesPoint], Error>
   {
@@ -149,6 +156,9 @@ final class MemberChangeSignal: @unchecked Sendable {
 ///
 /// Every local draft has a `syncState`: `localSaved` until the engine's first value, then the engine's (a permanent
 /// rejection is `syncFailed`). A state change also re-reads the drafts, so one the engine acked leaves the local list.
+/// The engine reports `synced` before it saves the ack, so that read may still find the item in flight: a draft the
+/// engine calls `synced` is left out either way, and every server answer re-reads the drafts too, so a record the
+/// server later removes (DF-133) never comes back as a leftover draft (DF-127 second review).
 private struct RecordsMerge {
   private enum Event: Sendable {
     case server([BodyCompositionRecord])
@@ -204,7 +214,7 @@ private struct RecordsMerge {
       }
     }
     func merged(server: [BodyCompositionRecord], local: [BodyCompositionRecord]) -> [BodyCompositionRecord] {
-      let local = local.map { draft -> BodyCompositionRecord in
+      let local = local.filter { states[$0.id] != .synced }.map { draft -> BodyCompositionRecord in
         var record = draft
         record.syncState = states[draft.id] ?? .localSaved
         return record
@@ -226,18 +236,18 @@ private struct RecordsMerge {
         serverRecords = list
       case let .serverFailed(error):
         return output.finish(throwing: error)
-      case .local, .syncState:
-        if case let .syncState(id, state) = event {
-          guard watchers[id] != nil, states[id] != state else { continue }
-          states[id] = state
-        }
-        do {
-          localRecords = try await local()
-        } catch {
-          return output.finish(throwing: error)
-        }
-        watch(localRecords)
+      case let .syncState(id, state):
+        guard watchers[id] != nil, states[id] != state else { continue }
+        states[id] = state
+      case .local:
+        break
       }
+      do {
+        localRecords = try await local()
+      } catch {
+        return output.finish(throwing: error)
+      }
+      watch(localRecords)
       if let serverRecords { output.yield(merged(server: serverRecords, local: localRecords)) }
     }
   }

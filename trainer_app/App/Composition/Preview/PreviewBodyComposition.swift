@@ -48,6 +48,10 @@ struct PreviewBodyCompositionRecords: BodyCompositionRecordSource {
     }
   }
 
+  func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord? {
+    member == PreviewBodyComposition.memberWithRecords ? BodyCompositionSeries.latestActive(Self.records(now: now)) : nil
+  }
+
   /// (days ago, device, weight kg, body fat %, skeletal muscle kg, height cm for BMI)
   private static let rows: [(Int, String, Double, Double, Double, Double?)] = [
     (150, "InBody 570", 68.2, 27.1, 26.0, nil),

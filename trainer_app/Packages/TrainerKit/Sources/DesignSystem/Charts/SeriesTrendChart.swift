@@ -11,7 +11,9 @@ import TrainerContracts
 ///   segments are never joined (C-04, AC-DF-130.3).
 /// - A segment that starts at a break has a dashed vertical rule at its first point with a numbered marker, and the
 ///   numbered reason ('기기 변경: A → B') and date are listed under the plot (AC-DF-130.4). Markers of close breaks
-///   take separate rows, so no two draw over each other (DF-127 review finding 5).
+///   take separate rows, so no two draw over each other (DF-127 review finding 5). There are at most
+///   `maxMarkerRows` rows: past them a break joins the marker before it, which then numbers the run ('4~12'). The rows
+///   are above the plot's own height, so crowded breaks never take room from the plot (DF-127 second review).
 /// - Text inside the plot (axis values, markers) stops growing at `plotTextLimit`; the period and the break reasons
 ///   are ordinary text under the plot that grows and wraps, so nothing is cut or overlaps at accessibility text
 ///   sizes (AC-A11Y-02, review finding 6).
@@ -34,6 +36,8 @@ public struct SeriesTrendChart: View {
   static let markerRowHeight: CGFloat = markerSize + TrainerSpacing.xs
   /// Two markers closer than this share of the period (about one marker in a narrow column's plot) take separate rows.
   static let markerSeparation = 0.12
+  /// The most marker rows above the plot.
+  static let maxMarkerRows = 3
   // Chart value names: identifiers, not UI text (the accessible names come from `SeriesChartDescriptor`).
   private static let xName: String = "measuredAt"
   private static let yName: String = "value"
@@ -96,7 +100,7 @@ public struct SeriesTrendChart: View {
     VStack(alignment: .leading, spacing: TrainerSpacing.s) {
       SourceGradeChip(grade: grade, deviceModel: model.deviceModel, localize: localize)
       plot
-        .frame(height: Self.plotHeight)
+        .frame(height: Self.plotHeight + Self.markerAreaHeight(markers))
       periodRow
       let breaks = Self.numberedBreaks(model)
       if !breaks.isEmpty {
@@ -141,7 +145,7 @@ public struct SeriesTrendChart: View {
   private var marks: some View {
     let code = model.metricCode
     let breaks = Self.numberedBreaks(model)
-    let rows = periodDates.first.map { Self.markerRows(breaks, period: $0...(periodDates.last ?? $0)) } ?? []
+    let slots = markers
     return Chart {
       ForEach(model.segments) { segment in
         ForEach(segment.points.indices, id: \.self) { index in
@@ -159,16 +163,23 @@ public struct SeriesTrendChart: View {
         }
       }
       ForEach(Array(breaks.enumerated()), id: \.offset) { index, mark in
-        RuleMark(x: .value(Self.xName, mark.at))
-          .lineStyle(Self.breakStyle)
-          .foregroundStyle(TrainerColor.neutral500)
-          .annotation(
-            position: .top, alignment: .center,
-            spacing: TrainerSpacing.xxs + CGFloat(rows[index]) * Self.markerRowHeight,
-            overflowResolution: .init(x: .fit(to: .plot), y: .disabled)
-          ) {
-            BreakMarker(number: index + 1)
-          }
+        if let marker = slots.first(where: { $0.breaks.lowerBound == index }) {
+          RuleMark(x: .value(Self.xName, mark.at))
+            .lineStyle(Self.breakStyle)
+            .foregroundStyle(TrainerColor.neutral500)
+            .annotation(
+              position: .top, alignment: .center,
+              spacing: TrainerSpacing.xxs + CGFloat(marker.row) * Self.markerRowHeight,
+              overflowResolution: .init(x: .fit(to: .plot), y: .disabled)
+            ) {
+              BreakMarker(numbers: (marker.breaks.lowerBound + 1)...(marker.breaks.upperBound + 1))
+            }
+        } else {
+          // Numbered by the run's marker before it.
+          RuleMark(x: .value(Self.xName, mark.at))
+            .lineStyle(Self.breakStyle)
+            .foregroundStyle(TrainerColor.neutral500)
+        }
       }
     }
     // Room at both ends so the first and last points are not on the plot edge; the scale stays proportional.
@@ -193,10 +204,16 @@ public struct SeriesTrendChart: View {
     .chartLegend(.hidden)
     .dynamicTypeSize(...Self.plotTextLimit)
     // Room above the plot for the marker rows (drawn there, not over the highest points).
-    .padding(.top, CGFloat(rows.max().map { $0 + 1 } ?? 0) * Self.markerRowHeight)
+    .padding(.top, Self.markerAreaHeight(slots))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Self.summary(model, localize: localize, timeZone: timeZone) ?? "")
     .accessibilityChartDescriptor(SeriesChartDescriptor(model: model, localize: localize, timeZone: timeZone))
+  }
+
+  /// The markers above the plot (`markers(_:period:)`).
+  private var markers: [BreakMarkerSlot] {
+    guard let first = periodDates.first else { return [] }
+    return Self.markers(Self.numberedBreaks(model), period: first...(periodDates.last ?? first))
   }
 
   /// The first and last measurement dates (one date for a single day).
@@ -282,21 +299,32 @@ public struct SeriesTrendChart: View {
     model.breaks.enumerated().sorted { ($0.element.at, $0.offset) < ($1.element.at, $1.offset) }.map(\.element)
   }
 
-  /// The marker row of each break (0 = just above the plot), for breaks in date order: a marker closer than
-  /// `markerSeparation` of the period to the last marker of a row goes to the next row, so close breaks never draw
-  /// over each other. Breaks on one day (or a one-day period) each get their own row.
-  static func markerRows(_ breaks: [ChartBreakMark], period: ClosedRange<Date>) -> [Int] {
+  /// The markers above the plot, for breaks in date order, each with its row (0 = just above the plot): a marker
+  /// closer than `markerSeparation` of the period to the last marker of a row goes to the next row, so close breaks
+  /// never draw over each other; breaks on one day (or a one-day period) each get their own row. When all
+  /// `maxMarkerRows` rows are taken there, a break joins the marker before it, which then numbers the run.
+  static func markers(_ breaks: [ChartBreakMark], period: ClosedRange<Date>) -> [BreakMarkerSlot] {
     let span = period.upperBound.timeIntervalSince(period.lowerBound)
     var lastInRow: [Double] = []
-    return breaks.map { mark in
+    var markers: [BreakMarkerSlot] = []
+    for (index, mark) in breaks.enumerated() {
       let x = span > 0 ? mark.at.timeIntervalSince(period.lowerBound) / span : 0
       if let row = lastInRow.firstIndex(where: { x - $0 >= markerSeparation }) {
         lastInRow[row] = x
-        return row
+        markers.append(BreakMarkerSlot(breaks: index...index, row: row))
+      } else if lastInRow.count < maxMarkerRows {
+        lastInRow.append(x)
+        markers.append(BreakMarkerSlot(breaks: index...index, row: lastInRow.count - 1))
+      } else if let run = markers.popLast() {
+        markers.append(BreakMarkerSlot(breaks: run.breaks.lowerBound...index, row: run.row))
       }
-      lastInRow.append(x)
-      return lastInRow.count - 1
     }
+    return markers
+  }
+
+  /// The room above the plot for the marker rows: none without breaks, at most `maxMarkerRows` rows.
+  static func markerAreaHeight(_ markers: [BreakMarkerSlot]) -> CGFloat {
+    CGFloat(markers.map(\.row).max().map { $0 + 1 } ?? 0) * markerRowHeight
   }
 
   static func unitText(_ code: MetricCode, localize: Localizer) -> String {
@@ -343,24 +371,54 @@ public struct SeriesTrendChart: View {
   }
 }
 
+/// A marker above the plot: the breaks it numbers (indices in date order: one, or a run of close ones) and its row.
+struct BreakMarkerSlot: Equatable {
+  let breaks: ClosedRange<Int>
+  let row: Int
+}
+
 /// A break's number in a circle, on its rule above the plot and next to its reason under the plot: which dashed line a
 /// reason belongs to. Above the plot it keeps `SeriesTrendChart.markerSize` (its rows have a fixed height, and the
-/// plot's text stops growing at `plotTextLimit`); under the plot it grows with the reason's text.
+/// plot's text stops growing at `plotTextLimit`); under the plot it grows with the reason's text. A run of crowded
+/// breaks has one marker with the first and last numbers ('4~12', V1-12 §2.6 range) in a capsule.
 struct BreakMarker: View {
-  let number: Int
+  let numbers: ClosedRange<Int>
   var scales = false
   @ScaledMetric(relativeTo: .caption2) private var scaledSize: CGFloat = SeriesTrendChart.markerSize
 
+  init(number: Int, scales: Bool = false) {
+    self.init(numbers: number...number, scales: scales)
+  }
+
+  init(numbers: ClosedRange<Int>, scales: Bool = false) {
+    self.numbers = numbers
+    self.scales = scales
+  }
+
   var body: some View {
     let size = scales ? scaledSize : SeriesTrendChart.markerSize
-    Text(verbatim: String(number))
+    Group {
+      if numbers.count == 1 {
+        label(String(numbers.lowerBound))
+          .frame(width: size, height: size)
+          .overlay(Circle().strokeBorder(TrainerColor.neutral500, lineWidth: 1))
+      } else {
+        label("\(numbers.lowerBound)~\(numbers.upperBound)")
+          .fixedSize()
+          .padding(.horizontal, TrainerSpacing.xs)
+          .frame(minWidth: size, minHeight: size, maxHeight: size)
+          .overlay(Capsule().strokeBorder(TrainerColor.neutral500, lineWidth: 1))
+      }
+    }
+    .accessibilityHidden(true)
+  }
+
+  private func label(_ text: String) -> some View {
+    Text(verbatim: text)
       .font(.caption2.weight(.semibold).monospacedDigit())
       .lineLimit(1)
       .minimumScaleFactor(0.5)  // two digits still fit the circle
       .foregroundStyle(TrainerColor.neutral800)
-      .frame(width: size, height: size)
-      .overlay(Circle().strokeBorder(TrainerColor.neutral500, lineWidth: 1))
-      .accessibilityHidden(true)
   }
 }
 

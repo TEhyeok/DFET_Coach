@@ -4,7 +4,7 @@ import TrainerDomain
 
 /// The DF-130 mini trend query (card implementation note, V1-06 query catalogue):
 /// `bodyCompositionRecords where trainerId == uid && <memberUid | pendingMemberId> == m && measuredAt >= since
-/// order by measuredAt desc`.
+/// order by measuredAt desc`. Without `since` it is TR-11's latest-record read, a page at a time (DF-127 second review).
 ///
 /// - `trainerId == uid` is what lets the rules prove the list (`isAccessTrainer`, PRD §9.6).
 /// - The equality fields and the descending `measuredAt` are exactly the composite indexes
@@ -19,9 +19,10 @@ struct BodyCompositionRecordQuery: Equatable, Sendable {
   let trainerUid: String
   let memberField: String
   let memberId: String
-  let since: Date
+  /// nil: every date.
+  let since: Date?
 
-  init(trainerUid: String, member: MemberKey, since: Date) {
+  init(trainerUid: String, member: MemberKey, since: Date?) {
     self.trainerUid = trainerUid
     switch member {
     case let .uid(id):
@@ -38,11 +39,11 @@ struct BodyCompositionRecordQuery: Equatable, Sendable {
   var equalityFields: [String] { ["trainerId", memberField] }
 
   func firestoreQuery(_ db: Firestore) -> Query {
-    db.collection(Self.collection)
+    let ofMember = db.collection(Self.collection)
       .whereField("trainerId", isEqualTo: trainerUid)
       .whereField(memberField, isEqualTo: memberId)
-      .whereField(Self.orderField, isGreaterThanOrEqualTo: Timestamp(date: since))
-      .order(by: Self.orderField, descending: true)
+    let dated = since.map { ofMember.whereField(Self.orderField, isGreaterThanOrEqualTo: Timestamp(date: $0)) } ?? ofMember
+    return dated.order(by: Self.orderField, descending: true)
   }
 }
 
@@ -50,6 +51,8 @@ struct BodyCompositionRecordQuery: Equatable, Sendable {
 /// cache answers. Documents that cannot be read as a record (no `measuredAt` timestamp) are skipped; a refused read
 /// fails the stream with its `RemoteError`, never an empty list (§9.6).
 public final class FirestoreBodyCompositionRecords: BodyCompositionRecordSource, Sendable {
+  /// One page of `latestActiveRecord(member:)`.
+  static let latestPageSize = 10
   private let trainerUid: String
 
   public init(trainerUid: String) {
@@ -71,6 +74,27 @@ public final class FirestoreBodyCompositionRecords: BodyCompositionRecordSource,
       }
       let token = FirestoreListenerRegistry.shared.add(registration)
       continuation.onTermination = { _ in FirestoreListenerRegistry.shared.remove(token) }
+    }
+  }
+
+  /// Records newest first, `latestPageSize` at a time, until an active one: voided records are skipped here because a
+  /// `status == active` filter would need another index.
+  public func latestActiveRecord(member: MemberKey) async throws -> BodyCompositionRecord? {
+    var page = BodyCompositionRecordQuery(trainerUid: trainerUid, member: member, since: nil)
+      .firestoreQuery(Firestore.firestore())
+      .limit(to: Self.latestPageSize)
+    do {
+      while true {
+        let snapshot = try await page.getDocuments()
+        let records = snapshot.documents.compactMap { document in
+          BodyCompositionRecord(id: document.documentID, document: JSONValueFirestoreMapper.json(document.data()))
+        }
+        if let latest = BodyCompositionSeries.latestActive(records) { return latest }
+        guard snapshot.documents.count == Self.latestPageSize, let last = snapshot.documents.last else { return nil }
+        page = page.start(afterDocument: last)
+      }
+    } catch {
+      throw RemoteErrorMapper.map(error)
     }
   }
 }

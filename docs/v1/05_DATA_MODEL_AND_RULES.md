@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서 ID | V1-05 |
-| 버전 | v1.0.7 |
+| 버전 | v1.0.8 |
 | 상태 | 개발 착수 기준(Ready) |
 | 작성일 | 2026-09-24 |
 | 소유자 | CJH |
@@ -1363,6 +1363,7 @@ MIG-03 이관 문서(레거시 원문 보존)
           && parent().status == 'finalized'
           && isAccessTrainer(parent())
           && canWriteFor(parent())
+          && hasConsent(memberKeyOf(parent()), 'healthData')               // ② 철회 뒤 새 addendum 거부
           && incoming().keys().hasOnly(['authorUid', 'createdAt', 'reason', 'text',
                                         'changedFields', 'previousValues'])
           && incoming().keys().hasAll(['authorUid', 'createdAt', 'reason', 'text'])
@@ -1386,7 +1387,7 @@ MIG-03 이관 문서(레거시 원문 보존)
   - 측정 시각 헬퍼 이름은 카드 AC-DF-020.1의 `measuredAtOk(ts)`다. 이 문서의 `notFuture(ts)`는 같은 뜻이며, DF-021은 `measuredAtOk`를 쓴다.
   - v1 레거시 **delete** 분기(`legacyV1WritesOpen() && !isV2(resource.data) && isTrainer() && resource.data.trainerId == request.auth.uid`)를 유지한다(ASM-P0-18: MIG-03 전까지 v1 create·update·delete 현행 의미 유지. 동결 앱이 `deleteSoapNote`를 호출한다).
   - §7.2의 `existing()`·`numIn`·`numPosMax`·`identityUnchanged`는 아직 쓰는 규칙이 없어(컴파일러 '미사용 함수' 경고) DF-020에 넣지 않았다. 처음 쓰는 스토리(DF-021)가 추가한다.
-  - 쓰기 1건의 문서 조회 수는 create 최대 3건(`trainers` 또는 `pendingMembers`, `memberConsentStates`, `appConfig/features`), update 최대 2건, addendum create 최대 2건(부모 `soap_notes`, `trainers` 또는 `pendingMembers`)이다.
+  - 쓰기 1건의 문서 조회 수는 create 최대 3건(`trainers` 또는 `pendingMembers`, `memberConsentStates`, `appConfig/features`), update 최대 2건, addendum create 최대 3건(부모 `soap_notes`, `trainers` 또는 `pendingMembers`, `memberConsentStates`)이다.
 
 ### 7.4 `pendingMembers`
 
@@ -1806,7 +1807,7 @@ MIG-03 이관 문서(레거시 원문 보존)
 | soap create(uid 회원) | `trainers/{uid}`(isAssignedTrainer), `memberConsentStates/{key}`, `appConfig/features` | 3 |
 | soap create(대기 회원) | `pendingMembers/{p}`, `memberConsentStates/{p}`, `appConfig/features` | 3 |
 | soap update | `trainers` 또는 `pendingMembers`, `memberConsentStates` | 2 |
-| addendum create | `soap_notes/{noteId}`, `trainers` 또는 `pendingMembers` | 2 |
+| addendum create | `soap_notes/{noteId}`, `trainers` 또는 `pendingMembers`, `memberConsentStates` | 3 |
 | posture create | 담당 문서, 동의 상태(②③⑤ 같은 문서), `appConfig/features` | 3 |
 | bodyScans create | `trainers`, 동의 상태, `appConfig/features` | 3 |
 | 목록 읽기(원 기록) | 없음(`isAccessTrainer`) | 0 |
@@ -2044,7 +2045,7 @@ PRD §9.4·§9.5의 표를 **입력(Given)·동작(When)·기대(Expect)** 로 �
 | R-06 | S0 + N1, 담당 해제 후 재정렬 완료 상태(`trainers/trainerA.memberIds=[]`, N1 `trainerId=null`) | trainerA가 N1 get, update, delete / `where trainerId=='trainerA'` list | get·update·delete 거부 / list는 허용되지만 결과 0건 | AC-LINK-03.1 |
 | R-07 | S0 + N1(draft, `trainerId=trainerA`), `memberIds=[]`(재정렬 전) | trainerA가 N1 update / `memberUid=member1`로 새 create | 둘 다 거부(`canWriteFor`) | F-LINK-03.5 |
 | R-08 | S0 + N2(finalized) | trainerA가 N2의 `quickNote` update / `status→draft` | 둘 다 거부 | F-SOAP-04 |
-| R-09 | S0 + N2(finalized) | trainerA가 `soap_notes/N2/addenda/A1` create(reason 있음) / A1 update | 허용 / 거부 | §9.3 |
+| R-09 | S0 + N2(finalized) | trainerA가 `soap_notes/N2/addenda/A1` create(reason 있음) / A1 update / member1의 ② 철회 뒤(또는 ② 부여 없음) 새 addendum create | 허용 / 거부 / 거부 | §9.3 |
 | R-10 | S0 + N1, P1, B1, 둘레 C1(모두 `memberUid=member1`) | member1이 각 문서 get, `where memberUid=='member1'` list | 모두 거부 | AC-LINK-05.1 |
 | R-11 | S0 + `memberSummaries/M1`(`memberUid=member1`, shared) | member1이 `where memberUid=='member1' orderBy sharedAt desc` | 허용 | AC-LINK-05.2 |
 | R-12 | S0 + M1 | member2가 `where memberUid=='member1'` / M1 get | 거부 | AC-LINK-05.2 |
@@ -2927,3 +2928,4 @@ exports.soapDraft = (overrides = {}) => ({
 | v1.0.5 | 2026-09-28 | R-32(규칙 매트릭스·테스트 파일 표) 추가. §7 `soap_notes`·`postureAssessments` delete 규칙에 `resource == null && isTrainer()`(없는 문서 삭제는 성공) 추가: Outbox가 응답을 잃고 다시 보낸 draft 삭제가 영구 실패가 되지 않고, 클라이언트가 읽을 수 없는 문서를 삭제된 것으로 오판하지 않는다 | DF-104 | 없음 |
 | v1.0.6 | 2026-09-28 | §12.2 `LocalPendingMemberDraft`를 구현(DF-108)에 맞춤: `outboxItemId` 추가, 상태·오류는 Outbox 항목에서 읽고 `acked`면 `LocalOutboxStore`가 행 삭제. `OutboxItem.ackConfirmed`(V1_1), `superseded`는 DF-108 저장 어댑터 | DF-108 | 없음 |
 | v1.0.7 | 2026-09-28 | §7.3 `validInk`를 §5.1 경로 정의와 맞춤: `inkPath`를 정규식이 아니라 `'soapInk/' + noteId + '/' + string(inkRevision) + '.drawing'`과 정확히 비교한다(noteId의 정규식 메타 문자로 다른 노트 경로를 가리키거나 경로 번호와 `inkRevision`이 달라지는 것을 막는다, 교차 리뷰) | — | 없음 |
+| v1.0.8 | 2026-09-28 | §7.3 addenda create에 `hasConsent(memberKeyOf(parent()), 'healthData')` 추가: ② 철회가 커밋된 뒤 접근 키 정리(`syncRecordAccessKeys`)가 끝나기 전에도 확정 노트에 새 addendum(건강 기록)을 쓰지 못한다. R-09 행과 §7.3·§7.11 문서 조회 수(addendum create 2 → 3건) 갱신 | — | 없음 |

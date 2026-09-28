@@ -2,37 +2,10 @@ import Foundation
 import SyncEngine
 import XCTest
 
+/// Logout's bounded drain (V1-04 §12.2 ②). The drain returning while a call never returns is covered by
+/// `SyncEngineCrossReviewTests.testCancellingTheIdleWaitEndsItWhileACallNeverReturns`.
 final class SyncEngineLogoutDrainTests: XCTestCase {
-  /// P1 regression: the logout task group must return on its timer while the in-flight remote is still held.
-  /// An outer polling deadline releases the fake even on regression, so this test cannot hang the suite.
-  func testLogoutDrainTimeoutReturnsBeforeRemoteResponse() async {
-    let remote = FakeRemote()
-    let engine = makeTestEngine(remote: remote)
-    let path = "soap_notes/synth-logout"
-    remote.hold(path)
-    await engine.enqueue(OutboxFixtures.create(member: "synthMember0001", note: "synth-logout"))
-    await engine.start()
-    let started = await eventually { remote.isWaiting(on: path) }
-    XCTAssertTrue(started)
-    await engine.stop()
-    let returned = IdleFlag()
-    let drain = Task {
-      await withTaskGroup(of: Void.self) { group in
-        group.addTask { await engine.waitUntilIdle() }
-        group.addTask { try? await Task.sleep(for: .milliseconds(20)) }
-        await group.next()
-        group.cancelAll()
-      }
-      returned.set()
-    }
-    let timedOut = await eventually(timeout: 1) { returned.isSet }
-    XCTAssertTrue(timedOut, "The cancelled idle waiter must not hold the task-group scope open")
-    XCTAssertTrue(remote.isWaiting(on: path), "The timeout must work without cancelling or completing the remote write")
-    remote.release(path)
-    await drain.value
-    await idle(engine)
-  }
-
+  /// Cancelling one `waitUntilIdle()` ends only that wait; another caller keeps waiting until the engine is idle.
   func testCancellingOneIdleWaiterDoesNotFinishOtherWaiters() async {
     let remote = FakeRemote()
     let engine = makeTestEngine(remote: remote)
@@ -46,13 +19,17 @@ final class SyncEngineLogoutDrainTests: XCTestCase {
     let normal = IdleFlag()
     let one = Task { await engine.waitUntilIdle(); cancelled.set() }
     let two = Task { await engine.waitUntilIdle(); normal.set() }
+    // Let both waits register first. A task cancelled before it reaches the engine returns on its own cancelled
+    // check and never exercises the per-waiter removal. If scheduling is slow the test only gets weaker, never red.
+    try? await Task.sleep(nanoseconds: 100_000_000)
     one.cancel()
     let stopped = await eventually(timeout: 1) { cancelled.isSet }
     XCTAssertTrue(stopped)
-    XCTAssertFalse(normal.isSet)
+    let leaked = await eventually(timeout: 0.2) { normal.isSet }
+    XCTAssertFalse(leaked, "cancelling one waiter must not resume the others")
     remote.release(path)
-    await one.value
-    await two.value
-    XCTAssertTrue(normal.isSet)
+    let resumed = await eventually { normal.isSet }  // bounded, so a regression fails instead of hanging the suite
+    XCTAssertTrue(resumed, "the other waiter still returns once the engine is idle")
+    _ = await one.value
   }
 }

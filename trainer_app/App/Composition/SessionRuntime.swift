@@ -34,7 +34,8 @@ final class SessionRefresher: @unchecked Sendable {
   private let lock = NSLock()
   private var inFlight = false
   private var lastStarted: Date?
-  private var deferred: Task<Void, Never>?
+  /// The kept request; the id lets its timer clear only itself.
+  private var deferred: (id: UUID, task: Task<Void, Never>)?
   private var refreshed: (@Sendable () async -> Void)?
 
   init(
@@ -49,24 +50,29 @@ final class SessionRefresher: @unchecked Sendable {
   /// Drops a kept request (the runtime stopped sending).
   func cancel() {
     lock.withLock {
-      deferred?.cancel()
+      deferred?.task.cancel()
       deferred = nil
     }
   }
 
+  /// Deciding and storing happen under one lock, and the timer needs that lock to run its request, so it can never
+  /// finish before it is stored and leave a stale entry that drops later requests.
   private func keep(for wait: TimeInterval) {
-    let task = Task { [weak self] in
-      try? await Task.sleep(nanoseconds: UInt64(max(wait, 0) * 1_000_000_000))
-      guard !Task.isCancelled, let self else { return }
-      self.lock.withLock { self.deferred = nil }
-      self.unauthenticated()
+    lock.withLock {
+      guard deferred == nil else { return }
+      let id = UUID()
+      let task = Task { [weak self] in
+        try? await Task.sleep(nanoseconds: UInt64(max(wait, 0) * 1_000_000_000))
+        guard !Task.isCancelled, let self else { return }
+        let mine = self.lock.withLock { () -> Bool in
+          guard self.deferred?.id == id else { return false }
+          self.deferred = nil
+          return true
+        }
+        if mine { self.unauthenticated() }
+      }
+      deferred = (id, task)
     }
-    let kept = lock.withLock { () -> Bool in
-      guard deferred == nil else { return false }
-      deferred = task
-      return true
-    }
-    if !kept { task.cancel() }
   }
 
   /// What to run after a successful refresh (the runtime starts its engine).

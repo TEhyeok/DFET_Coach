@@ -10,7 +10,8 @@ final class BodyCompositionUITests: XCTestCase {
   }
 
   /// TC-127-12 (AC-DF-127.11), AC-DF-127.1, AC-DF-127.6, AC-DF-130.11: enter weight '62,4' with the meta, save, and the
-  /// chart has the new point (seven records, the new minimum 62.4 kg).
+  /// chart has the new point (seven records, the new minimum 62.4 kg) with its save state; TR-03 keeps every metric's
+  /// latest value.
   @MainActor
   func testMeasureMenuOpensTR11AndASavedRecordIsOnTheTrend() throws {
     let app = launch(["--preview-members", "--preview-flags=bodyComposition"])
@@ -20,6 +21,10 @@ final class BodyCompositionUITests: XCTestCase {
     let section = element("tr03.bodyComposition", in: app)
     XCTAssertTrue(section.waitForExistence(timeout: 10))
     XCTAssertTrue(chartSummary(containing: "기록 6개", in: app).waitForExistence(timeout: 10), "six synthetic records")
+    // The device change's reason is text under the plot, numbered like its marker on the rule (review findings 5, 6).
+    let deviceChange = element("chart.break.1", in: app)
+    XCTAssertTrue(deviceChange.waitForExistence(timeout: 10))
+    XCTAssertTrue(deviceChange.label.contains("InBody 570"), deviceChange.label)
     attachScreenshot(app, name: "TR-03 body composition")
 
     let menu = element("tr03.measureMenu", in: app)
@@ -58,11 +63,22 @@ final class BodyCompositionUITests: XCTestCase {
     XCTAssertTrue(summary.waitForExistence(timeout: 10), "the new record is a point")
     XCTAssertTrue(summary.label.contains("최소 62.4kg"), summary.label)
     XCTAssertTrue(summary.label.contains("산정 준비 중"), summary.label)
+    // The save result (V1-07 §6): the preview sends nothing, so it stays '기기에 저장됨' (review finding 4).
+    XCTAssertTrue(element("sync.badge.localSaved", in: app).waitForExistence(timeout: 10))
     attachScreenshot(app, name: "TR-11 record with mini trend")
 
     element("tr11.close", in: app).tap()
     XCTAssertTrue(section.waitForExistence(timeout: 10))
     XCTAssertTrue(chartSummary(containing: "기록 7개", in: app).waitForExistence(timeout: 10), "TR-03 has it too")
+    // Each TR-03 row is its metric's latest record: the weight-only save does not hide body fat % and skeletal muscle
+    // mass (review finding 7), and the unsynced weight row carries its state (finding 4).
+    let latest = element("tr03.bodyComposition.latest", in: app)
+    XCTAssertTrue(latest.waitForExistence(timeout: 10))
+    for metric in ["weightKg", "bodyFatPercent", "skeletalMuscleMassKg"] {
+      XCTAssertTrue(latest.descendants(matching: .any)["metric.row.\(metric)"].firstMatch.exists, metric)
+    }
+    XCTAssertTrue(latest.descendants(matching: .any)["sync.badge.localSaved"].firstMatch.exists)
+    attachScreenshot(app, name: "TR-03 after saving")
   }
 
   /// TC-127-12 flag off: no '측정 입력' menu and no body composition section on TR-03.

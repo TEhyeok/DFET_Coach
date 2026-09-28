@@ -73,6 +73,7 @@
 		EBF4BAC12AA21F03BECE701D /* LaunchConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C4E5A785ABE7684F139325 /* LaunchConfiguration.swift */; };
 		EF01E6D93377594EA6BBB3BE /* ShellServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7476E9DA66A858FA50319763 /* ShellServices.swift */; };
 		F024D4270749A21CE5E2B20C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E726F1893F83B5B473A6E62 /* Assets.xcassets */; };
+		F8BC8D04175CE967B18BAEF9 /* FeatureFlagsEmulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAA2D55DF0B2D22DA07D3D3B /* FeatureFlagsEmulatorTests.swift */; };
 		F959AD1FB0578C0CF0768C49 /* AppShellUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F50A2ACEDADA4F1FE4CF3A8 /* AppShellUITests.swift */; };
 		FE7656E073A513D4FFAF2D80 /* SyncEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 422ACBDDF549B4FBB975C8B5 /* SyncEngine */; };
 /* End PBXBuildFile section */
@@ -142,6 +143,7 @@
 		CDE105CB32756FE7A6026CAC /* MemberListUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberListUITests.swift; sourceTree = "<group>"; };
 		D123B75016CB51832F478143 /* LayoutMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutMode.swift; sourceTree = "<group>"; };
 		D418DDB6FE7A9E5B1EE7D72E /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		DAA2D55DF0B2D22DA07D3D3B /* FeatureFlagsEmulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagsEmulatorTests.swift; sourceTree = "<group>"; };
 		DC16D3AC88C51ECC8A1F4859 /* PendingMemberRegistrationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingMemberRegistrationUITests.swift; sourceTree = "<group>"; };
 		DFA953C800FB9A18028D9BFF /* PreviewAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewAuthService.swift; sourceTree = "<group>"; };
 		E23455B28011A87B3E044E4B /* SessionRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRuntime.swift; sourceTree = "<group>"; };
@@ -269,6 +271,7 @@
 			children = (
 				97FB9368CC4956DDCA5B12ED /* AuthEmulatorTests.swift */,
 				65C048B726A3D7FF81FFBD5C /* BodyCompositionEmulatorTests.swift */,
+				DAA2D55DF0B2D22DA07D3D3B /* FeatureFlagsEmulatorTests.swift */,
 				0B433B9018A372595AB0D454 /* IntegrationPlaceholderTests.swift */,
 				42DAC004ADF0C888D7C0718E /* MemberDirectoryEmulatorTests.swift */,
 				89812E626D2A8F0D57DF4859 /* PendingMemberEmulatorTests.swift */,
@@ -547,6 +550,7 @@
 				72B2124FDE238A28893F0160 /* AuthEmulatorTests.swift in Sources */,
 				80CF7A5F63C03FA336F2AE80 /* BodyCompositionEmulatorTests.swift in Sources */,
 				3102ECBD5FCEA42D222AB7B0 /* EmulatorSupport.swift in Sources */,
+				F8BC8D04175CE967B18BAEF9 /* FeatureFlagsEmulatorTests.swift in Sources */,
 				57601A9F2F62C726CEFB54F8 /* IntegrationPlaceholderTests.swift in Sources */,
 				73E67DF911CF2D2213939E78 /* MemberDirectoryEmulatorTests.swift in Sources */,
 				14591C2DE96B7F6D3F62EA1A /* PendingMemberEmulatorTests.swift in Sources */,

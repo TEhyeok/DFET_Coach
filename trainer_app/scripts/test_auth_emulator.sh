@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Emulator integration tests, hosted in the app (project demo-dfet): DF-012 AuthEmulatorTests (TC-DF012-02/03) and
 # DF-013 MemberDirectoryEmulatorTests (TC-DF013-05), DF-104 RemoteWriterEmulatorTests (write reconciliation) and
-# DF-127 BodyCompositionEmulatorTests (TC-127-03, TC-127-05)
+# DF-127 BodyCompositionEmulatorTests (TC-127-03, TC-127-05) and FeatureFlagsEmulatorTests (live appConfig/features)
 # against the Auth and Firestore emulators with firestore.rules.
 # Usage (from anywhere): bash trainer_app/scripts/test_auth_emulator.sh [derived-data-path]
 # Needs firebase-tools >= 15 and Java 21 on PATH. Extra xcodebuild arguments can be passed in XCODEBUILD_EXTRA_ARGS.
@@ -24,10 +24,11 @@ firebase emulators:exec --only auth,firestore --project demo-dfet \
     -only-testing:DFETTrainerIntegrationTests/RemoteWriterEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/PendingMemberEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/BodyCompositionEmulatorTests \
+    -only-testing:DFETTrainerIntegrationTests/FeatureFlagsEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/SessionSignOutEmulatorTests \
     -only-testing:DFETTrainerIntegrationTests/SessionSignOutOrderTests \
     CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=" 2>&1 | tee "$LOG"
-if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests|RemoteWriterEmulatorTests|PendingMemberEmulatorTests|BodyCompositionEmulatorTests|SessionSignOutEmulatorTests).* skipped" "$LOG"; then
+if grep -qE "(AuthEmulatorTests|MemberDirectoryEmulatorTests|RemoteWriterEmulatorTests|PendingMemberEmulatorTests|BodyCompositionEmulatorTests|FeatureFlagsEmulatorTests|SessionSignOutEmulatorTests).* skipped" "$LOG"; then
   echo "emulator tests were skipped: the emulator flag did not reach the test process" >&2
   exit 1
 fi

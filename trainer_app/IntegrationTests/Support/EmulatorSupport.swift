@@ -67,6 +67,11 @@ enum EmulatorDocuments {
     _ = try await EmulatorREST.send("PATCH", "\(base)/\(path)", ["fields": try fields.mapValues(encode)])
   }
 
+  /// Deletes `path`; a document that does not exist is no error.
+  static func delete(_ path: String) async throws {
+    _ = try await EmulatorREST.send("DELETE", "\(base)/\(path)", nil)
+  }
+
   /// The stored fields of `path` in Firestore REST form, or nil when the document does not exist.
   static func get(_ path: String) async throws -> [String: Any]? {
     do {

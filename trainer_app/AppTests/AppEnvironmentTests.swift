@@ -56,11 +56,34 @@ final class AppEnvironmentTests: XCTestCase {
       XCTAssertEqual(kind, c.expected, c.name)
       if case let .live(backend) = kind {
         XCTAssertEqual(configured, [backend], "\(c.name): live configures Firebase exactly once")
-        XCTAssertEqual(environment.flags, .allOff, "\(c.name): live flags are the fixed .allOff provider in P0")
+        XCTAssertEqual(environment.flags, .allOff, "\(c.name): the bootstrap's flags, all off before a value")
       } else {
         XCTAssertEqual(configured, [], "\(c.name): Firebase calls must be 0")
       }
     }
+  }
+
+  /// DF-127 review finding 1: production and emulator take the bootstrap's flags provider (the app's is FirebaseData's
+  /// `appConfig/features` subscription), not a fixed all-off one. Preview and a missing configuration never ask for it.
+  func testLiveEnvironmentsUseTheBootstrapsFlagsProvider() {
+    let on = FeatureFlags(bodyComposition: true)
+    var asked = 0
+    func bootstrap(plistPresent: Bool) -> AppBootstrap {
+      AppBootstrap(plistPresent: plistPresent, configureLive: { _ in }, liveFlags: {
+        asked += 1
+        return FixedFeatureFlagsProvider(on)
+      })
+    }
+    for arguments in [[], ["--use-emulator"]] {
+      let environment = AppEnvironment.resolve(arguments: arguments, isDebug: true, bootstrap: bootstrap(plistPresent: true))
+      XCTAssertEqual(environment.flags, on, "\(arguments)")
+      XCTAssertEqual(environment.flagsProvider.current, on)
+    }
+    XCTAssertEqual(asked, 2)
+    _ = AppEnvironment.resolve(arguments: ["--preview-members"], isDebug: true, bootstrap: bootstrap(plistPresent: true))
+    let missing = AppEnvironment.resolve(arguments: [], isDebug: true, bootstrap: bootstrap(plistPresent: false))
+    XCTAssertEqual(missing.flags, .allOff)
+    XCTAssertEqual(asked, 2, "no flags subscription outside a live environment")
   }
 
   func testPreviewFlagOverrideParsesKnownKeysOnly() {

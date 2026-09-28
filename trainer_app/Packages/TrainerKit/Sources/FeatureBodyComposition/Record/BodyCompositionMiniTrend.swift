@@ -5,14 +5,16 @@ import TrainerDomain
 
 /// TR-11 미니 추이 (DF-130, AC-DF-130.11): one of weight, body fat % and skeletal muscle mass over the last 12 months,
 /// drawn by `SeriesTrendChart` (source chip '기기 측정 · {device}', a break at a device or condition change, no
-/// interpolation, '산정 준비 중'). Voided records are not points.
+/// interpolation, '산정 준비 중'). Voided records and drafts the server refused are not points.
 public struct BodyCompositionMiniTrend: View {
   @Bindable private var model: BodyCompositionMemberModel
   private let localize: Localizer
+  private let timeZone: TimeZone
 
-  public init(model: BodyCompositionMemberModel, localize: Localizer = .main) {
+  public init(model: BodyCompositionMemberModel, localize: Localizer = .main, timeZone: TimeZone = .current) {
     self.model = model
     self.localize = localize
+    self.timeZone = timeZone
   }
 
   public var body: some View {
@@ -35,7 +37,7 @@ public struct BodyCompositionMiniTrend: View {
       case .failed:
         LoadFailed(localize: localize) { model.retry() }
       case .loaded:
-        SeriesTrendChart(model: model.chartModel(model.selectedMetric), localize: localize)
+        SeriesTrendChart(model: model.chartModel(model.selectedMetric), localize: localize, timeZone: timeZone)
       }
     }
     .accessibilityElement(children: .contain)

@@ -4,8 +4,8 @@ import TrainerContracts
 /// Global feature flags from `appConfig/features` (ADR-010, V1-05 §4.17). A missing document or key is `false`.
 ///
 /// DF-017 defined the value type with all eight keys and `.allOff`. DF-027 made `Key` the generated
-/// `FeatureFlagKey` (contracts/feature-flags.v1.json) and added `init(map:)`. The Firestore subscription arrives in
-/// P1a (FirebaseData); until then the app uses `FixedFeatureFlagsProvider.allOff`.
+/// `FeatureFlagKey` (contracts/feature-flags.v1.json) and added `init(map:)`. Live and emulator builds read the
+/// document through FirebaseData's `FirestoreFeatureFlags` (DF-127 review); previews use `FixedFeatureFlagsProvider`.
 public struct FeatureFlags: Equatable, Hashable, Sendable {
   /// Key names as stored in `appConfig/features`, generated from contracts/feature-flags.v1.json (DF-027).
   /// A key added to the contract fails to compile here until the subscript below handles it.
@@ -96,17 +96,30 @@ public struct FeatureFlags: Equatable, Hashable, Sendable {
   }
 }
 
-/// Source of the current flags. P1a adds a FirebaseData implementation that observes `appConfig/features`.
+/// Source of the current flags. FirebaseData's `FirestoreFeatureFlags` observes `appConfig/features`.
 public protocol FeatureFlagsProvider: Sendable {
+  /// The last flags known (`.allOff` before the first value).
   var current: FeatureFlags { get }
+  /// The flags now and after every change, so the shell's entry points follow the document while the app runs. A read
+  /// that fails gives `.allOff` and ends the stream (fail-closed, like `init(map:)`).
+  func updates() -> AsyncStream<FeatureFlags>
 }
 
-/// A provider that always returns the same flags. Live builds use `.allOff` until P1a.
+/// A provider that always returns the same flags: previews (`--preview-flags=`) and tests.
 public struct FixedFeatureFlagsProvider: FeatureFlagsProvider {
   public let current: FeatureFlags
 
   public init(_ flags: FeatureFlags) {
     current = flags
+  }
+
+  /// `current` once: fixed flags never change.
+  public func updates() -> AsyncStream<FeatureFlags> {
+    let flags = current
+    return AsyncStream { continuation in
+      continuation.yield(flags)
+      continuation.finish()
+    }
   }
 
   public static let allOff = FixedFeatureFlagsProvider(.allOff)

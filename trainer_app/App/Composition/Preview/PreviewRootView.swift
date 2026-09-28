@@ -53,7 +53,7 @@ struct PreviewRootView: View {
   private func shell(signOut: PreviewSessionSignOut) -> some View {
     let narrowWidth = isNarrow ? preview.simulatedWidth : nil
     return RootSplitView(
-      flags: preview.flagsProvider.current,
+      flags: preview.flagsProvider,
       services: ShellServices(
         memberDirectory: PreviewMemberDirectory(script: preview.memberScript, gate: memberGate),
         registrar: registrar, syncQueue: queue, signOut: signOut,

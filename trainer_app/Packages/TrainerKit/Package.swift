@@ -61,9 +61,13 @@ let package = Package(
     .testTarget(name: "LocalStoreTests", dependencies: ["LocalStore", .product(name: "SyncEngine", package: "TrainerCore")]),
     .testTarget(name: "FirebaseDataTests", dependencies: ["FirebaseData"]),
     .testTarget(name: "PostureVisionTests", dependencies: ["PostureVision"]),
+    // The TR-11 mini trend snapshot (TC-130-11) is here too, so every snapshot has one reference runtime, one
+    // `__Snapshots__` folder and one CI artifact.
     .testTarget(
       name: "DesignSystemTests",
-      dependencies: ["DesignSystem", .product(name: "SnapshotTesting", package: "swift-snapshot-testing")],
+      dependencies: [
+        "DesignSystem", "FeatureBodyComposition", .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
       exclude: ["__Snapshots__"]
     ),
     .testTarget(name: "FeatureModulesTests", dependencies: featureNames.map { Target.Dependency(stringLiteral: $0) }),

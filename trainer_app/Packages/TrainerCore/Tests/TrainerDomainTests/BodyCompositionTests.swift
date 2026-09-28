@@ -97,11 +97,39 @@ final class BodyCompositionTests: XCTestCase {
       (200, 100, 200, #line),
       (250, 110, nil, #line),  // 206.6: above the rules' 200, so no derived map
       (600, 100, nil, #line),
+      // Review (GPT): 0.0 after rounding is below the rules' `bmi > 0`, so no derived map either.
+      (0.1, 250, nil, #line),  // 0.016
+      (0.3, 250, nil, #line),  // 0.048
+      (0.31, 250, nil, #line),  // 0.0496
+      (0.32, 250, 0.1, #line),  // 0.0512: the smallest weight at 250 cm with a BMI
+      (0.4, 250, 0.1, #line),  // 0.064
     ]
     for (weight, height, bmi, line) in cases {
       XCTAssertEqual(BMICalculator.bmi(weightKg: weight, heightCm: height), bmi, line: line)
     }
     XCTAssertEqual(BMICalculator.maximum, 200)
+    XCTAssertEqual(BMICalculator.minimum, 0)
+    XCTAssertFalse(BMICalculator.isInRange(0))
+    XCTAssertTrue(BMICalculator.isInRange(0.1))
+    XCTAssertTrue(BMICalculator.isInRange(200))
+    XCTAssertFalse(BMICalculator.isInRange(200.1))
+  }
+
+  /// Review (GPT): weight 0.1 kg (the app's minimum) at 250 cm passes validation, but its BMI rounds to 0.0, which the
+  /// rules refuse (`numPosMax(derived.bmi, 200)`). The record saves without `derived`, so the server accepts it.
+  func testABMIThatRoundsToZeroIsNotDerived() throws {
+    for weight in ["0.1", "0.3"] {
+      let result = BodyCompositionValidator.validate(draft([.weightKg: weight], height: "250"), now: now)
+      XCTAssertTrue(result.canSave, weight)
+      XCTAssertNil(result.bmi, weight)
+      let entry = try XCTUnwrap(result.entry, weight)
+      XCTAssertNil(entry.derived, weight)
+      guard case let .object(fields) = BodyCompositionPayload.fields(entry, member: .uid("syn-0001"), trainerUid: "syn-t")
+      else { return XCTFail("object payload expected") }
+      XCTAssertNil(fields["derived"], "\(weight): no derived map for the rules to refuse")
+    }
+    let smallest = BodyCompositionValidator.validate(draft([.weightKg: "0.4"], height: "250"), now: now)
+    XCTAssertEqual(smallest.entry?.derived?.bmi, 0.1)
   }
 
   // MARK: Validator: required meta (TC-127-01)

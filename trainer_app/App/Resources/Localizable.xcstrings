@@ -1801,6 +1801,18 @@
         }
       }
     },
+    "tr11.record.outsideTrend" : {
+      "comment" : "V1-12 · TR-11",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 12개월보다 이전 기록이라 미니 추이에는 보이지 않아요"
+          }
+        }
+      }
+    },
     "tr11.record.title" : {
       "comment" : "V1-12 · TR-11",
       "extractionState" : "manual",

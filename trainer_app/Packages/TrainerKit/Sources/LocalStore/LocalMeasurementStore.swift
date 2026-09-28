@@ -11,13 +11,18 @@ import TrainerDomain
 ///
 /// Reading merges the server's records (`BodyCompositionRecordSource`, FirebaseData) with this device's drafts the
 /// server does not have yet, one per record id (`BodyCompositionRecordMerge`), so a new record is on the trend at once,
-/// online or not.
+/// online or not. Each draft carries its `syncState` from the SyncEngine, so a draft the server refused reads
+/// `syncFailed`, never like a synced record (V1-04 §11, V1-07 §6).
 public final class LocalMeasurementStore: MeasurementStore, DeviceModelCatalog {
+  /// The SyncEngine's `syncState(for:)`: the entity's state now and after every change.
+  public typealias SyncStates = @Sendable (TrainerDomain.LocalEntityRef) async -> AsyncStream<SyncState>
+
   private let outbox: LocalOutboxStore
   private let trainerUid: String
   private let enqueue: @Sendable (TrainerDomain.OutboxItem) async -> Void
   private let server: (any BodyCompositionRecordSource)?
   private let consent: @Sendable (MemberKey) async -> EffectiveConsent
+  private let syncStates: SyncStates?
   private let now: @Sendable () -> Date
   private let makeID: @Sendable () -> String
   private let changes = MemberChangeSignal()
@@ -25,11 +30,13 @@ public final class LocalMeasurementStore: MeasurementStore, DeviceModelCatalog {
   /// - Parameters:
   ///   - server: the server's records; nil reads this device's drafts only.
   ///   - consent: the member's effective consent now (`EffectiveConsent.current(from:member:)`); ② decides.
+  ///   - syncStates: the SyncEngine's state of a draft; nil (no engine, the preview) reads every draft `localSaved`.
   public init(
     outbox: LocalOutboxStore, trainerUid: String,
     enqueue: @escaping @Sendable (TrainerDomain.OutboxItem) async -> Void,
     server: (any BodyCompositionRecordSource)?,
     consent: @escaping @Sendable (MemberKey) async -> EffectiveConsent,
+    syncStates: SyncStates? = nil,
     now: @escaping @Sendable () -> Date = { Date() }, makeID: @escaping @Sendable () -> String = { DocumentID.make() }
   ) {
     self.outbox = outbox
@@ -37,6 +44,7 @@ public final class LocalMeasurementStore: MeasurementStore, DeviceModelCatalog {
     self.enqueue = enqueue
     self.server = server
     self.consent = consent
+    self.syncStates = syncStates
     self.now = now
     self.makeID = makeID
   }
@@ -70,10 +78,11 @@ public final class LocalMeasurementStore: MeasurementStore, DeviceModelCatalog {
     let outbox = outbox
     let server = server
     let changes = changes
+    let syncStates = syncStates
     return AsyncThrowingStream { continuation in
       let task = Task {
         await RecordsMerge(member: member, since: since, outbox: outbox, server: server, changes: changes,
-                           output: continuation).run()
+                           syncStates: syncStates, output: continuation).run()
       }
       continuation.onTermination = { _ in task.cancel() }
     }
@@ -132,15 +141,20 @@ final class MemberChangeSignal: @unchecked Sendable {
   }
 }
 
-/// One `observeBodyCompositionRecords` subscription as an event loop: the server listener and local saves only post
-/// events; this loop alone reads the local drafts and writes the output, so answers stay in order. Before the server's
-/// first answer (Firestore gives its cache at once, offline too) nothing is emitted, so the list never flashes the
-/// local records alone. A server failure fails the stream (TR-03 shows `common.loadFailed`, never an empty trend).
+/// One `observeBodyCompositionRecords` subscription as an event loop: the server listener, local saves and the
+/// drafts' sync states only post events; this loop alone reads the local drafts and writes the output, so answers stay
+/// in order. Before the server's first answer (Firestore gives its cache at once, offline too) nothing is emitted, so
+/// the list never flashes the local records alone. A server failure fails the stream (TR-03 shows `common.loadFailed`,
+/// never an empty trend).
+///
+/// Every local draft has a `syncState`: `localSaved` until the engine's first value, then the engine's (a permanent
+/// rejection is `syncFailed`). A state change also re-reads the drafts, so one the engine acked leaves the local list.
 private struct RecordsMerge {
   private enum Event: Sendable {
     case server([BodyCompositionRecord])
     case serverFailed(Error)
     case local
+    case syncState(recordId: String, SyncState)
   }
 
   let member: MemberKey
@@ -148,6 +162,7 @@ private struct RecordsMerge {
   let outbox: LocalOutboxStore
   let server: (any BodyCompositionRecordSource)?
   let changes: MemberChangeSignal
+  let syncStates: LocalMeasurementStore.SyncStates?
   let output: AsyncThrowingStream<[BodyCompositionRecord], Error>.Continuation
 
   func run() async {
@@ -164,10 +179,37 @@ private struct RecordsMerge {
         }
       }
     }
+    /// One engine subscription per local draft, while the draft is unsynced.
+    var watchers: [String: Task<Void, Never>] = [:]
+    var states: [String: SyncState] = [:]
     defer {
       changes.unsubscribe(token)
       listener?.cancel()
+      watchers.values.forEach { $0.cancel() }
       post.finish()
+    }
+    func watch(_ drafts: [BodyCompositionRecord]) {
+      let ids = Set(drafts.map(\.id))
+      for id in watchers.keys where !ids.contains(id) {
+        watchers.removeValue(forKey: id)?.cancel()
+        states.removeValue(forKey: id)
+      }
+      guard let syncStates else { return }
+      for id in ids where watchers[id] == nil {
+        watchers[id] = Task {
+          for await state in await syncStates(BodyCompositionPayload.entityRef(recordId: id)) {
+            post.yield(.syncState(recordId: id, state))
+          }
+        }
+      }
+    }
+    func merged(server: [BodyCompositionRecord], local: [BodyCompositionRecord]) -> [BodyCompositionRecord] {
+      let local = local.map { draft -> BodyCompositionRecord in
+        var record = draft
+        record.syncState = states[draft.id] ?? .localSaved
+        return record
+      }
+      return BodyCompositionRecordMerge.merge(server: server, local: local)
     }
     var serverRecords: [BodyCompositionRecord]? = server == nil ? [] : nil
     var localRecords: [BodyCompositionRecord] = []
@@ -176,21 +218,27 @@ private struct RecordsMerge {
     } catch {
       return output.finish(throwing: error)
     }
-    if let serverRecords { output.yield(BodyCompositionRecordMerge.merge(server: serverRecords, local: localRecords)) }
+    watch(localRecords)
+    if let serverRecords { output.yield(merged(server: serverRecords, local: localRecords)) }
     for await event in events {
       switch event {
       case let .server(list):
         serverRecords = list
       case let .serverFailed(error):
         return output.finish(throwing: error)
-      case .local:
+      case .local, .syncState:
+        if case let .syncState(id, state) = event {
+          guard watchers[id] != nil, states[id] != state else { continue }
+          states[id] = state
+        }
         do {
           localRecords = try await local()
         } catch {
           return output.finish(throwing: error)
         }
+        watch(localRecords)
       }
-      if let serverRecords { output.yield(BodyCompositionRecordMerge.merge(server: serverRecords, local: localRecords)) }
+      if let serverRecords { output.yield(merged(server: serverRecords, local: localRecords)) }
     }
   }
 

@@ -99,6 +99,43 @@ final class SeriesTrendChartTests: XCTestCase {
     XCTAssertEqual(sides.breaks.count, 1)
   }
 
+  /// Review finding 5: every break has a numbered marker on its rule and a numbered reason under the plot, in date
+  /// order; markers of breaks closer than about one marker width take separate rows, so their labels never draw over
+  /// each other (a second device change 60 days after the first one used to overwrite the first label).
+  func testCloseBreaksGetSeparateMarkerRows() {
+    let model = SeriesChartModel(metricCode: .weightKg, deviceModel: "SYN-C", segments: [
+      ChartSegment(id: "weightKg#0", points: [point(1, 72.4), point(2, 71.9)]),
+      ChartSegment(id: "weightKg#2", breakBefore: .deviceChanged(from: "SYN-B", to: "SYN-C"), points: [point(31, 70.0)]),
+      ChartSegment(id: "weightKg#1", breakBefore: .deviceChanged(from: "SYN-A", to: "SYN-B"), points: [point(28, 70.2)]),
+    ])
+    let breaks = SeriesTrendChart.numberedBreaks(model)
+    XCTAssertEqual(breaks.map(\.at), [day(28), day(31)], "numbered in date order, whatever the segment order")
+    let period = day(1)...day(31)
+    XCTAssertEqual(SeriesTrendChart.markerRows(breaks, period: period), [0, 1], "3 days of 30 apart: two rows")
+    let far = [ChartBreakMark(at: day(5), reason: .protocolChanged), ChartBreakMark(at: day(28), reason: .protocolChanged)]
+    XCTAssertEqual(SeriesTrendChart.markerRows(far, period: period), [0, 0], "far apart: one row")
+    let sameDay = [ChartBreakMark(at: day(9), reason: .protocolChanged),
+                   ChartBreakMark(at: day(9), reason: .conditionMismatch(condition: "fasting"))]
+    XCTAssertEqual(SeriesTrendChart.markerRows(sameDay, period: day(9)...day(9)), [0, 1], "one day: one row each")
+    // A third break far from the second reuses the first row.
+    let three = breaks + [ChartBreakMark(at: day(60), reason: .protocolChanged)]
+    XCTAssertEqual(SeriesTrendChart.markerRows(three, period: day(1)...day(60)), [0, 1, 0])
+  }
+
+  /// Review finding 6: text inside the fixed-height plot stops growing at xxLarge; the period and the reasons are under
+  /// the plot. At the largest accessibility size the chart grows to fit them instead of cutting them.
+  func testPlotTextIsCappedAndTheReasonsGrowUnderThePlot() throws {
+    XCTAssertEqual(SeriesTrendChart.plotTextLimit, .xxLarge)
+    let localize = try AppCatalog.localizer()
+    func height(_ size: DynamicTypeSize) -> CGFloat {
+      fittingSize(SeriesTrendChart(model: deviceChange, localize: localize, timeZone: seoul).dynamicTypeSize(size)).height
+    }
+    let large = height(.large)
+    let accessibility = height(.accessibility5)
+    XCTAssertGreaterThan(large, SeriesTrendChart.plotHeight)
+    XCTAssertGreaterThan(accessibility, large, "the period and the reason under the plot grow with the text size")
+  }
+
   /// AC-DF-130.9 by rule: the sides differ by dash and point shape, and the break rule by its own dash.
   func test_TC_130_09_sidesDifferWithoutColour() throws {
     XCTAssertNotEqual(SeriesTrendChart.lineStyle(.left), SeriesTrendChart.lineStyle(.right))

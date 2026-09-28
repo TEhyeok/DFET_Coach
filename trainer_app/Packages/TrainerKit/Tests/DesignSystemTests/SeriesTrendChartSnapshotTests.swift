@@ -5,8 +5,10 @@ import TrainerContracts
 import XCTest
 
 /// TC-130-02, 03, 04, 05, 09 (DF-130): the refused mixed-source chart; irregular dates (1, 2 and 10 January) with a
-/// device change drawn as two unjoined segments, a dashed rule and '기기 변경', and '산정 준비 중' without a band,
-/// light, dark and at xxxLarge; left and right with a protocol break in greyscale (AC-A11Y-03); no points and one point.
+/// device change drawn as two unjoined segments, a dashed rule with its numbered marker and '기기 변경' under the plot,
+/// and '산정 준비 중' without a band, light, dark, at xxxLarge and at the largest accessibility size; two close device
+/// changes whose markers take two rows (DF-127 review findings 5, 6); left and right with a protocol break in greyscale
+/// (AC-A11Y-03); no points and one point.
 ///
 /// References follow `SyncStateBadgeSnapshotTests`: recorded on the CI runtime only (locally they skip, on CI a
 /// missing reference is recorded and fails the run, and CI uploads it as the `snapshot-references` artifact).
@@ -71,9 +73,22 @@ final class SeriesTrendChartSnapshotTests: XCTestCase {
       ChartSegment(id: "weightKg#1", breakBefore: .deviceChanged(from: "SYN-A", to: "SYN-B"),
                    points: [point(10, 70.2, .device)]),
     ])
-    try snapshot(weight, named: "deviceChange-light")
-    try snapshot(weight, named: "deviceChange-dark", style: .dark)
-    try snapshot(weight, named: "deviceChange-xxxl", size: .extraExtraExtraLarge, height: 440)
+    try snapshot(weight, named: "deviceChange-light", height: 440)
+    try snapshot(weight, named: "deviceChange-dark", style: .dark, height: 440)
+    try snapshot(weight, named: "deviceChange-xxxl", size: .extraExtraExtraLarge, height: 520)
+    try snapshot(weight, named: "deviceChange-ax5", size: .accessibilityExtraExtraExtraLarge, height: 760)
+  }
+
+  /// Review finding 5: a second device change three days after the first; both reasons stay readable.
+  func testCloseDeviceChangesKeepBothReasonsReadable() throws {
+    let weight = SeriesChartModel(metricCode: .weightKg, deviceModel: "SYN-C", segments: [
+      ChartSegment(id: "weightKg#0", points: [point(1, 72.4, .device), point(2, 71.9, .device)]),
+      ChartSegment(id: "weightKg#1", breakBefore: .deviceChanged(from: "SYN-A", to: "SYN-B"),
+                   points: [point(28, 70.2, .device)]),
+      ChartSegment(id: "weightKg#2", breakBefore: .deviceChanged(from: "SYN-B", to: "SYN-C"),
+                   points: [point(31, 70.0, .device)]),
+    ])
+    try snapshot(weight, named: "closeBreaks", height: 500)
   }
 
   func test_TC_130_09_leftAndRightInGreyscale() throws {
@@ -85,7 +100,7 @@ final class SeriesTrendChartSnapshotTests: XCTestCase {
       ChartSegment(id: "R#1", side: .right, breakBefore: .protocolChanged, points: [point(9, 52.7, .tape),
                                                                                   point(12, 52.9, .tape)]),
     ])
-    try snapshot(thigh, named: "leftRight-greyscale", greyscale: true)
+    try snapshot(thigh, named: "leftRight-greyscale", height: 440, greyscale: true)
   }
 
   /// No points: the empty message. One point: the point and '비교할 측정이 없습니다 · 판정 불가' (F-VIZ-03.10).

@@ -1,5 +1,6 @@
 import DesignSystem
 import SwiftUI
+import TrainerContracts
 import TrainerDomain
 
 /// The TR-11 sheet TR-03 opens from '측정 입력 > 신체조성' (AC-DF-127.11): the entry form, then, once saved, the record
@@ -44,9 +45,11 @@ private extension View {
   }
 }
 
-/// TR-03's body composition part (flag `bodyComposition`): the latest record's weight, body fat % and skeletal muscle
-/// mass with source and date, and the mini trend. Loading, empty ('아직 기록이 없어요') and failed ('불러오기 실패',
-/// '다시 시도') are separate states. DF-114's timeline replaces the record list around it, not this summary.
+/// TR-03's body composition part (flag `bodyComposition`): the latest weight, body fat % and skeletal muscle mass,
+/// each from the latest active record that measured it with that record's source, date and, unless synced, its sync
+/// state (a refused save stays here as '동기화 실패', V1-07 §6), and the mini trend. Loading, empty ('아직 기록이 없어요')
+/// and failed ('불러오기 실패', '다시 시도') are separate states. DF-114's timeline replaces the record list around it,
+/// not this summary.
 public struct BodyCompositionSection: View {
   private let model: BodyCompositionMemberModel
   private let localize: Localizer
@@ -67,11 +70,11 @@ public struct BodyCompositionSection: View {
       case .failed:
         LoadFailed(localize: localize) { model.retry() }
       case .loaded:
-        if let latest = model.latest {
+        if model.hasActiveRecords {
           VStack(alignment: .leading, spacing: TrainerSpacing.xs) {
-            BodyCompositionValueRows(
-              record: latest, keys: BodyCompositionMemberModel.trendMetrics.compactMap { BodyCompositionKey(metricCode: $0) },
-              localize: localize)
+            ForEach(model.latestValues) { latest in
+              LatestValueRow(value: latest, localize: localize)
+            }
           }
           .accessibilityElement(children: .contain)
           .accessibilityIdentifier("tr03.bodyComposition.latest")
@@ -87,5 +90,21 @@ public struct BodyCompositionSection: View {
     .onAppear { model.start() }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("tr03.bodyComposition")
+  }
+}
+
+/// One TR-03 row: the metric's value from its own record, with that record's device and date, and a small sync badge
+/// unless the record is synced (V1-07 §6: synced rows have no badge, ASM-07-36).
+private struct LatestValueRow: View {
+  let value: BodyCompositionMemberModel.LatestValue
+  let localize: Localizer
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: TrainerSpacing.xxs) {
+      BodyCompositionValueRows(record: value.record, keys: [value.key], localize: localize)
+      if let state = value.record.syncState, state != .synced {
+        SyncStateBadge(state: state, localize: localize)
+      }
+    }
   }
 }

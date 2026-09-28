@@ -67,7 +67,7 @@ exchange endpoint, so it cannot reach the production project even when a plist i
 
 | File | Role |
 |---|---|
-| `AppEnvironment.swift` | `AppEnvironment.resolveAtLaunch(...)` / `resolve(arguments:isDebug:bootstrap:)` -> `.live` (FirebaseData, flags fixed to `.allOff` until P1a), `.preview` (DEBUG only, in-memory synthetic data) or `.misconfigured` (no Firebase call). Firebase is configured through the injected `AppBootstrap` for `.live` only |
+| `AppEnvironment.swift` | `AppEnvironment.resolveAtLaunch(...)` / `resolve(arguments:isDebug:bootstrap:)` -> `.live` (FirebaseData; flags from the `appConfig/features` listener `FirestoreFeatureFlags`, all off until it answers or when the read fails), `.preview` (DEBUG only, in-memory synthetic data) or `.misconfigured` (no Firebase call). Firebase is configured through the injected `AppBootstrap` for `.live` only |
 | `TrainerRoute.swift` | `today` (TR-01), `members` (TR-02), `memberDetail(uid:)` (TR-03), `settings` (TR-15). No schedule/program/alerts (AS-21) |
 | `FlagGate.swift` | `EntryPoint` list and the pure `FlagGate.isEntryVisible(_:flags:)` table (AC-IA-02). Gated entries without a screen open `common.comingSoon` |
 | `LayoutMode.swift` | `LayoutMode.for(width:)`: detail width < 1120pt is `.compact` (ASM-P0-22) |
@@ -75,7 +75,8 @@ exchange endpoint, so it cannot reach the production project even when a plist i
 | `ShellNavigation.swift` | Layout-independent place (sidebar selection + detail) and its mapping to/from the stack path, so a size-class change keeps the screen (NFR-12) |
 
 `FeatureFlags` (8 keys, `.allOff`) lives in `TrainerCore/TrainerDomain/FeatureFlags.swift`; DF-027 swaps its key
-constants for the generated `FeatureFlagKey`.
+constants for the generated `FeatureFlagKey`. `RootSplitView` follows `FeatureFlagsProvider.updates()`, so a change of
+`appConfig/features` shows or hides entry points while the app runs.
 
 ## Preview arguments (DEBUG only)
 

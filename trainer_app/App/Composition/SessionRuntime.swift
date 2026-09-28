@@ -88,7 +88,8 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
-  /// TR-11 saves and the body composition reads (DF-127, DF-130), on the same partition and Outbox.
+  /// TR-11 saves and the body composition reads (DF-127, DF-130), on the same partition and Outbox; each unsynced
+  /// record carries this engine's sync state.
   let measurements: LocalMeasurementStore
   /// The members' effective consent: server state only until DF-110 brings local consent captures.
   let consent: any EffectiveConsentSource
@@ -124,7 +125,8 @@ final class SessionRuntime {
     self.consent = consent
     measurements = LocalMeasurementStore(
       outbox: outbox, trainerUid: trainerUid, enqueue: { await engine.enqueue($0) }, server: remote.bodyCompositionRecords,
-      consent: { member in await EffectiveConsent.current(from: consent, member: member) })
+      consent: { member in await EffectiveConsent.current(from: consent, member: member) },
+      syncStates: { await engine.syncState(for: $0) })
   }
 
   /// TR-03/TR-11 services of this runtime.

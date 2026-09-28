@@ -9,8 +9,12 @@ import TrainerContracts
 /// - The x axis is the measurement date, so irregular intervals keep their spacing; a missing date has no point and
 ///   nothing is filled in; lines are straight (`.linear`) and each segment is its own `LineMark` series, so two
 ///   segments are never joined (C-04, AC-DF-130.3).
-/// - A segment that starts at a break has a dashed vertical rule and its reason ('기기 변경: A → B') at its first
-///   point (AC-DF-130.4).
+/// - A segment that starts at a break has a dashed vertical rule at its first point with a numbered marker, and the
+///   numbered reason ('기기 변경: A → B') and date are listed under the plot (AC-DF-130.4). Markers of close breaks
+///   take separate rows, so no two draw over each other (DF-127 review finding 5).
+/// - Text inside the plot (axis values, markers) stops growing at `plotTextLimit`; the period and the break reasons
+///   are ordinary text under the plot that grows and wraps, so nothing is cut or overlaps at accessibility text
+///   sizes (AC-A11Y-02, review finding 6).
 /// - The change slot is `ChangeBadge` ('산정 준비 중' in v1); no band, no judgement (AC-DF-130.5, ADR-009).
 /// - Left and right differ by line (solid, dashed), point shape (circle, square) and a legend, not by colour; lines
 ///   are neutral, never green or four-axis colours (AC-DF-130.8, AC-DF-130.9).
@@ -19,11 +23,17 @@ public struct SeriesTrendChart: View {
   private let model: SeriesChartModel
   private let localize: Localizer
   private let timeZone: TimeZone
-  /// Height of a break label line above the plot; grows with the text size.
-  @ScaledMetric(relativeTo: .caption2) private var breakLabelRoom: CGFloat = 20
 
   /// The plot keeps this height at every text size; the empty and rejected messages take at least the same space.
   static let plotHeight: CGFloat = 220
+  /// The largest text size inside the plot. The plot has a fixed height and a column's width, so its labels cannot
+  /// grow without colliding; what must stay readable at every size is under the plot.
+  static let plotTextLimit = DynamicTypeSize.xxLarge
+  /// A break marker's diameter above the plot, and one marker row there.
+  static let markerSize: CGFloat = 18
+  static let markerRowHeight: CGFloat = markerSize + TrainerSpacing.xs
+  /// Two markers closer than this share of the period (about one marker in a narrow column's plot) take separate rows.
+  static let markerSeparation = 0.12
   // Chart value names: identifiers, not UI text (the accessible names come from `SeriesChartDescriptor`).
   private static let xName: String = "measuredAt"
   private static let yName: String = "value"
@@ -87,6 +97,11 @@ public struct SeriesTrendChart: View {
       SourceGradeChip(grade: grade, deviceModel: model.deviceModel, localize: localize)
       plot
         .frame(height: Self.plotHeight)
+      periodRow
+      let breaks = Self.numberedBreaks(model)
+      if !breaks.isEmpty {
+        breakList(breaks)
+      }
       let sides = [Side.left, .right].filter { side in model.segments.contains { $0.side == side } }
       if !sides.isEmpty {
         HStack(spacing: TrainerSpacing.l) {
@@ -125,6 +140,8 @@ public struct SeriesTrendChart: View {
 
   private var marks: some View {
     let code = model.metricCode
+    let breaks = Self.numberedBreaks(model)
+    let rows = periodDates.first.map { Self.markerRows(breaks, period: $0...(periodDates.last ?? $0)) } ?? []
     return Chart {
       ForEach(model.segments) { segment in
         ForEach(segment.points.indices, id: \.self) { index in
@@ -141,32 +158,26 @@ public struct SeriesTrendChart: View {
             .foregroundStyle(TrainerColor.neutral800)
         }
       }
-      ForEach(model.breaks, id: \.self) { mark in
+      ForEach(Array(breaks.enumerated()), id: \.offset) { index, mark in
         RuleMark(x: .value(Self.xName, mark.at))
           .lineStyle(Self.breakStyle)
           .foregroundStyle(TrainerColor.neutral500)
           .annotation(
-            position: .top, alignment: .leading, spacing: TrainerSpacing.xxs,
+            position: .top, alignment: .center,
+            spacing: TrainerSpacing.xxs + CGFloat(rows[index]) * Self.markerRowHeight,
             overflowResolution: .init(x: .fit(to: .plot), y: .disabled)
           ) {
-            Text(Self.breakLabel(mark.reason, localize: localize))
-              .font(.caption2)
-              .foregroundStyle(TrainerColor.neutral700)
+            BreakMarker(number: index + 1)
           }
       }
     }
     // Room at both ends so the first and last points are not on the plot edge; the scale stays proportional.
     .chartXScale(range: .plotDimension(padding: TrainerSpacing.xl))
     .chartXAxis {
-      // Only the first and last dates are labelled: the period, and no labels that collide or truncate at large
-      // text sizes or in a narrow column. No vertical grid lines, so the only vertical line in the plot is a break.
-      AxisMarks(values: periodDates) { value in
+      // Ticks at the first and last dates only; the dates themselves are under the plot (`periodRow`), where they can
+      // grow. No vertical grid lines, so the only vertical line in the plot is a break.
+      AxisMarks(values: periodDates) { _ in
         AxisTick()
-        AxisValueLabel(anchor: value.count == 1 ? .top : (value.index == 0 ? .topLeading : .topTrailing)) {
-          if let date = value.as(Date.self) {
-            Text(MetricRow.dateText(date, timeZone: timeZone))
-          }
-        }
       }
     }
     .chartYAxis {
@@ -180,8 +191,9 @@ public struct SeriesTrendChart: View {
       }
     }
     .chartLegend(.hidden)
-    // Room above the plot for the break labels (drawn there, not over the highest points).
-    .padding(.top, model.breaks.isEmpty ? 0 : breakLabelRoom)
+    .dynamicTypeSize(...Self.plotTextLimit)
+    // Room above the plot for the marker rows (drawn there, not over the highest points).
+    .padding(.top, CGFloat(rows.max().map { $0 + 1 } ?? 0) * Self.markerRowHeight)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Self.summary(model, localize: localize, timeZone: timeZone) ?? "")
     .accessibilityChartDescriptor(SeriesChartDescriptor(model: model, localize: localize, timeZone: timeZone))
@@ -192,6 +204,51 @@ public struct SeriesTrendChart: View {
     let dates = model.points.map(\.measuredAt)
     guard let first = dates.min(), let last = dates.max() else { return [] }
     return first == last ? [first] : [first, last]
+  }
+
+  /// The first and last dates under the plot, at its two ends, or as one range ('2026.05.01~2026.09.18', V1-12 §2.6)
+  /// that wraps when they do not fit side by side. VoiceOver reads the period in the summary.
+  @ViewBuilder
+  private var periodRow: some View {
+    let dates = periodDates.map { MetricRow.dateText($0, timeZone: timeZone) }
+    if let first = dates.first {
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: TrainerSpacing.s) {
+          Text(verbatim: first)
+          if let last = dates.dropFirst().first {
+            Spacer(minLength: TrainerSpacing.s)
+            Text(verbatim: last)
+          }
+        }
+        Text(verbatim: dates.joined(separator: "~"))
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .font(.footnote.monospacedDigit())
+      .foregroundStyle(TrainerColor.neutral600)
+      .accessibilityHidden(true)
+    }
+  }
+
+  /// One entry per break, numbered like its marker: the reason ('기기 변경: A → B') and the date its segment starts.
+  /// Text that grows and wraps, so a reason is never cut or drawn over another one.
+  private func breakList(_ breaks: [ChartBreakMark]) -> some View {
+    VStack(alignment: .leading, spacing: TrainerSpacing.xs) {
+      ForEach(Array(breaks.enumerated()), id: \.offset) { index, mark in
+        HStack(alignment: .firstTextBaseline, spacing: TrainerSpacing.s) {
+          BreakMarker(number: index + 1, scales: true)
+          VStack(alignment: .leading, spacing: TrainerSpacing.xxs) {
+            Text(Self.breakLabel(mark.reason, localize: localize))
+              .foregroundStyle(TrainerColor.neutral800)
+            Text(verbatim: MetricRow.dateText(mark.at, timeZone: timeZone))
+              .foregroundStyle(TrainerColor.neutral600)
+          }
+          .font(.footnote)
+          .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("chart.break.\(index + 1)")
+      }
+    }
   }
 
   private func message(_ key: String) -> some View {
@@ -219,6 +276,28 @@ public struct SeriesTrendChart: View {
 
   /// Thinner and more finely dashed than the right side's line, and always vertical.
   static let breakStyle = StrokeStyle(lineWidth: 1, dash: [2, 3])
+
+  /// The breaks in date order; a break's number (its marker and its entry under the plot) is its place here, from 1.
+  static func numberedBreaks(_ model: SeriesChartModel) -> [ChartBreakMark] {
+    model.breaks.enumerated().sorted { ($0.element.at, $0.offset) < ($1.element.at, $1.offset) }.map(\.element)
+  }
+
+  /// The marker row of each break (0 = just above the plot), for breaks in date order: a marker closer than
+  /// `markerSeparation` of the period to the last marker of a row goes to the next row, so close breaks never draw
+  /// over each other. Breaks on one day (or a one-day period) each get their own row.
+  static func markerRows(_ breaks: [ChartBreakMark], period: ClosedRange<Date>) -> [Int] {
+    let span = period.upperBound.timeIntervalSince(period.lowerBound)
+    var lastInRow: [Double] = []
+    return breaks.map { mark in
+      let x = span > 0 ? mark.at.timeIntervalSince(period.lowerBound) / span : 0
+      if let row = lastInRow.firstIndex(where: { x - $0 >= markerSeparation }) {
+        lastInRow[row] = x
+        return row
+      }
+      lastInRow.append(x)
+      return lastInRow.count - 1
+    }
+  }
 
   static func unitText(_ code: MetricCode, localize: Localizer) -> String {
     localize("unit.\(MetricCatalog.entry(for: code).unit.rawValue)")
@@ -261,6 +340,27 @@ public struct SeriesTrendChart: View {
       ChangeBadge.label(model.badge, localize: localize),
     ]
     return String(format: localize("chart.summary"), arguments: arguments)
+  }
+}
+
+/// A break's number in a circle, on its rule above the plot and next to its reason under the plot: which dashed line a
+/// reason belongs to. Above the plot it keeps `SeriesTrendChart.markerSize` (its rows have a fixed height, and the
+/// plot's text stops growing at `plotTextLimit`); under the plot it grows with the reason's text.
+struct BreakMarker: View {
+  let number: Int
+  var scales = false
+  @ScaledMetric(relativeTo: .caption2) private var scaledSize: CGFloat = SeriesTrendChart.markerSize
+
+  var body: some View {
+    let size = scales ? scaledSize : SeriesTrendChart.markerSize
+    Text(verbatim: String(number))
+      .font(.caption2.weight(.semibold).monospacedDigit())
+      .lineLimit(1)
+      .minimumScaleFactor(0.5)  // two digits still fit the circle
+      .foregroundStyle(TrainerColor.neutral800)
+      .frame(width: size, height: size)
+      .overlay(Circle().strokeBorder(TrainerColor.neutral500, lineWidth: 1))
+      .accessibilityHidden(true)
   }
 }
 

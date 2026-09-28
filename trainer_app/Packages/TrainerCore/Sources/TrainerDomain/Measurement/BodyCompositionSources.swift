@@ -34,11 +34,16 @@ extension DeviceModelName {
 /// Server records and this device's unsynced records as one list (DF-130 mini trend, TR-03).
 public enum BodyCompositionRecordMerge {
   /// One record per id. The server's copy wins: it carries `createdAt` and any later change of state (voided,
-  /// DF-128). Sorted by (`measuredAt`, id).
+  /// DF-128). A local record's `syncState` stays on it, though: while this device still waits for the write, the
+  /// copy the listener has may be Firestore's own pending write, and it must not look synced. Sorted by
+  /// (`measuredAt`, id).
   public static func merge(server: [BodyCompositionRecord], local: [BodyCompositionRecord]) -> [BodyCompositionRecord] {
     var byId: [String: BodyCompositionRecord] = [:]
     for record in local { byId[record.id] = record }
-    for record in server { byId[record.id] = record }
+    for var record in server {
+      record.syncState = byId[record.id]?.syncState
+      byId[record.id] = record
+    }
     return byId.values.sorted { ($0.measuredAt, $0.id) < ($1.measuredAt, $1.id) }
   }
 }

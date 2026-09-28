@@ -19,11 +19,16 @@ public struct BodyCompositionRecord: Equatable, Identifiable, Sendable {
   public let status: MeasurementStatus?
   public let reportPhotoPath: String?
   public let createdAt: Date?
+  /// This device's `syncState` of the record while it has the record unsynced (the SyncEngine's state of its Outbox
+  /// items, V1-04 §11); nil when nothing of it waits on this device, i.e. the server's copy (V1-07 TR-03
+  /// `TimelineEvent.syncState`: only local unsynced items have one).
+  public var syncState: SyncState?
 
   public init(
     id: String, member: MemberKey?, deviceModel: String, measuredAt: Date, fasting: Fasting?,
     timeOfDayBand: TimeOfDayBand?, source: String?, sourceGrade: SourceGrade?, values: [BodyCompositionKey: Double],
-    derived: DerivedBMI?, status: MeasurementStatus?, reportPhotoPath: String? = nil, createdAt: Date? = nil
+    derived: DerivedBMI?, status: MeasurementStatus?, reportPhotoPath: String? = nil, createdAt: Date? = nil,
+    syncState: SyncState? = nil
   ) {
     self.id = id
     self.member = member
@@ -38,6 +43,17 @@ public struct BodyCompositionRecord: Equatable, Identifiable, Sendable {
     self.status = status
     self.reportPhotoPath = reportPhotoPath
     self.createdAt = createdAt
+    self.syncState = syncState
+  }
+
+  /// The record as this device just saved it: the same record `BodyCompositionPayload.fields(entry, ...)` reads back
+  /// as, `.localSaved` (on this device; nothing is known about the server yet). TR-11 shows it right after a save,
+  /// before a read returns it; a record measured before the trend window is not in the trend's read at all.
+  public init(id: String, entry: BodyCompositionEntry, member: MemberKey) {
+    self.init(
+      id: id, member: member, deviceModel: entry.deviceModel, measuredAt: entry.measuredAt, fasting: entry.fasting,
+      timeOfDayBand: entry.timeOfDayBand, source: BodyCompositionSource.manualEntry.rawValue, sourceGrade: .device,
+      values: entry.values, derived: entry.derived, status: .active, reportPhotoPath: nil, syncState: .localSaved)
   }
 
   /// Reads a document (FirebaseData maps the snapshot to `JSONValue`). nil when it is not an object or has no
@@ -117,6 +133,14 @@ public enum BodyCompositionSeries {
   public static func latestActive(_ records: [BodyCompositionRecord], before date: Date? = nil) -> BodyCompositionRecord? {
     records.filter { record in record.isActive && date.map { record.measuredAt < $0 } ?? true }
       .max { ($0.measuredAt, $0.id) < ($1.measuredAt, $1.id) }
+  }
+
+  /// The latest active record that measured `key`: TR-03's row of that metric, with that record's own date and device
+  /// (AC-DF-114.9). A newer record without the key does not hide an older value of it.
+  public static func latestActive(_ records: [BodyCompositionRecord], measuring key: BodyCompositionKey)
+    -> BodyCompositionRecord?
+  {
+    latestActive(records.filter { $0.values[key] != nil })
   }
 
   /// The device-change notice (F-BC-03.4, V1-09 §10.6, AC-DF-128.7): true when the latest active record measured

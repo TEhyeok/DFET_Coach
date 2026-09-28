@@ -17,7 +17,7 @@ struct AppRootView: View {
     case .live:
       // Trainer-claim login in front of the shell; claim loss returns here (DF-012).
       AuthGate(auth: liveAuth) { session, gate in
-        RootSplitView(flags: environment.flags, services: liveServices(session, gate))
+        RootSplitView(flags: environment.flagsProvider, services: liveServices(session, gate))
           .id(session.uid)  // a different trainer gets a fresh shell and subscription
       }
     #if DEBUG

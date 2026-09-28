@@ -212,6 +212,61 @@ final class LocalMeasurementStoreTests: XCTestCase {
     XCTAssertEqual(unsynced, [], "an acked draft is not read locally any more")
   }
 
+  /// Review (DF-127 finding 4): each unsynced draft carries its SyncEngine state into the merged records. Without an
+  /// engine it is `localSaved`; a create the rules refuse for good (permission-denied, e.g. consent withdrawn while
+  /// this iPad was offline) reads `syncFailed`, never like the synced server records, which have no state.
+  @MainActor
+  func testDraftsCarryTheirSyncStateAndARefusedOneReadsFailed() async throws {
+    // No engine: saved on the device.
+    let plain = try LocalStoreContainer.make(inMemory: true)
+    let (offline, _) = makeStore(container: plain, server: FakeServer())
+    var offlineRecords = offline.observeBodyCompositionRecords(member: member, since: since).makeAsyncIterator()
+    _ = try await offlineRecords.next()
+    _ = try await offline.saveBodyComposition(member: member, draft: draft())
+    let saved = try await offlineRecords.next()
+    XCTAssertEqual(saved?.map(\.syncState), [.localSaved])
+
+    // A SyncEngine whose server refuses the create.
+    let container = try LocalStoreContainer.make(inMemory: true)
+    let outbox = LocalOutboxStore(container: container, trainerUid: Synthetic.trainerA, binaries: nil)
+    let remote = RefusingRemote()
+    let engine = SyncEngine(store: outbox, writer: remote, uploader: remote, callable: remote)
+    await engine.start()
+    let server = FakeServer([serverRecord("SynServer00000000001", "2026-08-01T08:30:00+09:00", weight: 65)])
+    let store = LocalMeasurementStore(
+      outbox: outbox, trainerUid: Synthetic.trainerA, enqueue: { await engine.enqueue($0) }, server: server,
+      consent: { _ in .init(required: .granted, healthData: .granted, bodyImaging: .granted) },
+      syncStates: { await engine.syncState(for: $0) }, now: { [measuredAt] in measuredAt.addingTimeInterval(60) },
+      makeID: { [fixedID] in fixedID })
+    let stream = store.observeBodyCompositionRecords(member: member, since: since)
+    _ = try await store.saveBodyComposition(member: member, draft: draft())
+    let refused = try await firstList(of: stream) { $0.first { $0.id == self.fixedID }?.syncState == .syncFailed }
+    XCTAssertEqual(refused?.map(\.id), ["SynServer00000000001", fixedID])
+    XCTAssertEqual(refused?.map(\.syncState), [nil, .syncFailed], "the refused draft is not shown as synced")
+    XCTAssertEqual(remote.attempts, 1, "a permanent rejection is not retried on its own")
+    await engine.stop()
+  }
+
+  /// The first list `accept` takes, or nil after `seconds`.
+  private func firstList(
+    of stream: AsyncThrowingStream<[BodyCompositionRecord], Error>, seconds: Double = 10,
+    where accept: @escaping @Sendable ([BodyCompositionRecord]) -> Bool
+  ) async throws -> [BodyCompositionRecord]? {
+    try await withThrowingTaskGroup(of: [BodyCompositionRecord]?.self) { group in
+      group.addTask {
+        for try await list in stream where accept(list) { return list }
+        return nil
+      }
+      group.addTask {
+        try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+        return nil
+      }
+      let first = try await group.next() ?? nil
+      group.cancelAll()
+      return first
+    }
+  }
+
   /// AC-DF-130.11: the mini trend's points skip voided records; `observeSeries` is the points of the merged records.
   @MainActor
   func testSeriesSkipsVoidedRecords() async throws {
@@ -307,5 +362,26 @@ final class LocalMeasurementStoreTests: XCTestCase {
     let current = ModelContext(try LocalStoreContainer.make(url: url))
     XCTAssertEqual(try current.fetchOwned(LocalPendingMemberDraft.self, by: Synthetic.trainerA).count, 1)
     XCTAssertEqual(try current.fetchOwned(DeviceModelEntry.self, by: Synthetic.trainerA).count, 0)
+  }
+}
+
+/// A server that refuses every create for good (the rules' permission-denied) and counts the attempts.
+private final class RefusingRemote: RemoteWriter, BinaryUploader, CallableClient, @unchecked Sendable {
+  private let lock = NSLock()
+  private var _attempts = 0
+  var attempts: Int { lock.withLock { _attempts } }
+
+  func createIfAbsent(path: String, fields: JSONValue) async throws -> WriteAck {
+    lock.withLock { _attempts += 1 }
+    throw RemoteError.permissionDenied
+  }
+  func update(path: String, fields: JSONValue) async throws -> WriteAck { throw RemoteError.permissionDenied }
+  func delete(path: String) async throws -> WriteAck { throw RemoteError.permissionDenied }
+  func upload(localURL: URL, path: String, contentType: String, sha256: String) async throws -> UploadReceipt {
+    throw RemoteError.permissionDenied
+  }
+  func delete(path: String) async throws { throw RemoteError.permissionDenied }
+  func call<T: Decodable & Sendable>(_ name: String, _ payload: JSONValue) async throws -> T {
+    throw RemoteError.permissionDenied
   }
 }

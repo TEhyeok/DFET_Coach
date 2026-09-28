@@ -3,9 +3,10 @@ import SwiftUI
 import TrainerContracts
 import TrainerDomain
 
-/// TR-11 기록 보기 (DF-127, DF-130; V1-07 §4.11 '보기' mode): one saved record read-only (values with source and
-/// date, BMI or '미측정', the meta) and the member's mini trend, where the record is a point as soon as it is saved.
-/// DF-128 adds the report photo panel and '정정' here.
+/// TR-11 기록 보기 (DF-127, DF-130; V1-07 §4.11 '보기' mode): one saved record read-only (its save result badge, values
+/// with source and date, BMI or '미측정', the meta) and the member's mini trend, where the record is a point as soon as
+/// it is saved. A record measured before the trend window is shown from the saved entry with a note that the trend
+/// does not have it. DF-128 adds the report photo panel and '정정' here.
 public struct BodyCompositionRecordView: View {
   private let model: BodyCompositionMemberModel
   private let recordId: String
@@ -26,6 +27,8 @@ public struct BodyCompositionRecordView: View {
       VStack(alignment: .leading, spacing: TrainerSpacing.xl) {
         if let record = model.record(id: recordId) {
           card {
+            // V1-07 §6 'TR-11 저장 직후': the save result. No state is the server's copy with nothing waiting here.
+            SyncStateBadge(state: record.syncState ?? .synced, localize: localize)
             BodyCompositionValueRows(record: record, keys: BodyCompositionKey.allCases, localize: localize)
             if let derived = record.derived {
               MetricRow(
@@ -45,6 +48,14 @@ public struct BodyCompositionRecordView: View {
           LoadingLine(localize: localize)
         }
         card {
+          if let record = model.record(id: recordId), !model.isInTrendWindow(record) {
+            Label { Text(localize("tr11.record.outsideTrend")) } icon: { Image(systemName: "calendar.badge.exclamationmark") }
+              .font(.footnote)
+              .foregroundStyle(TrainerColor.neutral700)
+              .fixedSize(horizontal: false, vertical: true)
+              .accessibilityElement(children: .combine)
+              .accessibilityIdentifier("tr11.record.outsideTrend")
+          }
           BodyCompositionMiniTrend(model: model, localize: localize)
         }
       }

@@ -14,12 +14,15 @@ struct AppBootstrap {
   var plistPresent: Bool
   /// Configures the live backend (`FirebaseBootstrap.configure(_:)`). Called once, and only for `.live`.
   var configureLive: (LiveBackend) -> Void
+  /// The live flags: FirebaseData's `appConfig/features` subscription (`FirestoreFeatureFlags`). Called only for
+  /// `.live`, after `configureLive`; it touches Firestore only when the signed-in shell subscribes.
+  var liveFlags: () -> any FeatureFlagsProvider = { FixedFeatureFlagsProvider.allOff }
 }
 
 /// Dependencies of a live (production or emulator) process: FirebaseData implementations.
 struct LiveEnvironment {
   let backend: LiveBackend
-  /// P0: fixed `.allOff`. P1a replaces it with the FirebaseData `appConfig/features` subscription.
+  /// `appConfig/features` as it changes (DF-127 review): missing document or a failed read is every flag off.
   let flagsProvider: any FeatureFlagsProvider
 }
 
@@ -33,13 +36,16 @@ enum AppEnvironment {
   /// No usable Firebase configuration: the configuration-missing screen, zero Firebase calls.
   case misconfigured(reason: String)
 
-  var flags: FeatureFlags {
+  /// The environment's flags now; the shell follows `flagsProvider.updates()`.
+  var flags: FeatureFlags { flagsProvider.current }
+
+  var flagsProvider: any FeatureFlagsProvider {
     switch self {
-    case let .live(live): return live.flagsProvider.current
+    case let .live(live): return live.flagsProvider
     #if DEBUG
-    case let .preview(preview): return preview.flagsProvider.current
+    case let .preview(preview): return preview.flagsProvider
     #endif
-    case .misconfigured: return .allOff
+    case .misconfigured: return FixedFeatureFlagsProvider.allOff
     }
   }
 
@@ -60,10 +66,10 @@ enum AppEnvironment {
     switch LaunchConfiguration.resolve(arguments: arguments, isDebug: isDebug, plistPresent: bootstrap.plistPresent) {
     case .production:
       bootstrap.configureLive(.production)
-      return .live(LiveEnvironment(backend: .production, flagsProvider: FixedFeatureFlagsProvider.allOff))
+      return .live(LiveEnvironment(backend: .production, flagsProvider: bootstrap.liveFlags()))
     case let .emulator(host):
       bootstrap.configureLive(.emulator(host: host))
-      return .live(LiveEnvironment(backend: .emulator(host: host), flagsProvider: FixedFeatureFlagsProvider.allOff))
+      return .live(LiveEnvironment(backend: .emulator(host: host), flagsProvider: bootstrap.liveFlags()))
     case .preview:
       #if DEBUG
       return .preview(PreviewEnvironment(arguments: arguments))

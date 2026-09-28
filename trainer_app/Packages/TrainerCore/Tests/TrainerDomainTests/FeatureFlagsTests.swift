@@ -19,6 +19,14 @@ final class FeatureFlagsTests: XCTestCase {
     XCTAssertEqual(FixedFeatureFlagsProvider.allOff.current, .allOff)
   }
 
+  /// A fixed provider's updates are its flags once, then the end: nothing ever changes them.
+  func testFixedProviderUpdatesOnce() async {
+    let flags = FeatureFlags(bodyComposition: true)
+    var received: [FeatureFlags] = []
+    for await value in FixedFeatureFlagsProvider(flags).updates() { received.append(value) }
+    XCTAssertEqual(received, [flags])
+  }
+
   func testSubscriptTouchesOnlyItsOwnKey() {
     for key in FeatureFlags.Key.allCases {
       let flags = FeatureFlags(enabled: [key])

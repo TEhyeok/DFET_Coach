@@ -110,7 +110,8 @@ public final class BodyCompositionEntryModel {
   /// '기기가 바뀌어 이전 기록과 비교할 수 없습니다' (AC-DF-128.7): the chosen device differs from the latest active record
   /// measured before this one. It never blocks saving.
   public var showsDeviceChanged: Bool {
-    BodyCompositionSeries.deviceChanged(memberModel.loadedRecords, deviceModel: draft.deviceModel,
+    // The trend's records, so the notice and the trend's break agree (a refused draft is in neither).
+    BodyCompositionSeries.deviceChanged(memberModel.trendRecords, deviceModel: draft.deviceModel,
                                         measuredAt: draft.measuredAt)
   }
 
@@ -154,15 +155,17 @@ public final class BodyCompositionEntryModel {
 
   // MARK: - Save
 
-  /// The saved record's id, or nil when nothing was saved.
+  /// The saved record's id, or nil when nothing was saved. The member model gets the record as saved, so TR-11 shows
+  /// it even when the trend's read never returns it (measured before the 12-month window).
   public func save() async -> String? {
-    guard canSave else { return nil }
+    guard canSave, let entry = validation.entry else { return nil }
     isSaving = true
     saveFailed = false
     defer { isSaving = false }
     do {
       let id = try await memberModel.services.store.saveBodyComposition(member: member, draft: draft)
       savedRecordId = id
+      memberModel.didSave(BodyCompositionRecord(id: id, entry: entry, member: member))
       return id
     } catch {
       saveFailed = true

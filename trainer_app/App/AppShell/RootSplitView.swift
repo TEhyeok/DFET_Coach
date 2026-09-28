@@ -12,8 +12,13 @@ import TrainerDomain
 /// State survives layout changes (NFR-12, V1-07 §3.3): rotation keeps the same view tree, and a size-class change
 /// (Split View, Slide Over or Stage Manager resize) converts `navigation` to `stackPath` and back through
 /// `ShellNavigation`, so the user stays on the same TR screen.
+///
+/// The flags follow the provider while the shell is shown (live: `appConfig/features`), so an entry point appears or
+/// goes away without a relaunch.
 struct RootSplitView: View {
-  private let baseFlags: FeatureFlags
+  private let flagsProvider: any FeatureFlagsProvider
+  /// The provider's latest flags.
+  @State private var baseFlags: FeatureFlags
   /// The environment's flags; in DEBUG with TR-15's local override applied (AC-DF-018.4).
   private var flags: FeatureFlags {
     #if DEBUG
@@ -40,8 +45,10 @@ struct RootSplitView: View {
   /// TR-03 body composition and TR-11 (DF-127, DF-130).
   private let bodyComposition: BodyCompositionServices
 
-  init(flags: FeatureFlags, services: ShellServices) {
-    baseFlags = flags
+  init(flags provider: any FeatureFlagsProvider, services: ShellServices) {
+    let flags = provider.current
+    flagsProvider = provider
+    _baseFlags = State(initialValue: flags)
     registrar = services.registrar
     bodyComposition = services.bodyComposition
     _settings = State(initialValue: SettingsViewModel(
@@ -102,6 +109,9 @@ struct RootSplitView: View {
         .accessibilityIdentifier("tr14.consent.root")
         .accessibilityValue(member.id)
       }
+    }
+    .task {
+      for await flags in flagsProvider.updates() { baseFlags = flags }
     }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("app.root")
@@ -247,24 +257,30 @@ struct RootSplitView: View {
 
 /// TR-03 until DF-113/DF-114 build the screen: the flag-gated actions — the '측정 입력' menu (AC-DF-127.11) and the
 /// other entry points — and, with `bodyComposition`, the member's body composition (latest values, mini trend). TR-11
-/// opens as a sheet over it (V1-07 §3.2).
+/// opens as a sheet over it (V1-07 §3.2). The entries follow the flags as they change; the body composition model is
+/// made when the flag is first on and kept (an open TR-11 sheet is not torn down), its section shown only while on.
 private struct MemberDetailShell: View {
-  private let entries: [EntryPoint]
-  private let measureEntries: [EntryPoint]
+  private let member: MemberKey
+  private let flags: FeatureFlags
+  private let services: BodyCompositionServices
   private let open: (EntryPoint) -> Void
-  /// nil while `bodyComposition` is off: no section, no subscription.
+  /// nil until `bodyComposition` is on: no section, no subscription.
   @State private var bodyComposition: BodyCompositionMemberModel?
   @State private var showsBodyCompositionEntry = false
   @Environment(\.layoutMode) private var layoutMode
 
   init(member: MemberKey, flags: FeatureFlags, bodyComposition services: BodyCompositionServices,
        open: @escaping (EntryPoint) -> Void) {
-    entries = FlagGate.visibleEntries(on: .memberDetail, flags: flags)
-    measureEntries = FlagGate.visibleEntries(on: .measureMenu, flags: flags)
+    self.member = member
+    self.flags = flags
+    self.services = services
     self.open = open
     _bodyComposition = State(initialValue: flags.bodyComposition
       ? BodyCompositionMemberModel(member: member, services: services) : nil)
   }
+
+  private var entries: [EntryPoint] { FlagGate.visibleEntries(on: .memberDetail, flags: flags) }
+  private var measureEntries: [EntryPoint] { FlagGate.visibleEntries(on: .measureMenu, flags: flags) }
 
   var body: some View {
     let layout = layoutMode == .regular
@@ -282,12 +298,17 @@ private struct MemberDetailShell: View {
               .accessibilityIdentifier(entry.accessibilityID)
           }
         }
-        if let bodyComposition {
+        if flags.bodyComposition, let bodyComposition {
           BodyCompositionSection(model: bodyComposition)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(24)
+    }
+    .onChange(of: flags.bodyComposition) { _, isOn in
+      if isOn, bodyComposition == nil {
+        bodyComposition = BodyCompositionMemberModel(member: member, services: services)
+      }
     }
     .sheet(isPresented: $showsBodyCompositionEntry) {
       if let bodyComposition {

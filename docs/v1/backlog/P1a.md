@@ -2108,7 +2108,7 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 동의: `FirestoreConsentStates`(`memberConsentStates/{memberKey}` 리스너. 읽기 거부는 동의 없음으로 닫힌다) → `ServerEffectiveConsentSource`. DF-111 `EffectiveConsentResolver`(로컬 현장 동의 합치기)는 DF-110 현장 동의가 아직 없어 만들지 않았다. 로컬 캡처가 없으면 결과가 같다.
   - 화면 `FeatureBodyComposition`: `BodyCompositionEntryView`(`/// TR-11`, 시트)는 값과 단위, 빈칸 '미측정', 쉼표 소수점, 기기 선택과 '기기 추가', 측정 일시(기본 지금, 편집 가능), 공복 '공복'/'공복 아님'(기본 없음, '모름'은 ⋯ 메뉴에만), 읽기 전용 시간대, ②가 있을 때만 키 행, BMI 파생 또는 '미측정', 필드 아래 범위 오류, 저장을 막지 않는 교차 경고(경고가 있으면 저장 버튼이 '확인했어요, 저장하기'), 저장이 꺼진 이유 목록, ② 없음 → 저장 비활성과 '건강정보 동의 필요', `awaitingConsent` → '동의 확인 대기'. 저장하면 같은 시트가 기록 보기(`BodyCompositionRecordView`: 값·BMI·메타와 미니 추이)로 바뀐다. 상태는 `BodyCompositionEntryModel`(검증은 매번 `BodyCompositionValidator`)과 회원별 `BodyCompositionMemberModel`(기록·동의 구독)이다.
   - TR-03 진입(AC-DF-127.11): TR-03이 아직 DF-113·DF-114 전 자리 표시라 카드의 `FeatureMembers/Detail/MemberDetailView.swift`가 아니라 App의 `MemberDetailShell`에 `tr03.measureMenu` 메뉴를 넣었다. 항목은 '신체조성'(TR-11 시트)과 '둘레(줄자)'(DF-129 전까지 '추후 추가 예정')이고 둘 다 `bodyComposition`을 따르므로 꺼지면 메뉴도 없다(`EntryPoint.Surface.measureMenu`, `Destination.bodyCompositionEntry`).
-  - TR-03 신체조성 요약(`BodyCompositionSection`, `bodyComposition` 켜짐일 때만): 최근 체중·체지방률·골격근량 `MetricRow`와 미니 추이. 저장 결과가 TR-03에서 바로 보이게 하려고 넣었다. DF-114의 헤더 Metric Row(AC-DF-114.9)가 들어오면 그쪽으로 옮긴다.
+  - TR-03 신체조성 요약(`BodyCompositionSection`, `bodyComposition` 켜짐일 때만): 체중·체지방률·골격근량마다 그 지표가 있는 최신 active 기록의 `MetricRow`(행마다 자기 기록의 기기·측정일)와 미니 추이. 저장 결과가 TR-03에서 바로 보이게 하려고 넣었다. DF-114의 헤더 Metric Row(AC-DF-114.9)가 들어오면 그쪽으로 옮긴다.
   - 문구: 덱 v1.0.8에 `tr03.section.bodyComposition`, `tr11.fasting.more`(⋯ 메뉴 접근성 이름), `tr11.record.title` 추가(V1-12 v1.0.9 §4.9 행). 화면이 쓰는 덱 키 38개를 `catalog-deck.mjs --add`로 카탈로그에 옮겼다.
   - 미리보기: `--preview-members --preview-flags=bodyComposition`은 실제 `LocalMeasurementStore`(메모리 LocalStore, Outbox는 보내지 않음)에 합성 서버 기록을 붙인다. SYN-0001은 최근 5개월 6건(InBody 570 3건 → InBody 970 3건, 뒤 3건은 키 170으로 BMI 파생), 미리보기 회원은 모두 ①②③ 동의.
   - 테스트: TrainerCoreTests `BodyCompositionSourcesTests`(병합·기기 이름·동의 5건), LocalStoreTests `LocalMeasurementStoreTests`(한 번 저장과 Outbox 필드 == 페이로드, 재시작 뒤 항목 유지, ② 게이트 4값, 잘못된 draft, 서버 + 미동기 병합과 ack 뒤 서버 사본, voided 없는 시리즈, 서버 오류, 기기 목록 2건, V1_1 → V1_2 이관 10건)와 스키마 테스트 갱신, FeatureModulesTests `BodyCompositionEntryModelTests`(저장 비활성 조건, ② 게이트 5값, 범위 오류 문구 '0~100% 사이로 입력하세요', 경고여도 저장, BMI, 기본값·기기 변경 안내·기기 추가, 차트 모델, `users` 읽기 없음 코드 검색 13건), FirebaseDataTests(쿼리 필드와 인덱스 2건), DFETTrainerTests `FlagGateTests`(측정 입력 메뉴), UI `BodyCompositionUITests`(SYN-0001 → 측정 입력 > 신체조성 → 공복·체중 '62,4' → 저장 → 추이 요약 '기록 7개'·'최소 62.4kg'·'산정 준비 중', TR-03에도 반영 / 플래그 꺼짐 메뉴 없음).
@@ -2118,6 +2118,13 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
     - TC-127-03·05는 `IntegrationTests/BodyCompositionEmulatorTests`로 만들어 `scripts/test_auth_emulator.sh`에 더했다. 에뮬레이터(demo-dfet, 저장소 규칙)에서 통과: ② 동의·플래그가 있는 담당 회원의 저장이 Outbox → SyncEngine → FirebaseData로 서버에 생성되고(키 집합, `values`는 `weightKg` 하나, `measuredAt` 어제·`createdAt` 서버 시각), 추이 쿼리가 서버에서 다시 읽는다. ② 없음이면 저장소가 거부한다. TC-127-02(R-17 거부, R-27 체지방률 0 허용)의 규칙 테스트는 새로 더하지 않았다. 페이로드 키 집합과 값 범위는 firestore.rules를 읽는 단위 테스트로 대조한다.
     - V1-07 §3.7의 `unknown`(동의 상태를 한 번도 받지 못함)은 따로 두지 않았다. 모르는 동안 저장 버튼은 꺼져 있고 문구는 없으며, 저장소도 5초 안에 동의 값을 받지 못하면 거부한다.
     - 시뮬레이터에서 값 칸에 입력하는 중(키보드 표시) 같은 Form의 다른 행 버튼(공복 선택)을 누르면 첫 탭은 입력 종료로 쓰이고 두 번째 탭에 선택된다. 저장 버튼은 첫 탭에 동작한다. 실기기 확인은 DF-140.
+  - 리뷰 반영(각 항목에 회귀 테스트):
+    - 실제 플래그: live·에뮬레이터 빌드의 플래그가 `FixedFeatureFlagsProvider.allOff`가 아니라 FirebaseData `FirestoreFeatureFlags`(`appConfig/features` 리스너, `FirestoreListenerRegistry` 등록)다. `FeatureFlagsProvider.updates()`로 셸이 실행 중 바뀐 값을 따른다(`RootSplitView`, 켜지면 TR-03 메뉴·요약이 생김). 문서 없음·키 없음·불리언 아닌 값은 꺼짐, 읽기 실패는 모두 꺼짐으로 스트림을 끝낸다. 규칙은 이미 `appConfig/*` 읽기를 로그인 사용자에게 허용해 바꾸지 않았다. 테스트: `AppEnvironmentTests`(live·에뮬레이터가 부트스트랩의 제공자를 씀), `FirestoreFeatureFlagsTests`, 에뮬레이터 `FeatureFlagsEmulatorTests`(트레이너가 `bodyComposition: true`를 읽어 '측정 입력'에 '신체조성', 열린 구독에 false 반영, 문서 삭제·로그인 없음 거부 → 모두 꺼짐).
+    - 12개월보다 전 기록: 저장하면 회원 모델이 저장한 입력으로 만든 기록(`BodyCompositionRecord(id:entry:member:)`, `localSaved`)을 바로 갖고, 그 기록까지 읽기 범위를 넓혀 저장소 사본과 동기화 상태로 바꾼다. 기록 보기는 '불러오는 중'에 멈추지 않고, 추이 기간 밖이면 `tr11.record.outsideTrend` 안내를 보인다(덱 v1.0.9, V1-12 v1.0.10). 추이와 TR-03 요약은 12개월 그대로다.
+    - 동기화 상태: 미동기 draft마다 SyncEngine의 `syncState(for:)`를 구독해 병합 기록에 `syncState`로 싣는다(서버 사본이 먼저 와도 로컬 상태 유지, 엔진 없는 미리보기는 `localSaved`). 기록 보기 첫 카드에 저장 결과 `SyncStateBadge`, TR-03 요약 행에 동기화됨이 아닌 상태 배지를 둔다(V1-07 §6 '실패는 TR-03 행에 남는다'). 전송에 실패한(`syncFailed`: 영구 거부 또는 재시도 한도) draft는 서버에 없으므로 추이 점과 기기 변경 안내 비교에서 빼고, 전송되면 다시 점이 된다(V1-04 §10.4 로컬 원본은 유지).
+    - TR-03 요약: 체중만 있는 새 기록이 체지방률·골격근량 행을 가리지 않는다(`BodyCompositionSeries.latestActive(_:measuring:)`).
+    - BMI: 반올림 뒤 카탈로그 `bmi` 범위(0 초과 200 이하) 밖이면 파생 없음(체중 0.1~0.31kg·키 250cm의 0.0이 규칙 `bmi > 0`에 거부되던 문제).
+    - 테스트 파일: TrainerCoreTests(`BodyCompositionTests` BMI 하한, `BodyCompositionSourcesTests` 상태 병합·지표별 최신·저장 입력 기록, `FeatureFlagsTests`), LocalStoreTests `testDraftsCarryTheirSyncStateAndARefusedOneReadsFailed`(권한 거부 엔진 → `syncFailed`), FeatureModulesTests `BodyCompositionMemberModelTests`, UI `BodyCompositionUITests`(끊김 사유 행, 저장 뒤 '기기에 저장됨' 배지, TR-03 세 지표 행 유지).
 
 ---
 
@@ -2347,9 +2354,10 @@ P1a 범위에서 의도적으로 다음 단계로 넘긴 것: AC-PRIV-02.4(bodyS
   - 편차·남은 일:
     - AC-DF-130.7(레이더 없음) 화면 식별자 검사는 따로 두지 않았다. 신체조성 화면에는 `SeriesTrendChart` 외의 차트가 없다(코드 검토).
     - AC-DF-130.8의 static-guards 규칙은 DesignSystemTests 소스 테스트로 대신한다(차트 브랜치 편차).
-    - 미니 추이 스냅샷(TC-130-11 스냅샷 부분)은 추가하지 않았다. 기준 이미지는 DF-016 흐름대로 CI iOS 26.2 런타임에서 만든다.
+    - 미니 추이 스냅샷(TC-130-11 스냅샷 부분)은 `DesignSystemTests/BodyCompositionMiniTrendSnapshotTests`로 더했다(리뷰 반영, 같은 `__Snapshots__`·CI 아티팩트를 쓰려고 DesignSystemTests에 둠). 차트·미니 추이 기준 이미지는 아직 없다. DF-016 흐름대로 첫 PR의 CI iOS 26.2 실행이 기록하고 실패해 `snapshot-references` 아티팩트를 올리면 그것을 커밋한다(로컬 런타임은 26.0이라 건너뜀).
     - 점 탭 툴팁과 밴드(P3)는 없다.
     - DF-016 `DesignSystemUITests` 탭 대상 테스트는 가로 방향(앞 스위트가 남긴 방향)에서 차트가 붙어 길어진 갤러리(lazy List)를 스크롤한 뒤 맨 위 `sync.badge.reason`을 찾지 못해 실패했다. 스크롤 전에 확인하도록 고쳤다.
+  - 리뷰 반영: 가까운 두 끊김의 사유가 겹쳐 읽을 수 없던 문제는 규칙 위에 번호 표식만 두고(가까우면 다른 줄, `markerRows`) 번호 붙은 사유와 날짜를 플롯 아래 글로 나열해 고쳤다(AC-DF-130.4). 큰 글자에서 x축 날짜가 겹치고 사유가 잘리던 문제는 플롯 안 글자를 `xxLarge`에서 멈추고 기간(첫·마지막 날짜)과 사유를 플롯 아래 크기 조절 글로 옮겨 고쳤다(AC-A11Y-02). 테스트: `SeriesTrendChartTests`(표식 줄 배치, 큰 글자에서 차트가 늘어남), 스냅샷 `closeBreaks`·`deviceChange-ax5` 추가(기준 이미지는 위와 같이 CI에서).
 
 ---
 

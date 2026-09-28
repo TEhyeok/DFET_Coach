@@ -16,6 +16,9 @@ class CreatePostScreen extends ConsumerStatefulWidget {
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final TextEditingController _contentController = TextEditingController();
   final List<File> _selectedImages = [];
+
+  /// The posts rule accepts at most 10 image URLs.
+  static const _maxImages = 10;
   bool _isUploading = false;
 
   Future<void> _pickImage() async {
@@ -24,7 +27,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     if (images.isNotEmpty) {
       setState(() {
-        _selectedImages.addAll(images.map((x) => File(x.path)));
+        _selectedImages.addAll(
+          images.take(_maxImages - _selectedImages.length).map((x) => File(x.path)),
+        );
       });
     }
   }

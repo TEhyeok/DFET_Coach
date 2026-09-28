@@ -16,6 +16,9 @@ struct SyncRemote {
   let currentUid: @Sendable () -> String?
   /// The auth session, current value first; the runtime sends only while it is this trainer's.
   let sessions: () -> AsyncStream<TrainerSession?>
+  /// Asks Firebase Auth for a fresh ID token after an `unauthenticated` reply. The token listener then publishes the
+  /// session again, and the runtime restarts sending (V1-06 §8.7).
+  var refreshSession: @Sendable () async -> Void = {}
 }
 
 /// Sends only while `trainerUid` is the signed-in user. Otherwise nothing is sent and `RemoteError.signedOut` makes the
@@ -37,6 +40,10 @@ struct SessionBoundRemote: RemoteWriter, BinaryUploader, CallableClient {
       return try await call()
     } catch {
       if remote.currentUid() != trainerUid { throw RemoteError.signedOut }
+      if case RemoteError.unauthenticated = error {
+        let refresh = remote.refreshSession
+        Task { await refresh() }
+      }
       throw error
     }
   }
@@ -120,7 +127,7 @@ final class SessionRuntime {
     sessionTask = Task { [weak self] in
       for await session in stream {
         guard let self else { return }
-        if session?.uid == uid { self.resume() } else { self.suspend() }
+        if session?.uid == uid { self.resumeOrRestart() } else { self.suspend() }
       }
     }
   }
@@ -129,6 +136,17 @@ final class SessionRuntime {
     sessionTask?.cancel()
     sessionTask = nil
     suspend()
+  }
+
+  /// The same trainer's session again (sign-in, or a refreshed token): start sending if stopped, otherwise restart the
+  /// engine so a pause for an `unauthenticated` reply ends as soon as the token works again.
+  private func resumeOrRestart() {
+    if triggers == nil {
+      resume()
+    } else {
+      let engine = engine
+      Task { await engine.start() }
+    }
   }
 
   private func resume() {

@@ -189,6 +189,20 @@ describe('community integrity boundaries', () => {
     }));
   });
 
+  // 10장 상한 이전에 저장된 게시글도 본문은 고칠 수 있다. 이미지 목록을 바꿀 때만 새 검증을 받는다.
+  test('a post saved before the image limit keeps text edits; changing its images meets the limit', async () => {
+    const eleven = Array.from({length: 11}, (_, i) => `https://example.invalid/${i}.jpg`);
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'posts/legacy11'), {
+        authorId: 'member1', content: '예전 기록', imageUrls: eleven, likeCount: 0, commentCount: 0, createdAt: 1,
+      });
+    });
+    const owner = dbFor('member1');
+    await assertSucceeds(updateDoc(doc(owner, 'posts/legacy11'), {content: '고친 기록'}));
+    await assertFails(updateDoc(doc(owner, 'posts/legacy11'), {imageUrls: [...eleven, 'https://example.invalid/x.jpg']}));
+    await assertSucceeds(updateDoc(doc(owner, 'posts/legacy11'), {imageUrls: eleven.slice(0, 10)}));
+  });
+
   test('post create takes only the app keys with string author fields', async () => {
     const member = dbFor('member1');
     const post = {

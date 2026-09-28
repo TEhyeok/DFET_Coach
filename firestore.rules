@@ -374,11 +374,14 @@ service cloud.firestore {
     match /posts/{postId} {
       // 작성·수정 공통 본문 검증. Post.fromFirestore는 content를 문자열로, imageUrls를 문자열 목록으로 읽으므로
       // 타입이 어긋난 게시글 하나가 피드 전체(Future.wait)를 실패시킨다. 목록 원소의 타입은 규칙으로 검사할 수 없다.
-      function validPostBody(d) {
+      function validPostContent(d) {
         return d.content is string &&
           d.content.size() > 0 &&
-          d.content.size() <= 2000 &&
-          validImageUrls(d.get('imageUrls', []));
+          d.content.size() <= 2000;
+      }
+
+      function validPostBody(d) {
+        return validPostContent(d) && validImageUrls(d.get('imageUrls', []));
       }
 
       // At most 10 image URLs, each a string: Post.fromFirestore reads them with List<String>.from, and one
@@ -414,7 +417,10 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'content', 'imageUrls'
         ]) &&
-        validPostBody(request.resource.data)
+        validPostContent(request.resource.data) &&
+        // A post saved before the 10-image limit can still have its text edited; new image lists are checked.
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['imageUrls']) ||
+          validImageUrls(request.resource.data.get('imageUrls', [])))
       );
       allow delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
       

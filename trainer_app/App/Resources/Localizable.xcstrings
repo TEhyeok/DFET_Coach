@@ -61,6 +61,18 @@
         }
       }
     },
+    "change.indeterminate" : {
+      "comment" : "V1-12 · §6.0.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "판정 불가"
+          }
+        }
+      }
+    },
     "change.indeterminate.withReason" : {
       "comment" : "V1-12 · §6.0.3, C-03 · args: reason",
       "extractionState" : "manual",
@@ -325,6 +337,18 @@
         }
       }
     },
+    "common.unmeasured" : {
+      "comment" : "V1-12 · §6.0.3, F-BC-03.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미측정"
+          }
+        }
+      }
+    },
     "condition.clothing" : {
       "comment" : "V1-12 · §7.4",
       "extractionState" : "manual",
@@ -393,6 +417,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "촬영 방향"
+          }
+        }
+      }
+    },
+    "consent.state.awaiting" : {
+      "comment" : "V1-12 · F-PRIV-03.7",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 확인 대기"
           }
         }
       }
@@ -1273,6 +1309,30 @@
         }
       }
     },
+    "tr02.consent.needed" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 필요"
+          }
+        }
+      }
+    },
+    "tr02.consent.ok" : {
+      "comment" : "V1-12 · TR-02",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동의 ①②③"
+          }
+        }
+      }
+    },
     "tr02.empty" : {
       "comment" : "V1-12 · §8.4",
       "extractionState" : "manual",
@@ -1377,6 +1437,150 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "비교"
+          }
+        }
+      }
+    },
+    "tr11.atLeastOne" : {
+      "comment" : "V1-12 · F-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정값을 하나 이상 입력하세요"
+          }
+        }
+      }
+    },
+    "tr11.consentNeeded" : {
+      "comment" : "V1-12 · AC-PRIV-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건강정보 동의 필요"
+          }
+        }
+      }
+    },
+    "tr11.cross.fatMassOverWeight" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방량이 체중보다 커요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.cross.fatPercentMismatch" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체지방률과 체지방량·체중 비율이 크게 달라요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.cross.muscleOverWeight" : {
+      "comment" : "V1-12 · F-BC-03.3",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "골격근량이 체중 이상이에요. 결과지를 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.deviceChanged" : {
+      "comment" : "V1-12 · F-BC-03.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기가 바뀌어 이전 기록과 비교할 수 없습니다"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.required" : {
+      "comment" : "V1-12 · F-BC-01.2, AC-BC-01.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 모델을 골라 주세요"
+          }
+        }
+      }
+    },
+    "tr11.deviceModel.tooLong" : {
+      "comment" : "V1-12 · F-BC-01.2, R-17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 이름은 64자까지 쓸 수 있어요"
+          }
+        }
+      }
+    },
+    "tr11.fasting.required" : {
+      "comment" : "V1-12 · F-BC-01.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공복 여부를 골라 주세요"
+          }
+        }
+      }
+    },
+    "tr11.measuredAt.future" : {
+      "comment" : "V1-12 · F-BC-01.2, §9.1",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "측정 일시가 지금보다 늦어요. 다시 확인하세요"
+          }
+        }
+      }
+    },
+    "tr11.number.invalid" : {
+      "comment" : "V1-12 · F-BC-03.1, F-BC-03.2",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "숫자로 입력하세요. 소수점 아래는 한 자리까지예요"
+          }
+        }
+      }
+    },
+    "tr11.range.generic" : {
+      "comment" : "V1-12 · F-BC-03.2 · args: min, max, unit",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@~%2$@%3$@ 사이로 입력하세요"
           }
         }
       }

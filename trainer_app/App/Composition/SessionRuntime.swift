@@ -22,21 +22,51 @@ struct SyncRemote {
 }
 
 /// After an `unauthenticated` reply for the signed-in trainer: one token refresh at a time and at most one a minute, so a
-/// server that keeps refusing the token cannot drive a refresh-and-resend loop. A successful refresh restarts sending
-/// itself, because Firebase Auth publishes no new session when the refreshed token is unchanged.
+/// server that keeps refusing the token cannot drive a refresh-and-resend loop. A request inside the minute is kept
+/// (one at most) and runs when the minute is over, so sending never waits for the next foreground. A successful refresh
+/// restarts sending itself, because Firebase Auth publishes no new session when the refreshed token is unchanged.
 final class SessionRefresher: @unchecked Sendable {
-  static let minimumInterval: TimeInterval = 60
+  static let defaultInterval: TimeInterval = 60
 
   private let refresh: @Sendable () async -> Bool
   private let now: @Sendable () -> Date
+  private let minimumInterval: TimeInterval
   private let lock = NSLock()
   private var inFlight = false
   private var lastStarted: Date?
+  private var deferred: Task<Void, Never>?
   private var refreshed: (@Sendable () async -> Void)?
 
-  init(refresh: @escaping @Sendable () async -> Bool, now: @escaping @Sendable () -> Date = Date.init) {
+  init(
+    refresh: @escaping @Sendable () async -> Bool, now: @escaping @Sendable () -> Date = Date.init,
+    minimumInterval: TimeInterval = SessionRefresher.defaultInterval
+  ) {
     self.refresh = refresh
     self.now = now
+    self.minimumInterval = minimumInterval
+  }
+
+  /// Drops a kept request (the runtime stopped sending).
+  func cancel() {
+    lock.withLock {
+      deferred?.cancel()
+      deferred = nil
+    }
+  }
+
+  private func keep(for wait: TimeInterval) {
+    let task = Task { [weak self] in
+      try? await Task.sleep(nanoseconds: UInt64(max(wait, 0) * 1_000_000_000))
+      guard !Task.isCancelled, let self else { return }
+      self.lock.withLock { self.deferred = nil }
+      self.unauthenticated()
+    }
+    let kept = lock.withLock { () -> Bool in
+      guard deferred == nil else { return false }
+      deferred = task
+      return true
+    }
+    if !kept { task.cancel() }
   }
 
   /// What to run after a successful refresh (the runtime starts its engine).
@@ -45,14 +75,18 @@ final class SessionRefresher: @unchecked Sendable {
   }
 
   func unauthenticated() {
-    let start = lock.withLock { () -> Bool in
-      if inFlight { return false }
-      if let lastStarted, now().timeIntervalSince(lastStarted) < Self.minimumInterval { return false }
+    let decision = lock.withLock { () -> (start: Bool, wait: TimeInterval?) in
+      if inFlight { return (false, nil) }
+      if let lastStarted {
+        let elapsed = now().timeIntervalSince(lastStarted)
+        if elapsed < minimumInterval { return (false, deferred == nil ? minimumInterval - elapsed : nil) }
+      }
       inFlight = true
       lastStarted = now()
-      return true
+      return (true, nil)
     }
-    guard start else { return }
+    if let wait = decision.wait { keep(for: wait) }
+    guard decision.start else { return }
     Task {
       let ok = await refresh()
       let action = lock.withLock { () -> (@Sendable () async -> Void)? in
@@ -129,6 +163,7 @@ final class SessionRuntime {
   let trainerUid: String
   let engine: SyncEngine
   let registrar: any PendingMemberRegistrar
+  private let refresher: SessionRefresher
   /// The trainer's LocalStore partition; logout purges what is synced from it (DF-018).
   let container: ModelContainer
   let location: LocalStoreLocation
@@ -153,6 +188,7 @@ final class SessionRuntime {
     self.location = location
     let outbox = LocalOutboxStore(container: container, trainerUid: trainerUid, binaries: LocalBinaryStore(location: location))
     let refresher = SessionRefresher(refresh: remote.refreshSession)
+    self.refresher = refresher
     let bound = SessionBoundRemote(trainerUid: trainerUid, remote: remote, onUnauthenticated: refresher.unauthenticated)
     let engine = SyncEngine(store: outbox, writer: bound, uploader: bound, callable: bound)
     self.engine = engine
@@ -254,6 +290,7 @@ final class SessionRuntime {
   }
 
   private func suspend() {
+    refresher.cancel()
     guard let triggers else { return }
     triggers.monitor.cancel()
     triggers.paths.finish()
